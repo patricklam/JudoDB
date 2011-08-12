@@ -12,7 +12,9 @@ import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
@@ -31,10 +33,17 @@ public class JudoDB implements EntryPoint {
 	private int jsonRequestId = 0;
 	
 	private final Label statusLabel = new Label();
+	
+	private final VerticalPanel searchResultsPanel = new VerticalPanel();
+	private final TextBox searchField = new TextBox();
 	private final FlexTable searchResults = new FlexTable();
 	private final Button searchButton = new Button("Recherche");
 	private final Button newClientButton = new Button("Nouveau client");
-	private final TextBox searchField = new TextBox();
+	private final Button nextResultsButton = new Button("Résultats suivants");
+	private final Button prevResultsButton = new Button("Résultats précedents"); 
+	private JsArray<ClientSummary> allClients;
+	private String searchString;
+	private int firstSearchResultToDisplay = 0;
 	
 	// Create a handler for the searchButton and nameField
 	class SearchHandler implements ClickHandler, KeyUpHandler {
@@ -79,7 +88,27 @@ public class JudoDB implements EntryPoint {
 		RootPanel.get("search").add(searchButton);
 		RootPanel.get("search").add(newClientButton);
 
-		RootPanel.get("search").add(searchResults);
+		final Label resultsLabel = new Label("Résultats: ");
+		
+		final Panel searchNavPanel = new HorizontalPanel();
+		searchNavPanel.add(nextResultsButton);
+		nextResultsButton.setVisible(false);
+		nextResultsButton.addClickHandler(new ClickHandler() { 
+			public void onClick(ClickEvent e) { 
+				firstSearchResultToDisplay += MAX_RESULTS; 
+				displaySearchResults(); } });
+		searchNavPanel.add(prevResultsButton);
+		prevResultsButton.setVisible(false);
+		prevResultsButton.addClickHandler(new ClickHandler() { 
+			public void onClick(ClickEvent e) { 
+				firstSearchResultToDisplay -= MAX_RESULTS; 
+				displaySearchResults(); } });
+		
+		searchResultsPanel.add(resultsLabel);
+		searchResultsPanel.add(searchResults);
+		searchResultsPanel.add(searchNavPanel);
+		searchResultsPanel.setVisible(false);
+		RootPanel.get("search").add(searchResultsPanel);
 		
 		// Focus the cursor on the name field when the app loads
 		searchField.setFocus(true);
@@ -140,11 +169,20 @@ public class JudoDB implements EntryPoint {
         return r;
     }-*/;
 	
-	private void updateSearchResults(JsArray<ClientSummary> allClients) {
-		String searchString = removeAccents(searchField.getText());
+	private void loadSearchResults(JsArray<ClientSummary> allClients) {
+		searchString = removeAccents(searchField.getText());
 		searchResults.removeAllRows();
-		int resultCount = 0;
+		firstSearchResultToDisplay = 0;
+		this.allClients = allClients;
+		displaySearchResults();
+	}
+
+	private void displaySearchResults() {
+		int resultCount = 0, displayedCount = 0;
 		
+		if (firstSearchResultToDisplay != 0)
+			prevResultsButton.setVisible(true);
+			
 		for (int i = 0; i < allClients.length(); i++) {
 			ClientSummary cs = allClients.get(i);
 			String s = cs.getPrenom() + " " + cs.getNom();
@@ -152,12 +190,19 @@ public class JudoDB implements EntryPoint {
 			String ss = removeAccents(s);
 			if (!ss.contains(searchString)) continue;
 			
-			if (!cs.getSaisons().isEmpty())
+			if (cs.getSaisons() != null && !cs.getSaisons().isEmpty())
 				s += " ("+cs.getSaisons()+")";
-			searchResults.setText(resultCount++, 0, s);
 			
-			if (resultCount >= MAX_RESULTS) break;
+			if (resultCount >= firstSearchResultToDisplay)
+				searchResults.setText(displayedCount++, 0, s);
+			
+			resultCount++;
+			if (displayedCount >= MAX_RESULTS) { 
+				nextResultsButton.setVisible(true);
+				break;
+			}
 		}
+		searchResultsPanel.setVisible(true);
 	}
 	
 	/**
@@ -169,7 +214,7 @@ public class JudoDB implements EntryPoint {
 	      return;
 	    }
 
-	    updateSearchResults(asArrayOfClientSummary (jso));
+	    loadSearchResults(asArrayOfClientSummary (jso));
 
 	  }
 	  
