@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -33,7 +34,8 @@ public class JudoDB implements EntryPoint {
 	private int jsonRequestId = 0;
 	
 	private final Label statusLabel = new Label();
-	
+
+	/* search stuff */
 	private final VerticalPanel searchResultsPanel = new VerticalPanel();
 	private final TextBox searchField = new TextBox();
 	private final FlexTable searchResults = new FlexTable();
@@ -45,27 +47,22 @@ public class JudoDB implements EntryPoint {
 	private String searchString;
 	private int firstSearchResultToDisplay = 0;
 	
+	/* edit client stuff */
+	private final Button saveClientButton = new Button("Sauvegarder");
+	private final Button discardClientButton = new Button("Annuler");
+	
 	// Create a handler for the searchButton and nameField
 	class SearchHandler implements ClickHandler, KeyUpHandler {
-		/**
-		 * Fired when the user clicks on the sendButton.
-		 */
 		public void onClick(ClickEvent event) {
 			refreshClientListAndFilter();
 		}
 
-		/**
-		 * Fired when the user types in the nameField.
-		 */
 		public void onKeyUp(KeyUpEvent event) {
 			if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
 				refreshClientListAndFilter();
 			}
 		}
 
-		/**
-		 * Send the name from the nameField to the server and wait for a response.
-		 */
 		private void refreshClientListAndFilter() {
 			statusLabel.setText("");
 			//searchButton.setEnabled(false);
@@ -76,7 +73,28 @@ public class JudoDB implements EntryPoint {
 		    getJson(jsonRequestId++, url, JudoDB.this);
 		}
 	}
+	
+	class EditClientHandler implements ClickHandler {
+		private int cid;
+		public EditClientHandler(int cid) { this.cid = cid; }
+		
+		public void onClick(ClickEvent event) {
+			editClient(cid);
+		}		
+	}
 
+	public void editClient (int cid) {
+		RootPanel.get("editClient").setVisible(true);
+		RootPanel.get("search").setVisible(false);
+		
+		// clear inputs of the editclient.
+	}
+	
+	public void returnToSearch() {
+		RootPanel.get("editClient").setVisible(false);
+		RootPanel.get("search").setVisible(true);
+	}
+		
 	/**
 	 * This is the entry point method.
 	 */
@@ -84,10 +102,24 @@ public class JudoDB implements EntryPoint {
 		// Add content to the RootPanel
 		RootPanel.get("statusContainer").add(statusLabel);
 
+		// search buttons
 		RootPanel.get("search").add(searchField);
 		RootPanel.get("search").add(searchButton);
 		RootPanel.get("search").add(newClientButton);
-
+		
+		// edit client buttons
+		RootPanel.get("editClient").add(saveClientButton);
+		RootPanel.get("editClient").add(discardClientButton);
+		saveClientButton.addClickHandler(new ClickHandler() { 
+			public void onClick(ClickEvent e) {
+				// XXX save info
+				returnToSearch(); }
+		});
+		discardClientButton.addClickHandler(new ClickHandler() { 
+			public void onClick(ClickEvent e) {
+				returnToSearch(); }
+		});
+		
 		final Label resultsLabel = new Label("Résultats: ");
 		
 		final Panel searchNavPanel = new HorizontalPanel();
@@ -147,9 +179,13 @@ public class JudoDB implements EntryPoint {
 		});
 
 		// Add a handler to send the name to the server
-		SearchHandler handler = new SearchHandler();
-		searchButton.addClickHandler(handler);
-		searchField.addKeyUpHandler(handler);
+		SearchHandler shandler = new SearchHandler();
+		searchButton.addClickHandler(shandler);
+		searchField.addKeyUpHandler(shandler);
+		
+		// Add a handler for "nouveau client"
+		EditClientHandler ehandler = new EditClientHandler(-1);
+		newClientButton.addClickHandler(ehandler);
 	}
 
 	private native String removeAccents(String s) /*-{
@@ -193,8 +229,11 @@ public class JudoDB implements EntryPoint {
 			if (cs.getSaisons() != null && !cs.getSaisons().isEmpty())
 				s += " ("+cs.getSaisons()+")";
 			
-			if (resultCount >= firstSearchResultToDisplay)
-				searchResults.setText(displayedCount++, 0, s);
+			if (resultCount >= firstSearchResultToDisplay) {
+				Anchor h = new Anchor(s);
+				h.addClickHandler(new EditClientHandler(Integer.parseInt(cs.getId())));
+				searchResults.setWidget(displayedCount++, 0, h);
+			}
 			
 			resultCount++;
 			if (displayedCount >= MAX_RESULTS) { 
@@ -215,7 +254,6 @@ public class JudoDB implements EntryPoint {
 	    }
 
 	    loadSearchResults(asArrayOfClientSummary (jso));
-
 	  }
 	  
 	/**
@@ -254,6 +292,7 @@ public class JudoDB implements EntryPoint {
 	  }-*/;
 	
 	private void displayError(String error) {
+		statusLabel.setStylePrimaryName("error");
 		statusLabel.setText("Erreur: " + error);
 	    statusLabel.setVisible(true);
 	}	
