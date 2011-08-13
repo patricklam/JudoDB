@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class JudoDB implements EntryPoint {
 	public static final int MAX_RESULTS = 10;
 	
-	private static final String BASE_URL = "http://127.0.0.1/~plam/anjoudb/";
+	public static final String BASE_URL = "http://127.0.0.1/~plam/anjoudb/";
 	private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
 	private static final String REQUEST_CHALLENGE_URL = BASE_URL + "request_challenge.php";
 	//private static final String AUTHENTICATE_URL = BASE_URL + "authenticate.php";
@@ -48,8 +48,7 @@ public class JudoDB implements EntryPoint {
 	private int firstSearchResultToDisplay = 0;
 	
 	/* edit client stuff */
-	private final Button saveClientButton = new Button("Sauvegarder");
-	private final Button discardClientButton = new Button("Annuler");
+	private ClientWidget c;
 	
 	// Create a handler for the searchButton and nameField
 	class SearchHandler implements ClickHandler, KeyUpHandler {
@@ -84,10 +83,12 @@ public class JudoDB implements EntryPoint {
 	}
 
 	public void editClient (int cid) {
+		RootPanel.get("search").setVisible(false);		
+		RootPanel.get("editClient").clear();
+
+		this.c = new ClientWidget(this, cid);
+		RootPanel.get("editClient").add(c);
 		RootPanel.get("editClient").setVisible(true);
-		RootPanel.get("search").setVisible(false);
-		
-		// clear inputs of the editclient.
 	}
 	
 	public void returnToSearch() {
@@ -107,19 +108,7 @@ public class JudoDB implements EntryPoint {
 		RootPanel.get("search").add(searchButton);
 		RootPanel.get("search").add(newClientButton);
 		
-		// edit client buttons
-		RootPanel.get("editClient").add(saveClientButton);
-		RootPanel.get("editClient").add(discardClientButton);
-		saveClientButton.addClickHandler(new ClickHandler() { 
-			public void onClick(ClickEvent e) {
-				// XXX save info
-				returnToSearch(); }
-		});
-		discardClientButton.addClickHandler(new ClickHandler() { 
-			public void onClick(ClickEvent e) {
-				returnToSearch(); }
-		});
-		
+		// edit client buttons		
 		final Label resultsLabel = new Label("Résultats: ");
 		
 		final Panel searchNavPanel = new HorizontalPanel();
@@ -279,7 +268,7 @@ public class JudoDB implements EntryPoint {
 	     document.body.removeChild(script);
 	     delete window[callback];
 	     delete window[callback + "done"];
-	   }, 1000);
+	   }, 5000);
 
 	   document.body.appendChild(script);
 	  }-*/;
@@ -291,7 +280,7 @@ public class JudoDB implements EntryPoint {
 	    return jso;
 	  }-*/;
 	
-	private void displayError(String error) {
+	void displayError(String error) {
 		statusLabel.setStylePrimaryName("error");
 		statusLabel.setText("Erreur: " + error);
 	    statusLabel.setVisible(true);
