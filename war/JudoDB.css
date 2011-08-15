@@ -14,7 +14,7 @@ body {
   margin: 5px;
 }
 
-error {
+.error {
   color: red;
 }
 
