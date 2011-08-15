@@ -2,6 +2,8 @@ package ca.patricklam.judodb.client;
 
 public class Constants {
 	public static int CURRENT_YEAR = 2012;
+	public static String CURRENT_SESSION = "A11";
+	public static String NEXT_SESSION = "H12";
 	
 	static class Categorie {
 		String name;
@@ -24,6 +26,33 @@ public class Constants {
 			this.seqno = seqno;
 			this.name = name; this.short_desc = short_desc;
 			this.entraineur = entraineur;
+		}
+	}
+	
+	static class Escompte {
+		String seqno;
+		String name;
+		int amount; // in percent
+		
+		public Escompte(String seqno, String name, int amount) {
+			this.seqno = seqno; this.name = name; this.amount = amount;
+		}
+	}
+	
+	static class CategorieSession {
+		int session_seqno;
+		String categorie_abbrev;
+		double frais_1_session, frais_2_session;
+		double frais_judo_qc;
+		
+		public CategorieSession(int session_seqno, String categorie_abbrev,
+				double frais_1_session, double frais_2_session, 
+				double frais_judo_qc) {
+			this.session_seqno = session_seqno;
+			this.categorie_abbrev = categorie_abbrev;
+			this.frais_1_session = frais_1_session;
+			this.frais_2_session = frais_2_session;
+			this.frais_judo_qc = frais_judo_qc;
 		}
 	}
 	
@@ -56,5 +85,28 @@ public class Constants {
 		new Cours("10", "Débutants 5-6 ans (D930-1030)", "D930", "Lan-Anh Phan"),
 		new Cours("11", "Débutants 7-10 ans (D1030-1230)", "D1030", "Lan-Anh Phan"),
 		new Cours("12", "Débutants 7-11 ans (MV1730-1830)", "MV1730", "Luc Phan")
+	};
+
+	public static final CategorieSession[] CATEGORIES_SESSIONS = new CategorieSession[] {
+		new CategorieSession(0, "U7", 118.30, 182.0, 18.0),
+		new CategorieSession(0, "U9", 121.55, 187.0, 23.0),
+		new CategorieSession(0, "U11", 134.55, 207.0, 33.0),
+		new CategorieSession(0, "U13", 157.30, 242.0, 43.0),
+		new CategorieSession(0, "U15", 193.05, 297.0, 58.0),
+		new CategorieSession(0, "U17", 199.55, 307.0, 63.0),
+		new CategorieSession(0, "U20", 206.05, 317.0, 73.0),
+		new CategorieSession(0, "S", 228.80, 352.0, 78.0),
+		new CategorieSession(0, "U17N", 167.00, 172.0, 73.0),
+		new CategorieSession(0, "U20N", 167.00, 172.0, 73.0),
+		new CategorieSession(0, "SN", 167.0, 172.0, 83.0),
+	};
+	
+	public static final Escompte[] ESCOMPTES = new Escompte[] {
+		new Escompte("0", "Aucun", 0),
+		new Escompte("1", "2e membre", 10),
+		new Escompte("2", "3e membre", 15),
+		new Escompte("3", "4e membre", 20),
+		new Escompte("4", "Membre du CA", 50),
+		new Escompte("5", "Cas spécial", -1)
 	};
 }
