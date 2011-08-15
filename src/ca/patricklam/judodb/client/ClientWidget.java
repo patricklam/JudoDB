@@ -2,10 +2,13 @@ package ca.patricklam.judodb.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.DOM;
@@ -50,7 +53,23 @@ public class ClientWidget extends Composite {
 	@UiField(provided=true) TextBox categorieFrais = new TextBox();
 
 	@UiField(provided=true) ListBox cours = new ListBox();
+	@UiField(provided=true) ListBox sessions = new ListBox();
 
+	@UiField(provided=true) ListBox escompte = new ListBox();
+	@UiField(provided=true) TextBox cas_special_note = new TextBox();
+	@UiField(provided=true) TextBox cas_special_pct = new TextBox();
+	@UiField(provided=true) TextBox escompte_special = new TextBox();
+
+	@UiField(provided=true) CheckBox sans_affiliation = new CheckBox();
+	@UiField(provided=true) TextBox affiliationFrais = new TextBox();
+
+	@UiField(provided=true) TextBox judogi = new TextBox();
+	@UiField(provided=true) TextBox passeport = new TextBox();
+	@UiField(provided=true) TextBox non_anjou = new TextBox();
+	@UiField(provided=true) TextBox suppFrais = new TextBox();
+
+	@UiField(provided=true) TextBox frais = new TextBox();
+	
 	@UiField(provided=true) Button saveClientButton = new Button();
 	@UiField(provided=true) Button discardClientButton = new Button();
 	
@@ -84,18 +103,51 @@ public class ClientWidget extends Composite {
 		nom_contact_urgence.getElement().setId(DOM.createUniqueId());
 		tel_contact_urgence.getElement().setId(DOM.createUniqueId());
 
+		date_inscription.getElement().setId(DOM.createUniqueId());
+		saisons.getElement().setId(DOM.createUniqueId());
+		verification.getElement().setId(DOM.createUniqueId());
+		
 		categorie.getElement().setId(DOM.createUniqueId());
 		categorieFrais.getElement().setId(DOM.createUniqueId());
 
 		cours.getElement().setId(DOM.createUniqueId());
+		sessions.getElement().setId(DOM.createUniqueId());
+		
+		escompte.getElement().setId(DOM.createUniqueId());
+		cas_special_note.getElement().setId(DOM.createUniqueId());
+		cas_special_pct.getElement().setId(DOM.createUniqueId());
+		escompte_special.getElement().setId(DOM.createUniqueId());
+
+		sans_affiliation.getElement().setId(DOM.createUniqueId());
+		affiliationFrais.getElement().setId(DOM.createUniqueId());
+
+		judogi.getElement().setId(DOM.createUniqueId());
+		passeport.getElement().setId(DOM.createUniqueId());
+		non_anjou.getElement().setId(DOM.createUniqueId());
+		suppFrais.getElement().setId(DOM.createUniqueId());
+		
+		frais.getElement().setId(DOM.createUniqueId());
 		
 		for (Constants.Cours c : Constants.COURS) {
 			cours.addItem(c.name, c.seqno);
 		}
+		sessions.addItem("1");
+		sessions.addItem("2");
+		for (Constants.Escompte e : Constants.ESCOMPTES) {
+			escompte.addItem(e.name, Integer.toString(e.amount));
+		}
 		
 		date_inscription.setReadOnly(true);
 		categorie.setReadOnly(true);
+		saisons.setReadOnly(true);
 		categorieFrais.setReadOnly(true);
+		affiliationFrais.setReadOnly(true);
+		suppFrais.setReadOnly(true);
+		frais.setReadOnly(true);
+		((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
+		((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
+
+		sessions.setItemSelected(1, true);
 		
 		saveClientButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) {
@@ -106,7 +158,8 @@ public class ClientWidget extends Composite {
 			public void onClick(ClickEvent e) {
 				ClientWidget.this.jdb.returnToSearch(); }
 		});
-
+		
+		jdb.clearError();
 		getJson(jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
 	}
 	
@@ -134,6 +187,7 @@ public class ClientWidget extends Composite {
 		
 		ddn.addChangeHandler(recomputeHandler);
 		grade.addChangeHandler(recomputeHandler);
+		escompte.addChangeHandler(recomputeHandler);
 		recompute();
 	}
 
@@ -163,9 +217,40 @@ public class ClientWidget extends Composite {
 		public void onChange(ChangeEvent e) { recompute(); }
 	};
 	
+	// evil hack: getCurrencyFormat doesn't seem to want to parse stuff.
+	private String stripDollars(String s) {
+		return s.replaceAll("$", "");
+	}
+	
+	private void math() {
+		NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
+		NumberFormat nf = NumberFormat.getDecimalFormat();
+		
+		double fCategorieFrais = nf.parse(stripDollars(categorieFrais.getText()));
+		double fAffiliationFrais = nf.parse(stripDollars(affiliationFrais.getText()));
+		double fEscompteSpecial = nf.parse(stripDollars(escompte_special.getText()));
+		double fSuppFrais = nf.parse(stripDollars(suppFrais.getText()));
+
+		frais.setText(cf.format(fCategorieFrais + fAffiliationFrais + fEscompteSpecial + fSuppFrais));
+	}
+	
 	private void recompute() {
-		saveClientData();		
+		saveClientData();
+		
+		String s = Constants.CURRENT_SESSION;
+		if (sessions.getValue(sessions.getSelectedIndex()) == "2") {
+			s += " " + Constants.NEXT_SESSION;
+		}
+		saisons.setText(s);
+		
 		categorie.setText(cd.getCategorieAbbrev());
+		Display d = Display.NONE;
+		if (escompte.getValue(escompte.getSelectedIndex()).equals("-1")) 
+			d = Display.INLINE;
+
+		((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(d);
+		((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);
+		math();
 	}
 
 	private void pushClientDataToServer() {
