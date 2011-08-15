@@ -63,9 +63,10 @@ plus approfondie.</p>
  		<fieldset> <legend>Inscription</legend>
   		 <div class="fourper">
    		  <label for="{date_inscription.getElement.getId}">Date d'inscription
-           <span id="today" class="noprint">aujourd'hui</span><span id="desinscrire">désinscrire</span>
+           <span id="today" class="noprint">aujourd'hui</span> <span id="desinscrire">désinscrire</span>
            <g:TextBox ui:field="date_inscription"/>
           </label>
+   		  <label for="{categorie.getElement.getId}">Cat&eacute;gorie d'&acirc;ge<g:TextBox ui:field="categorie"/></label>
    		  <label for="{saisons.getElement.getId}">Saisons<g:TextBox ui:field="saisons"/>
    		  </label>
    		  <label for="{verification.getElement.getId}">Affiliation Judo QC verifi&eacute;<g:CheckBox ui:field="verification"/>
@@ -75,26 +76,23 @@ plus approfondie.</p>
   		 <div class="fourper">
    		  <label for="{cours.getElement.getId}" style="width:46%">Cours<g:ListBox ui:field="cours"/></label>
    		  <label for="{sessions.getElement.getId}" style="float:right">Sessions<g:ListBox ui:field="sessions"/></label>
-  		 </div>
-  		 <div class="fourper">
-   		  <label for="{categorie.getElement.getId}">Cat&eacute;gorie d'&acirc;ge<g:TextBox ui:field="categorie"/></label>
    		  <label for="{categorieFrais.getElement.getId}" style="float:right">Frais cours<g:TextBox ui:field="categorieFrais"/></label>
   		 </div>
   		 <div class="fourper">
-   		  <label for="{escompte.getElement.getId}">Escompte<g:TextBox ui:field="escompte"/></label>
+   		  <label for="{escompte.getElement.getId}">Escompte<g:ListBox ui:field="escompte"/></label>
           <label for="{cas_special_note.getElement.getId}">Raison reduction cas sp&eacute;cial<g:TextBox ui:field="cas_special_note"/></label>
    		  <label for="{cas_special_pct.getElement.getId}">Pourcentage escompte cas sp&eacute;cial<g:TextBox ui:field="cas_special_pct"/></label>
           <label for="{escompte_special.getElement.getId}" style="float:right"> - escompte<g:TextBox ui:field="escompte_special"/></label>
          </div>
          <div class="fourper">
-   		  <label for="{sans_affiliation.getElement.getId}">Déjà affili&eacute; Judo Qu&eacute;bec 2011-12<g:TextBox ui:field="sans_affiliation"/></label>
+   		  <label for="{sans_affiliation.getElement.getId}">Déjà affili&eacute; Judo Qu&eacute;bec 2011-12<g:CheckBox ui:field="sans_affiliation"/></label>
           <label for="{affiliationFrais.getElement.getId}" style="float:right">Affiliation Judo Qu&eacute;bec<g:TextBox ui:field="affiliationFrais"/></label>
          </div>
          <div class="fourper">
           <label for="{judogi.getElement.getId}">Co&ucirc;t judogi<g:TextBox ui:field="judogi"/></label>
           <label for="{passeport.getElement.getId}">Passeport Judo Qu&eacute;bec (5 $)<g:TextBox ui:field="passeport"/></label>
           <label for="{non_anjou.getElement.getId}">Pas de carte Anjou (5 $)<g:TextBox ui:field="non_anjou"/></label>
-          <label for="{ppaFrais.getElement.getId}" style="float:right">Autres frais<g:TextBox ui:field="ppaFrais"/></label>
+          <label for="{suppFrais.getElement.getId}" style="float:right">Autres frais<g:TextBox ui:field="suppFrais"/></label>
         </div>
         <div class="fourper">
           <label for="{frais.getElement.getId}" style="float:right">Frais total<g:TextBox ui:field="frais"/></label>
