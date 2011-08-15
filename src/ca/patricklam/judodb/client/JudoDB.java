@@ -281,8 +281,12 @@ public class JudoDB implements EntryPoint {
 	  }-*/;
 	
 	void displayError(String error) {
-		statusLabel.setStylePrimaryName("error");
+		statusLabel.addStyleName("error");
 		statusLabel.setText("Erreur: " + error);
 	    statusLabel.setVisible(true);
+	}	
+	void clearError() {
+		statusLabel.setText("");
+	    statusLabel.setVisible(false);
 	}	
 }
