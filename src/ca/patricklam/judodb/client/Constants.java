@@ -3,7 +3,10 @@ package ca.patricklam.judodb.client;
 public class Constants {
 	public static int CURRENT_YEAR = 2012;
 	public static String CURRENT_SESSION = "A11";
+	public static int CURRENT_SESSION_SEQNO = 0;
 	public static String NEXT_SESSION = "H12";
+	public static double PASSEPORT_JUDO_QC = 5.0;
+	public static double NON_ANJOU = 5.0;
 	
 	static class Categorie {
 		String name;
@@ -37,6 +40,13 @@ public class Constants {
 		public Escompte(String seqno, String name, int amount) {
 			this.seqno = seqno; this.name = name; this.amount = amount;
 		}
+	}
+	
+	public static final int getEscompte(String seqno) {
+		for (Escompte e : ESCOMPTES) 
+			if (e.seqno.equals(seqno))
+				return e.amount;
+		return 0;
 	}
 	
 	static class CategorieSession {
@@ -101,6 +111,30 @@ public class Constants {
 		new CategorieSession(0, "SN", 167.0, 172.0, 83.0),
 	};
 	
+	public static final double getFrais1Session(int session, Categorie c) {
+		for (CategorieSession cs : CATEGORIES_SESSIONS)
+			if (cs.session_seqno == session && cs.categorie_abbrev.equals(c.abbrev)) 
+				return cs.frais_1_session;
+		
+		return 0.0;
+	}
+
+	public static final double getFrais2Session(int session, Categorie c) {
+		for (CategorieSession cs : CATEGORIES_SESSIONS)
+			if (cs.session_seqno == session && cs.categorie_abbrev.equals(c.abbrev)) 
+				return cs.frais_2_session;
+		
+		return 0.0;
+	}
+	
+	public static final double getFraisJudoQC(int session, Categorie c) {
+		for (CategorieSession cs : CATEGORIES_SESSIONS)
+			if (cs.session_seqno == session && cs.categorie_abbrev.equals(c.abbrev)) 
+				return cs.frais_judo_qc;
+		
+		return 0.0;
+	}
+
 	public static final Escompte[] ESCOMPTES = new Escompte[] {
 		new Escompte("0", "Aucun", 0),
 		new Escompte("1", "2e membre", 10),
