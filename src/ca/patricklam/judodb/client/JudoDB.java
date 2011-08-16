@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class JudoDB implements EntryPoint {
 	public static final int MAX_RESULTS = 10;
 	
-	public static final String BASE_URL = "http://127.0.0.1/~plam/anjoudb/";
+	public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb/";
 	private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
 	private static final String REQUEST_CHALLENGE_URL = BASE_URL + "request_challenge.php";
 	//private static final String AUTHENTICATE_URL = BASE_URL + "authenticate.php";
