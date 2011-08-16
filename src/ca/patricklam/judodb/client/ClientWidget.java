@@ -58,14 +58,14 @@ public class ClientWidget extends Composite {
 	@UiField(provided=true) ListBox escompte = new ListBox();
 	@UiField(provided=true) TextBox cas_special_note = new TextBox();
 	@UiField(provided=true) TextBox cas_special_pct = new TextBox();
-	@UiField(provided=true) TextBox escompte_special = new TextBox();
+	@UiField(provided=true) TextBox escompteFrais = new TextBox();
 
 	@UiField(provided=true) CheckBox sans_affiliation = new CheckBox();
 	@UiField(provided=true) TextBox affiliationFrais = new TextBox();
 
 	@UiField(provided=true) TextBox judogi = new TextBox();
-	@UiField(provided=true) TextBox passeport = new TextBox();
-	@UiField(provided=true) TextBox non_anjou = new TextBox();
+	@UiField(provided=true) CheckBox passeport = new CheckBox();
+	@UiField(provided=true) CheckBox non_anjou = new CheckBox();
 	@UiField(provided=true) TextBox suppFrais = new TextBox();
 
 	@UiField(provided=true) TextBox frais = new TextBox();
@@ -83,7 +83,7 @@ public class ClientWidget extends Composite {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
 		
-		nom.getElement().setId(DOM.createUniqueId());
+/*		nom.getElement().setId(DOM.createUniqueId());
 		prenom.getElement().setId(DOM.createUniqueId());
 		ddn.getElement().setId(DOM.createUniqueId());
 		sexe.getElement().setId(DOM.createUniqueId());
@@ -116,7 +116,7 @@ public class ClientWidget extends Composite {
 		escompte.getElement().setId(DOM.createUniqueId());
 		cas_special_note.getElement().setId(DOM.createUniqueId());
 		cas_special_pct.getElement().setId(DOM.createUniqueId());
-		escompte_special.getElement().setId(DOM.createUniqueId());
+		escompteFrais.getElement().setId(DOM.createUniqueId());
 
 		sans_affiliation.getElement().setId(DOM.createUniqueId());
 		affiliationFrais.getElement().setId(DOM.createUniqueId());
@@ -127,6 +127,7 @@ public class ClientWidget extends Composite {
 		suppFrais.getElement().setId(DOM.createUniqueId());
 		
 		frais.getElement().setId(DOM.createUniqueId());
+*/
 		
 		for (Constants.Cours c : Constants.COURS) {
 			cours.addItem(c.name, c.seqno);
@@ -156,11 +157,14 @@ public class ClientWidget extends Composite {
 		});
 		discardClientButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) {
+				ClientWidget.this.jdb.clearError();
 				ClientWidget.this.jdb.returnToSearch(); }
 		});
 		
 		jdb.clearError();
-		getJson(jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
+		if (cid != -1)
+			getJson(jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
+		// TODO else create new data objects!
 	}
 	
 	/** Takes data from ClientData into the form. */
@@ -185,9 +189,33 @@ public class ClientWidget extends Composite {
 		nom_contact_urgence.setText(cd.getNomContactUrgence());
 		tel_contact_urgence.setText(cd.getTelContactUrgence());
 		
+		date_inscription.setText(cd.getServices().getDateInscription());
+		// categories: set in recompute().
+		saisons.setText(cd.getServices().getSaisons());
+		verification.setValue(cd.getServices().getVerification());
+		// why do these return undefined?!
+		// XXX cours.setItemSelected(cd.getServices().getCours(), true);
+		// breaks: sessions.setItemSelected(cd.getServices().getSessions(), true);
+		categorieFrais.setText(cd.getServices().getCategorieFrais());
+		
+		sans_affiliation.setValue(cd.getServices().getSansAffiliation());
+		affiliationFrais.setText(cd.getServices().getAffiliationFrais());		
+
+		escompte.setSelectedIndex(cd.getServices().getEscompte());
+		cas_special_note.setText(cd.getServices().getCasSpecialNote());
+		// XXX todo cas_special_pct from escompte_special
+		
+		judogi.setText(cd.getServices().getJudogi());
+		passeport.setValue(cd.getServices().getPasseport());
+		non_anjou.setValue(cd.getServices().getNonAnjou());
+		suppFrais.setText(cd.getServices().getSuppFrais());		
+		
+		frais.setText(cd.getServices().getFrais());
+		
 		ddn.addChangeHandler(recomputeHandler);
 		grade.addChangeHandler(recomputeHandler);
 		escompte.addChangeHandler(recomputeHandler);
+		// TODO add all handlers
 		recompute();
 	}
 
@@ -211,6 +239,7 @@ public class ClientWidget extends Composite {
 
 		cd.setNomContactUrgence(nom_contact_urgence.getText());
 		cd.setTelContactUrgence(tel_contact_urgence.getText());
+		// TODO: remaining fields
 	}
 
 	private final ChangeHandler recomputeHandler = new ChangeHandler() {
@@ -221,36 +250,69 @@ public class ClientWidget extends Composite {
 	private String stripDollars(String s) {
 		return s.replaceAll("$", "");
 	}
-	
-	private void math() {
+
+	private void updateFrais() {
 		NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
 		NumberFormat nf = NumberFormat.getDecimalFormat();
-		
-		double fCategorieFrais = nf.parse(stripDollars(categorieFrais.getText()));
-		double fAffiliationFrais = nf.parse(stripDollars(affiliationFrais.getText()));
-		double fEscompteSpecial = nf.parse(stripDollars(escompte_special.getText()));
-		double fSuppFrais = nf.parse(stripDollars(suppFrais.getText()));
 
-		frais.setText(cf.format(fCategorieFrais + fAffiliationFrais + fEscompteSpecial + fSuppFrais));
+		boolean twoSessions = false;
+		if (sessions.getValue(sessions.getSelectedIndex()).equals("2")) {
+			twoSessions = true;
+		}
+
+		String s = Constants.CURRENT_SESSION;
+		if (twoSessions)
+			s += " " + Constants.NEXT_SESSION;
+		saisons.setText(s);
+
+		Constants.Categorie c = cd.getCategorie();
+		double dCategorieFrais = 0.0;
+		if (twoSessions)
+			dCategorieFrais = 
+				Constants.getFrais2Session(Constants.CURRENT_SESSION_SEQNO, c);
+		else
+			dCategorieFrais =
+				Constants.getFrais1Session(Constants.CURRENT_SESSION_SEQNO, c);
+		double e = Constants.getEscompte(escompte.getValue(escompte.getSelectedIndex())); 
+		if (e == -1)
+			e = nf.parse(cas_special_pct.getText());
+		
+		double dEscompteFrais = -(dCategorieFrais * e)/100;
+		
+		double dAffiliationFrais = 0.0;
+		if (!sans_affiliation.getValue())
+			dAffiliationFrais = Constants.getFraisJudoQC(Constants.CURRENT_SESSION_SEQNO, c);
+		
+		double dSuppFrais = 0.0;
+		dSuppFrais += nf.parse(stripDollars(judogi.getText()));
+		if (passeport.getValue())
+			dSuppFrais += Constants.PASSEPORT_JUDO_QC;
+		if (non_anjou.getValue())
+			dSuppFrais += Constants.NON_ANJOU;
+
+		categorieFrais.setText (cf.format(dCategorieFrais));
+		affiliationFrais.setText (cf.format(dAffiliationFrais));
+		escompteFrais.setText(cf.format(dEscompteFrais));
+		suppFrais.setText(cf.format(dSuppFrais));
+
+		frais.setText(cf.format(dCategorieFrais + dAffiliationFrais + dEscompteFrais + dSuppFrais));		
 	}
 	
 	private void recompute() {
 		saveClientData();
-		
-		String s = Constants.CURRENT_SESSION;
-		if (sessions.getValue(sessions.getSelectedIndex()) == "2") {
-			s += " " + Constants.NEXT_SESSION;
-		}
-		saisons.setText(s);
-		
-		categorie.setText(cd.getCategorieAbbrev());
+
 		Display d = Display.NONE;
 		if (escompte.getValue(escompte.getSelectedIndex()).equals("-1")) 
 			d = Display.INLINE;
-
 		((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(d);
 		((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);
-		math();
+
+		// TODO: set the categorie corresponding to the date d'inscription
+		Constants.Categorie c = cd.getCategorie();
+		categorie.setText(c.abbrev);
+
+		// TODO: if (date d'inscription == today)
+		updateFrais();
 	}
 
 	private void pushClientDataToServer() {
@@ -288,7 +350,7 @@ public class ClientWidget extends Composite {
 	  }-*/;
 
 	/**
-	 * Handle the response to the request for stock data from a remote server.
+	 * Handle the response to the request for data from a remote server.
 	 */
 	public void handleJsonResponse(JavaScriptObject jso) {
 		if (jso == null) {
@@ -303,6 +365,4 @@ public class ClientWidget extends Composite {
 	private final native ClientData asClientData(JavaScriptObject jso) /*-{
 	    return jso;
 	  }-*/;
-	
-
 }
