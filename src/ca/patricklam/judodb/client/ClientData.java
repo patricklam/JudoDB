@@ -2,6 +2,8 @@ package ca.patricklam.judodb.client;
 
 import java.util.Date;
 
+import ca.patricklam.judodb.client.Constants.Categorie;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -80,7 +82,7 @@ public class ClientData extends JavaScriptObject {
 		return getGrade().endsWith("D");
 	}
 		
-	public final String getCategorieAbbrev() {
+	public final Categorie getCategorie() {
 		Date d = getDDN();
 		int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(d));
 		
@@ -88,9 +90,14 @@ public class ClientData extends JavaScriptObject {
 			if (isNoire() == Constants.CATEGORIES[i].noire &&
 					((Constants.CATEGORIES[i].years_ago == 0) ||
 					 (Constants.CURRENT_YEAR - Constants.CATEGORIES[i].years_ago < year)))
-				return Constants.CATEGORIES[i].abbrev;
-		}
-		return "";
+				return Constants.CATEGORIES[i];
+		}		
+		return null;
+	}
+	
+	public final String getCategorieAbbrev() {
+		Categorie c = getCategorie();
+		return c != null ? c.abbrev : "";
 	}
 	
 	/* deprecated */
