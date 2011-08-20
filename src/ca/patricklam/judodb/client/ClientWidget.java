@@ -1,5 +1,7 @@
 package ca.patricklam.judodb.client;
 
+import java.text.ParseException;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
@@ -9,6 +11,8 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.text.client.DoubleParser;
+import com.google.gwt.text.shared.Parser;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.DOM;
@@ -17,6 +21,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 public class ClientWidget extends Composite {
@@ -83,7 +88,7 @@ public class ClientWidget extends Composite {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
 		
-/*		nom.getElement().setId(DOM.createUniqueId());
+		nom.getElement().setId(DOM.createUniqueId());
 		prenom.getElement().setId(DOM.createUniqueId());
 		ddn.getElement().setId(DOM.createUniqueId());
 		sexe.getElement().setId(DOM.createUniqueId());
@@ -127,7 +132,6 @@ public class ClientWidget extends Composite {
 		suppFrais.getElement().setId(DOM.createUniqueId());
 		
 		frais.getElement().setId(DOM.createUniqueId());
-*/
 		
 		for (Constants.Cours c : Constants.COURS) {
 			cours.addItem(c.name, c.seqno);
@@ -141,10 +145,11 @@ public class ClientWidget extends Composite {
 		date_inscription.setReadOnly(true);
 		categorie.setReadOnly(true);
 		saisons.setReadOnly(true);
-		categorieFrais.setReadOnly(true);
-		affiliationFrais.setReadOnly(true);
-		suppFrais.setReadOnly(true);
-		frais.setReadOnly(true);
+		categorieFrais.setReadOnly(true); categorieFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
+		escompteFrais.setReadOnly(true); escompteFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
+		affiliationFrais.setReadOnly(true); affiliationFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
+		suppFrais.setReadOnly(true); suppFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
+		frais.setReadOnly(true); frais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
 		((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
 
@@ -173,7 +178,6 @@ public class ClientWidget extends Composite {
 		prenom.setText(cd.getPrenom());
 		ddn.setText(cd.getDDNString());
 		sexe.setText(cd.getSexe());
-
 		adresse.setText(cd.getAdresse());
 		ville.setText(cd.getVille());
 		codePostal.setText(cd.getCodePostal());
@@ -189,28 +193,27 @@ public class ClientWidget extends Composite {
 		nom_contact_urgence.setText(cd.getNomContactUrgence());
 		tel_contact_urgence.setText(cd.getTelContactUrgence());
 		
-		date_inscription.setText(cd.getServices().getDateInscription());
+		date_inscription.setText(cd.getMostRecentService().getDateInscription());
 		// categories: set in recompute().
-		saisons.setText(cd.getServices().getSaisons());
-		verification.setValue(cd.getServices().getVerification());
-		// why do these return undefined?!
-		// XXX cours.setItemSelected(cd.getServices().getCours(), true);
-		// breaks: sessions.setItemSelected(cd.getServices().getSessions(), true);
-		categorieFrais.setText(cd.getServices().getCategorieFrais());
+		saisons.setText(cd.getMostRecentService().getSaisons());
+		verification.setValue(cd.getMostRecentService().getVerification());
+		cours.setItemSelected(cd.getMostRecentService().getCours(), true);
+		sessions.setItemSelected(cd.getMostRecentService().getSessions()-1, true);
+		categorieFrais.setText(cd.getMostRecentService().getCategorieFrais());
 		
-		sans_affiliation.setValue(cd.getServices().getSansAffiliation());
-		affiliationFrais.setText(cd.getServices().getAffiliationFrais());		
+		sans_affiliation.setValue(cd.getMostRecentService().getSansAffiliation());
+		affiliationFrais.setText(cd.getMostRecentService().getAffiliationFrais());
 
-		escompte.setSelectedIndex(cd.getServices().getEscompte());
-		cas_special_note.setText(cd.getServices().getCasSpecialNote());
+		escompte.setSelectedIndex(cd.getMostRecentService().getEscompte());
+		cas_special_note.setText(cd.getMostRecentService().getCasSpecialNote());
 		// XXX todo cas_special_pct from escompte_special
 		
-		judogi.setText(cd.getServices().getJudogi());
-		passeport.setValue(cd.getServices().getPasseport());
-		non_anjou.setValue(cd.getServices().getNonAnjou());
-		suppFrais.setText(cd.getServices().getSuppFrais());		
+		judogi.setText(cd.getMostRecentService().getJudogi());
+		passeport.setValue(cd.getMostRecentService().getPasseport());
+		non_anjou.setValue(cd.getMostRecentService().getNonAnjou());
+		suppFrais.setText(cd.getMostRecentService().getSuppFrais());	
 		
-		frais.setText(cd.getServices().getFrais());
+		frais.setText(cd.getMostRecentService().getFrais());
 		
 		ddn.addChangeHandler(recomputeHandler);
 		grade.addChangeHandler(recomputeHandler);
@@ -253,7 +256,7 @@ public class ClientWidget extends Composite {
 
 	private void updateFrais() {
 		NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
-		NumberFormat nf = NumberFormat.getDecimalFormat();
+		Parser<Double> nf = DoubleParser.instance();
 
 		boolean twoSessions = false;
 		if (sessions.getValue(sessions.getSelectedIndex()).equals("2")) {
@@ -275,8 +278,10 @@ public class ClientWidget extends Composite {
 				Constants.getFrais1Session(Constants.CURRENT_SESSION_SEQNO, c);
 		double e = Constants.getEscompte(escompte.getValue(escompte.getSelectedIndex())); 
 		if (e == -1)
-			e = nf.parse(cas_special_pct.getText());
-		
+			try {
+				e = nf.parse(cas_special_pct.getText());
+			} catch (ParseException ex) {}
+
 		double dEscompteFrais = -(dCategorieFrais * e)/100;
 		
 		double dAffiliationFrais = 0.0;
@@ -284,7 +289,9 @@ public class ClientWidget extends Composite {
 			dAffiliationFrais = Constants.getFraisJudoQC(Constants.CURRENT_SESSION_SEQNO, c);
 		
 		double dSuppFrais = 0.0;
-		dSuppFrais += nf.parse(stripDollars(judogi.getText()));
+		try {
+			dSuppFrais += nf.parse(stripDollars(judogi.getText()));
+		} catch (ParseException ex) {}
 		if (passeport.getValue())
 			dSuppFrais += Constants.PASSEPORT_JUDO_QC;
 		if (non_anjou.getValue())

@@ -49,9 +49,21 @@ public class ClientData extends JavaScriptObject {
 	public final native String getTelContactUrgence() /*-{ return this.tel_contact_urgence; }-*/;
 	public final native void setTelContactUrgence(String tel_contact_urgence) /*-{ this.tel_contact_urgence = tel_contact_urgence; }-*/;
 
-	public final native ServiceData getServices() /*-{ return this.services; }-*/;
-	public final native void setServices(ServiceData services) /*-{ this.services = services; }-*/;
-	
+	public final native JsArray<ServiceData> getServices() /*-{ return this.services; }-*/;
+	public final native void setServices(JsArray<ServiceData> services) /*-{ this.services = services; }-*/;
+
+	public final ServiceData getMostRecentService() {
+		JsArray<ServiceData> services = getServices();
+		if (services == null || services.length() == 0) return null;
+		
+		ServiceData m = services.get(0); 
+		for (int i = 0; i < services.length(); i++) {
+			if (services.get(i).getDateInscription().compareTo(m.getDateInscription()) > 0)
+				m = services.get(i);
+		}
+		return m;
+	}
+
 	public final GradeData getMostRecentGrade() {
 		JsArray<GradeData> grades = getGrades();
 		if (grades == null || grades.length() == 0) return null;
