@@ -1,15 +1,20 @@
 package ca.patricklam.judodb.client;
 
 import java.text.ParseException;
+import java.util.Date;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.text.client.DoubleParser;
 import com.google.gwt.text.shared.Parser;
@@ -163,15 +168,26 @@ public class ClientWidget extends Composite {
 		discardClientButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) {
 				ClientWidget.this.jdb.clearError();
-				ClientWidget.this.jdb.returnToSearch(); }
+				ClientWidget.this.jdb.returnToSearch(); 
+			}
 		});
 		
 		jdb.clearError();
 		if (cid != -1)
 			getJson(jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
-		// TODO else create new data objects!
+		else {
+			this.cd = asClientData(JavaScriptObject.createObject());
+			JsArray<ServiceData> sa = asServiceArray(JavaScriptObject.createArray());
+			ServiceData sd = ServiceData.newServiceData();
+			sd.setDateInscription(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+			sa.set(0, sd);
+			JsArray<GradeData> ga = asGradeArray(JavaScriptObject.createArray());
+			this.cd.setServices(sa);
+			this.cd.setGrades(ga);
+			loadClientData();
+		}
 	}
-	
+		
 	/** Takes data from ClientData into the form. */
 	private void loadClientData () {
 		nom.setText(cd.getNom());
@@ -194,7 +210,7 @@ public class ClientWidget extends Composite {
 		tel_contact_urgence.setText(cd.getTelContactUrgence());
 		
 		date_inscription.setText(cd.getMostRecentService().getDateInscription());
-		// categories: set in recompute().
+		// categories is set in recompute().
 		saisons.setText(cd.getMostRecentService().getSaisons());
 		verification.setValue(cd.getMostRecentService().getVerification());
 		cours.setItemSelected(cd.getMostRecentService().getCours(), true);
@@ -217,7 +233,15 @@ public class ClientWidget extends Composite {
 		
 		ddn.addChangeHandler(recomputeHandler);
 		grade.addChangeHandler(recomputeHandler);
+		date_inscription.addChangeHandler(recomputeHandler);
+		sessions.addChangeHandler(recomputeHandler);
 		escompte.addChangeHandler(recomputeHandler);
+		cas_special_pct.addChangeHandler(recomputeHandler);
+		escompteFrais.addChangeHandler(recomputeCasSpecialAmtHandler);
+		sans_affiliation.addValueChangeHandler(recomputeValueHandler);
+		judogi.addChangeHandler(recomputeHandler);
+		passeport.addValueChangeHandler(recomputeValueHandler);
+		non_anjou.addValueChangeHandler(recomputeValueHandler);
 		// TODO add all handlers
 		recompute();
 	}
@@ -242,12 +266,44 @@ public class ClientWidget extends Composite {
 
 		cd.setNomContactUrgence(nom_contact_urgence.getText());
 		cd.setTelContactUrgence(tel_contact_urgence.getText());
-		// TODO: remaining fields
+		
+		// TODO: preserve previous season's inscriptions...
+		ServiceData sd = cd.getMostRecentService();
+		sd.setDateInscription(date_inscription.getText());
+		sd.setSaisons(saisons.getText());
+		sd.setVerification(verification.getValue());
+		sd.setCours(cours.getSelectedIndex());
+		sd.setSessions(cours.getSelectedIndex());
+		sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
+		
+		sd.setSansAffiliation(sans_affiliation.getValue());
+		sd.setAffiliationFrais(stripDollars(affiliationFrais.getText()));
+		
+		sd.setEscompte(escompte.getSelectedIndex());
+		sd.setCasSpecialNote(cas_special_note.getText());
+		
+		sd.setJudogi(judogi.getText());
+		sd.setPasseport(passeport.getValue());
+		sd.setNonAnjou(non_anjou.getValue());
+		sd.setSuppFrais(suppFrais.getText());
+		
+		sd.setFrais(frais.getText());
 	}
 
 	private final ChangeHandler recomputeHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { recompute(); }
 	};
+	private final ValueChangeHandler<Boolean> recomputeValueHandler = new ValueChangeHandler<Boolean>() {
+		public void onValueChange(ValueChangeEvent<Boolean> e) { recompute(); }
+	};
+
+	private final ChangeHandler recomputeCasSpecialAmtHandler = new ChangeHandler() {
+		public void onChange(ChangeEvent e) { 
+			// TODO recompute pct of escompte
+			recompute(); 
+		}
+	};
+
 	
 	// evil hack: getCurrencyFormat doesn't seem to want to parse stuff.
 	private String stripDollars(String s) {
@@ -269,6 +325,9 @@ public class ClientWidget extends Composite {
 		saisons.setText(s);
 
 		Constants.Categorie c = cd.getCategorie();
+		
+		if (c == null) return;
+		
 		double dCategorieFrais = 0.0;
 		if (twoSessions)
 			dCategorieFrais = 
@@ -316,7 +375,8 @@ public class ClientWidget extends Composite {
 
 		// TODO: set the categorie corresponding to the date d'inscription
 		Constants.Categorie c = cd.getCategorie();
-		categorie.setText(c.abbrev);
+		if (c != null)
+			categorie.setText(c.abbrev);
 
 		// TODO: if (date d'inscription == today)
 		updateFrais();
@@ -371,5 +431,11 @@ public class ClientWidget extends Composite {
 
 	private final native ClientData asClientData(JavaScriptObject jso) /*-{
 	    return jso;
-	  }-*/;
+	}-*/;
+	private final native JsArray<GradeData> asGradeArray(JavaScriptObject jso) /*-{
+    	return jso;
+  	}-*/;
+	private final native JsArray<ServiceData> asServiceArray(JavaScriptObject jso) /*-{
+    	return jso;
+  	}-*/;
 }

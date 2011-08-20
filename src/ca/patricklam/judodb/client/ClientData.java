@@ -87,7 +87,9 @@ public class ClientData extends JavaScriptObject {
 	}
 	
 	public final Date getDDN() {
-		return DateTimeFormat.getFormat("yyyy-MM-dd").parse(getDDNString());
+		try {
+			return getDDNString() == null ? null : DateTimeFormat.getFormat("yyyy-MM-dd").parse(getDDNString());
+		} catch (IllegalArgumentException e) { return null; }
 	}
 	
 	public final boolean isNoire() {
@@ -96,6 +98,8 @@ public class ClientData extends JavaScriptObject {
 		
 	public final Categorie getCategorie() {
 		Date d = getDDN();
+		if (d == null) return null;
+		
 		int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(d));
 		
 		for (int i = 0; i < Constants.CATEGORIES.length; i++) {

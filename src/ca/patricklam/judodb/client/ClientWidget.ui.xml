@@ -30,7 +30,7 @@ plus approfondie.</p>
 		<fieldset> 
 		 <legend>Adresse<span id="copySib" class="noprint" style="display:none"> (<a href="#" onclick="copySibling(); return false">copier</a>)</span></legend>
  		 <div class="oneper">
-  		  <label for="{adresse.getElement.getId}"><span class="noprint">Adresse</span><g:TextBox ui:field="adresse"/></label>
+  		  <label for="{adresse.getElement.getId}"><span class="noprint">Adresse</span><g:TextBox ui:field="adresse" visibleLength="80"/></label>
          </div>
  		 <div class="fourper">
   		  <label for="{ville.getElement.getId}"><span class="noprint">Ville</span><g:TextBox ui:field="ville"/></label>
@@ -48,14 +48,14 @@ plus approfondie.</p>
    		  <label for="{carte_anjou.getElement.getId}">N° arrondissement Anjou<g:TextBox ui:field="carte_anjou"/></label>
    	     </div>
  		 <div class="twoper">
-   		  <label for="{nom_recu_impot.getElement.getId}">Nom re&ccedil;u imp&ocirc;t<g:TextBox ui:field="nom_recu_impot"/>
+   		  <label for="{nom_recu_impot.getElement.getId}">Nom re&ccedil;u imp&ocirc;t<g:TextBox ui:field="nom_recu_impot" visibleLength="40"/>
  		  </label>
 		 </div>
  		</fieldset>
 
  		<fieldset> <legend>Urgence</legend>
   		 <div class="twoper">
-   		  <label for="{nom_contact_urgence.getElement.getId}">Contact en cas d'urgence<g:TextBox ui:field="nom_contact_urgence"/></label>
+   		  <label for="{nom_contact_urgence.getElement.getId}">Contact en cas d'urgence<g:TextBox ui:field="nom_contact_urgence" visibleLength="40"/></label>
    		  <label for="{tel_contact_urgence.getElement.getId}">T&eacute;l&eacute;phone urgence<g:TextBox ui:field="tel_contact_urgence"/></label>
  		 </div>
  		</fieldset>
