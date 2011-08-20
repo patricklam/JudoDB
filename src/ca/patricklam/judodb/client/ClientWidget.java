@@ -1,7 +1,6 @@
 package ca.patricklam.judodb.client;
 
 import java.text.ParseException;
-import java.util.Date;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -14,13 +13,13 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.text.client.DoubleParser;
 import com.google.gwt.text.shared.Parser;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -56,6 +55,7 @@ public class ClientWidget extends Composite {
 	@UiField(provided=true) TextBox tel_contact_urgence = new TextBox();
 
 	@UiField(provided=true) TextBox date_inscription = new TextBox();
+	@UiField(provided=true) Anchor today = new Anchor();
 	@UiField(provided=true) TextBox saisons = new TextBox();
 	@UiField(provided=true) CheckBox verification = new CheckBox();
 
@@ -114,6 +114,7 @@ public class ClientWidget extends Composite {
 		tel_contact_urgence.getElement().setId(DOM.createUniqueId());
 
 		date_inscription.getElement().setId(DOM.createUniqueId());
+		today.getElement().setId(DOM.createUniqueId());
 		saisons.getElement().setId(DOM.createUniqueId());
 		verification.getElement().setId(DOM.createUniqueId());
 		
@@ -179,7 +180,7 @@ public class ClientWidget extends Composite {
 			this.cd = asClientData(JavaScriptObject.createObject());
 			JsArray<ServiceData> sa = asServiceArray(JavaScriptObject.createArray());
 			ServiceData sd = ServiceData.newServiceData();
-			sd.setDateInscription(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+			sd.inscrireAujourdhui();
 			sa.set(0, sd);
 			JsArray<GradeData> ga = asGradeArray(JavaScriptObject.createArray());
 			this.cd.setServices(sa);
@@ -230,6 +231,17 @@ public class ClientWidget extends Composite {
 		suppFrais.setText(cd.getMostRecentService().getSuppFrais());	
 		
 		frais.setText(cd.getMostRecentService().getFrais());
+
+		today.addClickHandler(aujourdhuiClickHandler);
+		ddn.addChangeHandler(aujourdhuiHandler);
+		sessions.addChangeHandler(aujourdhuiHandler);
+		escompte.addChangeHandler(aujourdhuiHandler);
+		cas_special_pct.addChangeHandler(aujourdhuiHandler);
+		escompteFrais.addChangeHandler(aujourdhuiHandler);
+		sans_affiliation.addValueChangeHandler(aujourdhuiValueHandler);
+		judogi.addChangeHandler(aujourdhuiHandler);
+		passeport.addValueChangeHandler(aujourdhuiValueHandler);
+		non_anjou.addValueChangeHandler(aujourdhuiValueHandler);
 		
 		ddn.addChangeHandler(recomputeHandler);
 		grade.addChangeHandler(recomputeHandler);
@@ -242,7 +254,8 @@ public class ClientWidget extends Composite {
 		judogi.addChangeHandler(recomputeHandler);
 		passeport.addValueChangeHandler(recomputeValueHandler);
 		non_anjou.addValueChangeHandler(recomputeValueHandler);
-		// TODO add all handlers
+
+		// TODO add handlers for setting date d'inscription
 		recompute();
 	}
 
@@ -273,7 +286,7 @@ public class ClientWidget extends Composite {
 		sd.setSaisons(saisons.getText());
 		sd.setVerification(verification.getValue());
 		sd.setCours(cours.getSelectedIndex());
-		sd.setSessions(cours.getSelectedIndex());
+		sd.setSessions(cours.getSelectedIndex()+1);
 		sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 		
 		sd.setSansAffiliation(sans_affiliation.getValue());
@@ -289,7 +302,7 @@ public class ClientWidget extends Composite {
 		
 		sd.setFrais(frais.getText());
 	}
-
+	
 	private final ChangeHandler recomputeHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { recompute(); }
 	};
@@ -304,6 +317,16 @@ public class ClientWidget extends Composite {
 		}
 	};
 
+	private void aujourdhui() { saveClientData(); cd.getMostRecentService().inscrireAujourdhui(); loadClientData(); recompute(); }
+	private final ChangeHandler aujourdhuiHandler = new ChangeHandler() {
+		public void onChange(ChangeEvent e) { aujourdhui(); }
+	};
+	private final ClickHandler aujourdhuiClickHandler = new ClickHandler() {
+		public void onClick(ClickEvent e) { aujourdhui(); }
+	};
+	private final ValueChangeHandler<Boolean> aujourdhuiValueHandler = new ValueChangeHandler<Boolean>() {
+		public void onValueChange(ValueChangeEvent<Boolean> e) { aujourdhui(); }
+	};
 	
 	// evil hack: getCurrencyFormat doesn't seem to want to parse stuff.
 	private String stripDollars(String s) {

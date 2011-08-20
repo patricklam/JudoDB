@@ -1,6 +1,9 @@
 package ca.patricklam.judodb.client;
 
+import java.util.Date;
+
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.i18n.client.DateTimeFormat;
 
 public class ServiceData extends JavaScriptObject {
 	protected ServiceData() {}
@@ -11,15 +14,15 @@ public class ServiceData extends JavaScriptObject {
 	public final native String getSaisons() /*-{ return this.saisons; }-*/;
 	public final native void setSaisons(String saisons) /*-{ this.saisons = saisons; }-*/;
 	public final native boolean getSansAffiliation() /*-{ return this.sans_affiliation != '0'; }-*/;
-	public final native void setSansAffiliation(boolean sans_affiliation) /*-{ this.sans_affiliation = boolToZeroOne(sans_affiliation); }-*/;
+	public final native void setSansAffiliation(boolean sans_affiliation) /*-{ this.sans_affiliation = sans_affiliation ? "1" : "0"; }-*/;
 	public final native int getCours() /*-{ return parseInt(this.cours); }-*/;
 	public final native void setCours(int cours) /*-{ this.cours = cours.toString(); }-*/;
 	public final native int getSessions() /*-{ return this.sessions == null ? 2 : parseInt(this.sessions); }-*/;
-	public final native void setSessions(int sessions) /*-{ this.sessions = Integer.toString(sessions); }-*/;
+	public final native void setSessions(int sessions) /*-{ this.sessions = sessions.toString(); }-*/;
 	public final native boolean getPasseport() /*-{ return this.passeport != '0'; }-*/;
-	public final native void setPasseport(boolean passeport) /*-{ this.passport = boolToZeroOne(passeport); }-*/;
+	public final native void setPasseport(boolean passeport) /*-{ this.passport = passeport ? "1" : "0"; }-*/;
 	public final native boolean getNonAnjou() /*-{ return this.non_anjou != '0'; }-*/;
-	public final native boolean setNonAnjou(boolean non_anjou) /*-{ this.non_anjou = boolToZeroOne(non_anjou); }-*/;
+	public final native void setNonAnjou(boolean non_anjou) /*-{ this.non_anjou = non_anjou ? "1" : "0"; }-*/;
 	public final native int getEscompte() /*-{ return this.escompte == null ? 0 : parseInt(this.escompte); }-*/;
 	public final native void setEscompte(int escompte) /*-{ this.escompte = escompte.toString(); }-*/;
 	public final native String getCasSpecialNote() /*-{ return this.cas_special_note; }-*/;
@@ -37,10 +40,12 @@ public class ServiceData extends JavaScriptObject {
 	public final native String getFrais() /*-{ return this.frais == null ? "0" : this.frais; }-*/;
 	public final native void setFrais(String frais) /*-{ this.frais = frais; }-*/;
 	public final native boolean getVerification() /*-{ return this.verification != '0'; }-*/;
-	public final native void setVerification(boolean verification) /*-{ this.verification = boolToZeroOne(verification); }-*/;
+	public final native void setVerification(boolean verification) /*-{ this.verification = verification ? "1" : "0"; }-*/;
 	
-	public final String boolToZeroOne(boolean b) { return b ? "1" : "0"; }
-
+	public final void inscrireAujourdhui() { 
+		setDateInscription(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+	}
+	
 	public static final native ServiceData newServiceData() /*-{
 		return { 
 			id: null,
