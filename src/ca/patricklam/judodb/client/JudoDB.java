@@ -111,6 +111,7 @@ public class JudoDB implements EntryPoint {
 	}
 	
 	public void returnToSearch() {
+		clearError();
 		RootPanel.get("editClient").setVisible(false);
 		RootPanel.get("lists").setVisible(false);
 		RootPanel.get("search").setVisible(true);

@@ -51,7 +51,7 @@ public class ClientData extends JavaScriptObject {
 
 	public final native JsArray<ServiceData> getServices() /*-{ return this.services; }-*/;
 	public final native void setServices(JsArray<ServiceData> services) /*-{ this.services = services; }-*/;
-
+	
 	public final ServiceData getMostRecentService() {
 		JsArray<ServiceData> services = getServices();
 		if (services == null || services.length() == 0) return null;
@@ -88,7 +88,7 @@ public class ClientData extends JavaScriptObject {
 	
 	public final Date getDDN() {
 		try {
-			return getDDNString() == null ? null : DateTimeFormat.getFormat("yyyy-MM-dd").parse(getDDNString());
+			return DateTimeFormat.getFormat("yyyy-MM-dd").parse(getDDNString());
 		} catch (IllegalArgumentException e) { return null; }
 	}
 	
