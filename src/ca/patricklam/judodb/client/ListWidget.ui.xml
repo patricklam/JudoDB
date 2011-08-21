@@ -1,0 +1,14 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<!-- ListWidget.ui.xml -->
+
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+       <g:HTMLPanel>
+
+	   <h1 id="stdTitle" class="noprint">Listes des cours</h1>
+
+       <g:Grid ui:field="results">
+       </g:Grid>
+
+      </g:HTMLPanel>
+ 
+</ui:UiBinder>

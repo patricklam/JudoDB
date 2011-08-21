@@ -43,12 +43,20 @@ public class JudoDB implements EntryPoint {
 	private final Button newClientButton = new Button("Nouveau client");
 	private final Button nextResultsButton = new Button("Résultats suivants");
 	private final Button prevResultsButton = new Button("Résultats précedents"); 
+
+	// actions
+	private final Anchor voirListes = new Anchor("Voir listes des cours");
+	private final Anchor retourner = new Anchor("Retourner");
+	
 	private JsArray<ClientSummary> allClients;
 	private String searchString;
 	private int firstSearchResultToDisplay = 0;
 	
 	/* edit client stuff */
 	private ClientWidget c;
+
+	/* view lists stuff */
+	private ListWidget l;
 	
 	// Create a handler for the searchButton and nameField
 	class SearchHandler implements ClickHandler, KeyUpHandler {
@@ -91,9 +99,24 @@ public class JudoDB implements EntryPoint {
 		RootPanel.get("editClient").setVisible(true);
 	}
 	
+	public void viewLists() {
+		RootPanel.get("search").setVisible(false);
+		RootPanel.get("lists").clear();
+		this.l = new ListWidget(this);
+		RootPanel.get("lists").add(l);
+		RootPanel.get("lists").setVisible(true);
+
+		retourner.setVisible(true);
+		voirListes.setVisible(false);
+	}
+	
 	public void returnToSearch() {
 		RootPanel.get("editClient").setVisible(false);
+		RootPanel.get("lists").setVisible(false);
 		RootPanel.get("search").setVisible(true);
+
+		retourner.setVisible(false);
+		voirListes.setVisible(true);
 	}
 		
 	/**
@@ -130,6 +153,15 @@ public class JudoDB implements EntryPoint {
 		searchResultsPanel.add(searchNavPanel);
 		searchResultsPanel.setVisible(false);
 		RootPanel.get("search").add(searchResultsPanel);
+		
+		// right bar actions
+		Panel actions = RootPanel.get("actions");
+		voirListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { viewLists(); }});
+		actions.add(voirListes);
+		actions.add(new Label(""));
+		retourner.setVisible(false);
+		retourner.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { returnToSearch(); }});
+		actions.add(retourner);
 		
 		// Focus the cursor on the name field when the app loads
 		searchField.setFocus(true);
