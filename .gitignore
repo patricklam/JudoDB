@@ -1,5 +1,6 @@
 *.class
 *~
 war/WEB-INF/classes
+war/WEB-INF/lib
 
 
