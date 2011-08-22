@@ -27,6 +27,13 @@ body {
 }
 
 /** Set ids using widget.getElement().setId("idOfElement") */
+#login {
+ position:absolute;
+ padding: 1em;
+ top:25%; left:40%; background:#ccc;
+ cursor: pointer;
+}
+
 #entrerButton {
   margin: 15px 6px 6px;
 }

@@ -33,7 +33,6 @@ public class ListWidget extends Composite {
 	
 	private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
 	private static final String CALLBACK_URL_SUFFIX = "?callback=";
-	private int jsonRequestId = 0;
 	
 	@UiField(provided=true) FormPanel listForm = new FormPanel();
 	@UiField(provided=true) Anchor pdf = new Anchor();
@@ -86,7 +85,7 @@ public class ListWidget extends Composite {
 			public void onClick(ClickEvent e) { computeFull(); submit("xlsfull"); } });
 		
 		jdb.clearError();
-		getJson(jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX, this);	
+		getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX, this);	
 	}
 
 	private void addMetaData() {
@@ -179,7 +178,7 @@ public class ListWidget extends Composite {
 	public boolean sessionFilter(ClientData cd) {
 		ServiceData sd = cd.getMostRecentService();
 		if (sd == null) return false;
-		return sd.getSaisons().equals("A10 H11");
+		return sd.getSaisons().contains("H11");
 	}
 	
 	public boolean filter(ClientData cd) {

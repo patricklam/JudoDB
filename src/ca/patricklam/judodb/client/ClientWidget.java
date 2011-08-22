@@ -85,7 +85,6 @@ public class ClientWidget extends Composite {
 	
 	private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php?id=";
 	private static final String CALLBACK_URL_SUFFIX = "&callback=";
-	private int jsonRequestId = 0;
 
 	private ClientData cd;
 	
@@ -175,7 +174,7 @@ public class ClientWidget extends Composite {
 		
 		jdb.clearError();
 		if (cid != -1)
-			getJson(jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
+			getJson(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
 		else {
 			this.cd = asClientData(JavaScriptObject.createObject());
 			JsArray<ServiceData> sa = asServiceArray(JavaScriptObject.createArray());

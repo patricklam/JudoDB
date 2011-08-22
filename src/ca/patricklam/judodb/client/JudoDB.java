@@ -11,12 +11,10 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -27,11 +25,11 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class JudoDB implements EntryPoint {
 	public static final int MAX_RESULTS = 10;
 	
-	public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb/";
+	//public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb-backend/";
+	public static final String BASE_URL = "http://www.judo-anjou.qc.ca/anjoudb-backend/";
 	private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
-	private static final String REQUEST_CHALLENGE_URL = BASE_URL + "request_challenge.php";
-	//private static final String AUTHENTICATE_URL = BASE_URL + "authenticate.php";
-	private int jsonRequestId = 0;
+	private static final String AUTHENTICATE_URL = BASE_URL + "authenticate.php"; // used for testing authentication
+	int jsonRequestId = 0;
 	
 	private final Label statusLabel = new Label();
 
@@ -44,10 +42,11 @@ public class JudoDB implements EntryPoint {
 	private final Button nextResultsButton = new Button("Résultats suivants");
 	private final Button prevResultsButton = new Button("Résultats précedents"); 
 
-	// actions
+	/* actions */
 	private final Anchor voirListes = new Anchor("Voir listes des cours");
 	private final Anchor retourner = new Anchor("Retourner");
 	
+	/* state */
 	private JsArray<ClientSummary> allClients;
 	private String searchString;
 	private int firstSearchResultToDisplay = 0;
@@ -57,6 +56,15 @@ public class JudoDB implements EntryPoint {
 
 	/* view lists stuff */
 	private ListWidget l;
+
+	/* login stuff */
+	private LoginWidget login;
+	private String AUTH_OK = "OK", AUTH_EXPIRED = "EXPIRED", AUTH_BAD = "BAD";
+	static class Authenticated extends JavaScriptObject {
+		protected Authenticated() {}
+
+		public final native String getAuthenticated() /*-{ return this.authenticated; }-*/;
+	}	
 	
 	// Create a handler for the searchButton and nameField
 	class SearchHandler implements ClickHandler, KeyUpHandler {
@@ -77,7 +85,7 @@ public class JudoDB implements EntryPoint {
 			String url = PULL_CLIENT_LIST_URL;
 		    url = URL.encode(url) + "?callback=";
 
-		    getJson(jsonRequestId++, url, JudoDB.this);
+		    getJsonForSearch(jsonRequestId++, url, JudoDB.this);
 		}
 	}
 	
@@ -89,13 +97,14 @@ public class JudoDB implements EntryPoint {
 			editClient(cid);
 		}		
 	}
-
+	
 	public void editClient (int cid) {
-		RootPanel.get("search").setVisible(false);		
+		RootPanel.get("search").setVisible(false);
+		RootPanel.get("actions").setVisible(false);
 		RootPanel.get("editClient").clear();
 
 		this.c = new ClientWidget(this, cid);
-		RootPanel.get("editClient").add(c);
+		RootPanel.get("editClient").add(this.c);
 		RootPanel.get("editClient").setVisible(true);
 	}
 	
@@ -103,7 +112,7 @@ public class JudoDB implements EntryPoint {
 		RootPanel.get("search").setVisible(false);
 		RootPanel.get("lists").clear();
 		this.l = new ListWidget(this);
-		RootPanel.get("lists").add(l);
+		RootPanel.get("lists").add(this.l);
 		RootPanel.get("lists").setVisible(true);
 
 		retourner.setVisible(true);
@@ -112,12 +121,22 @@ public class JudoDB implements EntryPoint {
 	
 	public void returnToSearch() {
 		clearError();
+		if (login != null) {
+			RootPanel.get("login").remove(login);
+			login = null;
+		}
+		
 		RootPanel.get("editClient").setVisible(false);
 		RootPanel.get("lists").setVisible(false);
+		RootPanel.get("login").setVisible(false);
+		RootPanel.get("actions").setVisible(true);
 		RootPanel.get("search").setVisible(true);
 
 		retourner.setVisible(false);
 		voirListes.setVisible(true);
+		
+		searchButton.setEnabled(true);
+		searchButton.setFocus(true);
 	}
 		
 	/**
@@ -163,42 +182,13 @@ public class JudoDB implements EntryPoint {
 		retourner.setVisible(false);
 		retourner.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { returnToSearch(); }});
 		actions.add(retourner);
-		
+
+		// hide the login box
+		RootPanel.get("login").setVisible(false);
+
 		// Focus the cursor on the name field when the app loads
 		searchField.setFocus(true);
 		searchField.selectAll();
-
-		// Create the login dialog box
-		final DialogBox dialogBox = new DialogBox();
-		dialogBox.setText("Identification");
-		dialogBox.setAnimationEnabled(true);
-		final TextBox idField = new TextBox();
-		final PasswordTextBox pwField = new PasswordTextBox();
-		final Button entrerButton = new Button("Entrer");
-		VerticalPanel dialogVPanel = new VerticalPanel();
-		dialogVPanel.addStyleName("dialogVPanel");
-		dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
-		dialogVPanel.add(idField);
-		dialogVPanel.add(pwField);
-		dialogVPanel.add(entrerButton);
-		dialogBox.setWidget(dialogVPanel);
-
-		// Add a handler to close the login DialogBox
-		entrerButton.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent event) {
-				dialogBox.hide();
-				searchButton.setEnabled(true);
-				searchButton.setFocus(true);
-
-				// need to additionally parametrize this getJson 
-				// call with the two different JSONs we're getting.
-			    getJson(jsonRequestId++, REQUEST_CHALLENGE_URL, JudoDB.this);
-
-			    //String url = AUTHENTICATE_URL;
-			    //url += "username=" + idField.getText();
-			    //url += "&password=" + pwField.getText();			    				
-			}
-		});
 
 		// Add a handler to send the name to the server
 		SearchHandler shandler = new SearchHandler();
@@ -208,6 +198,8 @@ public class JudoDB implements EntryPoint {
 		// Add a handler for "nouveau client"
 		EditClientHandler ehandler = new EditClientHandler(-1);
 		newClientButton.addClickHandler(ehandler);
+
+		ensureAuthentication();
 	}
 
 	private native String removeAccents(String s) /*-{
@@ -267,9 +259,9 @@ public class JudoDB implements EntryPoint {
 	}
 	
 	/**
-	 * Handle the response to the request for stock data from a remote server.
+	 * Handle the response to the request for search data.
 	 */
-	public void handleJsonResponse(JavaScriptObject jso) {
+	public void handleJsonSearchResponse(JavaScriptObject jso) {
 	    if (jso == null) {
 	      displayError("Couldn't retrieve JSON");
 	      return;
@@ -279,9 +271,9 @@ public class JudoDB implements EntryPoint {
 	  }
 	  
 	/**
-	 * Make call to remote server.
+	 * Make call to remote server to get search results.
 	 */
-	public native static void getJson(int requestId, String url,
+	public native static void getJsonForSearch(int requestId, String url,
 	      JudoDB handler) /*-{
 	   var callback = "callback" + requestId;
 
@@ -289,29 +281,89 @@ public class JudoDB implements EntryPoint {
 	   script.setAttribute("src", url+callback);
 	   script.setAttribute("type", "text/javascript");
 	   window[callback] = function(jsonObj) {
-	     handler.@ca.patricklam.judodb.client.JudoDB::handleJsonResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
+	     handler.@ca.patricklam.judodb.client.JudoDB::handleJsonSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
 	     window[callback + "done"] = true;
 	   }
 
 	   setTimeout(function() {
 	     if (!window[callback + "done"]) {
-	       handler.@ca.patricklam.judodb.client.JudoDB::handleJsonResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
+	       handler.@ca.patricklam.judodb.client.JudoDB::handleJsonSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
 	     }
 
 	     document.body.removeChild(script);
 	     delete window[callback];
 	     delete window[callback + "done"];
-	   }, 5000);
+	   }, 1000);
 
 	   document.body.appendChild(script);
 	  }-*/;
+
+	// authentication stuff
+	/** Start the authentication process: if authenticated, do nothing. 
+	 * Else display the authbox. */
+	public void ensureAuthentication() {
+		clearError();
+	    getJsonForAuth(jsonRequestId++, AUTHENTICATE_URL + "?callback=", JudoDB.this);
+	}
+	
+	public native static void getJsonForAuth(int requestId, String url,
+		      JudoDB handler) /*-{
+		   var callback = "callback" + requestId;
+
+		   var script = document.createElement("script");
+		   script.setAttribute("src", url+callback);
+		   script.setAttribute("type", "text/javascript");
+		   window[callback] = function(jsonObj) {
+		     window[callback + "done"] = true;
+		     handler.@ca.patricklam.judodb.client.JudoDB::handleJsonAuthResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
+		   }
+
+		   setTimeout(function() {
+		     if (!window[callback + "done"]) {
+		       handler.@ca.patricklam.judodb.client.JudoDB::handleJsonAuthResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
+		     }
+
+		     document.body.removeChild(script);
+		     delete window[callback];
+		     delete window[callback + "done"];
+		   }, 1000);
+
+		   document.body.appendChild(script);
+		  }-*/;
+
+	public void handleJsonAuthResponse(JavaScriptObject jso) {
+	    if (jso == null) {
+	    	ensureAuthentication();
+	    	return;
+	    }
+
+	    Authenticated a = jso.cast();
+	    if (a.getAuthenticated().equals(AUTH_OK)) {
+	    	returnToSearch();
+	    	return;
+	    } else if (a.getAuthenticated().equals(AUTH_BAD) || 
+	    		a.getAuthenticated().equals(AUTH_EXPIRED)) {
+	    	authenticate();
+	    } else {
+	    	displayError("Bad response from auth script.");
+	    	return;
+	    }
+	}
+
+	/** Show the authentication dialog box. */
+	private void authenticate() {
+		this.login = new LoginWidget(this);
+		RootPanel.get("login").add(login);
+		RootPanel.get("login").setVisible(true);
+		login.focus();
+	}
 	
 	/**
 	 * Convert the string 'json' into a JavaScript object.
 	 */
 	private final native JsArray<ClientSummary> asArrayOfClientSummary(JavaScriptObject jso) /*-{
 	    return jso;
-	  }-*/;
+	}-*/;
 	
 	void displayError(String error) {
 		statusLabel.addStyleName("error");
