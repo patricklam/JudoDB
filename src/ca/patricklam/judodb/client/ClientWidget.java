@@ -214,7 +214,7 @@ public class ClientWidget extends Composite {
 		// categories is set in recompute().
 		saisons.setText(cd.getMostRecentService().getSaisons());
 		verification.setValue(cd.getMostRecentService().getVerification());
-		cours.setItemSelected(cd.getMostRecentService().getCours(), true);
+		cours.setItemSelected(Integer.parseInt(cd.getMostRecentService().getCours()), true);
 		sessions.setItemSelected(cd.getMostRecentService().getSessions()-1, true);
 		categorieFrais.setText(cd.getMostRecentService().getCategorieFrais());
 		
@@ -285,7 +285,7 @@ public class ClientWidget extends Composite {
 		sd.setDateInscription(date_inscription.getText());
 		sd.setSaisons(saisons.getText());
 		sd.setVerification(verification.getValue());
-		sd.setCours(cours.getSelectedIndex());
+		sd.setCours(Integer.toString(cours.getSelectedIndex()));
 		sd.setSessions(cours.getSelectedIndex()+1);
 		sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 		

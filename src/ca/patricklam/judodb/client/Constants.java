@@ -8,11 +8,20 @@ public class Constants {
 	public static double PASSEPORT_JUDO_QC = 5.0;
 	public static double NON_ANJOU = 5.0;
 	
+	static class Session {
+		final int seqno;
+		final String abbrev;
+		
+		public Session(int seqno, String abbrev) {
+			this.seqno = seqno; this.abbrev = abbrev;
+		}
+	}
+	
 	static class Categorie {
-		String name;
-		String abbrev;
-		int years_ago;
-		boolean noire;
+		final String name;
+		final String abbrev;
+		final int years_ago;
+		final boolean noire;
 		public Categorie(String name, String abbrev, int years_ago, boolean noire) { 
 			this.name = name; this.abbrev = abbrev; 
 			this.years_ago = years_ago; this.noire = noire;
@@ -20,10 +29,10 @@ public class Constants {
 	}
 
 	static class Cours {
-		String seqno;
-		String name;
-		String short_desc;
-		String entraineur;
+		final String seqno;
+		final String name;
+		final String short_desc;
+		final String entraineur;
 		
 		public Cours(String seqno, String name, String short_desc, String entraineur) {
 			this.seqno = seqno;
@@ -33,9 +42,9 @@ public class Constants {
 	}
 	
 	static class Escompte {
-		String seqno;
-		String name;
-		int amount; // in percent
+		final String seqno;
+		final String name;
+		final int amount; // in percent
 		
 		public Escompte(String seqno, String name, int amount) {
 			this.seqno = seqno; this.name = name; this.amount = amount;
@@ -50,10 +59,10 @@ public class Constants {
 	}
 	
 	static class CategorieSession {
-		int session_seqno;
-		String categorie_abbrev;
-		double frais_1_session, frais_2_session;
-		double frais_judo_qc;
+		final int session_seqno;
+		final String categorie_abbrev;
+		final double frais_1_session, frais_2_session;
+		final double frais_judo_qc;
 		
 		public CategorieSession(int session_seqno, String categorie_abbrev,
 				double frais_1_session, double frais_2_session, 
@@ -65,6 +74,15 @@ public class Constants {
 			this.frais_judo_qc = frais_judo_qc;
 		}
 	}
+	
+	public static final Session[] SESSIONS = new Session[] {
+		new Session(0, "A09"),
+		new Session(1, "H10"),
+		new Session(2, "A10"),
+		new Session(3, "H11"),
+		new Session(4, "A11"),
+		new Session(5, "H12")
+	};
 	
 	public static final Categorie[] CATEGORIES = new Categorie[] {
 		new Categorie("Mini-Poussin", "U7", 7, false),
@@ -82,7 +100,7 @@ public class Constants {
 
 
 	public static final Cours[] COURS = new Cours[] {
-		new Cours("0", "Adultes (LM2015-2145, V2000-2145", "LM2015 V2000", "Rejean Lavoie"),
+		new Cours("0", "Adultes (LM2015-2145, V2000-2145)", "LM2015 V2000", "Rejean Lavoie"),
 		new Cours("1", "Équipe compétition (LM1830-2015, V2000-2145)", "LM1830 V2000", "Luc Phan"),
 		new Cours("2", "Intérmediares 7-12 ans (L1730-1830, V1830-2000)", "L1730 V1830", "Rejean Lavoie"),
 		new Cours("3", "Débutants 7-12 ans (MaJ1730-1830)", "MaJ1730", "Luc Phan"),
