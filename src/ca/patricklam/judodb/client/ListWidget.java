@@ -83,7 +83,7 @@ public class ListWidget extends Composite {
 		xls.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) { clearFull(); submit("xls"); } });
 		xls2.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent e) { GWT.log("?!"); computeFull(); submit("xlsfull"); } });
+			public void onClick(ClickEvent e) { computeFull(); submit("xlsfull"); } });
 		
 		jdb.clearError();
 		getJson(jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX, this);	
