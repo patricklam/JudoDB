@@ -15,8 +15,8 @@ public class ServiceData extends JavaScriptObject {
 	public final native void setSaisons(String saisons) /*-{ this.saisons = saisons; }-*/;
 	public final native boolean getSansAffiliation() /*-{ return this.sans_affiliation != '0'; }-*/;
 	public final native void setSansAffiliation(boolean sans_affiliation) /*-{ this.sans_affiliation = sans_affiliation ? "1" : "0"; }-*/;
-	public final native int getCours() /*-{ return parseInt(this.cours); }-*/;
-	public final native void setCours(int cours) /*-{ this.cours = cours.toString(); }-*/;
+	public final native String getCours() /*-{ return this.cours; }-*/;
+	public final native void setCours(String cours) /*-{ this.cours = cours; }-*/;
 	public final native int getSessions() /*-{ return this.sessions == null ? 2 : parseInt(this.sessions); }-*/;
 	public final native void setSessions(int sessions) /*-{ this.sessions = sessions.toString(); }-*/;
 	public final native boolean getPasseport() /*-{ return this.passeport != '0'; }-*/;

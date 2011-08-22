@@ -1,0 +1,15 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<!-- LoginWidget.ui.xml -->
+
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+
+<g:HTMLPanel>
+    <form class="compactform" action="#">
+      Veuillez vous identifier: <br /><br />
+      <div class="oneper"><label for="loginid">id<g:TextBox ui:field="loginid"/></label></div>
+      <div class="oneper"><label for="password">mot de passe<g:PasswordTextBox ui:field="password"/></label></div>
+      <div class="actions" id="loginActionsContainer">
+        <g:Anchor ui:field="entrer">entrer</g:Anchor>
+      </div>
+    </form>
+</g:HTMLPanel>

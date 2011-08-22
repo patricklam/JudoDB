@@ -2,13 +2,32 @@
 <!-- ListWidget.ui.xml -->
 
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
- <g:HTMLPanel>
 
-	   <h1 id="stdTitle" class="noprint">Listes des cours</h1>
+<g:HTMLPanel>
+	<h1 id="stdTitle" class="noprint">Listes des cours</h1>
+	   
+	<g:FormPanel ui:field="listForm" method="post">
+	    <g:HorizontalPanel>
+		<g:InlineLabel>Cours&nbsp;</g:InlineLabel><g:ListBox ui:field="cours" visibleItemCount="1"></g:ListBox>
+		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="pdf">(PDF)</g:Anchor>
+		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="presences">(présences)</g:Anchor>
+		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="xls">(XLS)</g:Anchor>
+		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="xls2">(XLS complet)</g:Anchor>
+		
+		<g:Hidden ui:field="multi" name="multi"/>
+		<g:Hidden ui:field="title" name="title"/>
+		<g:Hidden ui:field="subtitle" name="subtitle"/>
+		<g:Hidden ui:field="short_title" name="short_title"/>
+		<g:Hidden ui:field="data" name="data"/>
+		<g:Hidden ui:field="data_full" name="data_full"/>
+		<g:Hidden ui:field="auxdata" name="auxdata"/>
+		
+		</g:HorizontalPanel>
+	</g:FormPanel>
 
-       <g:Grid ui:field="results"></g:Grid>
+	<g:Grid ui:field="results"></g:Grid>
 
-	   <g:Label ui:field="nb" />
+	<g:Label ui:field="nb" />
  </g:HTMLPanel>
  
 </ui:UiBinder>
