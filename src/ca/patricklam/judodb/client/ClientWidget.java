@@ -291,28 +291,20 @@ public class ClientWidget extends Composite {
 		NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
 		Parser<Double> nf = DoubleParser.instance();
 
-		boolean twoSessions = false;
+		int sessionCount = 1;
 		if (sessions.getValue(sessions.getSelectedIndex()).equals("2")) {
-			twoSessions = true;
+			sessionCount = 2;
 		}
 
-		String s = Constants.CURRENT_SESSION;
-		if (twoSessions)
-			s += " " + Constants.NEXT_SESSION;
-		saisons.setText(s);
+		saisons.setText(Constants.getCurrentSessionIds(sessionCount));
 
 		Constants.Categorie c = cd.getCategorie();
 		
 		if (c == null) return;
 		
-		double dCategorieFrais = 0.0;
-		if (twoSessions)
-			dCategorieFrais = 
-				Constants.getFrais2Session(Constants.CURRENT_SESSION_SEQNO, c);
-		else
-			dCategorieFrais =
-				Constants.getFrais1Session(Constants.CURRENT_SESSION_SEQNO, c);
-		double e = Constants.getEscompte(escompte.getValue(escompte.getSelectedIndex())); 
+		double dCategorieFrais = Constants.getFraisCours
+			(Constants.currentSessionNo(), c, sessionCount);
+		double e = Constants.escompte(escompte.getValue(escompte.getSelectedIndex())); 
 		if (e == -1)
 			try {
 				e = nf.parse(cas_special_pct.getText());
@@ -322,7 +314,7 @@ public class ClientWidget extends Composite {
 		
 		double dAffiliationFrais = 0.0;
 		if (!sans_affiliation.getValue())
-			dAffiliationFrais = Constants.getFraisJudoQC(Constants.CURRENT_SESSION_SEQNO, c);
+			dAffiliationFrais = Constants.getFraisJudoQC(Constants.currentSessionNo(), c);
 		
 		double dSuppFrais = 0.0;
 		try {

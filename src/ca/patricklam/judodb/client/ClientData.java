@@ -105,7 +105,7 @@ public class ClientData extends JavaScriptObject {
 		for (int i = 0; i < Constants.CATEGORIES.length; i++) {
 			if (isNoire() == Constants.CATEGORIES[i].noire &&
 					((Constants.CATEGORIES[i].years_ago == 0) ||
-					 (Constants.CURRENT_YEAR - Constants.CATEGORIES[i].years_ago < year)))
+					 (Constants.currentSession().effective_year - Constants.CATEGORIES[i].years_ago < year)))
 				return Constants.CATEGORIES[i];
 		}		
 		return null;
