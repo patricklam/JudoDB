@@ -94,52 +94,7 @@ public class ClientWidget extends Composite {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
 		jdb.pleaseWait();
-		
-		nom.getElement().setId(DOM.createUniqueId());
-		prenom.getElement().setId(DOM.createUniqueId());
-		ddn.getElement().setId(DOM.createUniqueId());
-		sexe.getElement().setId(DOM.createUniqueId());
-
-		adresse.getElement().setId(DOM.createUniqueId());
-		ville.getElement().setId(DOM.createUniqueId());
-		codePostal.getElement().setId(DOM.createUniqueId());
-		tel.getElement().setId(DOM.createUniqueId());
-		courriel.getElement().setId(DOM.createUniqueId());
-
-		affiliation.getElement().setId(DOM.createUniqueId());
-		grade.getElement().setId(DOM.createUniqueId());
-		date_grade.getElement().setId(DOM.createUniqueId());
-		carte_anjou.getElement().setId(DOM.createUniqueId());
-		nom_recu_impot.getElement().setId(DOM.createUniqueId());
-
-		tel_contact_urgence.getElement().setId(DOM.createUniqueId());
-
-		date_inscription.getElement().setId(DOM.createUniqueId());
-		today.getElement().setId(DOM.createUniqueId());
-		saisons.getElement().setId(DOM.createUniqueId());
-		verification.getElement().setId(DOM.createUniqueId());
-		
-		categorie.getElement().setId(DOM.createUniqueId());
-		categorieFrais.getElement().setId(DOM.createUniqueId());
-
-		cours.getElement().setId(DOM.createUniqueId());
-		sessions.getElement().setId(DOM.createUniqueId());
-		
-		escompte.getElement().setId(DOM.createUniqueId());
-		cas_special_note.getElement().setId(DOM.createUniqueId());
-		cas_special_pct.getElement().setId(DOM.createUniqueId());
-		escompteFrais.getElement().setId(DOM.createUniqueId());
-
-		sans_affiliation.getElement().setId(DOM.createUniqueId());
-		affiliationFrais.getElement().setId(DOM.createUniqueId());
-
-		judogi.getElement().setId(DOM.createUniqueId());
-		passeport.getElement().setId(DOM.createUniqueId());
-		non_anjou.getElement().setId(DOM.createUniqueId());
-		suppFrais.getElement().setId(DOM.createUniqueId());
-		
-		frais.getElement().setId(DOM.createUniqueId());
-		
+				
 		for (Constants.Cours c : Constants.COURS) {
 			cours.addItem(c.name, c.seqno);
 		}
