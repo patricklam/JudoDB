@@ -68,6 +68,7 @@ public class ListWidget extends Composite {
 	public ListWidget(JudoDB jdb) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
+		jdb.pleaseWait();
 		
 		cours.addItem("Tous", "-1");
 		for (Constants.Cours c : Constants.COURS) {
@@ -84,7 +85,6 @@ public class ListWidget extends Composite {
 		xls2.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) { computeFull(); submit("xlsfull"); } });
 		
-		jdb.clearError();
 		getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX, this);	
 	}
 
@@ -244,8 +244,13 @@ public class ListWidget extends Composite {
 			if (grade != null && grade.length() >= 3) grade = grade.substring(0, 3);
 			int cours = Integer.parseInt(cd.getMostRecentService().getCours());
 			
-			results.setText(curRow, 1, cd.getNom());
-			results.setText(curRow, 2, cd.getPrenom());
+			Anchor nomAnchor = new Anchor(cd.getNom()), prenomAnchor = new Anchor(cd.getPrenom());
+			ClickHandler c = jdb.new EditClientHandler(Integer.parseInt(cd.getID()));
+			nomAnchor.addClickHandler(c);
+			prenomAnchor.addClickHandler(c);
+
+			results.setWidget(curRow, 1, nomAnchor);
+			results.setWidget(curRow, 2, prenomAnchor);
 			results.setText(curRow, 3, cd.getSexe());
 			
 			if (grade != null && !grade.equals("")) {
@@ -310,12 +315,13 @@ public class ListWidget extends Composite {
 	 */
 	public void handleJsonResponse(JavaScriptObject jso) {
 		if (jso == null) {
-			jdb.displayError("Couldn't retrieve JSON");
+			jdb.displayError("Couldn't retrieve JSON (lists)");
 			return;
 		}
 
 	    this.allClients = asArrayOfClientData (jso);
 	    showList();
+	    jdb.clearStatus();
 	}
 
 	private final native JsArray<ClientData> asArrayOfClientData(JavaScriptObject jso) /*-{

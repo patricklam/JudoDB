@@ -5,6 +5,7 @@ import java.text.ParseException;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -33,8 +34,10 @@ public class ClientWidget extends Composite {
 	public static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
 
 	private final JudoDB jdb;
-	
-	@UiField(provided=true) TextBox nom = new TextBox();
+
+	@UiField DivElement cid;
+
+	@UiField TextBox nom;
 	@UiField(provided=true) TextBox prenom = new TextBox();
 	@UiField(provided=true) TextBox ddn = new TextBox();
 	@UiField(provided=true) TextBox sexe = new TextBox();
@@ -51,7 +54,6 @@ public class ClientWidget extends Composite {
 	@UiField(provided=true) TextBox carte_anjou = new TextBox();
 	@UiField(provided=true) TextBox nom_recu_impot = new TextBox();
 
-	@UiField(provided=true) TextBox nom_contact_urgence = new TextBox();
 	@UiField(provided=true) TextBox tel_contact_urgence = new TextBox();
 
 	@UiField(provided=true) TextBox date_inscription = new TextBox();
@@ -91,6 +93,7 @@ public class ClientWidget extends Composite {
 	public ClientWidget(JudoDB jdb, int cid) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
+		jdb.pleaseWait();
 		
 		nom.getElement().setId(DOM.createUniqueId());
 		prenom.getElement().setId(DOM.createUniqueId());
@@ -109,7 +112,6 @@ public class ClientWidget extends Composite {
 		carte_anjou.getElement().setId(DOM.createUniqueId());
 		nom_recu_impot.getElement().setId(DOM.createUniqueId());
 
-		nom_contact_urgence.getElement().setId(DOM.createUniqueId());
 		tel_contact_urgence.getElement().setId(DOM.createUniqueId());
 
 		date_inscription.getElement().setId(DOM.createUniqueId());
@@ -163,16 +165,16 @@ public class ClientWidget extends Composite {
 		saveClientButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) {
 				pushClientDataToServer();
-				ClientWidget.this.jdb.returnToSearch(); }
+				ClientWidget.this.jdb.popMode(); }
 		});
 		discardClientButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) {
-				ClientWidget.this.jdb.clearError();
-				ClientWidget.this.jdb.returnToSearch(); 
+				ClientWidget.this.jdb.clearStatus();
+				ClientWidget.this.jdb.popMode(); 
 			}
 		});
 		
-		jdb.clearError();
+		jdb.clearStatus();
 		if (cid != -1)
 			getJson(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
 		else {
@@ -190,6 +192,7 @@ public class ClientWidget extends Composite {
 		
 	/** Takes data from ClientData into the form. */
 	private void loadClientData () {
+		cid.setInnerText(cd.getID());
 		nom.setText(cd.getNom());
 		prenom.setText(cd.getPrenom());
 		ddn.setText(cd.getDDNString());
@@ -206,7 +209,6 @@ public class ClientWidget extends Composite {
 		carte_anjou.setText(cd.getCarteAnjou());
 		nom_recu_impot.setText(cd.getNomRecuImpot());
 
-		nom_contact_urgence.setText(cd.getNomContactUrgence());
 		tel_contact_urgence.setText(cd.getTelContactUrgence());
 		
 		date_inscription.setText(cd.getMostRecentService().getDateInscription());
@@ -276,7 +278,6 @@ public class ClientWidget extends Composite {
 		cd.setCarteAnjou(carte_anjou.getText());
 		cd.setNomRecuImpot(nom_recu_impot.getText());
 
-		cd.setNomContactUrgence(nom_contact_urgence.getText());
 		cd.setTelContactUrgence(tel_contact_urgence.getText());
 		
 		// TODO: preserve previous season's inscriptions...
@@ -449,6 +450,7 @@ public class ClientWidget extends Composite {
 
 	    this.cd = asClientData (jso);
 	    loadClientData();
+	    jdb.clearStatus();
 	}
 
 	private final native ClientData asClientData(JavaScriptObject jso) /*-{

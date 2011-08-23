@@ -52,7 +52,7 @@ public class LoginWidget extends Composite {
 	}
 
 	private void submit() {
-		LoginWidget.this.jdb.returnToSearch();
+		LoginWidget.this.jdb.popMode();
 	    String url = AUTHENTICATE_URL;
 	    url += "?username=" + loginid.getText();
 	    url += "&response=" + hex_md5(challenge+hex_md5(password.getText()));			    				

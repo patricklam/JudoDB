@@ -6,10 +6,6 @@ body {
 }
 
 /** Most GWT widgets already have a style name defined */
-.gwt-DialogBox {
-  width: 400px;
-}
-
 .gwt-Anchor {
   cursor: pointer;
 }
@@ -18,12 +14,15 @@ body {
  font-weight: bold;
 }
 
-.dialogVPanel {
-  margin: 5px;
+.status-error {
+  color: red;
+  background: white;
 }
 
-.error {
-  color: red;
+.status-info {
+  color: black;
+  background: #F2E635;
+  padding:0.5em;
 }
 
 /** Set ids using widget.getElement().setId("idOfElement") */
@@ -41,7 +40,7 @@ body {
 #statusContainer {
   position:absolute;
   left:35%;
-  padding:0.3em;
+  top:0%;
 }
 
 .casMedical {
@@ -64,6 +63,12 @@ body {
 
 .actions a {
  color: blue;
+}
+
+.edit-cid {
+ position:absolute;
+ top:1.5em; right: 1em;
+ font-size: xx-large;
 }
 
 /* Inspired by http://2tbsp.com/content/flexible_and_efficient_htmlcss_form_layout */
@@ -138,7 +143,7 @@ input.text, input.button, textarea, select {
   width: auto;
   white-space: normal;
   /* unccomment to stack form inputs inside a row */
-  /* clear: left; */
+  /*clear: left;*/
   margin-right: 1em;
 }
 /* Fix paragraph white space in Safari */
@@ -174,6 +179,7 @@ input.text, input.button, textarea, select {
   border: none;
   border-collapse: collapse;
 }
+/* end form stuff */
 
 #blurb {
   display: none;

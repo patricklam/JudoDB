@@ -1,5 +1,7 @@
 package ca.patricklam.judodb.client;
 
+import java.util.Stack;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
@@ -23,6 +25,19 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class JudoDB implements EntryPoint {
+	static class Mode {
+		enum ActualMode {
+			LOGIN, MAIN, LIST, EDIT_CLIENT;
+		};
+		ActualMode am;
+		int arg;
+		
+		public Mode(ActualMode am) { this.am = am; }
+		public Mode(ActualMode am, int arg) {
+			this.am = am; this.arg = arg;
+		}
+	};
+	
 	public static final int MAX_RESULTS = 10;
 	
 	//public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb-backend/";
@@ -50,6 +65,7 @@ public class JudoDB implements EntryPoint {
 	private JsArray<ClientSummary> allClients;
 	private String searchString;
 	private int firstSearchResultToDisplay = 0;
+	private Stack<Mode> modes = new Stack<Mode>();
 	
 	/* edit client stuff */
 	private ClientWidget c;
@@ -85,6 +101,7 @@ public class JudoDB implements EntryPoint {
 			String url = PULL_CLIENT_LIST_URL;
 		    url = URL.encode(url) + "?callback=";
 
+		    pleaseWait();
 		    getJsonForSearch(jsonRequestId++, url, JudoDB.this);
 		}
 	}
@@ -94,13 +111,54 @@ public class JudoDB implements EntryPoint {
 		public EditClientHandler(int cid) { this.cid = cid; }
 		
 		public void onClick(ClickEvent event) {
-			editClient(cid);
+			pushMode(new Mode (Mode.ActualMode.EDIT_CLIENT, cid));
 		}		
 	}
+
+	// modes
+	public Mode getCurrentMode() {
+		return modes.peek();
+	}
 	
-	public void editClient (int cid) {
+	public void switchMode(Mode newMode) {
+		modes.clear();
+		pushMode(newMode);
+	}
+	
+	public void pushMode(Mode newMode) {
+		modes.push(newMode);
+		actuallySwitchMode(newMode);
+	}
+	
+	public void popMode() {
+		if (!modes.isEmpty()) {
+			modes.pop();
+			if (!modes.isEmpty())
+			actuallySwitchMode(modes.peek());
+		}
+	}
+	
+	private void actuallySwitchMode(Mode newMode) {
+		switch (newMode.am) {
+		case EDIT_CLIENT:
+			switchMode_editClient(newMode.arg);
+			break;
+		case LIST:
+			switchMode_viewLists();
+			break;
+		case MAIN:
+			switchMode_main();
+			break;
+		case LOGIN:
+			switchMode_login();
+			break;
+		}
+	}
+	
+	private void switchMode_editClient (int cid) {
 		RootPanel.get("search").setVisible(false);
 		RootPanel.get("actions").setVisible(false);
+		RootPanel.get("lists").setVisible(false);
 		RootPanel.get("editClient").clear();
 
 		this.c = new ClientWidget(this, cid);
@@ -108,19 +166,22 @@ public class JudoDB implements EntryPoint {
 		RootPanel.get("editClient").setVisible(true);
 	}
 	
-	public void viewLists() {
+	public void switchMode_viewLists() {
 		RootPanel.get("search").setVisible(false);
-		RootPanel.get("lists").clear();
-		this.l = new ListWidget(this);
-		RootPanel.get("lists").add(this.l);
+		RootPanel.get("actions").setVisible(true);
+		RootPanel.get("editClient").clear();
+		if (this.l == null) {
+			this.l = new ListWidget(this);
+			RootPanel.get("lists").add(this.l);
+		}
 		RootPanel.get("lists").setVisible(true);
 
 		retourner.setVisible(true);
 		voirListes.setVisible(false);
 	}
 	
-	public void returnToSearch() {
-		clearError();
+	public void switchMode_main() {
+		clearStatus();
 		if (login != null) {
 			RootPanel.get("login").remove(login);
 			login = null;
@@ -138,11 +199,20 @@ public class JudoDB implements EntryPoint {
 		searchButton.setEnabled(true);
 		searchButton.setFocus(true);
 	}
-		
+
+
+	/** Show the authentication dialog box. */
+	private void switchMode_login() {
+		this.login = new LoginWidget(this);
+		RootPanel.get("login").add(login);
+		RootPanel.get("login").setVisible(true);
+		login.focus();
+	}
+
 	/**
 	 * This is the entry point method.
 	 */
-	public void onModuleLoad() {
+	public void onModuleLoad() {		
 		// Add content to the RootPanel
 		RootPanel.get("statusContainer").add(statusLabel);
 
@@ -160,12 +230,14 @@ public class JudoDB implements EntryPoint {
 		nextResultsButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) { 
 				firstSearchResultToDisplay += MAX_RESULTS; 
+				if (firstSearchResultToDisplay + MAX_RESULTS > allClients.length()) firstSearchResultToDisplay -= MAX_RESULTS;
 				displaySearchResults(); } });
 		searchNavPanel.add(prevResultsButton);
 		prevResultsButton.setVisible(false);
 		prevResultsButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) { 
 				firstSearchResultToDisplay -= MAX_RESULTS; 
+				if (firstSearchResultToDisplay < 0) firstSearchResultToDisplay = 0;
 				displaySearchResults(); } });
 		
 		searchResultsPanel.add(resultsLabel);
@@ -176,11 +248,11 @@ public class JudoDB implements EntryPoint {
 		
 		// right bar actions
 		Panel actions = RootPanel.get("actions");
-		voirListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { viewLists(); }});
+		voirListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST)); }});
 		actions.add(voirListes);
 		actions.add(new Label(""));
 		retourner.setVisible(false);
-		retourner.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { returnToSearch(); }});
+		retourner.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.MAIN)); }});
 		actions.add(retourner);
 
 		// hide the login box
@@ -199,6 +271,7 @@ public class JudoDB implements EntryPoint {
 		EditClientHandler ehandler = new EditClientHandler(-1);
 		newClientButton.addClickHandler(ehandler);
 
+		switchMode(new Mode(Mode.ActualMode.MAIN));
 		ensureAuthentication();
 	}
 
@@ -266,6 +339,7 @@ public class JudoDB implements EntryPoint {
 	      displayError("Couldn't retrieve JSON");
 	      return;
 	    }
+	    clearStatus();
 
 	    loadSearchResults(asArrayOfClientSummary (jso));
 	  }
@@ -302,7 +376,7 @@ public class JudoDB implements EntryPoint {
 	/** Start the authentication process: if authenticated, do nothing. 
 	 * Else display the authbox. */
 	public void ensureAuthentication() {
-		clearError();
+		clearStatus();
 	    getJsonForAuth(jsonRequestId++, AUTHENTICATE_URL + "?callback=", JudoDB.this);
 	}
 	
@@ -339,23 +413,15 @@ public class JudoDB implements EntryPoint {
 
 	    Authenticated a = jso.cast();
 	    if (a.getAuthenticated().equals(AUTH_OK)) {
-	    	returnToSearch();
+	    	switchMode(new Mode(Mode.ActualMode.MAIN));
 	    	return;
 	    } else if (a.getAuthenticated().equals(AUTH_BAD) || 
 	    		a.getAuthenticated().equals(AUTH_EXPIRED)) {
-	    	authenticate();
+	    	pushMode(new Mode(Mode.ActualMode.LOGIN));
 	    } else {
 	    	displayError("Bad response from auth script.");
 	    	return;
 	    }
-	}
-
-	/** Show the authentication dialog box. */
-	private void authenticate() {
-		this.login = new LoginWidget(this);
-		RootPanel.get("login").add(login);
-		RootPanel.get("login").setVisible(true);
-		login.focus();
 	}
 	
 	/**
@@ -366,12 +432,19 @@ public class JudoDB implements EntryPoint {
 	}-*/;
 	
 	void displayError(String error) {
-		statusLabel.addStyleName("error");
+		statusLabel.addStyleName("status-error");
+		statusLabel.removeStyleName("status-info");
 		statusLabel.setText("Erreur: " + error);
 	    statusLabel.setVisible(true);
 	}	
-	void clearError() {
+	void clearStatus() {
 		statusLabel.setText("");
 	    statusLabel.setVisible(false);
-	}	
+	}
+	void pleaseWait() {
+		statusLabel.removeStyleName("status-error");
+		statusLabel.addStyleName("status-info");
+		statusLabel.setText("Veuillez patienter...");
+		statusLabel.setVisible(true);
+	}
 }
