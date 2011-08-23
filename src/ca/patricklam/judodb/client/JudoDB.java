@@ -45,6 +45,7 @@ public class JudoDB implements EntryPoint {
 	public static final String BASE_URL = "http://www.judo-anjou.qc.ca/anjoudb-backend/";
 	private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
 	private static final String AUTHENTICATE_URL = BASE_URL + "authenticate.php"; // used for testing authentication
+	private static final String LOGOUT_URL = BASE_URL + "logout.php"; 
 	int jsonRequestId = 0;
 	
 	private final Label statusLabel = new Label();
@@ -61,6 +62,7 @@ public class JudoDB implements EntryPoint {
 	/* actions */
 	private final Anchor voirListes = new Anchor("Voir listes des cours");
 	private final Anchor retourner = new Anchor("Retourner");
+	private final Anchor logout = new Anchor("Fermer session");
 	
 	/* state */
 	private JsArray<ClientSummary> allClients;
@@ -179,6 +181,7 @@ public class JudoDB implements EntryPoint {
 
 		retourner.setVisible(true);
 		voirListes.setVisible(false);
+		logout.setVisible(false);
 	}
 	
 	public void switchMode_main() {
@@ -196,6 +199,7 @@ public class JudoDB implements EntryPoint {
 
 		retourner.setVisible(false);
 		voirListes.setVisible(true);
+		logout.setVisible(true);
 		
 		searchButton.setEnabled(true);
 		searchButton.setFocus(true);
@@ -255,6 +259,11 @@ public class JudoDB implements EntryPoint {
 		retourner.setVisible(false);
 		retourner.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.MAIN)); }});
 		actions.add(retourner);
+		actions.add(new Label(""));
+		logout.addClickHandler(new ClickHandler() { 
+			public void onClick(ClickEvent e) { getJsonForAuth(jsonRequestId++, LOGOUT_URL + "?callback=", JudoDB.this);
+			}});
+		actions.add(logout);
 
 		// hide the login box
 		RootPanel.get("login").setVisible(false);
@@ -426,7 +435,7 @@ public class JudoDB implements EntryPoint {
 	    	return;
 	    }
 	}
-	
+		
 	/**
 	 * Convert the string 'json' into a JavaScript object.
 	 */
