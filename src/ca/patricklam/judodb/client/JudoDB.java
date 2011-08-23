@@ -11,6 +11,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -336,7 +337,7 @@ public class JudoDB implements EntryPoint {
 	 */
 	public void handleJsonSearchResponse(JavaScriptObject jso) {
 	    if (jso == null) {
-	      displayError("Couldn't retrieve JSON");
+	      displayError("pas de réponse; veuillez re-essayer");
 	      return;
 	    }
 	    clearStatus();
@@ -414,6 +415,8 @@ public class JudoDB implements EntryPoint {
 	    Authenticated a = jso.cast();
 	    if (a.getAuthenticated().equals(AUTH_OK)) {
 	    	switchMode(new Mode(Mode.ActualMode.MAIN));
+	    	setStatus("merci, identifié avec succes.");
+	    	new Timer() { public void run() { clearStatus(); } }.schedule(1000);
 	    	return;
 	    } else if (a.getAuthenticated().equals(AUTH_BAD) || 
 	    		a.getAuthenticated().equals(AUTH_EXPIRED)) {
@@ -442,9 +445,12 @@ public class JudoDB implements EntryPoint {
 	    statusLabel.setVisible(false);
 	}
 	void pleaseWait() {
+		setStatus("Veuillez patienter...");
+	}
+	void setStatus(String s) {
 		statusLabel.removeStyleName("status-error");
 		statusLabel.addStyleName("status-info");
-		statusLabel.setText("Veuillez patienter...");
+		statusLabel.setText(s);
 		statusLabel.setVisible(true);
 	}
 }

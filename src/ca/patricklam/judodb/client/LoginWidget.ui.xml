@@ -6,8 +6,10 @@
  <g:HTMLPanel>
     <form class="compactform" action="#">
       Veuillez vous identifier: <br /><br />
-      <div class="oneper"><label for="loginid">id</label><g:TextBox ui:field="loginid"/></div>
-      <div class="oneper"><label for="password">mot de passe</label><g:PasswordTextBox ui:field="password"/></div>
+      <table>
+      <tr><td><label>id</label></td><td><g:TextBox ui:field="loginid"/></td></tr>
+      <tr><td><label>mot de passe</label></td><td><g:PasswordTextBox ui:field="password"/></td></tr>
+      </table>
       <div class="actions" id="loginActionsContainer">
         <g:Button ui:field="entrer">entrer</g:Button>
       </div>
