@@ -19,7 +19,6 @@ import com.google.gwt.text.client.DoubleParser;
 import com.google.gwt.text.shared.Parser;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -38,52 +37,52 @@ public class ClientWidget extends Composite {
 	@UiField DivElement cid;
 
 	@UiField TextBox nom;
-	@UiField(provided=true) TextBox prenom = new TextBox();
-	@UiField(provided=true) TextBox ddn = new TextBox();
-	@UiField(provided=true) TextBox sexe = new TextBox();
+	@UiField TextBox prenom;
+	@UiField TextBox ddn;
+	@UiField TextBox sexe;
 
-	@UiField(provided=true) TextBox adresse = new TextBox();
-	@UiField(provided=true) TextBox ville = new TextBox();
-	@UiField(provided=true) TextBox codePostal = new TextBox();
-	@UiField(provided=true) TextBox tel = new TextBox();
-	@UiField(provided=true) TextBox courriel = new TextBox();
+	@UiField TextBox adresse;
+	@UiField TextBox ville;
+	@UiField TextBox codePostal;
+	@UiField TextBox tel;
+	@UiField TextBox courriel;
 	
-	@UiField(provided=true) TextBox affiliation = new TextBox();
-	@UiField(provided=true) TextBox grade = new TextBox();
-	@UiField(provided=true) TextBox date_grade = new TextBox();
-	@UiField(provided=true) TextBox carte_anjou = new TextBox();
-	@UiField(provided=true) TextBox nom_recu_impot = new TextBox();
+	@UiField TextBox affiliation;
+	@UiField TextBox grade;
+	@UiField TextBox date_grade;
+	@UiField TextBox carte_anjou;
+	@UiField TextBox nom_recu_impot;
 
-	@UiField(provided=true) TextBox tel_contact_urgence = new TextBox();
+	@UiField TextBox tel_contact_urgence;
 
-	@UiField(provided=true) TextBox date_inscription = new TextBox();
-	@UiField(provided=true) Anchor today = new Anchor();
-	@UiField(provided=true) TextBox saisons = new TextBox();
-	@UiField(provided=true) CheckBox verification = new CheckBox();
+	@UiField TextBox date_inscription;
+	@UiField Anchor today;
+	@UiField TextBox saisons;
+	@UiField CheckBox verification;
 
-	@UiField(provided=true) TextBox categorie = new TextBox();
-	@UiField(provided=true) TextBox categorieFrais = new TextBox();
+	@UiField TextBox categorie;
+	@UiField TextBox categorieFrais;
 
-	@UiField(provided=true) ListBox cours = new ListBox();
-	@UiField(provided=true) ListBox sessions = new ListBox();
+	@UiField ListBox cours;
+	@UiField ListBox sessions;
 
-	@UiField(provided=true) ListBox escompte = new ListBox();
-	@UiField(provided=true) TextBox cas_special_note = new TextBox();
-	@UiField(provided=true) TextBox cas_special_pct = new TextBox();
-	@UiField(provided=true) TextBox escompteFrais = new TextBox();
+	@UiField ListBox escompte;
+	@UiField TextBox cas_special_note;
+	@UiField TextBox cas_special_pct;
+	@UiField TextBox escompteFrais;
 
-	@UiField(provided=true) CheckBox sans_affiliation = new CheckBox();
-	@UiField(provided=true) TextBox affiliationFrais = new TextBox();
+	@UiField CheckBox sans_affiliation;
+	@UiField TextBox affiliationFrais;
 
-	@UiField(provided=true) TextBox judogi = new TextBox();
-	@UiField(provided=true) CheckBox passeport = new CheckBox();
-	@UiField(provided=true) CheckBox non_anjou = new CheckBox();
-	@UiField(provided=true) TextBox suppFrais = new TextBox();
+	@UiField TextBox judogi;
+	@UiField CheckBox passeport;
+	@UiField CheckBox non_anjou;
+	@UiField TextBox suppFrais;
 
-	@UiField(provided=true) TextBox frais = new TextBox();
+	@UiField TextBox frais;
 	
-	@UiField(provided=true) Button saveClientButton = new Button();
-	@UiField(provided=true) Button discardClientButton = new Button();
+	@UiField Button saveClientButton;
+	@UiField Button discardClientButton;
 	
 	private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php?id=";
 	private static final String CALLBACK_URL_SUFFIX = "&callback=";
@@ -129,7 +128,6 @@ public class ClientWidget extends Composite {
 			}
 		});
 		
-		jdb.clearStatus();
 		if (cid != -1)
 			getJson(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
 		else {
