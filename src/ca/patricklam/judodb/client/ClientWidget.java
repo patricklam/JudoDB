@@ -131,7 +131,7 @@ public class ClientWidget extends Composite {
 		if (cid != -1)
 			getJson(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
 		else {
-			this.cd = asClientData(JavaScriptObject.createObject());
+			this.cd = JavaScriptObject.createObject().cast();
 			JsArray<ServiceData> sa = asServiceArray(JavaScriptObject.createArray());
 			ServiceData sd = ServiceData.newServiceData();
 			sd.inscrireAujourdhui();
@@ -140,6 +140,7 @@ public class ClientWidget extends Composite {
 			this.cd.setServices(sa);
 			this.cd.setGrades(ga);
 			loadClientData();
+			jdb.clearStatus();
 		}
 	}
 		
@@ -401,14 +402,11 @@ public class ClientWidget extends Composite {
 			return;
 		}	
 
-	    this.cd = asClientData (jso);
+	    this.cd = jso.cast();
 	    loadClientData();
 	    jdb.clearStatus();
 	}
 
-	private final native ClientData asClientData(JavaScriptObject jso) /*-{
-	    return jso;
-	}-*/;
 	private final native JsArray<GradeData> asGradeArray(JavaScriptObject jso) /*-{
     	return jso;
   	}-*/;
