@@ -165,27 +165,29 @@ public class ClientWidget extends Composite {
 
 		tel_contact_urgence.setText(cd.getTelContactUrgence());
 		
-		date_inscription.setText(cd.getMostRecentService().getDateInscription());
+		ServiceData mrs = cd.getMostRecentService();
+		if (mrs == null) mrs = ServiceData.newServiceData();
+		date_inscription.setText(mrs.getDateInscription());
 		// categories is set in recompute().
-		saisons.setText(cd.getMostRecentService().getSaisons());
-		verification.setValue(cd.getMostRecentService().getVerification());
-		cours.setItemSelected(Integer.parseInt(cd.getMostRecentService().getCours()), true);
-		sessions.setItemSelected(cd.getMostRecentService().getSessions()-1, true);
-		categorieFrais.setText(cd.getMostRecentService().getCategorieFrais());
+		saisons.setText(mrs.getSaisons());
+		verification.setValue(mrs.getVerification());
+		cours.setItemSelected(Integer.parseInt(mrs.getCours()), true);
+		sessions.setItemSelected(mrs.getSessions()-1, true);
+		categorieFrais.setText(mrs.getCategorieFrais());
 		
-		sans_affiliation.setValue(cd.getMostRecentService().getSansAffiliation());
-		affiliationFrais.setText(cd.getMostRecentService().getAffiliationFrais());
+		sans_affiliation.setValue(mrs.getSansAffiliation());
+		affiliationFrais.setText(mrs.getAffiliationFrais());
 
-		escompte.setSelectedIndex(cd.getMostRecentService().getEscompte());
-		cas_special_note.setText(cd.getMostRecentService().getCasSpecialNote());
+		escompte.setSelectedIndex(mrs.getEscompte());
+		cas_special_note.setText(mrs.getCasSpecialNote());
 		// XXX todo cas_special_pct from escompte_special
 		
-		judogi.setText(cd.getMostRecentService().getJudogi());
-		passeport.setValue(cd.getMostRecentService().getPasseport());
-		non_anjou.setValue(cd.getMostRecentService().getNonAnjou());
-		suppFrais.setText(cd.getMostRecentService().getSuppFrais());	
+		judogi.setText(mrs.getJudogi());
+		passeport.setValue(mrs.getPasseport());
+		non_anjou.setValue(mrs.getNonAnjou());
+		suppFrais.setText(mrs.getSuppFrais());	
 		
-		frais.setText(cd.getMostRecentService().getFrais());
+		frais.setText(mrs.getFrais());
 
 		today.addClickHandler(aujourdhuiClickHandler);
 		ddn.addChangeHandler(aujourdhuiHandler);
@@ -300,8 +302,6 @@ public class ClientWidget extends Composite {
 
 		Constants.Categorie c = cd.getCategorie();
 		
-		if (c == null) return;
-		
 		double dCategorieFrais = Constants.getFraisCours
 			(Constants.currentSessionNo(), c, sessionCount);
 		double e = Constants.escompte(escompte.getValue(escompte.getSelectedIndex())); 
@@ -315,7 +315,7 @@ public class ClientWidget extends Composite {
 		double dAffiliationFrais = 0.0;
 		if (!sans_affiliation.getValue())
 			dAffiliationFrais = Constants.getFraisJudoQC(Constants.currentSessionNo(), c);
-		
+
 		double dSuppFrais = 0.0;
 		try {
 			dSuppFrais += nf.parse(stripDollars(judogi.getText()));
@@ -344,8 +344,7 @@ public class ClientWidget extends Composite {
 
 		// TODO: set the categorie corresponding to the date d'inscription
 		Constants.Categorie c = cd.getCategorie();
-		if (c != null)
-			categorie.setText(c.abbrev);
+		categorie.setText(c.abbrev);
 
 		// TODO: if (date d'inscription == today)
 		updateFrais();

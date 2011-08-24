@@ -29,7 +29,7 @@ public class ServiceData extends JavaScriptObject {
 	public final native void setCasSpecialNote(String cas_special_note) /*-{ this.cas_special_note = cas_special_note; }-*/;
 	public final native String getEscompteSpecial() /*-{ return this.escompte_special; }-*/;
 	public final native void setEscompteSpecial(String escompte_special) /*-{ this.escompte_special = escompte_special; }-*/;
-	public final native String getJudogi() /*-{ return this.judogi; }-*/;
+	public final native String getJudogi() /*-{ return this.judogi == "" ? "0" : this.judogi; }-*/;
 	public final native void setJudogi(String judogi) /*-{ this.judogi = judogi; }-*/;
 	public final native String getCategorieFrais() /*-{ return this.categorie_frais == null ? "0" : this.categorie_frais; }-*/;
 	public final native void setCategorieFrais(String categorie_frais) /*-{ this.categorie_frais = categorie_frais; }-*/;
