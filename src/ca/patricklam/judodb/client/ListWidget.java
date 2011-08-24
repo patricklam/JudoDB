@@ -34,23 +34,23 @@ public class ListWidget extends Composite {
 	private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
 	private static final String CALLBACK_URL_SUFFIX = "?callback=";
 	
-	@UiField(provided=true) FormPanel listForm = new FormPanel();
-	@UiField(provided=true) Anchor pdf = new Anchor();
-	@UiField(provided=true) Anchor presences = new Anchor();
-	@UiField(provided=true) Anchor xls = new Anchor();
-	@UiField(provided=true) Anchor xls2 = new Anchor();
+	@UiField FormPanel listForm;
+	@UiField Anchor pdf;
+	@UiField Anchor presences;
+	@UiField Anchor xls;
+	@UiField Anchor xls2;
 
-	@UiField(provided=true) Hidden multi = new Hidden();
-	@UiField(provided=true) Hidden title = new Hidden();
-	@UiField(provided=true) Hidden subtitle = new Hidden();
-	@UiField(provided=true) Hidden short_title = new Hidden();
-	@UiField(provided=true) Hidden data = new Hidden();
-	@UiField(provided=true) Hidden data_full = new Hidden();
-	@UiField(provided=true) Hidden auxdata = new Hidden();
+	@UiField Hidden multi;
+	@UiField Hidden title;
+	@UiField Hidden subtitle;
+	@UiField Hidden short_title;
+	@UiField Hidden data;
+	@UiField Hidden data_full;
+	@UiField Hidden auxdata;
 	
-	@UiField(provided=true) ListBox cours = new ListBox();
-	@UiField(provided=true) Grid results = new Grid();
-	@UiField(provided=true) Label nb = new Label();
+	@UiField ListBox cours;
+	@UiField Grid results;
+	@UiField Label nb;
 
 	@UiField ListBox session;
 	
