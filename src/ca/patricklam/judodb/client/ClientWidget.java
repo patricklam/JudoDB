@@ -304,11 +304,12 @@ public class ClientWidget extends Composite {
 		
 		double dCategorieFrais = Constants.getFraisCours
 			(Constants.currentSessionNo(), c, sessionCount);
-		double e = Constants.escompte(escompte.getValue(escompte.getSelectedIndex())); 
-		if (e == -1)
-			try {
+		double e = 0;
+		try {
+			e = nf.parse(escompte.getValue(escompte.getSelectedIndex())); 
+			if (e == -1)
 				e = nf.parse(cas_special_pct.getText());
-			} catch (ParseException ex) {}
+		} catch (ParseException ex) {}
 
 		double dEscompteFrais = -(dCategorieFrais * e)/100;
 		
