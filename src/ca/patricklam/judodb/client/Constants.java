@@ -114,7 +114,7 @@ public class Constants {
 		new Categorie("Junior Noire", "U20N", 20, true),
 		new Categorie("Senior Noire", "SN", 0, true),
 	};
-
+	public static final Categorie EMPTY_CATEGORIE = new Categorie("", "", 0, false);
 
 	public static final Cours[] COURS = new Cours[] {
 		new Cours("0", "Adultes (LM2015-2145, V2000-2145)", "LM2015 V2000", "Rejean Lavoie"),

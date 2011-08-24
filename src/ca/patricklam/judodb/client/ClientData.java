@@ -64,6 +64,18 @@ public class ClientData extends JavaScriptObject {
 		return m;
 	}
 
+	public final String getAllActiveSaisons() {
+		String r = "";
+		JsArray<ServiceData> services = getServices();
+		if (services == null || services.length() == 0) return r;
+		
+		for (int i = 0; i < services.length(); i++) {
+			r += services.get(i).getSaisons();
+		}
+		return r;
+		
+	}
+	
 	public final GradeData getMostRecentGrade() {
 		JsArray<GradeData> grades = getGrades();
 		if (grades == null || grades.length() == 0) return null;
@@ -98,7 +110,7 @@ public class ClientData extends JavaScriptObject {
 		
 	public final Categorie getCategorie() {
 		Date d = getDDN();
-		if (d == null) return null;
+		if (d == null) return Constants.EMPTY_CATEGORIE;
 		
 		int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(d));
 		
@@ -108,7 +120,7 @@ public class ClientData extends JavaScriptObject {
 					 (Constants.currentSession().effective_year - Constants.CATEGORIES[i].years_ago < year)))
 				return Constants.CATEGORIES[i];
 		}		
-		return null;
+		return Constants.EMPTY_CATEGORIE;
 	}
 	
 	public final String getCategorieAbbrev() {

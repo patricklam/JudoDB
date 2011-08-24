@@ -52,6 +52,8 @@ public class ListWidget extends Composite {
 	@UiField(provided=true) Grid results = new Grid();
 	@UiField(provided=true) Label nb = new Label();
 
+	@UiField ListBox session;
+	
 	enum Mode {
 		NORMAL, FT, EDIT, GERER_CLASSES
 	};
@@ -60,7 +62,7 @@ public class ListWidget extends Composite {
 	private boolean isFiltering;
 	
 	public String[] heads = new String[] {
-		"", "Nom", "Prenom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Cat", "V", "Cours", ""
+		"", "Nom", "Prenom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Cat", "V", "Cours", "", "Saisons"
 	};
 
 	//var widthsForEditing = [-1, -1, -1, 1, 3, 8, -1, 8, -1, -1, -1, -1, -1];
@@ -74,7 +76,17 @@ public class ListWidget extends Composite {
 		for (Constants.Cours c : Constants.COURS) {
 			cours.addItem(c.name, c.seqno);
 		}
+		
+		session.addItem("Tous", "-1");
+		for (Constants.Session s : Constants.SESSIONS) {
+			if (s != Constants.currentSession())
+				session.insertItem(s.abbrev, Integer.toString(s.seqno), 1);
+		}
+		session.insertItem(Constants.currentSession().abbrev, Integer.toString(Constants.currentSessionNo()), 0);
+		
 		cours.addChangeHandler(new ChangeHandler() { 
+			public void onChange(ChangeEvent e) { showList(); } });
+		session.addChangeHandler(new ChangeHandler() { 
 			public void onChange(ChangeEvent e) { showList(); } });
 		pdf.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) { clearFull(); submit("pdf"); } });
@@ -174,33 +186,46 @@ public class ListWidget extends Composite {
 		listForm.submit();
 	}
 
-	// TODO actually implement this.
+	public String requestedSession() {
+		String requestedSessionNo = session.getValue(session.getSelectedIndex());
+		if (requestedSessionNo.equals("-1")) return null;
+		return Constants.SESSIONS[Integer.parseInt(requestedSessionNo)].abbrev;
+	}
+		
 	public boolean sessionFilter(ClientData cd) {
-		ServiceData sd = cd.getMostRecentService();
-		if (sd == null) return false;
-		return sd.getSaisons().contains("H11");
+		String rs = requestedSession();
+		if (rs == null) return true;
+		
+		ServiceData sd = null;
+		for (int i = 0; i < cd.getServices().length(); i++) {
+			sd = cd.getServices().get(i);
+			if (sd.getSaisons().contains(rs))
+				return true;
+		}
+		return false;
 	}
 	
 	public boolean filter(ClientData cd) {
-		ServiceData sd = cd.getMostRecentService();
-		
-		// must be signed up for something to pass filter
-		if (sd == null) return false;
-		
 		// filter for season; TODO: fix to not necessarily require most recent season!
 		if (!sessionFilter(cd))
 			return false;
-		
+
 		// filter for cours
 		String selectedCours = cours.getValue(cours.getSelectedIndex());
-		if (!(selectedCours.equals("-1") || sd.getCours().equals(selectedCours)))
-			return false;
+		if (selectedCours.equals("-1"))
+			return true;
 		
-		return true;
+		// TODO select the cours for the requested session
+		ServiceData sd = cd.getMostRecentService();
+		if (sd != null && sd.getCours().equals(selectedCours))
+			return true;
+		
+		return false;
 	}
 	
 	public void showList() {
 		boolean all = "-1".equals(cours.getValue(cours.getSelectedIndex()));
+		String requestedSessionNo = session.getValue(session.getSelectedIndex());
 		int count = 0, curRow;
 		ArrayList<ClientData> filteredClients = new ArrayList<ClientData>();
 		
@@ -221,17 +246,19 @@ public class ListWidget extends Composite {
 			}
 		});
 		
-		results.resize(count+1, 13);
+		results.resize(count+1, 14);
 		
 		boolean[] visibility = new boolean[] {
 				mode==Mode.FT, true, true, mode==Mode.EDIT || mode==Mode.FT,
-				true, true, true, true, true, true, mode==Mode.EDIT, all, false
+				true, true, true, true, true, true, mode==Mode.EDIT, all, false, 
+				requestedSessionNo.equals("-1")
 		};
 		
 		for (int i = 0; i < heads.length; i++) {
 			if (visibility[i]) {
 				results.setText(0, i, heads[i]);
 				results.getCellFormatter().setStyleName(0, i, "list-th");
+				results.getCellFormatter().setVisible(0, i, true);
 			} else { 
 				results.setText(0, i, "");
 				results.getCellFormatter().setVisible(0, i, false);
@@ -242,7 +269,8 @@ public class ListWidget extends Composite {
 		for (ClientData cd : filteredClients) {
 			String grade = cd.getGrade();
 			if (grade != null && grade.length() >= 3) grade = grade.substring(0, 3);
-			int cours = Integer.parseInt(cd.getMostRecentService().getCours());
+			
+			int cours = cd.getMostRecentService() != null ? Integer.parseInt(cd.getMostRecentService().getCours()) : -1;
 			
 			Anchor nomAnchor = new Anchor(cd.getNom()), prenomAnchor = new Anchor(cd.getPrenom());
 			ClickHandler c = jdb.new EditClientHandler(Integer.parseInt(cd.getID()));
@@ -270,8 +298,18 @@ public class ListWidget extends Composite {
 			//results.setText(curRow, 10, cd.getMostRecentService().getVerification() ? "X" : "");
 			}
 			
-			results.setText(curRow, 11, Constants.COURS[cours].short_desc);
-			results.setText(curRow, 12, Integer.toString(cours));
+			if (cours != -1) {
+				results.setText(curRow, 11, Constants.COURS[cours].short_desc);
+				results.setText(curRow, 12, Integer.toString(cours));
+			} else {
+				results.setText(curRow, 11, "");
+				results.setText(curRow, 12, "");				
+			}
+			if (requestedSessionNo.equals("-1")) {
+				results.setText(curRow, 13, cd.getAllActiveSaisons());
+			} else {
+				results.setText(curRow, 13, "");
+			}
 			
 			for (int j = 0; j < visibility.length; j++)
 				results.getCellFormatter().setVisible(curRow, j, visibility[j]);

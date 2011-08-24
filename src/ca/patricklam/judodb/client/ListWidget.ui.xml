@@ -3,12 +3,20 @@
 
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
+<ui:style>
+.session {
+	position:absolute;
+	top:1.5em; right: 1em;
+}
+</ui:style>
+
 <g:HTMLPanel>
+	<g:ListBox ui:field="session" visibleItemCount="1" styleName="{style.session}" />
 	<h1 id="stdTitle" class="noprint">Listes des cours</h1>
 	   
 	<g:FormPanel ui:field="listForm" method="post">
 	    <g:HorizontalPanel>
-		<g:InlineLabel>Cours&nbsp;</g:InlineLabel><g:ListBox ui:field="cours" visibleItemCount="1"></g:ListBox>
+		<g:InlineLabel>Cours&nbsp;</g:InlineLabel><g:ListBox ui:field="cours" visibleItemCount="1" />
 		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="pdf">(PDF)</g:Anchor>
 		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="presences">(présences)</g:Anchor>
 		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="xls">(XLS)</g:Anchor>
