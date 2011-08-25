@@ -1,8 +1,3 @@
-.casMedical {
-  display:none;
-  font-size: 85%;
-}
-
 #gradehistory {
  position:absolute;
  padding: 0 1em 1em 1em;
@@ -17,12 +12,6 @@
  padding-right:1em;
 }
 
-.cid {
- position:absolute;
- top:1.5em; right: 1em;
- font-size: xx-large;
-}
-
 /* Inspired by http://2tbsp.com/content/flexible_and_efficient_htmlcss_form_layout */
 
 /* Zero out padding and margin, adjust where needed later */
@@ -32,8 +21,8 @@ form, fieldset, label, input, .checkbox, textarea, select, option, form div {
 }
 
 fieldset {
-  margin: 1em 0;
-  padding: 1em;
+  margin: 0 0 0.5em 0;
+  padding: .1em .5em;
   border: 1px solid #999;
 }
 
@@ -81,7 +70,7 @@ input.text, input.button, textarea, select {
 }
 .compactform div {
   width: 99%;
-  margin-bottom: 1em; /* space between rows */
+  margin-bottom: 0.5em; /* space between rows */
   clear: both;
 }
 /* Nested divs shouldn't clear floated elements */
@@ -131,8 +120,14 @@ input.text, input.button, textarea, select {
   border: none;
   border-collapse: collapse;
 }
-/* end form stuff */
 
-#blurb {
-  display: none;
+.fraisOnRight label {
+  padding-right: 2em;
+  float: right;
 }
+
+.fraisBox {
+  text-align: right;
+}
+
+/* end form stuff */

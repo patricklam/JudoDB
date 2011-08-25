@@ -62,18 +62,3 @@ body {
   padding: 2em;
 }
 
-/* client widget stuff which gets redefined for print */
-.noprint {}
-.casMedical {
-  display:none;
-}
-
-.cid {
- position:absolute;
- top:1.5em; right: 1em;
- font-size: xx-large;
-}
-
-.blurb {
-  display: none;
-}

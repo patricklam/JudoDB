@@ -3,54 +3,51 @@
 
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 	<ui:style src="ClientWidget.css" />
-<!-- 
-		<div class="{style.casMedical}">
-			<p>L'état médical du judoka inscrit requiert de remplir une fiche médicale
-plus approfondie.</p>
-			<p style="padding-left: 1em">
- 			<span style="border:solid">&nbsp;&nbsp;&nbsp;&nbsp;</span> OUI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	 		<span style="border:solid">&nbsp;&nbsp;&nbsp;&nbsp;</span> NON
-			</p>
-			<p>Initiales ______</p>
-		</div>
--->
-
-       <g:HTMLPanel>
- 		<div ui:field="cid" class="{style.cid}" />
+    <g:HTMLPanel>
+ 		<div ui:field="cid" class="cid" />
 
  		<form class="{style.compactform}">
- 		
 		<fieldset> <legend>Identit&eacute;</legend>
  		 <div class="{style.fourper}" id="identite">
  		  <label><span class="noprint">Nom<br /></span><g:TextBox ui:field="nom"/></label>
   		  <label><span class="noprint">Prénom<br /></span><g:TextBox ui:field="prenom"/></label>
   		  <label><span class="noprint">Date de naissance (aaaa-mm-jj)<br /></span><g:TextBox ui:field="ddn"/></label>
-	      <label><span class="noprint">Sexe<br /></span><g:TextBox ui:field="sexe"/></label>
+	      <label><span class="noprint">Sexe<br /></span><g:TextBox ui:field="sexe" visibleLength="3"/></label>
 		 </div>
         </fieldset>
 
 		<fieldset> 
 		 <legend>Adresse<span id="copySib" class="noprint" style="display:none"> (<a href="#" onclick="copySibling(); return false">copier</a>)</span></legend>
  		 <div class="{style.oneper}">
-  		  <label><span class="noprint">Adresse<br /></span><g:TextBox ui:field="adresse" visibleLength="80"/></label>
+  		  <label><span class="noprint">Adresse<br /></span><g:TextBox ui:field="adresse" visibleLength="70"/></label>
          </div>
- 		 <div class="{style.fiveper}">
+		 <div class="casMedical" style="width: 20em">
+			<p>L'état médical du judoka inscrit requiert de remplir une fiche médicale plus approfondie.</p>
+			<p style="padding-left: 1em">
+ 			<span style="border:solid">&nbsp;&nbsp;&nbsp;&nbsp;</span> OUI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	 		<span style="border:solid">&nbsp;&nbsp;&nbsp;&nbsp;</span> NON
+			</p>
+			<p>Initiales ______</p>
+		 </div>
+ 		 <div class="{style.fourper}">
   		  <label><span class="noprint">Ville<br /></span><g:TextBox ui:field="ville"/></label>
   		  <label><span class="noprint">Code postal<br /></span><g:TextBox ui:field="codePostal"/></label>
-  		  <label>T&eacute;l&eacute;phone(s)<br /><g:TextBox ui:field="tel"/></label>
+  		  <label><span class="noprint">T&eacute;l&eacute;phone(s)<br /></span><g:TextBox ui:field="tel" visibleLength="10"/></label>
+  		 </div>
+ 		 <div class="{style.threeper}">
    		  <label>T&eacute;l&eacute;phone urgence<br /><g:TextBox ui:field="tel_contact_urgence"/></label>
-		  <label>Courriel<br /><g:TextBox ui:field="courriel"/></label>
+		  <label>Courriel<br /><g:TextBox ui:field="courriel" visibleLength="20"/></label>
  		 </div>
 		</fieldset>
 
  		<fieldset> <legend>Autres renseignments</legend>
  		 <div class="{style.fourper}">
-   		  <label>Num&eacute;ro Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliation"/></label>
-   		  <label>Grade judo <span class="noprint">(<a href="#" onclick="showGradeHistory(); return false">histoire</a>)</span><br /><g:TextBox ui:field="grade"/></label>
+   		  <label>Num&eacute;ro Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliation" visibleLength="8"/></label>
+   		  <label>Grade judo <span class="noprint">(<a href="#" onclick="showGradeHistory(); return false">histoire</a>)</span><br /><g:TextBox ui:field="grade" visibleLength="8"/></label>
 	      <label>Date du grade<br /><g:TextBox ui:field="date_grade" visibleLength="10"/></label>
-   		  <label>N° arrondissement Anjou<br /><g:TextBox ui:field="carte_anjou"/></label>
+   		  <label style="font-size:80%">N° arrondissement Anjou<br /><g:TextBox ui:field="carte_anjou" visibleLength="13"/></label>
    	     </div>
- 		 <div class="{style.twoper}">
+ 		 <div class="{style.oneper}">
    		  <label>Nom re&ccedil;u imp&ocirc;t<br /><g:TextBox ui:field="nom_recu_impot" visibleLength="40"/></label>
 		 </div>
  		</fieldset>
@@ -59,59 +56,46 @@ plus approfondie.</p>
   		 <div class="{style.fourper}">
    		  <label>Date d'inscription
            <g:Anchor ui:field="today"><span class="noprint">(aujourd'hui)</span></g:Anchor> <span id="desinscrire" class="noprint">(désinscrire)</span><br />
-           <g:TextBox ui:field="date_inscription"/>
+           <g:TextBox ui:field="date_inscription" visibleLength="10" />
           </label>
-   		  <label>Cat&eacute;gorie d'&acirc;ge<br /><g:TextBox ui:field="categorie"/></label>
-   		  <label>Saisons<br /><g:TextBox ui:field="saisons"/></label>
-   		  <label>Affiliation Judo QC verifi&eacute;<br /><g:CheckBox ui:field="verification"/>
+   		  <label>Cat&eacute;gorie d'&acirc;ge<br /><g:TextBox ui:field="categorie" visibleLength = "5"/></label>
+   		  <label>Saisons<br /><g:TextBox ui:field="saisons" visibleLength="8" /></label>
+   		  <label style="font-size:80%">Affiliation Judo QC verifi&eacute;<br /><g:CheckBox ui:field="verification"/>
  		  </label>
   		 </div>
   		
   		 <div class="{style.fourper}">
    		  <label style="width:46%">Cours<br /><g:ListBox ui:field="cours"/></label>
    		  <label>Sessions<br /><g:ListBox ui:field="sessions"/></label>
-   		  <label style="float:right">Frais cours<br /><g:TextBox ui:field="categorieFrais"/></label>
+   		  <span class="{style.fraisOnRight}"><label>Frais cours<br /><g:TextBox ui:field="categorieFrais" visibleLength="15"/></label></span>
   		 </div>
   		 <div class="{style.fourper}">
    		  <label>Escompte<br /><g:ListBox ui:field="escompte"/></label>
-          <label>Raison reduction cas sp&eacute;cial<br /><g:TextBox ui:field="cas_special_note"/></label>
-   		  <label>Pourcentage escompte cas sp&eacute;cial<br /><g:TextBox ui:field="cas_special_pct"/></label>
-          <label style="float:right"> - escompte<br /><g:TextBox ui:field="escompteFrais"/></label>
+          <label>Raison cas sp&eacute;cial<br /><g:TextBox ui:field="cas_special_note"/></label>
+   		  <label>% escompte<br /><g:TextBox ui:field="cas_special_pct" visibleLength="8" /></label>
+          <span class="{style.fraisOnRight}"><label> - escompte<br /><g:TextBox ui:field="escompteFrais" visibleLength="15" /></label></span>
          </div>
          <div class="{style.fourper}">
    		  <label>Déjà affili&eacute; Judo Qu&eacute;bec 2011-12<br /><g:CheckBox ui:field="sans_affiliation"/></label>
-          <label style="float:right">Affiliation Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliationFrais"/></label>
+          <span class="{style.fraisOnRight}"><label>Affiliation Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliationFrais" visibleLength="15" /></label></span>
          </div>
          <div class="{style.fourper}">
-          <label>Co&ucirc;t judogi<br /><g:TextBox ui:field="judogi"/></label>
-          <label>Passeport Judo Qu&eacute;bec (5 $)<br /><g:CheckBox ui:field="passeport"/></label>
-          <label>Pas de carte Anjou (5 $)<br /><g:CheckBox ui:field="non_anjou"/></label>
-          <label style="float:right">Autres frais<br /><g:TextBox ui:field="suppFrais"/></label>
+          <label>Co&ucirc;t judogi<br /><g:TextBox ui:field="judogi" visibleLength="8"/></label>
+          <label style="font-size:80%">Passeport Judo QC (5 $)<br /><g:CheckBox ui:field="passeport"/></label>
+          <label style="font-size:80%">Pas de carte Anjou (5 $)<br /><g:CheckBox ui:field="non_anjou"/></label>
+          <span class="{style.fraisOnRight}"><label>Autres frais<br /><g:TextBox ui:field="suppFrais" visibleLength="15" /></label></span>
         </div>
         <div class="{style.fourper}">
-          <label style="float:right">Frais total<br /><g:TextBox ui:field="frais"/></label>
+          <span class="{style.fraisOnRight}"><label>Frais total<br /><g:TextBox ui:field="frais" visibleLength="15" /></label></span>
         </div>
        </fieldset>
-      </form>
+	  </form>
       <g:Button ui:field='saveClientButton'>Sauvegarder</g:Button>
       <g:Button ui:field='discardClientButton'>Annuler</g:Button>
 
-      </g:HTMLPanel>
-
+      <g:HTMLPanel ui:field="blurb" styleName="blurb" />
+    </g:HTMLPanel>
 <!-- 
-      <div id="blurb" style="display:none">
-       <p>Je *nom* certifie que les informations inscrites sur ce formulaire sont véridiques. J'adhère au Club Judo Anjou. J'accepte tous les
-risques d'accident liés à la pratique du judo qui pourraient survenir dans les locaux ou lors d'activités extérieurs organisées par le Club. J'accepte de respecter les règlements du Club.</p>
-
-       <h4>Politique de remboursement</h4>
-
-       <p>Aucun remboursement ne sera accordé sans présentation d'un certificat médical du participant. Seuls les frais de cours
-correspondant à la période restante sont remboursables. En cas d'annulation par le participant, un crédit pourra être émis par le Club, pour les frais de cours correspondant à la période restante.</p>
-
-       <p>Signature *mp*: <span style="float:right">Date: _________</span></p>
-       <p>Signature résponsable du club:  <span style="float:right">Date: *today*</span></p>
-      </div>
-
       <div id="gradehistory" class="noprint" style="display:none">
        <h4 id="gradeHeader">Histoire grades : *nom*</h4>
        <table id="gradeTable">

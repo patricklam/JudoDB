@@ -24,7 +24,9 @@ label {
 }
 
 .cid {
-  top: 0.5em;
+ position:absolute;
+ top:0.5em; right: 1em;
+ font-size: xx-large;
 }
 
 .gwt-Button {
@@ -36,23 +38,8 @@ label {
 }*/
 
 .gwt-TextBox {
-  border-top-color: green;
-  padding-right: 3em;
-}
-
-#status {
-  position:absolute;
-  left:45%;
-  padding:0.3em;
-}
-
-#sync {
-  position: absolute;
-  top: 1.5em;
-  right: 2em;
-  padding: 0.5em;
-  cursor: pointer;
-  color: blue;
+  border: none;
+  padding-right: 2.5em;
 }
 
 legend {
@@ -154,17 +141,12 @@ input.text, input.button, textarea, select {
   /* clear: left; */
   margin-right: 1em;
 }
-/* Fix paragraph white space in Safari */
-.compactform div div p {
-  margin: 0;
-  padding: 0;
-}
  
 /* Compact layout - Set item width within rows */
 .oneper label, .oneper div     { width: 99%; } /* can't be 100%, IE bug */
 .twoper label, .twoper div     { width: 46%; }
 .threeper label, .threeper div { width: 32%; }
-.fourper label, .fourper div   { width: 23%; }
+.fourper label, .fourper div   { width: 22%; }
 .fiveper label, .fiveper div   { width: 19%; }
 .sixper label, .sixper div     { width: 15%; }
 .sevenper label, .sevenper div { width: 13%; }
@@ -193,10 +175,10 @@ input.text, input.button, textarea, select {
   padding-left: 0.5em;
   padding-right: 0.5em;
   padding-top: 0.1em; padding-bottom: 0.1em;
+  margin-top: 3.5em;
   width: 20em;
   display: block;
   border: solid;
-  top: 10em;
   right: 3em;
   font-size: 70%;
 }

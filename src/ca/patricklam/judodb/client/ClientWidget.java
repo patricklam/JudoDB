@@ -1,6 +1,6 @@
 package ca.patricklam.judodb.client;
 
-import java.text.ParseException;
+import java.util.Date;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -14,15 +14,17 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.text.client.DoubleParser;
-import com.google.gwt.text.shared.Parser;
+import com.google.gwt.safehtml.client.SafeHtmlTemplates;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
@@ -83,17 +85,35 @@ public class ClientWidget extends Composite {
 	
 	@UiField Button saveClientButton;
 	@UiField Button discardClientButton;
+
+	@UiField HTMLPanel blurb;
 	
 	private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php?id=";
 	private static final String CALLBACK_URL_SUFFIX = "&callback=";
-
+	public interface BlurbTemplate extends SafeHtmlTemplates {
+		@Template 
+	      ("<p>Je {0} certifie que les informations inscrites sur ce formulaire sont véridiques. "+
+	       "J'adhère au Club Judo Anjou. J'accepte tous les risques d'accident liés à la pratique du "+
+	       "judo qui pourraient survenir dans les locaux ou lors d'activités extérieurs organisées par le Club. "+
+	       "J'accepte de respecter les règlements du Club.</p>"+
+	       "<h4>Politique de remboursement</h4>"+
+	       "<p>Aucun remboursement ne sera accordé sans présentation d'un certificat médical du participant. "+
+	       "Seuls les frais de cours correspondant à la période restante sont remboursables. "+
+	       "En cas d'annulation par le participant, un crédit pourra être émis par le Club, "+
+	       "pour les frais de cours correspondant à la période restante.</p>"+
+	       "<p>Signature {1}: <span style='float:right'>Date: _________</span></p>"+
+	       "<p>Signature résponsable du club:  <span style='float:right'>Date: {2}</span></p>")
+	       SafeHtml blurb(String nom, String membreOuParent, String today);
+	}
+	private static final BlurbTemplate BLURB = GWT.create(BlurbTemplate.class);
+		
 	private ClientData cd;
 	
 	public ClientWidget(JudoDB jdb, int cid) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
 		jdb.pleaseWait();
-				
+		
 		for (Constants.Cours c : Constants.COURS) {
 			cours.addItem(c.name, c.seqno);
 		}
@@ -108,6 +128,7 @@ public class ClientWidget extends Composite {
 		saisons.setReadOnly(true);
 		categorieFrais.setReadOnly(true); categorieFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		escompteFrais.setReadOnly(true); escompteFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
+		judogi.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		affiliationFrais.setReadOnly(true); affiliationFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		suppFrais.setReadOnly(true); suppFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		frais.setReadOnly(true); frais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
@@ -142,6 +163,30 @@ public class ClientWidget extends Composite {
 			loadClientData();
 			jdb.clearStatus();
 		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	private void updateBlurb() {
+		if (cd.getDDNString() == null) return;
+		Date ddn = cd.getDDN(), today = new Date();
+		if (cd.getDDN() == null) return;
+		
+		int by = ddn.getYear(), bm = ddn.getMonth(), bd = ddn.getDay(), 
+			ny = today.getYear(), nm = today.getMonth(), nd = ddn.getDay();
+		int y = ny - by; if (bm > nm || (bm == nm && bd > nd)) y--;
+		String nom = cd.getPrenom() + " " + cd.getNom();
+		String nn, mm;
+		if (y >= 18) {
+			nn = nom; mm = "membre";
+		} else {
+			nn = "__________________________, parent ou tuteur du membre,";
+			mm = "parent ou tuteur";
+		}
+		
+		SafeHtml blurbContents = BLURB.blurb(nn, mm, DateTimeFormat.getFormat("yyyy-MM-dd").format(today));
+		
+		blurb.clear();
+		blurb.add(new HTMLPanel(blurbContents));
 	}
 		
 	/** Takes data from ClientData into the form. */
@@ -178,9 +223,11 @@ public class ClientWidget extends Composite {
 		sans_affiliation.setValue(mrs.getSansAffiliation());
 		affiliationFrais.setText(mrs.getAffiliationFrais());
 
-		escompte.setSelectedIndex(mrs.getEscompte());
+		escompte.setSelectedIndex(mrs.getEscompteType());
 		cas_special_note.setText(mrs.getCasSpecialNote());
-		// XXX todo cas_special_pct from escompte_special
+		cas_special_pct.setText("-1"); // leave cas_special_pct for the calculation phase
+		if (escompte.getValue(escompte.getSelectedIndex()).equals("-1"))
+			escompteFrais.setText(mrs.getEscompteSpecial());
 		
 		judogi.setText(mrs.getJudogi());
 		passeport.setValue(mrs.getPasseport());
@@ -242,13 +289,13 @@ public class ClientWidget extends Composite {
 		sd.setSaisons(saisons.getText());
 		sd.setVerification(verification.getValue());
 		sd.setCours(Integer.toString(cours.getSelectedIndex()));
-		sd.setSessions(cours.getSelectedIndex()+1);
+		sd.setSessions(sessions.getSelectedIndex()+1);
 		sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 		
 		sd.setSansAffiliation(sans_affiliation.getValue());
 		sd.setAffiliationFrais(stripDollars(affiliationFrais.getText()));
 		
-		sd.setEscompte(escompte.getSelectedIndex());
+		sd.setEscompteType(escompte.getSelectedIndex());
 		sd.setCasSpecialNote(cas_special_note.getText());
 		
 		sd.setJudogi(judogi.getText());
@@ -284,14 +331,20 @@ public class ClientWidget extends Composite {
 		public void onValueChange(ValueChangeEvent<Boolean> e) { aujourdhui(); }
 	};
 	
-	// evil hack: getCurrencyFormat doesn't seem to want to parse stuff.
+	// argh NumberFormat doesn't work for me at all!
+	// stupidly, it says that you have to use ',' as the decimal separator, but people use both '.' and ','.
 	private String stripDollars(String s) {
-		return s.replaceAll("$", "");
+		StringBuffer ss = new StringBuffer("");
+		for (int i = 0; i < s.length(); i++)
+			if (s.charAt(i) != '$' && s.charAt(i) != ' ')
+				ss.append(s.charAt(i));
+		return ss.toString();
 	}
 
+	private static native float parseFloat(String s) /*-{ return parseFloat(s); }-*/;
+	
 	private void updateFrais() {
 		NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
-		Parser<Double> nf = DoubleParser.instance();
 
 		int sessionCount = 1;
 		if (sessions.getValue(sessions.getSelectedIndex()).equals("2")) {
@@ -304,23 +357,27 @@ public class ClientWidget extends Composite {
 		
 		double dCategorieFrais = Constants.getFraisCours
 			(Constants.currentSessionNo(), c, sessionCount);
-		double e = 0;
-		try {
-			e = nf.parse(escompte.getValue(escompte.getSelectedIndex())); 
-			if (e == -1)
-				e = nf.parse(cas_special_pct.getText());
-		} catch (ParseException ex) {}
-
-		double dEscompteFrais = -(dCategorieFrais * e)/100;
+		
+		double dEscompteFrais = 0.0;
+		escompteFrais.setReadOnly(true); 
+		if (escompte.getValue(escompte.getSelectedIndex()).equals("-1")) {
+			dEscompteFrais = parseFloat(escompteFrais.getText());
+			GWT.log(Double.toString(dEscompteFrais));
+			if (cas_special_pct.getText().equals("-1")) {
+				String ef = escompteFrais.getText();
+				cas_special_pct.setText(
+						NumberFormat.getDecimalFormat().format(100 * parseFloat(ef) / dCategorieFrais));
+			}
+			escompteFrais.setReadOnly(false); 
+		} else {
+			dEscompteFrais = -dCategorieFrais * parseFloat(escompte.getValue(escompte.getSelectedIndex())) / 100; 
+		}
 		
 		double dAffiliationFrais = 0.0;
 		if (!sans_affiliation.getValue())
 			dAffiliationFrais = Constants.getFraisJudoQC(Constants.currentSessionNo(), c);
 
-		double dSuppFrais = 0.0;
-		try {
-			dSuppFrais += nf.parse(stripDollars(judogi.getText()));
-		} catch (ParseException ex) {}
+		double dSuppFrais = parseFloat(stripDollars(judogi.getText()));
 		if (passeport.getValue())
 			dSuppFrais += Constants.PASSEPORT_JUDO_QC;
 		if (non_anjou.getValue())
@@ -347,6 +404,8 @@ public class ClientWidget extends Composite {
 		Constants.Categorie c = cd.getCategorie();
 		categorie.setText(c.abbrev);
 
+		updateBlurb();
+		
 		// TODO: if (date d'inscription == today)
 		updateFrais();
 	}

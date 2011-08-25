@@ -23,8 +23,8 @@ public class ServiceData extends JavaScriptObject {
 	public final native void setPasseport(boolean passeport) /*-{ this.passport = passeport ? "1" : "0"; }-*/;
 	public final native boolean getNonAnjou() /*-{ return this.non_anjou != '0'; }-*/;
 	public final native void setNonAnjou(boolean non_anjou) /*-{ this.non_anjou = non_anjou ? "1" : "0"; }-*/;
-	public final native int getEscompte() /*-{ return this.escompte == null ? 0 : parseInt(this.escompte); }-*/;
-	public final native void setEscompte(int escompte) /*-{ this.escompte = escompte.toString(); }-*/;
+	public final native int getEscompteType() /*-{ return this.escompte == null ? 0 : parseInt(this.escompte); }-*/;
+	public final native void setEscompteType(int escompte) /*-{ this.escompte = escompte.toString(); }-*/;
 	public final native String getCasSpecialNote() /*-{ return this.cas_special_note; }-*/;
 	public final native void setCasSpecialNote(String cas_special_note) /*-{ this.cas_special_note = cas_special_note; }-*/;
 	public final native String getEscompteSpecial() /*-{ return this.escompte_special; }-*/;
