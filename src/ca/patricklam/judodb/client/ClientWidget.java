@@ -84,6 +84,7 @@ public class ClientWidget extends Composite {
 	@UiField TextBox frais;
 	
 	@UiField Button saveClientButton;
+	@UiField Button saveAndReturnClientButton;
 	@UiField Button discardClientButton;
 
 	@UiField HTMLPanel blurb;
@@ -137,10 +138,15 @@ public class ClientWidget extends Composite {
 
 		sessions.setItemSelected(1, true);
 		
-		saveClientButton.addClickHandler(new ClickHandler() { 
+		saveAndReturnClientButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) {
 				pushClientDataToServer();
 				ClientWidget.this.jdb.popMode(); }
+		});
+		saveClientButton.addClickHandler(new ClickHandler() { 
+			public void onClick(ClickEvent e) {
+				pushClientDataToServer();
+			}
 		});
 		discardClientButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) {

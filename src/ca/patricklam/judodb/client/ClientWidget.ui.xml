@@ -90,8 +90,9 @@
         </div>
        </fieldset>
 	  </form>
+      <g:Button ui:field='saveAndReturnClientButton'>Sauvegarder et retourner</g:Button>
       <g:Button ui:field='saveClientButton'>Sauvegarder</g:Button>
-      <g:Button ui:field='discardClientButton'>Annuler</g:Button>
+      <g:Button ui:field='discardClientButton' addStyleNames='{style.floatRight}'>Annuler</g:Button>
 
       <g:HTMLPanel ui:field="blurb" styleName="blurb" />
     </g:HTMLPanel>

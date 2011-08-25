@@ -126,8 +126,8 @@ input.text, input.button, textarea, select {
   float: right;
 }
 
-.fraisBox {
-  text-align: right;
+.floatRight {
+  float: right;
 }
 
 /* end form stuff */
