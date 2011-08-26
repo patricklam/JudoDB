@@ -162,7 +162,7 @@ public class ListWidget extends Composite {
 			dv += cd.getPrenom() + "|";
 			dv += cd.getJudoQC() + "|";
 			dv += cd.getDDNString() + "|";
-			dv += cd.getCategorieAbbrev() + "|";
+			dv += cd.getCategorie(requestedSession().effective_year).abbrev + "|";
 			dv += cd.getCourriel() + "|";
 			dv += cd.getAdresse() + "|";
 			dv += cd.getVille() + "|";
@@ -173,8 +173,11 @@ public class ListWidget extends Composite {
 			dv += cd.getTelContactUrgence() + "|";
 			dv += cd.getMostRecentGrade().getGrade() + "|";
 			dv += cd.getMostRecentGrade().getDateGrade() + "|";
-			// TODO get the service for the session we're querying
-			dv += Constants.COURS[Integer.parseInt(cd.getMostRecentService().getCours())].short_desc + "|";
+			ServiceData sd = cd.getServiceFor(requestedSession()); 
+			if (sd != null && !sd.getCours().equals(""))
+				dv += Constants.COURS[Integer.parseInt(sd.getCours())].short_desc + "|";
+			else
+				dv += "|";
 			dv += "*";
 		}
 		data_full.setValue(dv);
@@ -186,27 +189,21 @@ public class ListWidget extends Composite {
 		listForm.submit();
 	}
 
-	public String requestedSession() {
+	public Constants.Session requestedSession() {
 		String requestedSessionNo = session.getValue(session.getSelectedIndex());
 		if (requestedSessionNo.equals("-1")) return null;
-		return Constants.SESSIONS[Integer.parseInt(requestedSessionNo)].abbrev;
+		return Constants.SESSIONS[Integer.parseInt(requestedSessionNo)];
 	}
 		
 	public boolean sessionFilter(ClientData cd) {
-		String rs = requestedSession();
+		Constants.Session rs = requestedSession();
 		if (rs == null) return true;
 		
-		ServiceData sd = null;
-		for (int i = 0; i < cd.getServices().length(); i++) {
-			sd = cd.getServices().get(i);
-			if (sd.getSaisons().contains(rs))
-				return true;
-		}
-		return false;
+		return cd.getServiceFor(rs) != null;
 	}
 	
 	public boolean filter(ClientData cd) {
-		// filter for season; TODO: fix to not necessarily require most recent season!
+		// filter for season
 		if (!sessionFilter(cd))
 			return false;
 
@@ -215,9 +212,7 @@ public class ListWidget extends Composite {
 		if (selectedCours.equals("-1"))
 			return true;
 		
-		// TODO select the cours for the requested session
-		ServiceData sd = cd.getMostRecentService();
-		if (sd != null && sd.getCours().equals(selectedCours))
+		if (selectedCours.equals(cd.getServiceFor(requestedSession()).getCours()))
 			return true;
 		
 		return false;
@@ -270,7 +265,8 @@ public class ListWidget extends Composite {
 			String grade = cd.getGrade();
 			if (grade != null && grade.length() >= 3) grade = grade.substring(0, 3);
 			
-			int cours = cd.getMostRecentService() != null ? Integer.parseInt(cd.getMostRecentService().getCours()) : -1;
+			ServiceData sd = cd.getServiceFor(requestedSession());
+			int cours = sd != null ? Integer.parseInt(sd.getCours()) : -1;
 			
 			Anchor nomAnchor = new Anchor(cd.getNom()), prenomAnchor = new Anchor(cd.getPrenom());
 			ClickHandler c = jdb.new EditClientHandler(Integer.parseInt(cd.getID()));
@@ -291,7 +287,7 @@ public class ListWidget extends Composite {
 			results.setText(curRow, 6, cd.getTel());
 			results.setText(curRow, 7, cd.getJudoQC());
 			results.setText(curRow, 8, cd.getDDNString());
-			results.setText(curRow, 9, cd.getCategorie().abbrev);
+			results.setText(curRow, 9, cd.getCategorie(requestedSession().effective_year).abbrev);
 
 			if (visibility[10]) {
 			// actually a checkbox:
@@ -357,13 +353,8 @@ public class ListWidget extends Composite {
 			return;
 		}
 
-	    this.allClients = asArrayOfClientData (jso);
+	    this.allClients = jso.cast();
 	    showList();
 	    jdb.clearStatus();
 	}
-
-	private final native JsArray<ClientData> asArrayOfClientData(JavaScriptObject jso) /*-{
-		return jso;
-	}-*/;
-
 }

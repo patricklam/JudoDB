@@ -109,6 +109,8 @@ public class ClientWidget extends Composite {
 	private static final BlurbTemplate BLURB = GWT.create(BlurbTemplate.class);
 		
 	private ClientData cd;
+	private int currentServiceNumber;
+	public int getCurrentServiceNumber() { return currentServiceNumber; }
 	
 	public ClientWidget(JudoDB jdb, int cid) {
 		this.jdb = jdb;
@@ -128,6 +130,7 @@ public class ClientWidget extends Composite {
 		categorie.setReadOnly(true);
 		saisons.setReadOnly(true);
 		categorieFrais.setReadOnly(true); categorieFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
+		cas_special_pct.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		escompteFrais.setReadOnly(true); escompteFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		judogi.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		affiliationFrais.setReadOnly(true); affiliationFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
@@ -159,12 +162,14 @@ public class ClientWidget extends Composite {
 			getJson(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
 		else {
 			this.cd = JavaScriptObject.createObject().cast();
-			JsArray<ServiceData> sa = asServiceArray(JavaScriptObject.createArray());
+			JsArray<ServiceData> sa = JavaScriptObject.createArray().cast();
 			ServiceData sd = ServiceData.newServiceData();
 			sd.inscrireAujourdhui();
 			sa.set(0, sd);
-			JsArray<GradeData> ga = asGradeArray(JavaScriptObject.createArray());
 			this.cd.setServices(sa);
+			currentServiceNumber = 0;
+			
+			JsArray<GradeData> ga = JavaScriptObject.createArray().cast();
 			this.cd.setGrades(ga);
 			loadClientData();
 			jdb.clearStatus();
@@ -216,31 +221,33 @@ public class ClientWidget extends Composite {
 
 		tel_contact_urgence.setText(cd.getTelContactUrgence());
 		
-		ServiceData mrs = cd.getMostRecentService();
-		if (mrs == null) mrs = ServiceData.newServiceData();
-		date_inscription.setText(mrs.getDateInscription());
+		ServiceData sd;
+		if (currentServiceNumber == -1)
+			sd = ServiceData.newServiceData();
+		else
+			sd = cd.getServices().get(currentServiceNumber);
+		date_inscription.setText(sd.getDateInscription());
 		// categories is set in recompute().
-		saisons.setText(mrs.getSaisons());
-		verification.setValue(mrs.getVerification());
-		cours.setItemSelected(Integer.parseInt(mrs.getCours()), true);
-		sessions.setItemSelected(mrs.getSessions()-1, true);
-		categorieFrais.setText(mrs.getCategorieFrais());
+		saisons.setText(sd.getSaisons());
+		verification.setValue(sd.getVerification());
+		cours.setItemSelected(Integer.parseInt(sd.getCours()), true);
+		sessions.setItemSelected(sd.getSessions()-1, true);
+		categorieFrais.setText(sd.getCategorieFrais());
 		
-		sans_affiliation.setValue(mrs.getSansAffiliation());
-		affiliationFrais.setText(mrs.getAffiliationFrais());
+		sans_affiliation.setValue(sd.getSansAffiliation());
+		affiliationFrais.setText(sd.getAffiliationFrais());
 
-		escompte.setSelectedIndex(mrs.getEscompteType());
-		cas_special_note.setText(mrs.getCasSpecialNote());
-		cas_special_pct.setText("-1"); // leave cas_special_pct for the calculation phase
-		if (escompte.getValue(escompte.getSelectedIndex()).equals("-1"))
-			escompteFrais.setText(mrs.getEscompteSpecial());
+		escompte.setSelectedIndex(sd.getEscompteType());
+		cas_special_note.setText(sd.getCasSpecialNote());
+		cas_special_pct.setValue(sd.getCasSpecialPct());
+		escompteFrais.setText(sd.getEscompteFrais());
 		
-		judogi.setText(mrs.getJudogi());
-		passeport.setValue(mrs.getPasseport());
-		non_anjou.setValue(mrs.getNonAnjou());
-		suppFrais.setText(mrs.getSuppFrais());	
+		judogi.setText(sd.getJudogi());
+		passeport.setValue(sd.getPasseport());
+		non_anjou.setValue(sd.getNonAnjou());
+		suppFrais.setText(sd.getSuppFrais());	
 		
-		frais.setText(mrs.getFrais());
+		frais.setText(sd.getFrais());
 
 		today.addClickHandler(aujourdhuiClickHandler);
 		ddn.addChangeHandler(aujourdhuiHandler);
@@ -258,14 +265,13 @@ public class ClientWidget extends Composite {
 		date_inscription.addChangeHandler(recomputeHandler);
 		sessions.addChangeHandler(recomputeHandler);
 		escompte.addChangeHandler(recomputeHandler);
-		cas_special_pct.addChangeHandler(recomputeHandler);
-		escompteFrais.addChangeHandler(recomputeCasSpecialAmtHandler);
+		cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
+		escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
 		sans_affiliation.addValueChangeHandler(recomputeValueHandler);
 		judogi.addChangeHandler(recomputeHandler);
 		passeport.addValueChangeHandler(recomputeValueHandler);
 		non_anjou.addValueChangeHandler(recomputeValueHandler);
 
-		// TODO add handlers for setting date d'inscription
 		recompute();
 	}
 
@@ -289,8 +295,7 @@ public class ClientWidget extends Composite {
 
 		cd.setTelContactUrgence(tel_contact_urgence.getText());
 		
-		// TODO: preserve previous season's inscriptions...
-		ServiceData sd = cd.getMostRecentService();
+		ServiceData sd = cd.getServices().get(currentServiceNumber);
 		sd.setDateInscription(date_inscription.getText());
 		sd.setSaisons(saisons.getText());
 		sd.setVerification(verification.getValue());
@@ -303,6 +308,8 @@ public class ClientWidget extends Composite {
 		
 		sd.setEscompteType(escompte.getSelectedIndex());
 		sd.setCasSpecialNote(cas_special_note.getText());
+		sd.setCasSpecialPct(cas_special_pct.getText());
+		sd.setEscompteFrais(escompteFrais.getText());
 		
 		sd.setJudogi(judogi.getText());
 		sd.setPasseport(passeport.getValue());
@@ -319,14 +326,28 @@ public class ClientWidget extends Composite {
 		public void onValueChange(ValueChangeEvent<Boolean> e) { recompute(); }
 	};
 
-	private final ChangeHandler recomputeCasSpecialAmtHandler = new ChangeHandler() {
+	private final ChangeHandler clearEscomptePctAndRecomputeHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { 
-			// TODO recompute pct of escompte
+			cas_special_pct.setValue("-1");
 			recompute(); 
 		}
 	};
 
-	private void aujourdhui() { saveClientData(); cd.getMostRecentService().inscrireAujourdhui(); loadClientData(); recompute(); }
+	private final ChangeHandler clearEscompteAmtAndRecomputeHandler = new ChangeHandler() {
+		public void onChange(ChangeEvent e) { 
+			escompteFrais.setValue("-1");
+			recompute(); 
+		}
+	};
+
+	private void aujourdhui() { 
+		saveClientData();
+		// TODO: only do this if the current service is actually for the current year,
+		// otherwise create a new service.
+		cd.getServices().get(currentServiceNumber).inscrireAujourdhui(); 
+		loadClientData(); 
+		recompute(); 
+	}
 	private final ChangeHandler aujourdhuiHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { aujourdhui(); }
 	};
@@ -341,15 +362,35 @@ public class ClientWidget extends Composite {
 	// stupidly, it says that you have to use ',' as the decimal separator, but people use both '.' and ','.
 	private String stripDollars(String s) {
 		StringBuffer ss = new StringBuffer("");
-		for (int i = 0; i < s.length(); i++)
-			if (s.charAt(i) != '$' && s.charAt(i) != ' ')
+		for (int i = 0; i < s.length(); i++) {
+			if (s.charAt(i) == '$' || s.charAt(i) == ' ' || s.charAt(i) == ')') 
+				continue;
+
+			if (s.charAt(i) == ',')
+				ss.append(".");
+			else if (s.charAt(i) == '(')
+				ss.append("-");
+			else
 				ss.append(s.charAt(i));
+		}
 		return ss.toString();
 	}
 
 	private static native float parseFloat(String s) /*-{ return parseFloat(s); }-*/;
 	
+	@SuppressWarnings("deprecation")
+	private boolean sameDate(Date d1, Date d2) {
+		return d1.getYear() == d2.getYear() && d1.getMonth() == d2.getMonth() && d1.getDay() == d2.getDay();
+	}
+	
 	private void updateFrais() {
+		ServiceData sd = cd.getServices().get(currentServiceNumber);
+		Date dateInscription = DateTimeFormat.getFormat("yyyy-MM-dd").parse(sd.getDateInscription());
+		
+		// do not update frais for previous inscriptions
+		if (!sameDate(dateInscription, new Date()))
+			return;
+		
 		NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
 
 		int sessionCount = 1;
@@ -359,7 +400,7 @@ public class ClientWidget extends Composite {
 
 		saisons.setText(Constants.getCurrentSessionIds(sessionCount));
 
-		Constants.Categorie c = cd.getCategorie();
+		Constants.Categorie c = cd.getCategorie(Constants.currentSession().effective_year);
 		
 		double dCategorieFrais = Constants.getFraisCours
 			(Constants.currentSessionNo(), c, sessionCount);
@@ -367,13 +408,25 @@ public class ClientWidget extends Composite {
 		double dEscompteFrais = 0.0;
 		escompteFrais.setReadOnly(true); 
 		if (escompte.getValue(escompte.getSelectedIndex()).equals("-1")) {
-			dEscompteFrais = parseFloat(escompteFrais.getText());
-			GWT.log(Double.toString(dEscompteFrais));
-			if (cas_special_pct.getText().equals("-1")) {
-				String ef = escompteFrais.getText();
-				cas_special_pct.setText(
-						NumberFormat.getDecimalFormat().format(100 * parseFloat(ef) / dCategorieFrais));
+			NumberFormat nf = NumberFormat.getDecimalFormat();
+			if (cas_special_pct.getValue().equals("-1")) {
+				String ef = stripDollars(escompteFrais.getValue());
+				float fEf = parseFloat(ef);
+				cas_special_pct.setValue(nf.format(-100 * fEf / dCategorieFrais));
+				if (fEf > 0) {
+					fEf *= -1;
+					escompteFrais.setValue(nf.format(fEf));
+				}
+			} else if (escompteFrais.getValue().equals("-1")) {
+				String cpct = stripDollars(cas_special_pct.getValue());
+				float fCpct = parseFloat(cpct); 
+				if (fCpct < 0) {
+					fCpct *= -1; 
+					cas_special_pct.setValue(nf.format(fCpct));
+				}
+				escompteFrais.setValue(nf.format(-fCpct * dCategorieFrais / 100.0));				
 			}
+			dEscompteFrais = parseFloat(stripDollars(escompteFrais.getValue()));
 			escompteFrais.setReadOnly(false); 
 		} else {
 			dEscompteFrais = -dCategorieFrais * parseFloat(escompte.getValue(escompte.getSelectedIndex())) / 100; 
@@ -391,7 +444,7 @@ public class ClientWidget extends Composite {
 
 		categorieFrais.setText (cf.format(dCategorieFrais));
 		affiliationFrais.setText (cf.format(dAffiliationFrais));
-		escompteFrais.setText(cf.format(dEscompteFrais));
+		escompteFrais.setValue(cf.format(dEscompteFrais));
 		suppFrais.setText(cf.format(dSuppFrais));
 
 		frais.setText(cf.format(dCategorieFrais + dAffiliationFrais + dEscompteFrais + dSuppFrais));		
@@ -406,13 +459,11 @@ public class ClientWidget extends Composite {
 		((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(d);
 		((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);
 
-		// TODO: set the categorie corresponding to the date d'inscription
-		Constants.Categorie c = cd.getCategorie();
+		ServiceData sd = cd.getServices().get(currentServiceNumber);
+		Constants.Categorie c = cd.getCategorie(Constants.session(sd.getSaisons()).effective_year);
 		categorie.setText(c.abbrev);
 
 		updateBlurb();
-		
-		// TODO: if (date d'inscription == today)
 		updateFrais();
 	}
 
@@ -460,14 +511,8 @@ public class ClientWidget extends Composite {
 		}	
 
 	    this.cd = jso.cast();
+	    currentServiceNumber = cd.getMostRecentServiceNumber();
 	    loadClientData();
 	    jdb.clearStatus();
 	}
-
-	private final native JsArray<GradeData> asGradeArray(JavaScriptObject jso) /*-{
-    	return jso;
-  	}-*/;
-	private final native JsArray<ServiceData> asServiceArray(JavaScriptObject jso) /*-{
-    	return jso;
-  	}-*/;
 }

@@ -95,6 +95,14 @@ public class Constants {
 		return null;
 	}
 	
+	public static Session session(String abbrev) {
+		String a = abbrev.split(" ")[0];
+		for (Session s : SESSIONS)
+			if (s.abbrev.equals(a))
+				return s;
+		return null;
+	}
+	
 	public static String getCurrentSessionIds(int sessions) {
 		if (sessions == 1) return currentSession().abbrev;
 		if (sessions == 2) return currentSession().abbrev + " " + session(currentSessionNo()+1).abbrev;

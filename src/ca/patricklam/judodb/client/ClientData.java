@@ -52,16 +52,27 @@ public class ClientData extends JavaScriptObject {
 	public final native JsArray<ServiceData> getServices() /*-{ return this.services; }-*/;
 	public final native void setServices(JsArray<ServiceData> services) /*-{ this.services = services; }-*/;
 	
-	public final ServiceData getMostRecentService() {
+	public final int getMostRecentServiceNumber() {
 		JsArray<ServiceData> services = getServices();
-		if (services == null || services.length() == 0) return null;
+		if (services == null || services.length() == 0) return -1;
 		
-		ServiceData m = services.get(0); 
+		int r = 0;
 		for (int i = 0; i < services.length(); i++) {
-			if (services.get(i).getDateInscription().compareTo(m.getDateInscription()) > 0)
-				m = services.get(i);
+			if (services.get(i).getDateInscription().compareTo(services.get(r).getDateInscription()) > 0)
+				r = i;
 		}
-		return m;
+		return r;
+	}
+	
+	public final ServiceData getServiceFor(Constants.Session saison) {
+		JsArray<ServiceData> services = getServices();
+		if (services == null) return null;
+		
+		for (int i = 0; i < services.length(); i++) {
+			if (services.get(i).getSaisons().contains(saison.abbrev))
+				return services.get(i);
+		}
+		return null;
 	}
 
 	public final String getAllActiveSaisons() {
@@ -108,7 +119,7 @@ public class ClientData extends JavaScriptObject {
 		return getGrade().endsWith("D");
 	}
 		
-	public final Categorie getCategorie() {
+	public final Categorie getCategorie(int current_year) {
 		Date d = getDDN();
 		if (d == null) return Constants.EMPTY_CATEGORIE;
 		
@@ -117,15 +128,10 @@ public class ClientData extends JavaScriptObject {
 		for (int i = 0; i < Constants.CATEGORIES.length; i++) {
 			if (isNoire() == Constants.CATEGORIES[i].noire &&
 					((Constants.CATEGORIES[i].years_ago == 0) ||
-					 (Constants.currentSession().effective_year - Constants.CATEGORIES[i].years_ago < year)))
+					 (current_year - Constants.CATEGORIES[i].years_ago < year)))
 				return Constants.CATEGORIES[i];
 		}		
 		return Constants.EMPTY_CATEGORIE;
-	}
-	
-	public final String getCategorieAbbrev() {
-		Categorie c = getCategorie();
-		return c != null ? c.abbrev : "";
 	}
 	
 	/* deprecated */
