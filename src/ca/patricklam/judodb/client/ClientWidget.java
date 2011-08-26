@@ -57,7 +57,7 @@ public class ClientWidget extends Composite {
 
 	@UiField TextBox tel_contact_urgence;
 
-	@UiField TextBox date_inscription;
+	@UiField ListBox date_inscription;
 	@UiField Anchor today;
 	@UiField TextBox saisons;
 	@UiField CheckBox verification;
@@ -81,6 +81,7 @@ public class ClientWidget extends Composite {
 	@UiField CheckBox non_anjou;
 	@UiField TextBox suppFrais;
 
+	@UiField CheckBox solde;
 	@UiField TextBox frais;
 	
 	@UiField Button saveClientButton;
@@ -126,7 +127,6 @@ public class ClientWidget extends Composite {
 			escompte.addItem(e.name, Integer.toString(e.amount));
 		}
 		
-		date_inscription.setReadOnly(true);
 		categorie.setReadOnly(true);
 		saisons.setReadOnly(true);
 		categorieFrais.setReadOnly(true); categorieFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
@@ -141,6 +141,29 @@ public class ClientWidget extends Composite {
 
 		sessions.setItemSelected(1, true);
 		
+		today.addClickHandler(aujourdhuiClickHandler);
+		ddn.addChangeHandler(aujourdhuiHandler);
+		sessions.addChangeHandler(aujourdhuiHandler);
+		escompte.addChangeHandler(aujourdhuiHandler);
+		cas_special_pct.addChangeHandler(aujourdhuiHandler);
+		escompteFrais.addChangeHandler(aujourdhuiHandler);
+		sans_affiliation.addValueChangeHandler(aujourdhuiValueHandler);
+		judogi.addChangeHandler(aujourdhuiHandler);
+		passeport.addValueChangeHandler(aujourdhuiValueHandler);
+		non_anjou.addValueChangeHandler(aujourdhuiValueHandler);
+		
+		ddn.addChangeHandler(recomputeHandler);
+		grade.addChangeHandler(recomputeHandler);
+		date_inscription.addChangeHandler(changeSaisonHandler);
+		sessions.addChangeHandler(recomputeHandler);
+		escompte.addChangeHandler(recomputeHandler);
+		cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
+		escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
+		sans_affiliation.addValueChangeHandler(recomputeValueHandler);
+		judogi.addChangeHandler(recomputeHandler);
+		passeport.addValueChangeHandler(recomputeValueHandler);
+		non_anjou.addValueChangeHandler(recomputeValueHandler);
+
 		saveAndReturnClientButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) {
 				pushClientDataToServer();
@@ -157,7 +180,7 @@ public class ClientWidget extends Composite {
 				ClientWidget.this.jdb.popMode(); 
 			}
 		});
-		
+
 		if (cid != -1)
 			getJson(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
 		else {
@@ -222,16 +245,25 @@ public class ClientWidget extends Composite {
 		tel_contact_urgence.setText(cd.getTelContactUrgence());
 		
 		ServiceData sd;
-		if (currentServiceNumber == -1)
+		if (currentServiceNumber == -1) {
 			sd = ServiceData.newServiceData();
+			sd.inscrireAujourdhui();
+		}
 		else
 			sd = cd.getServices().get(currentServiceNumber);
-		date_inscription.setText(sd.getDateInscription());
+
+		date_inscription.clear();
+		for (int i = 0; i < cd.getServices().length(); i++) {
+			ServiceData ssd = cd.getServices().get(i);
+			date_inscription.addItem(ssd.getDateInscription(), Integer.toString(i));
+		}
+		date_inscription.setSelectedIndex(currentServiceNumber);
+		
 		// categories is set in recompute().
 		saisons.setText(sd.getSaisons());
 		verification.setValue(sd.getVerification());
 		cours.setItemSelected(Integer.parseInt(sd.getCours()), true);
-		sessions.setItemSelected(sd.getSessions()-1, true);
+		sessions.setItemSelected(sd.getSessionCount()-1, true);
 		categorieFrais.setText(sd.getCategorieFrais());
 		
 		sans_affiliation.setValue(sd.getSansAffiliation());
@@ -248,30 +280,8 @@ public class ClientWidget extends Composite {
 		suppFrais.setText(sd.getSuppFrais());	
 		
 		frais.setText(sd.getFrais());
-
-		today.addClickHandler(aujourdhuiClickHandler);
-		ddn.addChangeHandler(aujourdhuiHandler);
-		sessions.addChangeHandler(aujourdhuiHandler);
-		escompte.addChangeHandler(aujourdhuiHandler);
-		cas_special_pct.addChangeHandler(aujourdhuiHandler);
-		escompteFrais.addChangeHandler(aujourdhuiHandler);
-		sans_affiliation.addValueChangeHandler(aujourdhuiValueHandler);
-		judogi.addChangeHandler(aujourdhuiHandler);
-		passeport.addValueChangeHandler(aujourdhuiValueHandler);
-		non_anjou.addValueChangeHandler(aujourdhuiValueHandler);
+		solde.setValue(sd.getSolde());
 		
-		ddn.addChangeHandler(recomputeHandler);
-		grade.addChangeHandler(recomputeHandler);
-		date_inscription.addChangeHandler(recomputeHandler);
-		sessions.addChangeHandler(recomputeHandler);
-		escompte.addChangeHandler(recomputeHandler);
-		cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
-		escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
-		sans_affiliation.addValueChangeHandler(recomputeValueHandler);
-		judogi.addChangeHandler(recomputeHandler);
-		passeport.addValueChangeHandler(recomputeValueHandler);
-		non_anjou.addValueChangeHandler(recomputeValueHandler);
-
 		recompute();
 	}
 
@@ -296,11 +306,11 @@ public class ClientWidget extends Composite {
 		cd.setTelContactUrgence(tel_contact_urgence.getText());
 		
 		ServiceData sd = cd.getServices().get(currentServiceNumber);
-		sd.setDateInscription(date_inscription.getText());
+		sd.setDateInscription(date_inscription.getItemText(currentServiceNumber));
 		sd.setSaisons(saisons.getText());
 		sd.setVerification(verification.getValue());
 		sd.setCours(Integer.toString(cours.getSelectedIndex()));
-		sd.setSessions(sessions.getSelectedIndex()+1);
+		sd.setSessionCount(sessions.getSelectedIndex()+1);
 		sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 		
 		sd.setSansAffiliation(sans_affiliation.getValue());
@@ -317,10 +327,18 @@ public class ClientWidget extends Composite {
 		sd.setSuppFrais(suppFrais.getText());
 		
 		sd.setFrais(frais.getText());
+		sd.setSolde(solde.getValue());
 	}
 	
 	private final ChangeHandler recomputeHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { recompute(); }
+	};
+	private final ChangeHandler changeSaisonHandler = new ChangeHandler() {
+		public void onChange(ChangeEvent e) { 
+			saveClientData();
+			currentServiceNumber = Integer.parseInt(date_inscription.getValue(date_inscription.getSelectedIndex()));
+			loadClientData();
+		}
 	};
 	private final ValueChangeHandler<Boolean> recomputeValueHandler = new ValueChangeHandler<Boolean>() {
 		public void onValueChange(ValueChangeEvent<Boolean> e) { recompute(); }
@@ -342,9 +360,14 @@ public class ClientWidget extends Composite {
 
 	private void aujourdhui() { 
 		saveClientData();
-		// TODO: only do this if the current service is actually for the current year,
-		// otherwise create a new service.
-		cd.getServices().get(currentServiceNumber).inscrireAujourdhui(); 
+
+		ServiceData sd = cd.getServiceFor(Constants.currentSession());
+		if (sd == null) {
+			sd = ServiceData.newServiceData();
+			cd.getServices().push(sd);
+		}
+		sd.inscrireAujourdhui();
+		currentServiceNumber = cd.getMostRecentServiceNumber();
 		loadClientData(); 
 		recompute(); 
 	}
@@ -460,8 +483,10 @@ public class ClientWidget extends Composite {
 		((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);
 
 		ServiceData sd = cd.getServices().get(currentServiceNumber);
-		Constants.Categorie c = cd.getCategorie(Constants.session(sd.getSaisons()).effective_year);
-		categorie.setText(c.abbrev);
+		if (sd != null && !sd.getSaisons().equals("")) {
+			Constants.Categorie c = cd.getCategorie(Constants.session(sd.getSaisons()).effective_year);
+			categorie.setText(c.abbrev);
+		}
 
 		updateBlurb();
 		updateFrais();

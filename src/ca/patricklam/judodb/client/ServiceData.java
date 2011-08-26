@@ -11,14 +11,14 @@ public class ServiceData extends JavaScriptObject {
 	public final native String getID() /*-{ return this.id; }-*/;
 	public final native String getDateInscription() /*-{ return this.date_inscription == null ? "" : this.date_inscription; }-*/;
 	public final native void setDateInscription(String date_inscription) /*-{ this.date_inscription = date_inscription; }-*/;
-	public final native String getSaisons() /*-{ return this.saisons; }-*/;
+	public final native String getSaisons() /*-{ return this.saisons == null ? "" : this.saisons; }-*/;
 	public final native void setSaisons(String saisons) /*-{ this.saisons = saisons; }-*/;
 	public final native boolean getSansAffiliation() /*-{ return this.sans_affiliation != '0'; }-*/;
 	public final native void setSansAffiliation(boolean sans_affiliation) /*-{ this.sans_affiliation = sans_affiliation ? "1" : "0"; }-*/;
 	public final native String getCours() /*-{ return this.cours; }-*/;
 	public final native void setCours(String cours) /*-{ this.cours = cours; }-*/;
-	public final native int getSessions() /*-{ return this.sessions == null ? 2 : parseInt(this.sessions); }-*/;
-	public final native void setSessions(int sessions) /*-{ this.sessions = sessions.toString(); }-*/;
+	public final native int getSessionCount() /*-{ return this.sessions == null ? 2 : parseInt(this.sessions); }-*/;
+	public final native void setSessionCount(int sessions) /*-{ this.sessions = sessions.toString(); }-*/;
 	public final native boolean getPasseport() /*-{ return this.passeport != '0'; }-*/;
 	public final native void setPasseport(boolean passeport) /*-{ this.passport = passeport ? "1" : "0"; }-*/;
 	public final native boolean getNonAnjou() /*-{ return this.non_anjou != '0'; }-*/;
@@ -43,6 +43,8 @@ public class ServiceData extends JavaScriptObject {
 	public final native void setFrais(String frais) /*-{ this.frais = frais; }-*/;
 	public final native boolean getVerification() /*-{ return this.verification != '0'; }-*/;
 	public final native void setVerification(boolean verification) /*-{ this.verification = verification ? "1" : "0"; }-*/;
+	public final native boolean getSolde() /*-{ return this.solde!= '0'; }-*/;
+	public final native void setSolde(boolean solde) /*-{ this.solde = solde ? "1" : "0"; }-*/;
 	
 	public final void inscrireAujourdhui() { 
 		setDateInscription(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
@@ -66,7 +68,8 @@ public class ServiceData extends JavaScriptObject {
     		frais: "0.0",
     		cas_special_note: "",
     		escompte_special: "",
-    		verification: "0"
+    		verification: "0",
+    		solde: "0"
 		};
 	}-*/;
 }

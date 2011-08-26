@@ -56,7 +56,7 @@
   		 <div class="{style.fourper}">
    		  <label>Date d'inscription
            <g:Anchor ui:field="today"><span class="noprint">(aujourd'hui)</span></g:Anchor> <span id="desinscrire" class="noprint">(désinscrire)</span><br />
-           <g:TextBox ui:field="date_inscription" visibleLength="10" />
+           <g:ListBox ui:field="date_inscription" />
           </label>
    		  <label>Cat&eacute;gorie d'&acirc;ge<br /><g:TextBox ui:field="categorie" visibleLength = "5"/></label>
    		  <label>Saisons<br /><g:TextBox ui:field="saisons" visibleLength="8" /></label>
@@ -86,6 +86,7 @@
           <span class="{style.fraisOnRight}"><label>Autres frais<br /><g:TextBox ui:field="suppFrais" visibleLength="15" /></label></span>
         </div>
         <div class="{style.fourper}">
+          <label>Solde reste &agrave; payer<br /><g:CheckBox ui:field="solde"/></label>
           <span class="{style.fraisOnRight}"><label>Frais total<br /><g:TextBox ui:field="frais" visibleLength="15" /></label></span>
         </div>
        </fieldset>
