@@ -58,7 +58,7 @@ public class ClientWidget extends Composite {
 	@UiField TextBox tel_contact_urgence;
 
 	@UiField ListBox date_inscription;
-	@UiField Anchor today;
+	@UiField Anchor inscrire;
 	@UiField TextBox saisons;
 	@UiField CheckBox verification;
 
@@ -141,16 +141,7 @@ public class ClientWidget extends Composite {
 
 		sessions.setItemSelected(1, true);
 		
-		today.addClickHandler(aujourdhuiClickHandler);
-		ddn.addChangeHandler(aujourdhuiHandler);
-		sessions.addChangeHandler(aujourdhuiHandler);
-		escompte.addChangeHandler(aujourdhuiHandler);
-		cas_special_pct.addChangeHandler(aujourdhuiHandler);
-		escompteFrais.addChangeHandler(aujourdhuiHandler);
-		sans_affiliation.addValueChangeHandler(aujourdhuiValueHandler);
-		judogi.addChangeHandler(aujourdhuiHandler);
-		passeport.addValueChangeHandler(aujourdhuiValueHandler);
-		non_anjou.addValueChangeHandler(aujourdhuiValueHandler);
+		inscrire.addClickHandler(aujourdhuiClickHandler);
 		
 		ddn.addChangeHandler(recomputeHandler);
 		grade.addChangeHandler(recomputeHandler);
@@ -371,14 +362,8 @@ public class ClientWidget extends Composite {
 		loadClientData(); 
 		recompute(); 
 	}
-	private final ChangeHandler aujourdhuiHandler = new ChangeHandler() {
-		public void onChange(ChangeEvent e) { aujourdhui(); }
-	};
 	private final ClickHandler aujourdhuiClickHandler = new ClickHandler() {
 		public void onClick(ClickEvent e) { aujourdhui(); }
-	};
-	private final ValueChangeHandler<Boolean> aujourdhuiValueHandler = new ValueChangeHandler<Boolean>() {
-		public void onValueChange(ValueChangeEvent<Boolean> e) { aujourdhui(); }
 	};
 	
 	// argh NumberFormat doesn't work for me at all!

@@ -55,7 +55,7 @@
  		<fieldset> <legend>Inscription</legend>
   		 <div class="{style.fourper}">
    		  <label>Date d'inscription
-           <g:Anchor ui:field="today"><span class="noprint">(aujourd'hui)</span></g:Anchor> <span id="desinscrire" class="noprint">(désinscrire)</span><br />
+           <g:Anchor ui:field="inscrire"><span class="noprint">(inscrire)</span></g:Anchor> <span id="desinscrire" class="noprint">(désinscrire)</span><br />
            <g:ListBox ui:field="date_inscription" />
           </label>
    		  <label>Cat&eacute;gorie d'&acirc;ge<br /><g:TextBox ui:field="categorie" visibleLength = "5"/></label>
