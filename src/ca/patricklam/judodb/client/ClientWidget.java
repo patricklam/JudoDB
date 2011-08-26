@@ -59,6 +59,8 @@ public class ClientWidget extends Composite {
 
 	@UiField ListBox date_inscription;
 	@UiField Anchor inscrire;
+	@UiField Anchor modifier;
+	@UiField Anchor desinscrire;
 	@UiField TextBox saisons;
 	@UiField CheckBox verification;
 
@@ -141,7 +143,8 @@ public class ClientWidget extends Composite {
 
 		sessions.setItemSelected(1, true);
 		
-		inscrire.addClickHandler(aujourdhuiClickHandler);
+		inscrire.addClickHandler(inscrireClickHandler);
+		desinscrire.addClickHandler(desinscrireClickHandler);
 		
 		ddn.addChangeHandler(recomputeHandler);
 		grade.addChangeHandler(recomputeHandler);
@@ -244,11 +247,17 @@ public class ClientWidget extends Composite {
 			sd = cd.getServices().get(currentServiceNumber);
 
 		date_inscription.clear();
+		boolean hasToday = false; 
+		String todayString = DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()); 
+		
 		for (int i = 0; i < cd.getServices().length(); i++) {
 			ServiceData ssd = cd.getServices().get(i);
+			if (todayString.equals(ssd.getDateInscription())) hasToday = true;
 			date_inscription.addItem(ssd.getDateInscription(), Integer.toString(i));
 		}
 		date_inscription.setSelectedIndex(currentServiceNumber);
+		inscrire.setVisible(!hasToday);
+		desinscrire.setVisible(cd.getServices().length() > 0);
 		
 		// categories is set in recompute().
 		saisons.setText(sd.getSaisons());
@@ -349,23 +358,38 @@ public class ClientWidget extends Composite {
 		}
 	};
 
-	private void aujourdhui() { 
-		saveClientData();
+	private final ClickHandler inscrireClickHandler = new ClickHandler() {
+		public void onClick(ClickEvent e) { 
+			saveClientData();
 
-		ServiceData sd = cd.getServiceFor(Constants.currentSession());
-		if (sd == null) {
-			sd = ServiceData.newServiceData();
-			cd.getServices().push(sd);
+			ServiceData sd = cd.getServiceFor(Constants.currentSession());
+			if (sd == null) {
+				sd = ServiceData.newServiceData();
+				cd.getServices().push(sd);
+			}
+			sd.inscrireAujourdhui();
+			currentServiceNumber = cd.getMostRecentServiceNumber();
+			loadClientData(); 
+			recompute(); 
 		}
-		sd.inscrireAujourdhui();
-		currentServiceNumber = cd.getMostRecentServiceNumber();
-		loadClientData(); 
-		recompute(); 
-	}
-	private final ClickHandler aujourdhuiClickHandler = new ClickHandler() {
-		public void onClick(ClickEvent e) { aujourdhui(); }
 	};
-	
+
+	private final ClickHandler desinscrireClickHandler = new ClickHandler() {
+		public void onClick(ClickEvent e) { 
+			saveClientData();
+
+			JsArray<ServiceData> newServices = JavaScriptObject.createArray().cast();
+			for (int i = 0, j = 0; i < cd.getServices().length(); i++) {
+				if (i != currentServiceNumber)
+					newServices.set(j++, cd.getServices().get(i));
+			}
+			cd.setServices(newServices);
+			currentServiceNumber = cd.getMostRecentServiceNumber();
+			loadClientData(); 
+			recompute(); 
+		}
+	};
+
 	// argh NumberFormat doesn't work for me at all!
 	// stupidly, it says that you have to use ',' as the decimal separator, but people use both '.' and ','.
 	private String stripDollars(String s) {
