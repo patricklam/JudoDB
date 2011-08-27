@@ -1,7 +1,8 @@
 package ca.patricklam.judodb.client;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.Date;
 
 import com.google.gwt.core.client.GWT;
@@ -22,6 +23,7 @@ import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
@@ -246,8 +248,6 @@ public class ClientWidget extends Composite {
 		courriel.setText(cd.getCourriel());
 
 		affiliation.setText(cd.getJudoQC());
-		grade.setText(cd.getGrade());
-		date_grade.setText(cd.getDateGrade());
 		carte_anjou.setText(cd.getCarteAnjou());
 		nom_recu_impot.setText(cd.getNomRecuImpot());
 
@@ -318,7 +318,6 @@ public class ClientWidget extends Composite {
 		cd.setCourriel(courriel.getText());
 
 		cd.setJudoQC(affiliation.getText());
-		// TODO update grade
 		cd.setCarteAnjou(carte_anjou.getText());
 		cd.setNomRecuImpot(nom_recu_impot.getText());
 
@@ -351,7 +350,7 @@ public class ClientWidget extends Composite {
 		sd.setSolde(solde.getValue());
 	}
 	
-	/** Load grades data from ClientData into the gradeTable. */
+	/** Load grades data from ClientData into the gradeTable & grade/date_grade. */
 	private void loadGradesData() {
 		gradeTable.clear();
 		gradeTable.resize(cd.getGrades().length()+2, 2);
@@ -365,32 +364,15 @@ public class ClientWidget extends Composite {
 		for (int i = 0; i < grades_.length(); i++)
 			grades[i] = grades_.get(i);
 		
-		Arrays.sort(grades, new Comparator<GradeData>() {
-			// note: this comparator is reversed!
-			@SuppressWarnings("deprecation")
-			public final int compare(GradeData g1, GradeData g0) {
-				DateTimeFormat df = DateTimeFormat.getFormat("yyyy-MM-dd");
-				
-				Date d0 = df.parse(g0.getDateGrade());
-				Date d1 = df.parse(g1.getDateGrade());
-				
-				if (d0.getYear() != d1.getYear())
-					return d0.getYear() - d1.getYear();
-				
-				if (d0.getMonth() != d1.getMonth())
-					return d0.getMonth() - d1.getMonth();
-				
-				if (d0.getDay() != d1.getDay())
-					return d0.getDay() - d1.getDay();
-				
-				return 0;
-			}
-		});
+		Arrays.sort(grades, new GradeData.GradeComparator());
 		
 		for (int i = 0; i < grades.length; i++) {
 			setGradesTableRow(i+1, grades[i].getGrade(), grades[i].getDateGrade());
 		}
 		setGradesTableRow(grades.length+1, "", "");
+
+		grade.setText(cd.getGrade());
+		date_grade.setText(cd.getDateGrade());
 	}
 
 	private void setGradesTableRow(int row, String grade, String dateGrade) {
@@ -401,7 +383,61 @@ public class ClientWidget extends Composite {
 		gd.setValue(dateGrade); gd.setVisibleLength(10);
 		gradeTable.setWidget(row, 0, g);
 		gradeTable.setWidget(row, 1, gd);
+		((TextBox)gradeTable.getWidget(row, 0)).addChangeHandler(ensureGradeSpace);
+		((TextBox)gradeTable.getWidget(row, 1)).addChangeHandler(ensureGradeSpace);		
+	}
+
+	private TextBox getGradeTableTextBox(int row, int col) {
+		return (TextBox) gradeTable.getWidget(row, col);
+	}
+	
+	/** If there are any empty rows in the middle, move them up.
+	 * If there is no empty row at the end, create one.
+	 */
+	private ChangeHandler ensureGradeSpace = new ChangeHandler() {
+		public void onChange(ChangeEvent e) {
+			int rc = gradeTable.getRowCount();
+			for (int i = 1; i < rc-2; i++) {
+				if (getGradeTableTextBox(i, 0).getText().equals("") && 
+						getGradeTableTextBox(i, 1).getText().equals("")) {
+					for (int j = i; j < rc-1; j++) {
+						getGradeTableTextBox(j, 0).setText(getGradeTableTextBox(j+1, 0).getText());
+						getGradeTableTextBox(j, 1).setText(getGradeTableTextBox(j+1, 1).getText());
+					}
+					getGradeTableTextBox(rc-1, 0).setText("");
+					getGradeTableTextBox(rc-1, 1).setText("");
+				}
+			}
+			
+			if (!getGradeTableTextBox(rc-1, 0).getText().equals("") && 
+					!getGradeTableTextBox(rc-1, 1).getText().equals("")) {
+				gradeTable.resize(rc+1, 2);
+				setGradesTableRow(rc, "", "");
+			}			
+		}
+	};
+	
+	/** Save data from the grades table into the ClientData. */
+	private void saveGradesData() {
+		JsArray<GradeData> newGradesJS = JavaScriptObject.createArray().cast();
+		ArrayList<GradeData> newGradesList = new ArrayList<GradeData>();
 		
+		for (int i = 1; i < gradeTable.getRowCount(); i++) {
+			String g = getGradeTableTextBox(i, 0).getText(), 
+				gdate = getGradeTableTextBox(i, 1).getText();
+			if (!g.equals("")) {
+				GradeData gd = GradeData.createObject().cast();
+				gd.setGrade(g); gd.setDateGrade(gdate);
+				newGradesList.add(gd);
+			}
+		}
+		Collections.sort(newGradesList, new GradeData.GradeComparator());
+		
+		int gi = 0;
+		for (GradeData gd : newGradesList) {
+			newGradesJS.set(gi++, gd);
+		}
+		cd.setGrades(newGradesJS);
 	}
 	
 	private final ChangeHandler recomputeHandler = new ChangeHandler() {
@@ -482,9 +518,26 @@ public class ClientWidget extends Composite {
 		}
 	};
 	
+	private int emptyGradeDates() {
+		int empty = 0;
+		for (int i = 1; i < gradeTable.getRowCount(); i++) {
+			String gv = getGradeTableTextBox(i, 0).getText();
+			String gdv = getGradeTableTextBox(i, 1).getText();
+			if (gdv.equals("0000-00-00") || (!gv.equals("") && gv.equals("")))
+				empty++;
+		}
+		return empty;
+	}
+	
 	private final ClickHandler saveGradesHandler = new ClickHandler() {
 		public void onClick(ClickEvent e) {
-			// TODO
+			if (emptyGradeDates() > 1) {
+				jdb.setStatus("Seulement une grade sans date est permise.");
+				new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+				return;
+			}
+			saveGradesData();
+			loadGradesData();
 			gradeHistory.setVisible(false);			
 		}
 	};
