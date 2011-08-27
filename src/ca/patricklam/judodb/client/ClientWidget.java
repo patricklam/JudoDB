@@ -144,6 +144,7 @@ public class ClientWidget extends Composite {
 		sessions.setItemSelected(1, true);
 		
 		inscrire.addClickHandler(inscrireClickHandler);
+		modifier.addClickHandler(modifierClickHandler);
 		desinscrire.addClickHandler(desinscrireClickHandler);
 		
 		ddn.addChangeHandler(recomputeHandler);
@@ -247,7 +248,8 @@ public class ClientWidget extends Composite {
 			sd = cd.getServices().get(currentServiceNumber);
 
 		date_inscription.clear();
-		boolean hasToday = false; 
+		boolean hasToday = false;
+		boolean hasThisSession = cd.getServiceFor(Constants.currentSession()) != null; 
 		String todayString = DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()); 
 		
 		for (int i = 0; i < cd.getServices().length(); i++) {
@@ -256,7 +258,8 @@ public class ClientWidget extends Composite {
 			date_inscription.addItem(ssd.getDateInscription(), Integer.toString(i));
 		}
 		date_inscription.setSelectedIndex(currentServiceNumber);
-		inscrire.setVisible(!hasToday);
+		inscrire.setVisible(!hasToday && !hasThisSession);
+		modifier.setVisible(!hasToday && hasThisSession);
 		desinscrire.setVisible(cd.getServices().length() > 0);
 		
 		// categories is set in recompute().
@@ -304,6 +307,8 @@ public class ClientWidget extends Composite {
 		cd.setNomRecuImpot(nom_recu_impot.getText());
 
 		cd.setTelContactUrgence(tel_contact_urgence.getText());
+		
+		if (currentServiceNumber == -1) return;
 		
 		ServiceData sd = cd.getServices().get(currentServiceNumber);
 		sd.setDateInscription(date_inscription.getItemText(currentServiceNumber));
@@ -358,6 +363,7 @@ public class ClientWidget extends Composite {
 		}
 	};
 
+	/** Create a new inscription for the current session. */
 	private final ClickHandler inscrireClickHandler = new ClickHandler() {
 		public void onClick(ClickEvent e) { 
 			saveClientData();
@@ -366,7 +372,7 @@ public class ClientWidget extends Composite {
 			if (sd == null) {
 				sd = ServiceData.newServiceData();
 				cd.getServices().push(sd);
-			}
+			}  // actually, sd != null should not occur; that should be modify.
 			sd.inscrireAujourdhui();
 			currentServiceNumber = cd.getMostRecentServiceNumber();
 			loadClientData(); 
@@ -374,6 +380,23 @@ public class ClientWidget extends Composite {
 		}
 	};
 
+	/** Resets the date d'inscription for the current seesion to today's date. */
+	private final ClickHandler modifierClickHandler = new ClickHandler() {
+		public void onClick(ClickEvent e) { 
+			ServiceData sd = cd.getServiceFor(Constants.currentSession());
+
+			// shouldn't happen, actually.
+			if (sd == null)
+				return;
+
+			saveClientData();
+			sd.inscrireAujourdhui();
+			currentServiceNumber = cd.getMostRecentServiceNumber();
+			loadClientData(); 
+			recompute(); 
+		}
+	};
+	
 	private final ClickHandler desinscrireClickHandler = new ClickHandler() {
 		public void onClick(ClickEvent e) { 
 			saveClientData();
