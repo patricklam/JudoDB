@@ -7,5 +7,4 @@ public class GradeData extends JavaScriptObject {
 	
 	public final native String getGrade() /*-{ return this.grade; }-*/;
 	public final native String getDateGrade() /*-{ return this.date_grade; }-*/;
-
 }

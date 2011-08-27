@@ -1,15 +1,22 @@
-#gradehistory {
+/* grades box */
+
+.gradeHistory {
  position:absolute;
+ width: 13.5em;
  padding: 0 1em 1em 1em;
  top:25%; left:40%;
  border: inset;
  background: white;
 }
 
-
 .lwp {
  text-align:left;
  padding-right:1em;
+}
+
+.actions a {
+	/* i.e. don't show 'visited' colour */
+ color: blue;
 }
 
 /* Inspired by http://2tbsp.com/content/flexible_and_efficient_htmlcss_form_layout */

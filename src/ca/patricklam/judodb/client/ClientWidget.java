@@ -1,5 +1,7 @@
 package ca.patricklam.judodb.client;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 
 import com.google.gwt.core.client.GWT;
@@ -24,6 +26,7 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
@@ -51,6 +54,7 @@ public class ClientWidget extends Composite {
 	
 	@UiField TextBox affiliation;
 	@UiField TextBox grade;
+	@UiField Anchor showgrades;
 	@UiField TextBox date_grade;
 	@UiField TextBox carte_anjou;
 	@UiField TextBox nom_recu_impot;
@@ -91,6 +95,10 @@ public class ClientWidget extends Composite {
 	@UiField Button discardClientButton;
 
 	@UiField HTMLPanel blurb;
+	@UiField HTMLPanel gradeHistory;
+	@UiField Grid gradeTable;
+	@UiField Anchor saveGrades;
+	@UiField Anchor annulerGrades;
 	
 	private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php?id=";
 	private static final String CALLBACK_URL_SUFFIX = "&callback=";
@@ -129,6 +137,7 @@ public class ClientWidget extends Composite {
 			escompte.addItem(e.name, Integer.toString(e.amount));
 		}
 		
+		gradeHistory.setVisible(false);
 		categorie.setReadOnly(true);
 		saisons.setReadOnly(true);
 		categorieFrais.setReadOnly(true); categorieFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
@@ -146,6 +155,11 @@ public class ClientWidget extends Composite {
 		inscrire.addClickHandler(inscrireClickHandler);
 		modifier.addClickHandler(modifierClickHandler);
 		desinscrire.addClickHandler(desinscrireClickHandler);
+		showgrades.addClickHandler(new ClickHandler() { 
+			public void onClick(ClickEvent e) { gradeHistory.setVisible(true); } ;
+		});
+		saveGrades.addClickHandler(saveGradesHandler);
+		annulerGrades.addClickHandler(annulerGradesHandler);
 		
 		ddn.addChangeHandler(recomputeHandler);
 		grade.addChangeHandler(recomputeHandler);
@@ -158,7 +172,7 @@ public class ClientWidget extends Composite {
 		judogi.addChangeHandler(recomputeHandler);
 		passeport.addValueChangeHandler(recomputeValueHandler);
 		non_anjou.addValueChangeHandler(recomputeValueHandler);
-
+		
 		saveAndReturnClientButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) {
 				pushClientDataToServer();
@@ -247,6 +261,8 @@ public class ClientWidget extends Composite {
 		else
 			sd = cd.getServices().get(currentServiceNumber);
 
+		loadGradesData();
+		
 		date_inscription.clear();
 		boolean hasToday = false;
 		boolean hasThisSession = cd.getServiceFor(Constants.currentSession()) != null; 
@@ -335,6 +351,59 @@ public class ClientWidget extends Composite {
 		sd.setSolde(solde.getValue());
 	}
 	
+	/** Load grades data from ClientData into the gradeTable. */
+	private void loadGradesData() {
+		gradeTable.clear();
+		gradeTable.resize(cd.getGrades().length()+2, 2);
+		gradeTable.setText(0, 0, "Grade"); 
+		gradeTable.getCellFormatter().setStyleName(0, 0, "{style.lwp}");
+		gradeTable.setText(0, 1, "Date");
+		gradeTable.getCellFormatter().setStyleName(0, 1, "{style.lwp}");
+
+		JsArray<GradeData> grades_ = cd.getGrades();
+		GradeData[] grades = new GradeData[grades_.length()];
+		for (int i = 0; i < grades_.length(); i++)
+			grades[i] = grades_.get(i);
+		
+		Arrays.sort(grades, new Comparator<GradeData>() {
+			// note: this comparator is reversed!
+			@SuppressWarnings("deprecation")
+			public final int compare(GradeData g1, GradeData g0) {
+				DateTimeFormat df = DateTimeFormat.getFormat("yyyy-MM-dd");
+				
+				Date d0 = df.parse(g0.getDateGrade());
+				Date d1 = df.parse(g1.getDateGrade());
+				
+				if (d0.getYear() != d1.getYear())
+					return d0.getYear() - d1.getYear();
+				
+				if (d0.getMonth() != d1.getMonth())
+					return d0.getMonth() - d1.getMonth();
+				
+				if (d0.getDay() != d1.getDay())
+					return d0.getDay() - d1.getDay();
+				
+				return 0;
+			}
+		});
+		
+		for (int i = 0; i < grades.length; i++) {
+			setGradesTableRow(i+1, grades[i].getGrade(), grades[i].getDateGrade());
+		}
+		setGradesTableRow(grades.length+1, "", "");
+	}
+
+	private void setGradesTableRow(int row, String grade, String dateGrade) {
+		TextBox g = new TextBox(); 
+		TextBox gd = new TextBox(); 
+
+		g.setValue(grade); g.setVisibleLength(5);
+		gd.setValue(dateGrade); gd.setVisibleLength(10);
+		gradeTable.setWidget(row, 0, g);
+		gradeTable.setWidget(row, 1, gd);
+		
+	}
+	
 	private final ChangeHandler recomputeHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { recompute(); }
 	};
@@ -412,7 +481,21 @@ public class ClientWidget extends Composite {
 			recompute(); 
 		}
 	};
+	
+	private final ClickHandler saveGradesHandler = new ClickHandler() {
+		public void onClick(ClickEvent e) {
+			// TODO
+			gradeHistory.setVisible(false);			
+		}
+	};
 
+	private final ClickHandler annulerGradesHandler = new ClickHandler() {
+		public void onClick(ClickEvent e) {
+			loadGradesData();
+			gradeHistory.setVisible(false);
+		}
+	};
+	
 	// argh NumberFormat doesn't work for me at all!
 	// stupidly, it says that you have to use ',' as the decimal separator, but people use both '.' and ','.
 	private String stripDollars(String s) {

@@ -43,7 +43,7 @@
  		<fieldset> <legend>Autres renseignments</legend>
  		 <div class="{style.fourper}">
    		  <label>Num&eacute;ro Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliation" visibleLength="8"/></label>
-   		  <label>Grade judo <span class="noprint">(<a href="#" onclick="showGradeHistory(); return false">histoire</a>)</span><br /><g:TextBox ui:field="grade" visibleLength="8"/></label>
+   		  <label>Grade judo <span class="noprint">(<g:Anchor ui:field="showgrades">histoire</g:Anchor>)</span><br /><g:TextBox ui:field="grade" visibleLength="8"/></label>
 	      <label>Date du grade<br /><g:TextBox ui:field="date_grade" visibleLength="10"/></label>
    		  <label style="font-size:80%">N° arrondissement Anjou<br /><g:TextBox ui:field="carte_anjou" visibleLength="13"/></label>
    	     </div>
@@ -96,21 +96,20 @@
       <g:Button ui:field='discardClientButton' addStyleNames='{style.floatRight}'>Annuler</g:Button>
 
       <g:HTMLPanel ui:field="blurb" styleName="blurb" />
+
+	  <g:HTMLPanel ui:field="gradeHistory" styleName="{style.gradeHistory}">
+       <div class="noprint">
+        <h4 id="gradeHeader">Histoire grades</h4>
+        <g:Grid ui:field="gradeTable" />
+        <div class="{style.actions}" style="float:left; text-align:left">
+         <g:Anchor ui:field="saveGrades">Sauvegarder</g:Anchor>
+        </div>
+        <div class="{style.actions}" style="float:right; text-align:right">
+         <g:Anchor ui:field="annulerGrades">Annuler</g:Anchor>
+        </div>
+       </div>
+      </g:HTMLPanel>
+    
     </g:HTMLPanel>
-<!-- 
-      <div id="gradehistory" class="noprint" style="display:none">
-       <h4 id="gradeHeader">Histoire grades : *nom*</h4>
-       <table id="gradeTable">
-       <tr><th class="{style.lwp}">Grade</th><th class="{style.lwp}">Date</th></tr>
-       </table>
-       <div class="{style.actions}" style="float:left; text-align:left">
-        <a onclick="saveGrades(); return false;" href="#">Sauvegarder</a>
-       </div>
-       <div class="{style.actions}" style="float:right; text-align:right">
-        <a onclick="annulerGrades()" href="#">Annuler</a>
-       </div>
-      </div>	
-    </div>
- -->
  
 </ui:UiBinder>
