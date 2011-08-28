@@ -10,6 +10,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.FormElement;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -30,6 +31,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTMLPanel;
+import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
@@ -42,6 +44,7 @@ public class ClientWidget extends Composite {
 	private final JudoDB jdb;
 
 	@UiField DivElement cid;
+	@UiField HTMLPanel clientMain;
 
 	@UiField TextBox nom;
 	@UiField TextBox prenom;
@@ -92,6 +95,37 @@ public class ClientWidget extends Composite {
 	@UiField CheckBox solde;
 	@UiField TextBox frais;
 	
+	@UiField Hidden grades_encoded;
+	@UiField Hidden grade_dates_encoded;
+	
+	@UiField Hidden date_inscription_encoded;
+	@UiField Hidden saisons_encoded;
+	@UiField Hidden verification_encoded;
+
+	@UiField Hidden categorieFrais_encoded;
+
+	@UiField Hidden cours_encoded;
+	@UiField Hidden sessions_encoded;
+
+	@UiField Hidden escompte_encoded;
+	@UiField Hidden cas_special_note_encoded;
+	@UiField Hidden cas_special_pct_encoded;
+	@UiField Hidden escompteFrais_encoded;
+
+	@UiField Hidden sans_affiliation_encoded;
+	@UiField Hidden affiliationFrais_encoded;
+
+	@UiField Hidden judogi_encoded;
+	@UiField Hidden passeport_encoded;
+	@UiField Hidden non_anjou_encoded;
+	@UiField Hidden suppFrais_encoded;
+
+	@UiField Hidden solde_encoded;
+	@UiField Hidden frais_encoded;
+
+	@UiField Hidden guid_on_form;
+	@UiField Hidden sid;
+	
 	@UiField Button saveClientButton;
 	@UiField Button saveAndReturnClientButton;
 	@UiField Button discardClientButton;
@@ -101,9 +135,12 @@ public class ClientWidget extends Composite {
 	@UiField Grid gradeTable;
 	@UiField Anchor saveGrades;
 	@UiField Anchor annulerGrades;
+
+	private final FormElement clientform;
 	
 	private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php?id=";
 	private static final String CALLBACK_URL_SUFFIX = "&callback=";
+	private static final String PUSH_ONE_CLIENT_URL = JudoDB.BASE_URL + "push_one_client.php";
 	public interface BlurbTemplate extends SafeHtmlTemplates {
 		@Template 
 	      ("<p>Je {0} certifie que les informations inscrites sur ce formulaire sont véridiques. "+
@@ -122,12 +159,15 @@ public class ClientWidget extends Composite {
 	private static final BlurbTemplate BLURB = GWT.create(BlurbTemplate.class);
 		
 	private ClientData cd;
+	private String guid;
 	private int currentServiceNumber;
 	public int getCurrentServiceNumber() { return currentServiceNumber; }
 	
 	public ClientWidget(JudoDB jdb, int cid) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
+		clientform = FormElement.as(clientMain.getElementById("clientform"));
+		clientform.setAction(PUSH_ONE_CLIENT_URL);
 		jdb.pleaseWait();
 		
 		for (Constants.Cours c : Constants.COURS) {
@@ -264,13 +304,16 @@ public class ClientWidget extends Composite {
 		loadGradesData();
 		
 		date_inscription.clear();
-		boolean hasToday = false;
+		boolean hasToday = false, isToday = false;
 		boolean hasThisSession = cd.getServiceFor(Constants.currentSession()) != null; 
 		String todayString = DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()); 
 		
 		for (int i = 0; i < cd.getServices().length(); i++) {
 			ServiceData ssd = cd.getServices().get(i);
-			if (todayString.equals(ssd.getDateInscription())) hasToday = true;
+			if (todayString.equals(ssd.getDateInscription())) {
+				hasToday = true;
+				isToday = (i == currentServiceNumber);
+			}
 			date_inscription.addItem(ssd.getDateInscription(), Integer.toString(i));
 		}
 		date_inscription.setSelectedIndex(currentServiceNumber);
@@ -283,19 +326,27 @@ public class ClientWidget extends Composite {
 		verification.setValue(sd.getVerification());
 		cours.setItemSelected(Integer.parseInt(sd.getCours()), true);
 		sessions.setItemSelected(sd.getSessionCount()-1, true);
+		sessions.setEnabled(isToday);
 		categorieFrais.setText(sd.getCategorieFrais());
 		
 		sans_affiliation.setValue(sd.getSansAffiliation());
+		sans_affiliation.setEnabled(isToday);
 		affiliationFrais.setText(sd.getAffiliationFrais());
 
 		escompte.setSelectedIndex(sd.getEscompteType());
+		escompte.setEnabled(isToday);
 		cas_special_note.setText(sd.getCasSpecialNote());
+		cas_special_note.setReadOnly(!isToday);
 		cas_special_pct.setValue(sd.getCasSpecialPct());
+		cas_special_pct.setReadOnly(!isToday);
 		escompteFrais.setText(sd.getEscompteFrais());
 		
 		judogi.setText(sd.getJudogi());
+		judogi.setReadOnly(!isToday);
 		passeport.setValue(sd.getPasseport());
+		passeport.setEnabled(isToday);
 		non_anjou.setValue(sd.getNonAnjou());
+		non_anjou.setEnabled(isToday);
 		suppFrais.setText(sd.getSuppFrais());	
 		
 		frais.setText(sd.getFrais());
@@ -326,8 +377,8 @@ public class ClientWidget extends Composite {
 		if (currentServiceNumber == -1) return;
 		
 		ServiceData sd = cd.getServices().get(currentServiceNumber);
-		sd.setDateInscription(date_inscription.getItemText(currentServiceNumber));
-		sd.setSaisons(saisons.getText());
+		sd.setDateInscription(removeCommas(date_inscription.getItemText(currentServiceNumber)));
+		sd.setSaisons(removeCommas(saisons.getText()));
 		sd.setVerification(verification.getValue());
 		sd.setCours(Integer.toString(cours.getSelectedIndex()));
 		sd.setSessionCount(sessions.getSelectedIndex()+1);
@@ -337,16 +388,16 @@ public class ClientWidget extends Composite {
 		sd.setAffiliationFrais(stripDollars(affiliationFrais.getText()));
 		
 		sd.setEscompteType(escompte.getSelectedIndex());
-		sd.setCasSpecialNote(cas_special_note.getText());
-		sd.setCasSpecialPct(cas_special_pct.getText());
-		sd.setEscompteFrais(escompteFrais.getText());
+		sd.setCasSpecialNote(removeCommas(cas_special_note.getText()));
+		sd.setCasSpecialPct(stripDollars(cas_special_pct.getText()));
+		sd.setEscompteFrais(stripDollars(escompteFrais.getText()));
 		
-		sd.setJudogi(judogi.getText());
+		sd.setJudogi(stripDollars(judogi.getText()));
 		sd.setPasseport(passeport.getValue());
 		sd.setNonAnjou(non_anjou.getValue());
-		sd.setSuppFrais(suppFrais.getText());
+		sd.setSuppFrais(stripDollars(suppFrais.getText()));
 		
-		sd.setFrais(frais.getText());
+		sd.setFrais(stripDollars(frais.getText()));
 		sd.setSolde(solde.getValue());
 	}
 	
@@ -427,7 +478,8 @@ public class ClientWidget extends Composite {
 				gdate = getGradeTableTextBox(i, 1).getText();
 			if (!g.equals("")) {
 				GradeData gd = GradeData.createObject().cast();
-				gd.setGrade(g); gd.setDateGrade(gdate);
+				gd.setGrade(g.replaceAll(",", ";")); 
+				gd.setDateGrade(gdate.replaceAll(",", ";"));
 				newGradesList.add(gd);
 			}
 		}
@@ -440,6 +492,30 @@ public class ClientWidget extends Composite {
 		cd.setGrades(newGradesJS);
 	}
 	
+	private String encodeGrades() {
+		StringBuffer sb = new StringBuffer();
+
+		JsArray<GradeData> grades = cd.getGrades();
+		for (int i = 0; i < grades.length(); i++) {
+			GradeData gd = grades.get(i);
+			if (i > 0) sb.append(",");
+			sb.append(gd.getGrade());
+		}
+		return sb.toString();
+	}
+
+	private String encodeGradeDates() {
+		StringBuffer sb = new StringBuffer();
+
+		JsArray<GradeData> grades = cd.getGrades();
+		for (int i = 0; i < grades.length(); i++) {
+			GradeData gd = grades.get(i);
+			if (i > 0) sb.append(",");
+			sb.append(gd.getDateGrade());
+		}
+		return sb.toString();
+	}
+
 	private final ChangeHandler recomputeHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { recompute(); }
 	};
@@ -549,12 +625,17 @@ public class ClientWidget extends Composite {
 		}
 	};
 	
+	/** We use , as a separator, so get rid of it in the input. */
+	private String removeCommas(String s) {
+		return s.replaceAll(",", ";");
+	}
+	
 	// argh NumberFormat doesn't work for me at all!
 	// stupidly, it says that you have to use ',' as the decimal separator, but people use both '.' and ','.
 	private String stripDollars(String s) {
 		StringBuffer ss = new StringBuffer("");
 		for (int i = 0; i < s.length(); i++) {
-			if (s.charAt(i) == '$' || s.charAt(i) == ' ' || s.charAt(i) == ')') 
+			if (s.charAt(i) == '$' || s.charAt(i) == ' ' || s.charAt(i) == ')' || s.charAt(i) == '\u00a0') 
 				continue;
 
 			if (s.charAt(i) == ',')
@@ -660,9 +741,69 @@ public class ClientWidget extends Composite {
 		updateFrais();
 	}
 
+	private void encodeServices() {
+		StringBuffer di = new StringBuffer(), sais = new StringBuffer(), 
+			v = new StringBuffer(), cf = new StringBuffer(), c = new StringBuffer(), 
+			sess = new StringBuffer(), e = new StringBuffer(), csn = new StringBuffer(), 
+			csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(), 
+			af = new StringBuffer(), j = new StringBuffer(), p = new StringBuffer(), 
+			n = new StringBuffer(), sf = new StringBuffer(), s = new StringBuffer(), 
+			f = new StringBuffer();
+		
+		JsArray<ServiceData> services = cd.getServices();
+		for (int i = 0; i < services.length(); i++) {
+			ServiceData sd = services.get(i);
+			di.append(sd.getDateInscription()+",");
+			sais.append(sd.getSaisons()+",");
+			v.append(sd.getVerification() ? "1," : "0,");
+			cf.append(sd.getCategorieFrais()+",");
+			c.append(sd.getCours()+",");
+			sess.append(Integer.toString(sd.getSessionCount())+",");
+			e.append(Integer.toString(sd.getEscompteType())+",");
+			csn.append(sd.getCasSpecialNote()+",");
+			csp.append(sd.getCasSpecialPct()+",");
+			ef.append(sd.getEscompteFrais()+",");
+			sa.append(sd.getSansAffiliation() ? "1," : "0,");
+			af.append(sd.getAffiliationFrais()+",");
+			j.append(sd.getJudogi()+",");
+			p.append(sd.getPasseport()+",");
+			n.append(sd.getNonAnjou()+",");
+			sf.append(sd.getSuppFrais()+",");
+			s.append(sd.getSolde() ? "1,":"0,");
+			f.append(sd.getFrais()+",");
+		}
+		
+		date_inscription_encoded.setValue(di.toString());
+		saisons_encoded.setValue(sais.toString());
+		verification_encoded.setValue(v.toString());
+		categorieFrais_encoded.setValue(cf.toString());
+		cours_encoded.setValue(c.toString());
+		sessions_encoded.setValue(sess.toString());
+		escompte_encoded.setValue(e.toString());
+		cas_special_note_encoded.setValue(csn.toString());
+		cas_special_pct_encoded.setValue(csp.toString());
+		escompteFrais_encoded.setValue(ef.toString());
+		sans_affiliation_encoded.setValue(sa.toString());
+		affiliationFrais_encoded.setValue(af.toString());
+		judogi_encoded.setValue(j.toString());
+		passeport_encoded.setValue(p.toString());
+		non_anjou_encoded.setValue(n.toString());
+		suppFrais_encoded.setValue(sf.toString());
+		solde_encoded.setValue(s.toString());
+		frais_encoded.setValue(f.toString());
+	}
+	
 	private void pushClientDataToServer() {
-		// now write to the server!
-		// http://stackoverflow.com/questions/3985309/making-post-requests-with-parameters-in-gwt
+		guid = UUID.uuid();
+		sid.setValue(cd.getID());
+		guid_on_form.setValue(guid);
+		
+		grades_encoded.setValue(encodeGrades());
+		grade_dates_encoded.setValue(encodeGradeDates());
+		saveClientData(); loadClientData();
+		encodeServices();
+		clientform.submit();
+		
 		// http://stackoverflow.com/questions/2699277/post-data-to-jsonp	
 	}
 	

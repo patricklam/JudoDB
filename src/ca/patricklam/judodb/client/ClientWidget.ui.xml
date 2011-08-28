@@ -3,23 +3,25 @@
 
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 	<ui:style src="ClientWidget.css" />
-    <g:HTMLPanel>
+    <g:HTMLPanel ui:field="clientMain">
  		<div ui:field="cid" class="cid" />
-
- 		<form class="{style.compactform}">
+ 		<form id="clientform" class="{style.compactform}" method="POST" target="eatFormSubmitResults">
+ 		<g:Hidden ui:field="guid_on_form" name="guid" />
+ 		<g:Hidden ui:field="sid" name="sid" />
+ 		
 		<fieldset> <legend>Identit&eacute;</legend>
  		 <div class="{style.fourper}" id="identite">
- 		  <label><span class="noprint">Nom<br /></span><g:TextBox ui:field="nom"/></label>
-  		  <label><span class="noprint">Prénom<br /></span><g:TextBox ui:field="prenom"/></label>
-  		  <label><span class="noprint">Date de naissance (aaaa-mm-jj)<br /></span><g:TextBox ui:field="ddn"/></label>
-	      <label><span class="noprint">Sexe<br /></span><g:TextBox ui:field="sexe" visibleLength="3"/></label>
+ 		  <label><span class="noprint">Nom<br /></span><g:TextBox ui:field="nom" name="nom"/></label>
+  		  <label><span class="noprint">Prénom<br /></span><g:TextBox ui:field="prenom" name="prenom"/></label>
+  		  <label><span class="noprint">Date de naissance (aaaa-mm-jj)<br /></span><g:TextBox ui:field="ddn" name="ddn"/></label>
+	      <label><span class="noprint">Sexe<br /></span><g:TextBox ui:field="sexe" name="sexe" visibleLength="3"/></label>
 		 </div>
         </fieldset>
 
 		<fieldset> 
-		 <legend>Adresse<span id="copySib" class="noprint" style="display:none"> (<a href="#" onclick="copySibling(); return false">copier</a>)</span></legend>
+		 <legend>Adresse<span id="copySib" class="noprint" style="display:none"> (<g:Anchor ui:field="copysib">copier</g:Anchor>)</span></legend>
  		 <div class="{style.oneper}">
-  		  <label><span class="noprint">Adresse<br /></span><g:TextBox ui:field="adresse" visibleLength="70"/></label>
+  		  <label><span class="noprint">Adresse<br /></span><g:TextBox ui:field="adresse" name="adresse" visibleLength="70"/></label>
          </div>
 		 <div class="casMedical" style="width: 20em">
 			<p>L'état médical du judoka inscrit requiert de remplir une fiche médicale plus approfondie.</p>
@@ -30,25 +32,27 @@
 			<p>Initiales ______</p>
 		 </div>
  		 <div class="{style.fourper}">
-  		  <label><span class="noprint">Ville<br /></span><g:TextBox ui:field="ville"/></label>
-  		  <label><span class="noprint">Code postal<br /></span><g:TextBox ui:field="codePostal"/></label>
-  		  <label><span class="noprint">T&eacute;l&eacute;phone(s)<br /></span><g:TextBox ui:field="tel" visibleLength="10"/></label>
+  		  <label><span class="noprint">Ville<br /></span><g:TextBox ui:field="ville" name="ville"/></label>
+  		  <label><span class="noprint">Code postal<br /></span><g:TextBox ui:field="codePostal" name="codePostal"/></label>
+  		  <label><span class="noprint">T&eacute;l&eacute;phone(s)<br /></span><g:TextBox ui:field="tel" visibleLength="10" name="tel"/></label>
   		 </div>
  		 <div class="{style.threeper}">
-   		  <label>T&eacute;l&eacute;phone urgence<br /><g:TextBox ui:field="tel_contact_urgence"/></label>
-		  <label>Courriel<br /><g:TextBox ui:field="courriel" visibleLength="20"/></label>
+   		  <label>T&eacute;l&eacute;phone urgence<br /><g:TextBox ui:field="tel_contact_urgence" name="tel_contact_urgence"/></label>
+		  <label>Courriel<br /><g:TextBox ui:field="courriel" visibleLength="20" name="courriel"/></label>
  		 </div>
 		</fieldset>
 
  		<fieldset> <legend>Autres renseignments</legend>
  		 <div class="{style.fourper}">
-   		  <label>Num&eacute;ro Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliation" visibleLength="8"/></label>
+   		  <label>Num&eacute;ro Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliation" visibleLength="8" name="affiliation"/></label>
    		  <label>Grade judo <span class="noprint">(<g:Anchor ui:field="showgrades">histoire</g:Anchor>)</span><br /><g:TextBox ui:field="grade" visibleLength="8"/></label>
 	      <label>Date du grade<br /><g:TextBox ui:field="date_grade" visibleLength="10"/></label>
-   		  <label style="font-size:80%">N° arrondissement Anjou<br /><g:TextBox ui:field="carte_anjou" visibleLength="13"/></label>
+	      <g:Hidden ui:field="grades_encoded" name="grades_encoded" />
+	      <g:Hidden ui:field="grade_dates_encoded" name="grade_dates_encoded" />
+   		  <label style="font-size:80%">N° arrondissement Anjou<br /><g:TextBox ui:field="carte_anjou" name="carte_anjou" visibleLength="13"/></label>
    	     </div>
  		 <div class="{style.oneper}">
-   		  <label>Nom re&ccedil;u imp&ocirc;t<br /><g:TextBox ui:field="nom_recu_impot" visibleLength="40"/></label>
+   		  <label>Nom re&ccedil;u imp&ocirc;t<br /><g:TextBox ui:field="nom_recu_impot" name="nom_recu_impot" visibleLength="40"/></label>
 		 </div>
  		</fieldset>
 
@@ -56,44 +60,47 @@
   		 <div class="{style.fourper}">
    		  <label>Date d'inscription
            <g:Anchor ui:field="inscrire"><span class="noprint">(inscrire)</span></g:Anchor> <g:Anchor ui:field="modifier"><span class="noprint">(modifier)</span></g:Anchor> <g:Anchor ui:field="desinscrire"><span id="desinscrire" class="noprint">(désinscrire)</span></g:Anchor><br />
-           <g:ListBox ui:field="date_inscription" />
+           <g:ListBox ui:field="date_inscription" /> <g:Hidden ui:field="date_inscription_encoded" name="date_inscription_encoded" />
           </label>
    		  <label>Cat&eacute;gorie d'&acirc;ge<br /><g:TextBox ui:field="categorie" visibleLength = "5"/></label>
-   		  <label>Saisons<br /><g:TextBox ui:field="saisons" visibleLength="8" /></label>
-   		  <label style="font-size:80%">Affiliation Judo QC verifi&eacute;<br /><g:CheckBox ui:field="verification"/>
+   		  <label>Saisons<br /><g:TextBox ui:field="saisons" visibleLength="8" /> <g:Hidden ui:field="saisons_encoded" name="saisons_encoded" /></label>
+   		  <label style="font-size:80%">Affiliation Judo QC verifi&eacute;<br /><g:CheckBox ui:field="verification"/> <g:Hidden ui:field="verification_encoded" name="verification_encoded" />
  		  </label>
   		 </div>
   		
   		 <div class="{style.fourper}">
-   		  <label style="width:46%">Cours<br /><g:ListBox ui:field="cours"/></label>
-   		  <label>Sessions<br /><g:ListBox ui:field="sessions"/></label>
-   		  <span class="{style.fraisOnRight}"><label>Frais cours<br /><g:TextBox ui:field="categorieFrais" visibleLength="15"/></label></span>
+   		  <label style="width:46%">Cours<br /><g:ListBox ui:field="cours"/><g:Hidden ui:field="cours_encoded" name="cours_encoded" /></label>
+   		  <label>Sessions<br /><g:ListBox ui:field="sessions"/><g:Hidden ui:field="sessions_encoded" name="sessions_encoded" /></label>
+   		  <span class="{style.fraisOnRight}"><label>Frais cours<br /><g:TextBox ui:field="categorieFrais" visibleLength="15"/> 
+   		    <g:Hidden ui:field="categorieFrais_encoded" name="categorieFrais_encoded"/></label></span>
   		 </div>
   		 <div class="{style.fourper}">
-   		  <label>Escompte<br /><g:ListBox ui:field="escompte"/></label>
-          <label>Raison cas sp&eacute;cial<br /><g:TextBox ui:field="cas_special_note"/></label>
-   		  <label>% escompte<br /><g:TextBox ui:field="cas_special_pct" visibleLength="8" /></label>
-          <span class="{style.fraisOnRight}"><label> - escompte<br /><g:TextBox ui:field="escompteFrais" visibleLength="15" /></label></span>
+   		  <label>Escompte<br /><g:ListBox ui:field="escompte"/><g:Hidden ui:field="escompte_encoded" name="escompte_encoded"/></label>
+          <label>Raison cas sp&eacute;cial<br /><g:TextBox ui:field="cas_special_note"/><g:Hidden ui:field="cas_special_note_encoded" name="cas_special_note_encoded"/></label>
+   		  <label>% escompte<br /><g:TextBox ui:field="cas_special_pct" visibleLength="8" /><g:Hidden ui:field="cas_special_pct_encoded" name="cas_special_pct_encoded"/></label>
+          <span class="{style.fraisOnRight}"><label> - escompte<br /><g:TextBox ui:field="escompteFrais" visibleLength="15" /><g:Hidden ui:field="escompteFrais_encoded" name="escompteFrais_encoded"/></label></span>
          </div>
          <div class="{style.fourper}">
-   		  <label>Déjà affili&eacute; Judo Qu&eacute;bec 2011-12<br /><g:CheckBox ui:field="sans_affiliation"/></label>
-          <span class="{style.fraisOnRight}"><label>Affiliation Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliationFrais" visibleLength="15" /></label></span>
+   		  <label>Déjà affili&eacute; Judo Qu&eacute;bec 2011-12<br /><g:CheckBox ui:field="sans_affiliation"/> <g:Hidden ui:field="sans_affiliation_encoded" name="sans_affiliation_encoded" /></label>
+          <span class="{style.fraisOnRight}"><label>Affiliation Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliationFrais" visibleLength="15" /> <g:Hidden ui:field="affiliationFrais_encoded" name="affiliationFrais_encoded" /></label></span>
          </div>
          <div class="{style.fourper}">
-          <label>Co&ucirc;t judogi<br /><g:TextBox ui:field="judogi" visibleLength="8"/></label>
-          <label style="font-size:80%">Passeport Judo QC (5 $)<br /><g:CheckBox ui:field="passeport"/></label>
-          <label style="font-size:80%">Pas de carte Anjou (5 $)<br /><g:CheckBox ui:field="non_anjou"/></label>
-          <span class="{style.fraisOnRight}"><label>Autres frais<br /><g:TextBox ui:field="suppFrais" visibleLength="15" /></label></span>
+          <label>Co&ucirc;t judogi<br /><g:TextBox ui:field="judogi" visibleLength="8"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></label>
+          <label style="font-size:80%">Passeport Judo QC (5 $)<br /><g:CheckBox ui:field="passeport"/><g:Hidden ui:field="passeport_encoded" name="passeport_encoded" /></label>
+          <label style="font-size:80%">Pas de carte Anjou (5 $)<br /><g:CheckBox ui:field="non_anjou"/><g:Hidden ui:field="non_anjou_encoded" name="non_anjou_encoded" /></label>
+          <span class="{style.fraisOnRight}"><label>Autres frais<br /><g:TextBox ui:field="suppFrais" visibleLength="15" /><g:Hidden ui:field="suppFrais_encoded" name="suppFrais_encoded" /></label></span>
         </div>
         <div class="{style.fourper}">
-          <label>Solde reste &agrave; payer<br /><g:CheckBox ui:field="solde"/></label>
-          <span class="{style.fraisOnRight}"><label>Frais total<br /><g:TextBox ui:field="frais" visibleLength="15" /></label></span>
+          <label>Solde reste &agrave; payer<br /><g:CheckBox ui:field="solde"/><g:Hidden ui:field="solde_encoded" name="solde_encoded" /></label>
+          <span class="{style.fraisOnRight}"><label>Frais total<br /><g:TextBox ui:field="frais" visibleLength="15" /><g:Hidden ui:field="frais_encoded" name="frais_encoded" /></label></span>
         </div>
        </fieldset>
-	  </form>
       <g:Button ui:field='saveAndReturnClientButton'>Sauvegarder et retourner</g:Button>
       <g:Button ui:field='saveClientButton'>Sauvegarder</g:Button>
       <g:Button ui:field='discardClientButton' addStyleNames='{style.floatRight}'>Annuler</g:Button>
+      </form>
+
+      <iframe style="display:none" name="eatFormSubmitResults" />
 
       <g:HTMLPanel ui:field="blurb" styleName="blurb" />
 
