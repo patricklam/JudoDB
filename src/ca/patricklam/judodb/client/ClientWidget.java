@@ -890,7 +890,7 @@ public class ClientWidget extends Composite {
 		protected ConfirmResponseObject() {}
 		
 		public final native String getResult() /*-{ return this.result; }-*/;
-		public final native String getSid() /*-{ return this.sid; }-*/;
+		public final native int getSid() /*-{ return this.sid; }-*/;
 	}
 	
 	/**
@@ -900,6 +900,7 @@ public class ClientWidget extends Composite {
 		if (jso == null) {
 			if (pushTries == 3) {
 				jdb.displayError("pas de réponse");
+				new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
 				return;
 			} else {
 				tryConfirmPushAgain();
@@ -913,12 +914,15 @@ public class ClientWidget extends Composite {
 	    	return;
 	    }
 
-	    if (!cro.getResult().equals("OK")) 
+	    if (!cro.getResult().equals("OK")) {
 	    	jdb.displayError("le serveur n'a pas accepté les données");
+			new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+	    }
 	    else {
 	    	jdb.setStatus("Sauvegardé.");
-		    if (cd.getID().equals("-1")) {
-		    	cd.setID(cro.getSid());
+			new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+		    if (cd.getID() == null || cd.getID().equals("")) {
+		    	cd.setID(Integer.toString(cro.getSid()));
 		    	loadClientData();
 		    }		    
 	    }

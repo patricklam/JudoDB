@@ -27,7 +27,7 @@ body {
 
 /* login */
 #login {
- position:absolute;
+ position:fixed;
  padding: 1em;
  top:25%; left:40%; background:#ccc;
  cursor: pointer;
@@ -55,10 +55,5 @@ body {
   position: absolute;
   top: 20%;
   right: 5em;
-}
-
-#stats {
-  background-color: #ddd;
-  padding: 2em;
 }
 
