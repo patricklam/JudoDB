@@ -33,7 +33,7 @@
 		 </div>
  		 <div class="{style.fourper}">
   		  <label><span class="noprint">Ville<br /></span><g:TextBox ui:field="ville" name="ville"/></label>
-  		  <label><span class="noprint">Code postal<br /></span><g:TextBox ui:field="codePostal" name="codePostal"/></label>
+  		  <label><span class="noprint">Code postal<br /></span><g:TextBox ui:field="codePostal" name="code_postal"/></label>
   		  <label><span class="noprint">T&eacute;l&eacute;phone(s)<br /></span><g:TextBox ui:field="tel" visibleLength="10" name="tel"/></label>
   		 </div>
  		 <div class="{style.threeper}">

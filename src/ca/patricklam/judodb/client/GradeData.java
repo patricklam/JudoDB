@@ -32,8 +32,8 @@ public class GradeData extends JavaScriptObject {
 			if (d0.getMonth() != d1.getMonth())
 				return d0.getMonth() - d1.getMonth();
 			
-			if (d0.getDay() != d1.getDay())
-				return d0.getDay() - d1.getDay();
+			if (d0.getDate() != d1.getDate())
+				return d0.getDate() - d1.getDate();
 			
 			return 0;
 		}

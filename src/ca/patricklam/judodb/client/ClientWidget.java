@@ -141,6 +141,9 @@ public class ClientWidget extends Composite {
 	private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php?id=";
 	private static final String CALLBACK_URL_SUFFIX = "&callback=";
 	private static final String PUSH_ONE_CLIENT_URL = JudoDB.BASE_URL + "push_one_client.php";
+	private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_one_push.php?guid=";
+	private int pushTries;
+	
 	public interface BlurbTemplate extends SafeHtmlTemplates {
 		@Template 
 	      ("<p>Je {0} certifie que les informations inscrites sur ce formulaire sont véridiques. "+
@@ -233,7 +236,7 @@ public class ClientWidget extends Composite {
 		});
 
 		if (cid != -1)
-			getJson(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
+			getJsonForPull(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
 		else {
 			this.cd = JavaScriptObject.createObject().cast();
 			JsArray<ServiceData> sa = JavaScriptObject.createArray().cast();
@@ -256,8 +259,8 @@ public class ClientWidget extends Composite {
 		Date ddn = cd.getDDN(), today = new Date();
 		if (cd.getDDN() == null) return;
 		
-		int by = ddn.getYear(), bm = ddn.getMonth(), bd = ddn.getDay(), 
-			ny = today.getYear(), nm = today.getMonth(), nd = ddn.getDay();
+		int by = ddn.getYear(), bm = ddn.getMonth(), bd = ddn.getDate(), 
+			ny = today.getYear(), nm = today.getMonth(), nd = ddn.getDate();
 		int y = ny - by; if (bm > nm || (bm == nm && bd > nd)) y--;
 		String nom = cd.getPrenom() + " " + cd.getNom();
 		String nn, mm;
@@ -652,12 +655,13 @@ public class ClientWidget extends Composite {
 	
 	@SuppressWarnings("deprecation")
 	private boolean sameDate(Date d1, Date d2) {
-		return d1.getYear() == d2.getYear() && d1.getMonth() == d2.getMonth() && d1.getDay() == d2.getDay();
+		return d1.getYear() == d2.getYear() && d1.getMonth() == d2.getMonth() && d1.getDate() == d2.getDate();
 	}
 	
 	private void updateFrais() {
 		ServiceData sd = cd.getServices().get(currentServiceNumber);
 		Date dateInscription = DateTimeFormat.getFormat("yyyy-MM-dd").parse(sd.getDateInscription());
+		escompteFrais.setReadOnly(true);
 		
 		// do not update frais for previous inscriptions
 		if (!sameDate(dateInscription, new Date()))
@@ -678,7 +682,6 @@ public class ClientWidget extends Composite {
 			(Constants.currentSessionNo(), c, sessionCount);
 		
 		double dEscompteFrais = 0.0;
-		escompteFrais.setReadOnly(true); 
 		if (escompte.getValue(escompte.getSelectedIndex()).equals("-1")) {
 			NumberFormat nf = NumberFormat.getDecimalFormat();
 			if (cas_special_pct.getValue().equals("-1")) {
@@ -802,15 +805,20 @@ public class ClientWidget extends Composite {
 		grade_dates_encoded.setValue(encodeGradeDates());
 		saveClientData(); loadClientData();
 		encodeServices();
-		clientform.submit();
-		
+
 		// http://stackoverflow.com/questions/2699277/post-data-to-jsonp	
+		clientform.submit();
+
+		pushTries = 0;
+		new Timer() { public void run() {
+			getJsonForStageTwoPush(jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX, ClientWidget.this);
+		} }.schedule(100);
 	}
 	
 	/**
-	 * Make call to remote server.
+	 * Make call to remote server to request client information.
 	 */
-	public native static void getJson(int requestId, String url,
+	public native static void getJsonForPull(int requestId, String url,
 	      ClientWidget handler) /*-{
 	   var callback = "callback" + requestId;
 
@@ -818,13 +826,13 @@ public class ClientWidget extends Composite {
 	   script.setAttribute("src", url+callback);
 	   script.setAttribute("type", "text/javascript");
 	   window[callback] = function(jsonObj) {
-	     handler.@ca.patricklam.judodb.client.ClientWidget::handleJsonResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
+	     handler.@ca.patricklam.judodb.client.ClientWidget::handleJsonPullResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
 	     window[callback + "done"] = true;
 	   }
 
 	   setTimeout(function() {
 	     if (!window[callback + "done"]) {
-	       handler.@ca.patricklam.judodb.client.ClientWidget::handleJsonResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
+	       handler.@ca.patricklam.judodb.client.ClientWidget::handleJsonPullResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
 	     }
 
 	     document.body.removeChild(script);
@@ -838,7 +846,7 @@ public class ClientWidget extends Composite {
 	/**
 	 * Handle the response to the request for data from a remote server.
 	 */
-	public void handleJsonResponse(JavaScriptObject jso) {
+	public void handleJsonPullResponse(JavaScriptObject jso) {
 		if (jso == null) {
 			jdb.displayError("Couldn't retrieve JSON");
 			return;
@@ -848,5 +856,79 @@ public class ClientWidget extends Composite {
 	    currentServiceNumber = cd.getMostRecentServiceNumber();
 	    loadClientData();
 	    jdb.clearStatus();
+	}
+	
+	/**
+	 * Make call to remote server to request client information.
+	 */
+	public native static void getJsonForStageTwoPush(int requestId, String url,
+	      ClientWidget handler) /*-{
+	   var callback = "callback" + requestId;
+
+	   var script = document.createElement("script");
+	   script.setAttribute("src", url+callback);
+	   script.setAttribute("type", "text/javascript");
+	   window[callback] = function(jsonObj) {
+	     handler.@ca.patricklam.judodb.client.ClientWidget::handleJsonStageTwoPushResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
+	     window[callback + "done"] = true;
+	   }
+
+	   setTimeout(function() {
+	     if (!window[callback + "done"]) {
+	       handler.@ca.patricklam.judodb.client.ClientWidget::handleJsonStageTwoPushResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
+	     }
+
+	     document.body.removeChild(script);
+	     delete window[callback];
+	     delete window[callback + "done"];
+	   }, 5000);
+
+	   document.body.appendChild(script);
+	  }-*/;
+
+	static class ConfirmResponseObject extends JavaScriptObject {
+		protected ConfirmResponseObject() {}
+		
+		public final native String getResult() /*-{ return this.result; }-*/;
+		public final native String getSid() /*-{ return this.sid; }-*/;
+	}
+	
+	/**
+	 * Handle the response to the request for data from a remote server.
+	 */
+	public void handleJsonStageTwoPushResponse(JavaScriptObject jso) {
+		if (jso == null) {
+			if (pushTries == 3) {
+				jdb.displayError("pas de réponse");
+				return;
+			} else {
+				tryConfirmPushAgain();
+			}
+		}	
+
+	    ConfirmResponseObject cro = jso.cast();
+	    
+	    if (cro.getResult().equals("NOTYET")) {
+	    	tryConfirmPushAgain(); 
+	    	return;
+	    }
+
+	    if (!cro.getResult().equals("OK")) 
+	    	jdb.displayError("le serveur n'a pas accepté les données");
+	    else {
+	    	jdb.setStatus("Sauvegardé.");
+		    if (cd.getID().equals("-1")) {
+		    	cd.setID(cro.getSid());
+		    	loadClientData();
+		    }		    
+	    }
+	}
+	
+	private void tryConfirmPushAgain() {
+		pushTries++;
+		new Timer() { public void run() {
+			ClientWidget.getJsonForStageTwoPush
+				(jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX, ClientWidget.this);
+		}}.schedule(1000);	
 	}
 }

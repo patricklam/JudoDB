@@ -12,6 +12,7 @@ public class ClientData extends JavaScriptObject {
 	protected ClientData() {}
 	
 	public final native String getID() /*-{ return this.id; }-*/;
+	public final native void setID(String id) /*-{ this.id = id; }-*/;
 
 	public final native String getNom() /*-{ return this.nom; }-*/;
 	public final native void setNom(String nom) /*-{ this.nom = nom; }-*/;
