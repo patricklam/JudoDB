@@ -20,7 +20,7 @@ public class ServiceData extends JavaScriptObject {
 	public final native int getSessionCount() /*-{ return this.sessions == null ? 2 : parseInt(this.sessions); }-*/;
 	public final native void setSessionCount(int sessions) /*-{ this.sessions = sessions.toString(); }-*/;
 	public final native boolean getPasseport() /*-{ return this.passeport != '0'; }-*/;
-	public final native void setPasseport(boolean passeport) /*-{ this.passport = passeport ? "1" : "0"; }-*/;
+	public final native void setPasseport(boolean passeport) /*-{ this.passeport = passeport ? "1" : "0"; }-*/;
 	public final native boolean getNonAnjou() /*-{ return this.non_anjou != '0'; }-*/;
 	public final native void setNonAnjou(boolean non_anjou) /*-{ this.non_anjou = non_anjou ? "1" : "0"; }-*/;
 	public final native int getEscompteType() /*-{ return this.escompte == null ? 0 : parseInt(this.escompte); }-*/;
