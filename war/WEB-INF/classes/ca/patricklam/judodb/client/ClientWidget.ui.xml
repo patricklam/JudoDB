@@ -33,7 +33,7 @@
 		 </div>
  		 <div class="{style.fourper}">
   		  <label><span class="noprint">Ville<br /></span><g:TextBox ui:field="ville" name="ville"/></label>
-  		  <label><span class="noprint">Code postal<br /></span><g:TextBox ui:field="codePostal" name="codePostal"/></label>
+  		  <label><span class="noprint">Code postal<br /></span><g:TextBox ui:field="codePostal" name="code_postal"/></label>
   		  <label><span class="noprint">T&eacute;l&eacute;phone(s)<br /></span><g:TextBox ui:field="tel" visibleLength="10" name="tel"/></label>
   		 </div>
  		 <div class="{style.threeper}">
@@ -72,23 +72,23 @@
    		  <label style="width:46%">Cours<br /><g:ListBox ui:field="cours"/><g:Hidden ui:field="cours_encoded" name="cours_encoded" /></label>
    		  <label>Sessions<br /><g:ListBox ui:field="sessions"/><g:Hidden ui:field="sessions_encoded" name="sessions_encoded" /></label>
    		  <span class="{style.fraisOnRight}"><label>Frais cours<br /><g:TextBox ui:field="categorieFrais" visibleLength="15"/> 
-   		    <g:Hidden ui:field="categorieFrais_encoded" name="categorieFrais_encoded"/></label></span>
+   		    <g:Hidden ui:field="categorieFrais_encoded" name="categorie_frais_encoded"/></label></span>
   		 </div>
   		 <div class="{style.fourper}">
    		  <label>Escompte<br /><g:ListBox ui:field="escompte"/><g:Hidden ui:field="escompte_encoded" name="escompte_encoded"/></label>
           <label>Raison cas sp&eacute;cial<br /><g:TextBox ui:field="cas_special_note"/><g:Hidden ui:field="cas_special_note_encoded" name="cas_special_note_encoded"/></label>
    		  <label>% escompte<br /><g:TextBox ui:field="cas_special_pct" visibleLength="8" /><g:Hidden ui:field="cas_special_pct_encoded" name="cas_special_pct_encoded"/></label>
-          <span class="{style.fraisOnRight}"><label> - escompte<br /><g:TextBox ui:field="escompteFrais" visibleLength="15" /><g:Hidden ui:field="escompteFrais_encoded" name="escompteFrais_encoded"/></label></span>
+          <span class="{style.fraisOnRight}"><label> - escompte<br /><g:TextBox ui:field="escompteFrais" visibleLength="15" /><g:Hidden ui:field="escompteFrais_encoded" name="escompte_special_encoded"/></label></span>
          </div>
          <div class="{style.fourper}">
    		  <label>Déjà affili&eacute; Judo Qu&eacute;bec 2011-12<br /><g:CheckBox ui:field="sans_affiliation"/> <g:Hidden ui:field="sans_affiliation_encoded" name="sans_affiliation_encoded" /></label>
-          <span class="{style.fraisOnRight}"><label>Affiliation Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliationFrais" visibleLength="15" /> <g:Hidden ui:field="affiliationFrais_encoded" name="affiliationFrais_encoded" /></label></span>
+          <span class="{style.fraisOnRight}"><label>Affiliation Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliationFrais" visibleLength="15" /> <g:Hidden ui:field="affiliationFrais_encoded" name="affiliation_frais_encoded" /></label></span>
          </div>
          <div class="{style.fourper}">
           <label>Co&ucirc;t judogi<br /><g:TextBox ui:field="judogi" visibleLength="8"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></label>
           <label style="font-size:80%">Passeport Judo QC (5 $)<br /><g:CheckBox ui:field="passeport"/><g:Hidden ui:field="passeport_encoded" name="passeport_encoded" /></label>
           <label style="font-size:80%">Pas de carte Anjou (5 $)<br /><g:CheckBox ui:field="non_anjou"/><g:Hidden ui:field="non_anjou_encoded" name="non_anjou_encoded" /></label>
-          <span class="{style.fraisOnRight}"><label>Autres frais<br /><g:TextBox ui:field="suppFrais" visibleLength="15" /><g:Hidden ui:field="suppFrais_encoded" name="suppFrais_encoded" /></label></span>
+          <span class="{style.fraisOnRight}"><label>Autres frais<br /><g:TextBox ui:field="suppFrais" visibleLength="15" /><g:Hidden ui:field="suppFrais_encoded" name="supp_frais_encoded" /></label></span>
         </div>
         <div class="{style.fourper}">
           <label>Solde reste &agrave; payer<br /><g:CheckBox ui:field="solde"/><g:Hidden ui:field="solde_encoded" name="solde_encoded" /></label>
