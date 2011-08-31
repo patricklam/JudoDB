@@ -8,6 +8,7 @@
  		<form id="clientform" class="{style.compactform}" method="POST" target="eatFormSubmitResults">
  		<g:Hidden ui:field="guid_on_form" name="guid" />
  		<g:Hidden ui:field="sid" name="sid" />
+ 		<g:Hidden ui:field="deleted" name="deleted" />
  		
 		<fieldset> <legend>Identit&eacute;</legend>
  		 <div class="{style.fourper}" id="identite">
@@ -97,6 +98,7 @@
        </fieldset>
       <g:Button ui:field='saveAndReturnClientButton'>Sauvegarder et retourner</g:Button>
       <g:Button ui:field='saveClientButton'>Sauvegarder</g:Button>
+      <span style="position: absolute; right:40%"><g:Button ui:field='deleteClientButton'>Supprimer</g:Button></span>
       <g:Button ui:field='discardClientButton' addStyleNames='{style.floatRight}'>Annuler</g:Button>
       </form>
 
