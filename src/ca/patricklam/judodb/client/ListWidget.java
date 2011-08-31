@@ -261,11 +261,12 @@ public class ListWidget extends Composite {
 		}
 		
 		curRow = 1;
+		Constants.Session rs = requestedSession();
 		for (ClientData cd : filteredClients) {
 			String grade = cd.getGrade();
 			if (grade != null && grade.length() >= 3) grade = grade.substring(0, 3);
 			
-			ServiceData sd = cd.getServiceFor(requestedSession());
+			ServiceData sd = cd.getServiceFor(rs);
 			int cours = sd != null ? Integer.parseInt(sd.getCours()) : -1;
 			
 			Anchor nomAnchor = new Anchor(cd.getNom()), prenomAnchor = new Anchor(cd.getPrenom());
@@ -287,7 +288,7 @@ public class ListWidget extends Composite {
 			results.setText(curRow, 6, cd.getTel());
 			results.setText(curRow, 7, cd.getJudoQC());
 			results.setText(curRow, 8, cd.getDDNString());
-			results.setText(curRow, 9, cd.getCategorie(requestedSession().effective_year).abbrev);
+			results.setText(curRow, 9, cd.getCategorie((rs == null ? Constants.currentSession() : rs).effective_year).abbrev);
 
 			if (visibility[10]) {
 			// actually a checkbox:

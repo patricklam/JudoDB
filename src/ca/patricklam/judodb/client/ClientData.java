@@ -68,6 +68,7 @@ public class ClientData extends JavaScriptObject {
 	public final ServiceData getServiceFor(Constants.Session saison) {
 		JsArray<ServiceData> services = getServices();
 		if (services == null) return null;
+		if (saison == null) return services.get(getMostRecentServiceNumber());
 		
 		for (int i = 0; i < services.length(); i++) {
 			if (services.get(i).getSaisons().contains(saison.abbrev))
