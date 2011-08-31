@@ -216,6 +216,10 @@ public class JudoDB implements EntryPoint {
 		login.focus();
 	}
 
+	public void invalidateListWidget() {
+		this.l = null;
+	}
+	
 	/**
 	 * This is the entry point method.
 	 */

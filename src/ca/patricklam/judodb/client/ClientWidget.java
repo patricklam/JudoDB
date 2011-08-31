@@ -920,6 +920,7 @@ public class ClientWidget extends Composite {
 	    }
 	    else {
 	    	jdb.setStatus("Sauvegardé.");
+	    	jdb.invalidateListWidget();
 			new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
 		    if (cd.getID() == null || cd.getID().equals("")) {
 		    	cd.setID(Integer.toString(cro.getSid()));
