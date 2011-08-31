@@ -125,9 +125,11 @@ public class ClientWidget extends Composite {
 
 	@UiField Hidden guid_on_form;
 	@UiField Hidden sid;
+	@UiField Hidden deleted;
 	
 	@UiField Button saveClientButton;
 	@UiField Button saveAndReturnClientButton;
+	@UiField Button deleteClientButton;
 	@UiField Button discardClientButton;
 
 	@UiField HTMLPanel blurb;
@@ -172,6 +174,7 @@ public class ClientWidget extends Composite {
 		clientform = FormElement.as(clientMain.getElementById("clientform"));
 		clientform.setAction(PUSH_ONE_CLIENT_URL);
 		jdb.pleaseWait();
+		deleted.setValue("");
 		
 		for (Constants.Cours c : Constants.COURS) {
 			cours.addItem(c.name, c.seqno);
@@ -231,6 +234,12 @@ public class ClientWidget extends Composite {
 		discardClientButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) {
 				ClientWidget.this.jdb.clearStatus();
+				ClientWidget.this.jdb.popMode(); 
+			}
+		});
+		deleteClientButton.addClickHandler(new ClickHandler() { 
+			public void onClick(ClickEvent e) {
+				pushDeleteToServer();
 				ClientWidget.this.jdb.popMode(); 
 			}
 		});
@@ -807,6 +816,23 @@ public class ClientWidget extends Composite {
 		encodeServices();
 
 		// http://stackoverflow.com/questions/2699277/post-data-to-jsonp	
+		clientform.submit();
+
+		pushTries = 0;
+		new Timer() { public void run() {
+			getJsonForStageTwoPush(jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX, ClientWidget.this);
+		} }.schedule(100);
+	}
+	
+	private void pushDeleteToServer() {
+		// no need to delete if there's no ID yet.
+		if (cd.getID().equals("")) return;
+
+		guid = UUID.uuid();
+		sid.setValue(cd.getID());
+		
+		guid_on_form.setValue(guid);
+		deleted.setValue("true");
 		clientform.submit();
 
 		pushTries = 0;
