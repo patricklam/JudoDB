@@ -42,9 +42,9 @@ public class JudoDB implements EntryPoint {
 	public static final int MAX_RESULTS = 10;
 	
 	// testing db:
-	public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb-backend/";
+	//public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb-backend/";
 
-	//public static final String BASE_URL = "http://www.judo-anjou.qc.ca/anjoudb-backend/";
+	public static final String BASE_URL = "http://www.judo-anjou.qc.ca/anjoudb-backend/";
 	private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
 	private static final String AUTHENTICATE_URL = BASE_URL + "authenticate.php"; // used for testing authentication
 	private static final String LOGOUT_URL = BASE_URL + "logout.php"; 
@@ -67,7 +67,7 @@ public class JudoDB implements EntryPoint {
 	private final Anchor logout = new Anchor("Fermer session");
 	
 	/* state */
-	private JsArray<ClientSummary> allClients;
+	JsArray<ClientSummary> allClients;
 	private String searchString;
 	private int firstSearchResultToDisplay = 0;
 	private Stack<Mode> modes = new Stack<Mode>();
@@ -166,7 +166,7 @@ public class JudoDB implements EntryPoint {
 		RootPanel.get("lists").setVisible(false);
 		RootPanel.get("editClient").clear();
 
-		this.c = new ClientWidget(this, cid);
+		this.c = new ClientWidget(cid, this);
 		RootPanel.get("editClient").add(this.c);
 		RootPanel.get("editClient").setVisible(true);
 	}

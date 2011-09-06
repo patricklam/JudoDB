@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -51,6 +52,7 @@ public class ClientWidget extends Composite {
 	@UiField TextBox ddn;
 	@UiField TextBox sexe;
 
+	@UiField Anchor copysib;
 	@UiField TextBox adresse;
 	@UiField TextBox ville;
 	@UiField TextBox codePostal;
@@ -168,7 +170,10 @@ public class ClientWidget extends Composite {
 	private int currentServiceNumber;
 	public int getCurrentServiceNumber() { return currentServiceNumber; }
 	
-	public ClientWidget(JudoDB jdb, int cid) {
+	private String sibid;
+	private List<ChangeHandler> onPopulated = new ArrayList<ChangeHandler>();
+		
+	public ClientWidget(int cid, JudoDB jdb) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
 		clientform = FormElement.as(clientMain.getElementById("clientform"));
@@ -208,6 +213,13 @@ public class ClientWidget extends Composite {
 		});
 		saveGrades.addClickHandler(saveGradesHandler);
 		annulerGrades.addClickHandler(annulerGradesHandler);
+
+		adresse.addChangeHandler(updateCopySibHandler);
+		ville.addChangeHandler(updateCopySibHandler);
+		codePostal.addChangeHandler(updateCopySibHandler);
+		tel.addChangeHandler(updateCopySibHandler);
+		tel_contact_urgence.addChangeHandler(updateCopySibHandler);
+		courriel.addChangeHandler(updateCopySibHandler);
 		
 		ddn.addChangeHandler(recomputeHandler);
 		grade.addChangeHandler(recomputeHandler);
@@ -241,6 +253,12 @@ public class ClientWidget extends Composite {
 			public void onClick(ClickEvent e) {
 				pushDeleteToServer();
 				ClientWidget.this.jdb.popMode(); 
+			}
+		});
+		
+		copysib.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent e) {
+				copysib();
 			}
 		});
 
@@ -538,6 +556,9 @@ public class ClientWidget extends Composite {
 			loadClientData();
 		}
 	};
+	private final ChangeHandler updateCopySibHandler = new ChangeHandler() {
+		public void onChange(ChangeEvent e) { updateCopySib(); }
+	};
 	private final ValueChangeHandler<Boolean> recomputeValueHandler = new ValueChangeHandler<Boolean>() {
 		public void onValueChange(ValueChangeEvent<Boolean> e) { recompute(); }
 	};
@@ -734,6 +755,52 @@ public class ClientWidget extends Composite {
 		frais.setText(cf.format(dCategorieFrais + dAffiliationFrais + dEscompteFrais + dSuppFrais));		
 	}
 	
+	private void updateCopySib() {
+		copysib.setVisible(false);
+		// check 1) address fields are empty and 2) there exists a sibling
+		StringBuffer addrFields = new StringBuffer();
+		addrFields.append(adresse.getText());
+		addrFields.append(ville.getText());
+		addrFields.append(codePostal.getText());
+		addrFields.append(tel.getText());
+		addrFields.append(tel_contact_urgence.getText());
+		addrFields.append(courriel.getText());
+		if (!addrFields.toString().equals(""))
+			return;
+		
+		for (int i = 0; i < jdb.allClients.length(); i++) {
+			ClientSummary cs = jdb.allClients.get(i);
+			if (cs.getId().equals(cd.getID()))
+				continue;
+			
+			String csn = cs.getNom().toLowerCase();
+			String n = nom.getText().toLowerCase();
+			if (n.equals(csn)) {
+				sibid = cs.getId();
+				copysib.setVisible(true);
+			}
+		}
+	}
+	
+	private void copysib() {
+		final ClientWidget cp = new ClientWidget(Integer.parseInt(sibid), jdb);
+		cp.onPopulated.add (new ChangeHandler () {
+			public void onChange(ChangeEvent e) {
+				cp.actuallyCopy(ClientWidget.this);				
+			}
+		});
+	}
+	
+	private void actuallyCopy(ClientWidget d) {
+		d.adresse.setText(adresse.getText());
+		d.ville.setText(ville.getText());
+		d.codePostal.setText(codePostal.getText());
+		d.tel.setText(tel.getText());
+		d.tel_contact_urgence.setText(tel_contact_urgence.getText());
+		d.courriel.setText(courriel.getText());
+		d.updateCopySib();
+	}
+	
 	private void recompute() {
 		saveClientData();
 
@@ -751,6 +818,7 @@ public class ClientWidget extends Composite {
 
 		updateBlurb();
 		updateFrais();
+		updateCopySib();
 	}
 
 	private void encodeServices() {
@@ -882,6 +950,10 @@ public class ClientWidget extends Composite {
 	    currentServiceNumber = cd.getMostRecentServiceNumber();
 	    loadClientData();
 	    jdb.clearStatus();
+	    
+	    for (ChangeHandler ch : onPopulated) {
+	    	ch.onChange(null);
+	    }
 	}
 	
 	/**
