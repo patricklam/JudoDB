@@ -20,7 +20,7 @@
         </fieldset>
 
 		<fieldset> 
-		 <legend>Adresse<span id="copySib" class="noprint" style="display:none"> (<g:Anchor ui:field="copysib">copier</g:Anchor>)</span></legend>
+		 <legend>Adresse<span id="copySib" class="noprint"><g:Anchor ui:field="copysib">&nbsp;(copier)</g:Anchor></span></legend>
  		 <div class="{style.oneper}">
   		  <label><span class="noprint">Adresse<br /></span><g:TextBox ui:field="adresse" name="adresse" visibleLength="70"/></label>
          </div>
