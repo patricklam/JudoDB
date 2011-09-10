@@ -266,12 +266,16 @@ public class ClientWidget extends Composite {
 			getJsonForPull(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
 		else {
 			this.cd = JavaScriptObject.createObject().cast();
+			this.cd.setID(null); this.cd.setNom("");
+			
 			JsArray<ServiceData> sa = JavaScriptObject.createArray().cast();
 			ServiceData sd = ServiceData.newServiceData();
 			sd.inscrireAujourdhui();
 			sa.set(0, sd);
 			this.cd.setServices(sa);
-			currentServiceNumber = 0;
+			// new client: first service, 
+			//   which exists because we called inscrireAujourdhui
+			currentServiceNumber = 0; 
 			
 			JsArray<GradeData> ga = JavaScriptObject.createArray().cast();
 			this.cd.setGrades(ga);
@@ -768,6 +772,9 @@ public class ClientWidget extends Composite {
 		if (!addrFields.toString().equals(""))
 			return;
 		
+		// oh well, tough luck!
+		if (jdb.allClients == null) return;
+		
 		for (int i = 0; i < jdb.allClients.length(); i++) {
 			ClientSummary cs = jdb.allClients.get(i);
 			if (cs.getId().equals(cd.getID()))
@@ -889,7 +896,7 @@ public class ClientWidget extends Composite {
 		pushTries = 0;
 		new Timer() { public void run() {
 			getJsonForStageTwoPush(jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX, ClientWidget.this);
-		} }.schedule(100);
+		} }.schedule(500);
 	}
 	
 	private void pushDeleteToServer() {
@@ -906,7 +913,7 @@ public class ClientWidget extends Composite {
 		pushTries = 0;
 		new Timer() { public void run() {
 			getJsonForStageTwoPush(jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX, ClientWidget.this);
-		} }.schedule(100);
+		} }.schedule(500);
 	}
 	
 	/**
