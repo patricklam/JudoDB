@@ -125,19 +125,18 @@ public class Constants {
 	public static final Categorie EMPTY_CATEGORIE = new Categorie("", "", 0, false);
 
 	public static final Cours[] COURS = new Cours[] {
-		new Cours("0", "Adultes (LM2015-2145, V2000-2145)", "LM2015 V2000", "Rejean Lavoie"),
-		new Cours("1", "Équipe compétition (LM1830-2015, V2000-2145)", "LM1830 V2000", "Luc Phan"),
-		new Cours("2", "Intérmediares 7-12 ans (L1730-1830, V1830-2000)", "L1730 V1830", "Rejean Lavoie"),
-		new Cours("3", "Débutants 7-12 ans (MaJ1730-1830)", "MaJ1730", "Luc Phan"),
-		new Cours("4", "Débutants 5-6 ans (S900-1000)", "S900", "Lan-Anh Phan"),
-		new Cours("5", "Anciens 5-6 ans (S1000-1100)", "S1000", "Lan-Anh Phan"),
-		new Cours("6", "Anciens 5-6 ans (S1100-1200)", "S1100", "Alexandre Despres"),
-		new Cours("7", "Anciens 7-9 ans (S1200-1330)", "S1200", "Alexandre Despres"),
-		new Cours("8", "Anciens 7-9 ans (S1330-1500)", "S1330", "Alexandre Despres"),
-		new Cours("9", "Débutants 7-11 ans (S1500-1630)", "S1500", "Alexandre Despres"),
-		new Cours("10", "Débutants 5-6 ans (D930-1030)", "D930", "Lan-Anh Phan"),
-		new Cours("11", "Débutants 7-10 ans (D1030-1230)", "D1030", "Lan-Anh Phan"),
-		new Cours("12", "Débutants 7-11 ans (MV1730-1830)", "MV1730", "Luc Phan")
+		new Cours("0", "Adultes (LM2015-2145, V2000-2145)", "LM2015 V2000", ""),
+		new Cours("1", "Équipe compétition (LM1830-2015, V2000-2145)", "LM1830 V2000", ""),
+		new Cours("2", "Intérmediares 7-12 ans (L1730-1830, V1830-2000)", "L1730 V1830", ""),
+		new Cours("3", "Débutants 7-12 ans (MaJ1730-1830)", "MaJ1730", ""),
+		new Cours("4", "Débutants 5-6 ans (S900-1000)", "S900", ""),
+		new Cours("5", "Anciens 5-6 ans (S1000-1130)", "S1000", ""),
+		new Cours("6", "Anciens 5-6 ans (S1130-1300)", "S1130", ""),
+		new Cours("7", "Anciens 7-9 ans (S1300-1430)", "S1300", ""),
+		new Cours("8", "Anciens 7-9 ans (S1430-1600)", "S1430", ""),
+		new Cours("9", "Débutants 5-6 ans (D930-1030)", "D930", ""),
+		new Cours("10", "Débutants 7-10 ans (D1030-1230)", "D1030", ""),
+		new Cours("11", "Débutants 7-11 ans (MV1730-1830)", "MV1730", "")
 	};
 
 	public static final CategorieSession[] CATEGORIES_SESSIONS = new CategorieSession[] {
