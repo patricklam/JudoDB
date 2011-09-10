@@ -295,7 +295,7 @@ public class ListWidget extends Composite {
 			//results.setText(curRow, 10, cd.getMostRecentService().getVerification() ? "X" : "");
 			}
 			
-			if (cours != -1) {
+			if (cours != -1 && cours < Constants.COURS.length) {
 				results.setText(curRow, 11, Constants.COURS[cours].short_desc);
 				results.setText(curRow, 12, Integer.toString(cours));
 			} else {
