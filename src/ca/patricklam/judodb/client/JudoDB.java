@@ -162,7 +162,8 @@ public class JudoDB implements EntryPoint {
 	
 	private void switchMode_editClient (int cid) {
 		RootPanel.get("search").setVisible(false);
-		RootPanel.get("actions").setVisible(false);
+		RootPanel.get("mainActions").setVisible(false);
+		RootPanel.get("listActions").setVisible(false);
 		RootPanel.get("lists").setVisible(false);
 		RootPanel.get("editClient").clear();
 
@@ -173,7 +174,8 @@ public class JudoDB implements EntryPoint {
 	
 	public void switchMode_viewLists() {
 		RootPanel.get("search").setVisible(false);
-		RootPanel.get("actions").setVisible(true);
+		RootPanel.get("mainActions").setVisible(false);
+		RootPanel.get("listActions").setVisible(true);
 		RootPanel.get("editClient").clear();
 		if (this.l == null) {
 			this.l = new ListWidget(this);
@@ -196,7 +198,8 @@ public class JudoDB implements EntryPoint {
 		RootPanel.get("editClient").setVisible(false);
 		RootPanel.get("lists").setVisible(false);
 		RootPanel.get("login").setVisible(false);
-		RootPanel.get("actions").setVisible(true);
+		RootPanel.get("mainActions").setVisible(true);
+		RootPanel.get("listActions").setVisible(false);
 		RootPanel.get("search").setVisible(true);
 
 		retourner.setVisible(false);
@@ -257,19 +260,22 @@ public class JudoDB implements EntryPoint {
 		searchResultsPanel.setVisible(false);
 		RootPanel.get("search").add(searchResultsPanel);
 		
-		// right bar actions
-		Panel actions = RootPanel.get("actions");
+		// right bar actions: main
+		Panel mainActions = RootPanel.get("mainActions");
 		voirListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST)); }});
-		actions.add(voirListes);
-		actions.add(new Label(""));
-		retourner.setVisible(false);
-		retourner.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.MAIN)); }});
-		actions.add(retourner);
-		actions.add(new Label(""));
+		mainActions.add(voirListes);
+		mainActions.add(new Label(""));
 		logout.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) { getJsonForAuth(jsonRequestId++, LOGOUT_URL + "?callback=", JudoDB.this);
 			}});
-		actions.add(logout);
+		mainActions.add(logout);
+
+		// right bar actions: list
+		Panel listActions = RootPanel.get("listActions");
+		retourner.setVisible(false);
+		retourner.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.MAIN)); }});
+		listActions.add(retourner);
+		listActions.add(new Label(""));
 
 		// hide the login box
 		RootPanel.get("login").setVisible(false);
