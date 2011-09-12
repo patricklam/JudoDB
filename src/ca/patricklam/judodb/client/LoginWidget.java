@@ -25,9 +25,9 @@ public class LoginWidget extends Composite {
 
 	private String challenge = null;
 	
-	@UiField(provided=true) TextBox loginid = new TextBox();
-	@UiField(provided=true) PasswordTextBox password = new PasswordTextBox();
-	@UiField(provided=true) Button entrer = new Button();
+	@UiField TextBox loginid;
+	@UiField PasswordTextBox password;
+	@UiField Button entrer;
 
 	public LoginWidget(JudoDB jdb) {
 		this.jdb = jdb;
