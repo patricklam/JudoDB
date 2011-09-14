@@ -145,7 +145,7 @@ public class ClientWidget extends Composite {
 	private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php?id=";
 	private static final String CALLBACK_URL_SUFFIX = "&callback=";
 	private static final String PUSH_ONE_CLIENT_URL = JudoDB.BASE_URL + "push_one_client.php";
-	private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_one_push.php?guid=";
+	private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php?guid=";
 	private int pushTries;
 	
 	public interface BlurbTemplate extends SafeHtmlTemplates {
@@ -991,13 +991,6 @@ public class ClientWidget extends Composite {
 	   document.body.appendChild(script);
 	  }-*/;
 
-	static class ConfirmResponseObject extends JavaScriptObject {
-		protected ConfirmResponseObject() {}
-		
-		public final native String getResult() /*-{ return this.result; }-*/;
-		public final native int getSid() /*-{ return this.sid; }-*/;
-	}
-	
 	/**
 	 * Handle the response to the request for data from a remote server.
 	 */
