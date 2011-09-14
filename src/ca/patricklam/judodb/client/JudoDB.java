@@ -63,8 +63,10 @@ public class JudoDB implements EntryPoint {
 
 	/* actions */
 	private final Anchor voirListes = new Anchor("Voir listes des cours");
-	private final Anchor retourner = new Anchor("Retourner");
 	private final Anchor logout = new Anchor("Fermer session");
+	final Anchor editerListes = new Anchor("Éditer");
+	final Anchor normalListes = new Anchor("Voir listes");
+	final Anchor retourner = new Anchor("Retourner");
 	
 	/* state */
 	JsArray<ClientSummary> allClients;
@@ -272,7 +274,14 @@ public class JudoDB implements EntryPoint {
 
 		// right bar actions: list
 		Panel listActions = RootPanel.get("listActions");
-		retourner.setVisible(false);
+		editerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
+			if (JudoDB.this.l != null) JudoDB.this.l.switchMode(ListWidget.Mode.EDIT); }});
+		listActions.add(editerListes);
+		listActions.add(new Label(""));
+		normalListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
+			if (JudoDB.this.l != null) JudoDB.this.l.switchMode(ListWidget.Mode.NORMAL); }});
+		listActions.add(normalListes);
+		listActions.add(new Label(""));
 		retourner.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.MAIN)); }});
 		listActions.add(retourner);
 		listActions.add(new Label(""));
