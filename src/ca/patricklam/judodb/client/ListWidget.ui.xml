@@ -36,6 +36,23 @@
 	<g:Grid ui:field="results"></g:Grid>
 
 	<g:Label ui:field="nb" />
+	
+	<g:FormPanel ui:field="listEditForm" method="post">
+		<g:HorizontalPanel>
+ 		<g:Hidden ui:field="guid_on_form" name="guid" />
+ 		<g:Hidden ui:field="currentSession" name="current_session" />
+	    <g:Hidden ui:field="dataToSave" name="data_to_save" />
+	    </g:HorizontalPanel>
+	</g:FormPanel>
+	<div id="saveorquit" class="actions noprint" style="padding-bottom: 1em">
+     <div style="float:left; text-align:right;">
+      <g:Button ui:field="save">Sauvegarder</g:Button>
+     </div>
+     <div style="float:right; text-align:right;">
+      <g:Button ui:field="quit">Annuler</g:Button>
+     </div>
+    </div>
+	
  </g:HTMLPanel>
  
 </ui:UiBinder>

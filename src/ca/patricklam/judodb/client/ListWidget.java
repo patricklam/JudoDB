@@ -3,6 +3,7 @@ package ca.patricklam.judodb.client;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 
 import ca.patricklam.judodb.client.Constants.Cours;
 
@@ -15,7 +16,10 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.Grid;
@@ -32,7 +36,10 @@ public class ListWidget extends Composite {
 	private JsArray<ClientData> allClients;
 	
 	private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
-	private static final String CALLBACK_URL_SUFFIX = "?callback=";
+	private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
+	private static final String CALLBACK_URL_SUFFIX_Q = "?callback=";
+	private static final String CALLBACK_URL_SUFFIX_A = "&callback=";
+	private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php?guid=";
 	
 	@UiField FormPanel listForm;
 	@UiField Anchor pdf;
@@ -52,7 +59,22 @@ public class ListWidget extends Composite {
 	@UiField Grid results;
 	@UiField Label nb;
 
+	@UiField Button save;
+	@UiField Button quit;
+	
+	@UiField FormPanel listEditForm;
+	@UiField Hidden guid_on_form;
+	@UiField Hidden currentSession;
+	@UiField Hidden dataToSave;
+	private String guid;
+	private int pushTries;
+	
 	@UiField ListBox session;
+
+	private class Rows {
+		final static int CID = 0;
+		final static int VERIFICATION = 10;
+	}
 	
 	enum Mode {
 		NORMAL, FT, EDIT, GERER_CLASSES
@@ -65,12 +87,15 @@ public class ListWidget extends Composite {
 		"", "Nom", "Prenom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Cat", "V", "Cours", "", "Saisons"
 	};
 
+	private HashMap<CheckBox, Boolean> originalVerifValues = new HashMap<CheckBox, Boolean>();
+	
 	//var widthsForEditing = [-1, -1, -1, 1, 3, 8, -1, 8, -1, -1, -1, -1, -1];
 
 	public ListWidget(JudoDB jdb) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
 		jdb.pleaseWait();
+		switchMode(Mode.NORMAL);
 		
 		cours.addItem("Tous", "-1");
 		for (Constants.Cours c : Constants.COURS) {
@@ -97,9 +122,53 @@ public class ListWidget extends Composite {
 		xls2.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) { computeFull(); submit("xlsfull"); } });
 		
-		getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX, this);	
+		save.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent e) {
+				save();
+			}
+		});
+		quit.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent e) {
+				reset();
+				ListWidget.this.switchMode(Mode.NORMAL); }
+		});
+		
+		listEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
+		
+		getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX_Q, this);	
 	}
 
+	private void save() {
+		// iterate through originalVerifValues and see which ones to generate
+		// create a list of tuples of the form: 163, "verification", "0"; 164, "verification", "1"
+		// we'll push to the server, which will update the services that match the cid and the current session.
+
+		guid = UUID.uuid();
+		guid_on_form.setValue(guid);
+		currentSession.setValue(Constants.currentSession().abbrev);
+		
+		StringBuffer dv = new StringBuffer();
+		for (int i = 0; i < results.getRowCount(); i++) {
+			CheckBox cb = (CheckBox)results.getWidget(i, Rows.VERIFICATION);
+			if (cb != null && cb.getValue() != originalVerifValues.get(cb)) {
+				String cid = results.getText(i, 0);
+				String v = cb.getValue() ? "1" : "0";
+				dv.append(cid + ",verification,"+v+";");
+			}
+		}
+		dataToSave.setValue(dv.toString());
+		listEditForm.submit();
+
+		pushTries = 0;
+		new Timer() { public void run() {
+			getJsonForStageTwoPush(jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX_A, ListWidget.this);
+		} }.schedule(500);
+	}
+	
+	private void reset() {
+		getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX_Q, this);	
+	}
+	
 	private void addMetaData() {
 		int c = Integer.parseInt(cours.getValue(cours.getSelectedIndex()));
 		if (c > 0 || isFiltering) {
@@ -119,7 +188,10 @@ public class ListWidget extends Composite {
 				subtitle.setValue(st);
 			} else {
 				title.setValue(Constants.COURS[c].name);
-				subtitle.setValue("Entraineur: " + Constants.COURS[c].entraineur);
+				if (!Constants.COURS[c].entraineur.equals(""))
+					subtitle.setValue("Entraineur: " + Constants.COURS[c].entraineur);
+				else
+					subtitle.setValue("");
 				short_title.setValue(Constants.COURS[c].short_desc);
 			}
 		} else {
@@ -274,6 +346,7 @@ public class ListWidget extends Composite {
 			nomAnchor.addClickHandler(c);
 			prenomAnchor.addClickHandler(c);
 
+			results.setText(curRow, Rows.CID, cd.getID());
 			results.setWidget(curRow, 1, nomAnchor);
 			results.setWidget(curRow, 2, prenomAnchor);
 			results.setText(curRow, 3, cd.getSexe());
@@ -290,9 +363,11 @@ public class ListWidget extends Composite {
 			results.setText(curRow, 8, cd.getDDNString());
 			results.setText(curRow, 9, cd.getCategorie((rs == null ? Constants.currentSession() : rs).effective_year).abbrev);
 
-			if (visibility[10]) {
-			// actually a checkbox:
-			//results.setText(curRow, 10, cd.getMostRecentService().getVerification() ? "X" : "");
+			if (visibility[Rows.VERIFICATION]) {
+				CheckBox cb = new CheckBox();
+				results.setWidget(curRow, Rows.VERIFICATION, cb);
+				cb.setValue(sd.getVerification());
+				originalVerifValues.put(cb, sd.getVerification());
 			}
 			
 			if (cours != -1 && cours < Constants.COURS.length) {
@@ -315,6 +390,34 @@ public class ListWidget extends Composite {
 		collectDV();
 		
 		nb.setText("Nombre inscrit: "+count);
+	}
+	
+	public void switchMode(Mode m) {
+		this.mode = m;
+		switch (m) {
+		case NORMAL:
+			jdb.normalListes.setVisible(false);
+			jdb.editerListes.setVisible(true);
+			session.setEnabled(true);
+			save.setVisible(false);
+			quit.setVisible(false);
+			break;
+		case EDIT:
+			session.setSelectedIndex(0);
+			session.setEnabled(false);
+			originalVerifValues.clear();
+			jdb.normalListes.setVisible(true);
+			jdb.editerListes.setVisible(false);
+			save.setVisible(true);
+			quit.setVisible(true);
+			showList();
+			break;
+		default:
+			break;
+		}
+		jdb.retourner.setVisible(true);
+		if (cours.getItemCount() > 0)
+			showList();
 	}
 	
 	/**
@@ -357,5 +460,73 @@ public class ListWidget extends Composite {
 	    this.allClients = jso.cast();
 	    showList();
 	    jdb.clearStatus();
+	}
+
+	/**
+	 * Make call to remote server to request client information.
+	 */
+	public native static void getJsonForStageTwoPush(int requestId, String url,
+	      ListWidget handler) /*-{
+	   var callback = "callback" + requestId;
+
+	   var script = document.createElement("script");
+	   script.setAttribute("src", url+callback);
+	   script.setAttribute("type", "text/javascript");
+	   window[callback] = function(jsonObj) {
+	     handler.@ca.patricklam.judodb.client.ListWidget::handleJsonStageTwoPushResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
+	     window[callback + "done"] = true;
+	   }
+
+	   setTimeout(function() {
+	     if (!window[callback + "done"]) {
+	       handler.@ca.patricklam.judodb.client.ListWidget::handleJsonStageTwoPushResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
+	     }
+
+	     document.body.removeChild(script);
+	     delete window[callback];
+	     delete window[callback + "done"];
+	   }, 5000);
+
+	   document.body.appendChild(script);
+	  }-*/;
+	
+	/**
+	 * Handle the response to the request for data from a remote server.
+	 */
+	public void handleJsonStageTwoPushResponse(JavaScriptObject jso) {
+		if (jso == null) {
+			if (pushTries == 3) {
+				jdb.displayError("pas de réponse");
+				new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+				return;
+			} else {
+				tryConfirmPushAgain();
+			}
+		}	
+
+	    ConfirmResponseObject cro = jso.cast();
+	    
+	    if (cro.getResult() != null && cro.getResult().equals("NOTYET")) {
+	    	tryConfirmPushAgain(); 
+	    	return;
+	    }
+
+	    if (cro.getResult() == null || !cro.getResult().equals("OK")) {
+	    	jdb.displayError("le serveur n'a pas accepté les données");
+			new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+	    }
+	    else {
+	    	jdb.setStatus("Sauvegardé.");
+			new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+			getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX_Q, this);	
+	    }
+	}
+	
+	private void tryConfirmPushAgain() {
+		pushTries++;
+		new Timer() { public void run() {
+			ListWidget.getJsonForStageTwoPush
+				(jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX_A, ListWidget.this);
+		}}.schedule(1000);	
 	}
 }
