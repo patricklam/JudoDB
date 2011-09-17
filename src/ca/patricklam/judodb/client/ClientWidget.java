@@ -278,6 +278,9 @@ public class ClientWidget extends Composite {
 			currentServiceNumber = 0; 
 			
 			JsArray<GradeData> ga = JavaScriptObject.createArray().cast();
+			GradeData gd = JavaScriptObject.createObject().cast();
+			gd.setGrade("Blanche"); gd.setDateGrade(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+			ga.set(0, gd);
 			this.cd.setGrades(ga);
 			loadClientData();
 			jdb.clearStatus();
