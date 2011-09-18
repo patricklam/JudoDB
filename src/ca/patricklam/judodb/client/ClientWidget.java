@@ -266,7 +266,8 @@ public class ClientWidget extends Composite {
 			getJsonForPull(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
 		else {
 			this.cd = JavaScriptObject.createObject().cast();
-			this.cd.setID(null); this.cd.setNom("");
+			this.cd.setID(null); this.cd.setNom(""); 
+			this.cd.setVille("Anjou (QC)"); this.cd.setCodePostal("H1K ");
 			
 			JsArray<ServiceData> sa = JavaScriptObject.createArray().cast();
 			ServiceData sd = ServiceData.newServiceData();
