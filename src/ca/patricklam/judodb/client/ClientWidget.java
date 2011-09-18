@@ -363,7 +363,9 @@ public class ClientWidget extends Composite {
 		// categories is set in recompute().
 		saisons.setText(sd.getSaisons());
 		verification.setValue(sd.getVerification());
-		cours.setItemSelected(Integer.parseInt(sd.getCours()), true);
+		int cnum = Integer.parseInt(sd.getCours());
+		if (cnum >= 0 && cnum < cours.getItemCount())
+			cours.setItemSelected(cnum, true);
 		sessions.setItemSelected(sd.getSessionCount()-1, true);
 		sessions.setEnabled(isToday);
 		categorieFrais.setText(sd.getCategorieFrais());
