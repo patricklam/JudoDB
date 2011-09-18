@@ -222,6 +222,8 @@ public class ClientWidget extends Composite {
 		courriel.addChangeHandler(updateCopySibHandler);
 		
 		ddn.addChangeHandler(recomputeHandler);
+		grade.addChangeHandler(directGradeChangeHandler);
+		date_grade.addChangeHandler(directGradeDateChangeHandler);
 		grade.addChangeHandler(recomputeHandler);
 		date_inscription.addChangeHandler(changeSaisonHandler);
 		sessions.addChangeHandler(recomputeHandler);
@@ -339,7 +341,7 @@ public class ClientWidget extends Composite {
 		}
 		else
 			sd = cd.getServices().get(currentServiceNumber);
-
+		
 		loadGradesData();
 		
 		date_inscription.clear();
@@ -381,7 +383,7 @@ public class ClientWidget extends Composite {
 		cas_special_pct.setValue(sd.getCasSpecialPct());
 		cas_special_pct.setReadOnly(!isToday);
 		escompteFrais.setText(sd.getEscompteFrais());
-		
+
 		judogi.setText(sd.getJudogi());
 		judogi.setReadOnly(!isToday);
 		passeport.setValue(sd.getPasseport());
@@ -556,6 +558,35 @@ public class ClientWidget extends Composite {
 		}
 		return sb.toString();
 	}
+
+	private final ChangeHandler directGradeChangeHandler = new ChangeHandler() {
+		public void onChange(ChangeEvent e) { 
+			// either no previous grade or no previous date-grade;
+			// erase the old grade
+			if (date_grade.getText().equals("0000-00-00") || cd.getGrade().equals("")) {
+				date_grade.setText(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+				setGradesTableRow(1, grade.getText(), date_grade.getText());
+				saveGradesData();
+			} else {
+				// old grade set, and has date;  keep the old grade-date in the array
+				// and update the array.
+				if (!cd.getGrade().equals("")) {
+					ensureGradeSpace.onChange(null);
+					date_grade.setText(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+					setGradesTableRow(0, 
+							grade.getText(), date_grade.getText());
+					saveGradesData();
+				}
+			}
+		}
+	};
+
+	private final ChangeHandler directGradeDateChangeHandler = new ChangeHandler() {
+		public void onChange(ChangeEvent e) { 
+			// if you change the grade-date, and grade is not empty, then
+			// update the array.
+		}
+	};
 
 	private final ChangeHandler recomputeHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { recompute(); }
