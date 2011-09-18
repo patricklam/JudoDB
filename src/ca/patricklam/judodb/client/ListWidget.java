@@ -411,7 +411,6 @@ public class ListWidget extends Composite {
 			jdb.editerListes.setVisible(false);
 			save.setVisible(true);
 			quit.setVisible(true);
-			showList();
 			break;
 		default:
 			break;
