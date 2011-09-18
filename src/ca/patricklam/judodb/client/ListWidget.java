@@ -108,6 +108,7 @@ public class ListWidget extends Composite {
 				session.insertItem(s.abbrev, Integer.toString(s.seqno), 1);
 		}
 		session.insertItem(Constants.currentSession().abbrev, Integer.toString(Constants.currentSessionNo()), 0);
+		session.setSelectedIndex(0);
 		
 		cours.addChangeHandler(new ChangeHandler() { 
 			public void onChange(ChangeEvent e) { showList(); } });
