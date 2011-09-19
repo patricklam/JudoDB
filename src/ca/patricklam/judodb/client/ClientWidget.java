@@ -570,13 +570,11 @@ public class ClientWidget extends Composite {
 			} else {
 				// old grade set, and has date;  keep the old grade-date in the array
 				// and update the array.
-				if (!cd.getGrade().equals("")) {
-					ensureGradeSpace.onChange(null);
-					date_grade.setText(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
-					setGradesTableRow(0, 
-							grade.getText(), date_grade.getText());
-					saveGradesData();
-				}
+				ensureGradeSpace.onChange(null);
+				date_grade.setText(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+				setGradesTableRow(0, 
+						grade.getText(), date_grade.getText());
+				saveGradesData();
 			}
 		}
 	};
