@@ -65,6 +65,7 @@ public class JudoDB implements EntryPoint {
 	private final Anchor voirListes = new Anchor("Voir listes des cours");
 	private final Anchor logout = new Anchor("Fermer session");
 	final Anchor editerListes = new Anchor("Éditer");
+	final Anchor clearXListes = new Anchor("Effacer les X");
 	final Anchor normalListes = new Anchor("Voir listes");
 	final Anchor retourner = new Anchor("Retourner");
 	
@@ -277,6 +278,10 @@ public class JudoDB implements EntryPoint {
 		editerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
 			if (JudoDB.this.l != null) JudoDB.this.l.switchMode(ListWidget.Mode.EDIT); }});
 		listActions.add(editerListes);
+		listActions.add(new Label(""));
+		clearXListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
+			if (JudoDB.this.l != null) JudoDB.this.l.clearX(); }});
+		listActions.add(clearXListes);
 		listActions.add(new Label(""));
 		normalListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
 			if (JudoDB.this.l != null) JudoDB.this.l.switchMode(ListWidget.Mode.NORMAL); }});

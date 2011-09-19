@@ -291,6 +291,15 @@ public class ListWidget extends Composite {
 		return false;
 	}
 	
+	public void clearX() {
+		for (int i = 0; i < results.getRowCount(); i++) {
+			CheckBox cb = (CheckBox)results.getWidget(i, Rows.VERIFICATION);
+			if (cb != null && cb.getValue()) {
+				cb.setValue(false);
+			}
+		}
+	}
+	
 	public void showList() {
 		boolean all = "-1".equals(cours.getValue(cours.getSelectedIndex()));
 		String requestedSessionNo = session.getValue(session.getSelectedIndex());
@@ -398,6 +407,7 @@ public class ListWidget extends Composite {
 		switch (m) {
 		case NORMAL:
 			jdb.normalListes.setVisible(false);
+			jdb.clearXListes.setVisible(false);
 			jdb.editerListes.setVisible(true);
 			session.setEnabled(true);
 			save.setVisible(false);
@@ -408,6 +418,7 @@ public class ListWidget extends Composite {
 			session.setEnabled(false);
 			originalVerifValues.clear();
 			jdb.normalListes.setVisible(true);
+			jdb.clearXListes.setVisible(true);
 			jdb.editerListes.setVisible(false);
 			save.setVisible(true);
 			quit.setVisible(true);
