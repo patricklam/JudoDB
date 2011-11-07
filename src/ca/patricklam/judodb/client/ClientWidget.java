@@ -269,8 +269,8 @@ public class ClientWidget extends Composite {
 		else {
 			this.cd = JavaScriptObject.createObject().cast();
 			this.cd.setID(null); this.cd.setNom(""); 
-			this.cd.setVille("Anjou (QC)"); this.cd.setCodePostal("H1K ");
-			this.cd.setTel("514-");
+			
+			this.cd.makeDefault();
 			
 			JsArray<ServiceData> sa = JavaScriptObject.createArray().cast();
 			ServiceData sd = ServiceData.newServiceData();
@@ -798,15 +798,9 @@ public class ClientWidget extends Composite {
 	private void updateCopySib() {
 		copysib.setVisible(false);
 		// check 1) address fields are empty and 2) there exists a sibling
-		StringBuffer addrFields = new StringBuffer();
-		addrFields.append(adresse.getText());
-		addrFields.append(ville.getText());
-		addrFields.append(codePostal.getText());
-		addrFields.append(tel.getText());
-		addrFields.append(tel_contact_urgence.getText());
-		addrFields.append(courriel.getText());
-		if (!addrFields.toString().equals(""))
-			return;
+		// Note that the following check relies on the data being saved
+		// to the ClientData, which is true after you enter the birthday.
+		if (!cd.isDefault()) return;
 		
 		// oh well, tough luck!
 		if (jdb.allClients == null) return;

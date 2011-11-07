@@ -8,13 +8,17 @@
 	position:absolute;
 	top:1.5em; right: 1em;
 }
+
+.ft303 {
+}
 </ui:style>
 
 <g:HTMLPanel>
 	<g:ListBox ui:field="session" visibleItemCount="1" styleName="{style.session}" />
 	<h1 id="stdTitle" class="noprint">Listes des cours</h1>
-	   
+
 	<g:FormPanel ui:field="listForm" method="post">
+	  <g:HTMLPanel>
 	    <g:HorizontalPanel>
 		<g:InlineLabel>Cours&nbsp;</g:InlineLabel><g:ListBox ui:field="cours" visibleItemCount="1" />
 		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="pdf">(PDF)</g:Anchor>
@@ -29,8 +33,13 @@
 		<g:Hidden ui:field="data" name="data"/>
 		<g:Hidden ui:field="data_full" name="data_full"/>
 		<g:Hidden ui:field="auxdata" name="auxdata"/>
-		
-		</g:HorizontalPanel>
+	    </g:HorizontalPanel>
+		<g:HTMLPanel ui:field="ft303_controls" styleName="{style.ft303}">
+ 		  &Eacute;v&eacute;nement: <g:TextBox ui:field="evt" name="evt" />&nbsp; &nbsp; 
+ 		  Date: <g:TextBox ui:field="date" visibleLength="10" name="date" />&nbsp;&nbsp;
+ 		  <g:Anchor ui:field="createFT">(créer FT)</g:Anchor>
+ 		</g:HTMLPanel>
+	  </g:HTMLPanel>
 	</g:FormPanel>
 
 	<g:Grid ui:field="results"></g:Grid>

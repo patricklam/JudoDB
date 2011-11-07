@@ -112,6 +112,7 @@ public class ClientData extends JavaScriptObject {
 	}
 	
 	public final Date getDDN() {
+		if (getDDNString() == null) return null;
 		try {
 			return DateTimeFormat.getFormat("yyyy-MM-dd").parse(getDDNString());
 		} catch (IllegalArgumentException e) { return null; }
@@ -137,5 +138,24 @@ public class ClientData extends JavaScriptObject {
 	}
 	
 	/* deprecated */
-	public final native String getRAMQ() /*-{ return this.RAMQ; }-*/;	
+	public final native String getRAMQ() /*-{ return this.RAMQ; }-*/;
+	
+	public static final String DEFAULT_VILLE = "Anjou (QC)";
+	public static final String DEFAULT_CP = "H1K ";
+	public static final String DEFAULT_TEL = "514-";
+	public final void makeDefault() {
+		setVille(DEFAULT_VILLE); 
+		setCodePostal(DEFAULT_CP);
+		setTel(DEFAULT_TEL);
+		setTelContactUrgence(DEFAULT_TEL);
+	}
+	
+	public final boolean isDefault() {
+		return getAdresse().equals("") &&
+				getVille().equals(DEFAULT_VILLE) &&
+				getCodePostal().equals(DEFAULT_CP) &&
+				getTel().equals(DEFAULT_TEL) &&
+				getTelContactUrgence().equals(DEFAULT_TEL) &&
+				getCourriel().equals("");
+	}
 }
