@@ -1,5 +1,7 @@
 package ca.patricklam.judodb.client;
 
+import java.util.Date;
+
 public class Constants {	
 	public static int currentSessionNo() { return 4; }
 	public static Session currentSession() { 
@@ -11,15 +13,19 @@ public class Constants {
 	public static final String CLUB = "Anjou";
 	public static final String CLUBNO = "C047";
 	public static final int VETERAN = 35;
+	public static final int PRORATA_PENALITE = 5;
 	
 	static class Session {
 		final int seqno;
 		final String abbrev;
 		final int effective_year;
+		final Date debut_cours;
+		final Date fin_cours;
 		
-		public Session(int seqno, String abbrev, int effective_year) {
+		public Session(int seqno, String abbrev, int effective_year, Date debut_cours, Date fin_cours) {
 			this.seqno = seqno; this.abbrev = abbrev;
 			this.effective_year = effective_year;
+			this.debut_cours = debut_cours; this.fin_cours = fin_cours;
 		}
 	}
 	
@@ -82,13 +88,23 @@ public class Constants {
 		}
 	}
 	
+	public static native final String webDateToMilliSec(String webDate) /*-{
+    	var longDate = Date.parse(webDate);
+    	return longDate.toString();
+  	}-*/;
+
+	public static Date newDate(String s) {
+		long longDate = Long.parseLong(webDateToMilliSec(s));
+		return new Date(longDate);
+	}
+	
 	public static final Session[] SESSIONS = new Session[] {
-		new Session(0, "A09", 2010),
-		new Session(1, "H10", 2010),
-		new Session(2, "A10", 2011),
-		new Session(3, "H11", 2011),
-		new Session(4, "A11", 2012),
-		new Session(5, "H12", 2012)
+		new Session(0, "A09", 2010, newDate("1/Sep/2009"), newDate("15/May/2010")),
+		new Session(1, "H10", 2010, newDate("1/Sep/2009"), newDate("15/May/2010")),
+		new Session(2, "A10", 2011, newDate("1/Sep/2010"), newDate("15/May/2011")),
+		new Session(3, "H11", 2011, newDate("1/Sep/2010"), newDate("15/May/2011")),
+		new Session(4, "A11", 2012, newDate("3/Sep/2011"), newDate("12/May/2012")),
+		new Session(5, "H12", 2012, newDate("3/Sep/2011"), newDate("12/May/2012"))
 	};
 	
 	public static Session session(int seqno) {

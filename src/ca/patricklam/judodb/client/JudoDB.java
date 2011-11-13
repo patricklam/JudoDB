@@ -3,6 +3,7 @@ package ca.patricklam.judodb.client;
 import java.util.Stack;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -350,7 +351,7 @@ public class JudoDB implements EntryPoint {
 			
 		for (int i = 0; i < allClients.length(); i++) {
 			ClientSummary cs = allClients.get(i);
-			String s = cs.getPrenom() + " " + cs.getNom();
+			String s = "[" + cs.getId() + "] " + cs.getPrenom() + " " + cs.getNom();
 
 			String ss = removeAccents(s);
 			if (!ss.contains(searchString)) continue;
@@ -377,6 +378,7 @@ public class JudoDB implements EntryPoint {
 	 * Handle the response to the request for search data.
 	 */
 	public void handleJsonSearchResponse(JavaScriptObject jso) {
+		GWT.log("handle search response, null is " + ((jso == null) ? "yes" : "no"));
 	    if (jso == null) {
 	      displayError("pas de réponse; veuillez re-essayer");
 	      return;
@@ -409,7 +411,7 @@ public class JudoDB implements EntryPoint {
 	     document.body.removeChild(script);
 	     delete window[callback];
 	     delete window[callback + "done"];
-	   }, 1000);
+	   }, 10000);
 
 	   document.body.appendChild(script);
 	  }-*/;
