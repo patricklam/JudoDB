@@ -11,6 +11,9 @@
 
 .ft303 {
 }
+
+.edit {
+}
 </ui:style>
 
 <g:HTMLPanel>
@@ -38,6 +41,9 @@
  		  &Eacute;v&eacute;nement: <g:TextBox ui:field="evt" name="evt" />&nbsp; &nbsp; 
  		  Date: <g:TextBox ui:field="date" visibleLength="10" name="date" />&nbsp;&nbsp;
  		  <g:Anchor ui:field="createFT">(créer FT)</g:Anchor>
+ 		</g:HTMLPanel>
+		<g:HTMLPanel ui:field="edit_controls" styleName="{style.edit}">
+ 		  Date passage: <g:TextBox ui:field="edit_date" visibleLength="10" name="edit_date" />&nbsp;&nbsp;
  		</g:HTMLPanel>
 	  </g:HTMLPanel>
 	</g:FormPanel>

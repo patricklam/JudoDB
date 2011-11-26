@@ -63,7 +63,10 @@ public class ListWidget extends Composite {
 	@UiField TextBox evt;
 	@UiField TextBox date;
 	@UiField Anchor createFT;
-	
+
+	@UiField HTMLPanel edit_controls;
+	@UiField TextBox edit_date;
+
 	@UiField ListBox cours;
 	@UiField Grid results;
 	@UiField Label nb;
@@ -114,6 +117,9 @@ public class ListWidget extends Composite {
 
 	private HashMap<CheckBox, Boolean> originalVerifValues = new HashMap<CheckBox, Boolean>();
 	private HashMap<ListBox, Integer> originalCours = new HashMap<ListBox, Integer>();
+	private HashMap<TextBox, String> originalJudoQC = new HashMap<TextBox, String>();
+	private HashMap<TextBox, String> originalGrades = new HashMap<TextBox, String>();
+	private HashMap<TextBox, String> originalGradeDates = new HashMap<TextBox, String>();
 	
 	public ListWidget(JudoDB jdb) {
 		this.jdb = jdb;
@@ -181,14 +187,22 @@ public class ListWidget extends Composite {
 			if (cb != null && cb.getValue() != originalVerifValues.get(cb)) {
 				String cid = results.getText(i, Columns.CID);
 				String v = cb.getValue() ? "1" : "0";
-				dv.append(cid + ",verification,"+v+";");
+				dv.append(cid + ",Sverification,"+v+";");
 			}
 			Widget lbw = results.getWidget(i, Columns.COURS_DESC);
 			if (lbw != null && lbw instanceof ListBox) {
 				ListBox lb = (ListBox) lbw;
 				if (lb.getSelectedIndex() != originalCours.get(lb)) {
 					String cid = results.getText(i, Columns.CID);
-					dv.append(cid + ",cours,"+lb.getSelectedIndex()+";");				
+					dv.append(cid + ",Scours,"+lb.getSelectedIndex()+";");				
+				}
+			}
+			Widget jqw = results.getWidget(i, Columns.JUDOQC);
+			if (jqw != null && jqw instanceof TextBox) {
+				TextBox jq = (TextBox) jqw;
+				if (!jq.getValue().equals(originalJudoQC.get(jq))) {
+					String cid = results.getText(i, Columns.CID);
+					dv.append(cid + ",Caffiliation,"+jq.getValue()+";");				
 				}
 			}
 		}
@@ -480,15 +494,27 @@ public class ListWidget extends Composite {
 			results.setWidget(curRow, Columns.PRENOM, prenomAnchor);
 			results.setText(curRow, Columns.SEXE, cd.getSexe());
 			
-			if (grade != null && !grade.equals("")) {
+			results.setText(curRow, Columns.GRADE, "");
+			results.setText(curRow, Columns.DATE_GRADE, "");
+			if (mode == Mode.EDIT) {
+				TextBox g = new TextBox(); g.setValue(grade); g.setWidth("3em");
+				results.setWidget(curRow, Columns.GRADE, g);
+				originalGrades.put(g, grade);
+				TextBox gd = new TextBox(); gd.setValue(cd.getDateGrade()); gd.setWidth("6em");
+				results.setWidget(curRow, Columns.DATE_GRADE, gd);
+				originalGradeDates.put(gd, cd.getDateGrade());
+			} else if (grade != null && !grade.equals("")) {
 				results.setText(curRow, Columns.GRADE, grade);
 				results.setText(curRow, Columns.DATE_GRADE, cd.getDateGrade());
-			} else {
-				results.setText(curRow, Columns.GRADE, "");
-				results.setText(curRow, Columns.DATE_GRADE, "");
 			}
 			results.setText(curRow, Columns.TEL, cd.getTel());
-			results.setText(curRow, Columns.JUDOQC, cd.getJudoQC());
+			if (mode == Mode.EDIT) {
+				TextBox jqc = new TextBox(); jqc.setValue(cd.getJudoQC()); jqc.setWidth("4em");
+				results.setWidget(curRow, Columns.JUDOQC, jqc);
+				originalJudoQC.put(jqc, cd.getJudoQC());
+			} else {
+				results.setText(curRow, Columns.JUDOQC, cd.getJudoQC());
+			}
 			results.setText(curRow, Columns.DDN, cd.getDDNString());
 			results.setText(curRow, Columns.CATEGORIE, cd.getCategorie((rs == null ? Constants.currentSession() : rs).effective_year).abbrev);
 
@@ -555,6 +581,7 @@ public class ListWidget extends Composite {
 			jdb.editerListes.setVisible(true);
 			jdb.ftListes.setVisible(true);
 			ft303_controls.setVisible(false);
+			edit_controls.setVisible(false);
 			session.setEnabled(true);
 			save.setVisible(false);
 			quit.setVisible(false);
@@ -568,6 +595,7 @@ public class ListWidget extends Composite {
 			jdb.editerListes.setVisible(false);
 			jdb.ftListes.setVisible(false);
 			ft303_controls.setVisible(false);
+			edit_controls.setVisible(true);
 			save.setVisible(true);
 			quit.setVisible(true);
 			break;
@@ -579,6 +607,7 @@ public class ListWidget extends Composite {
 			jdb.editerListes.setVisible(false);
 			jdb.ftListes.setVisible(false);
 			ft303_controls.setVisible(true);
+			edit_controls.setVisible(false);
 			save.setVisible(false);
 			quit.setVisible(false);
 			break;
