@@ -119,7 +119,7 @@ public class ClientData extends JavaScriptObject {
 	}
 	
 	public final boolean isNoire() {
-		return getGrade().endsWith("D");
+		return getGrade() != null && getGrade().endsWith("D");
 	}
 		
 	public final Categorie getCategorie(int current_year) {
