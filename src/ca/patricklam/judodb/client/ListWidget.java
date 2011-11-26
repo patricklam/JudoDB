@@ -113,6 +113,7 @@ public class ListWidget extends Composite {
 	};
 
 	private HashMap<CheckBox, Boolean> originalVerifValues = new HashMap<CheckBox, Boolean>();
+	private HashMap<ListBox, Integer> originalCours = new HashMap<ListBox, Integer>();
 	
 	public ListWidget(JudoDB jdb) {
 		this.jdb = jdb;
@@ -181,6 +182,14 @@ public class ListWidget extends Composite {
 				String cid = results.getText(i, Columns.CID);
 				String v = cb.getValue() ? "1" : "0";
 				dv.append(cid + ",verification,"+v+";");
+			}
+			Widget lbw = results.getWidget(i, Columns.COURS_DESC);
+			if (lbw != null && lbw instanceof ListBox) {
+				ListBox lb = (ListBox) lbw;
+				if (lb.getSelectedIndex() != originalCours.get(lb)) {
+					String cid = results.getText(i, Columns.CID);
+					dv.append(cid + ",cours,"+lb.getSelectedIndex()+";");				
+				}
 			}
 		}
 		dataToSave.setValue(dv.toString());
@@ -432,7 +441,7 @@ public class ListWidget extends Composite {
 		
 		boolean[] visibility = new boolean[] {
 				true, mode==Mode.EDIT || mode==Mode.FT, true, true, mode==Mode.EDIT || mode==Mode.FT,
-				true, true, true, true, true, true, all, false, 
+				true, true, true, true, true, true, mode==Mode.EDIT || all, false, 
 				requestedSessionNo.equals("-1"), mode==Mode.FT
 		};
 
@@ -501,13 +510,19 @@ public class ListWidget extends Composite {
 				results.clearCell(curRow, Columns.DIVISION);
 			}
 			
-			if (cours != -1 && cours < Constants.COURS.length) {
+			results.setText(curRow, Columns.COURS_DESC, "");
+			results.setText(curRow, Columns.COURS_NUM, "");				
+
+			if (mode == Mode.EDIT) {
+				ListBox w = newCoursWidget(cours);
+				results.setWidget(curRow, Columns.COURS_DESC, w);
+				results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));				
+				originalCours.put(w, cours);
+			} else if (cours != -1 && cours < Constants.COURS.length) {
 				results.setText(curRow, Columns.COURS_DESC, Constants.COURS[cours].short_desc);
 				results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
-			} else {
-				results.setText(curRow, Columns.COURS_DESC, "");
-				results.setText(curRow, Columns.COURS_NUM, "");				
 			}
+			
 			if (requestedSessionNo.equals("-1")) {
 				results.setText(curRow, Columns.SESSION, cd.getAllActiveSaisons());
 			} else {
@@ -520,6 +535,15 @@ public class ListWidget extends Composite {
 		}
 		
 		nb.setText("Nombre inscrit: "+count);
+	}
+	
+	private ListBox newCoursWidget(int cours) {
+		ListBox lb = new ListBox();
+		for (Constants.Cours c : Constants.COURS) {
+			lb.addItem(c.short_desc, c.seqno);
+		}
+		lb.setSelectedIndex(cours);
+		return lb;
 	}
 	
 	public void switchMode(Mode m) {
