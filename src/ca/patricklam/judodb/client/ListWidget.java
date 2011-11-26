@@ -3,6 +3,7 @@ package ca.patricklam.judodb.client;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 
 import ca.patricklam.judodb.client.Constants.Cours;
@@ -14,6 +15,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Timer;
@@ -140,6 +142,8 @@ public class ListWidget extends Composite {
 		session.insertItem(Constants.currentSession().abbrev, Integer.toString(Constants.currentSessionNo()), 0);
 		session.setSelectedIndex(0);
 		
+		edit_date.setValue(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+		
 		cours.addChangeHandler(new ChangeHandler() { 
 			public void onChange(ChangeEvent e) { showList(); } });
 		session.addChangeHandler(new ChangeHandler() { 
@@ -203,6 +207,16 @@ public class ListWidget extends Composite {
 				if (!jq.getValue().equals(originalJudoQC.get(jq))) {
 					String cid = results.getText(i, Columns.CID);
 					dv.append(cid + ",Caffiliation,"+jq.getValue()+";");				
+				}
+			}
+			Widget gw = results.getWidget(i, Columns.GRADE);
+			if (gw != null && gw instanceof TextBox) {
+				TextBox g = (TextBox) gw, 
+						gd = (TextBox)results.getWidget(i, Columns.DATE_GRADE);
+				if (!g.getValue().equals(originalGrades.get(g)) ||
+						!gd.getValue().equals(originalGradeDates.get(gd))) {
+					String cid = results.getText(i, Columns.CID);
+					dv.append(cid + ",G,"+g.getValue()+"|"+gd.getValue()+";");
 				}
 			}
 		}
@@ -497,10 +511,19 @@ public class ListWidget extends Composite {
 			results.setText(curRow, Columns.GRADE, "");
 			results.setText(curRow, Columns.DATE_GRADE, "");
 			if (mode == Mode.EDIT) {
-				TextBox g = new TextBox(); g.setValue(grade); g.setWidth("3em");
+				TextBox g = new TextBox(); 
+				final TextBox gd = new TextBox(); 
+				g.setValue(grade); g.setWidth("3em");
+				g.addChangeHandler(new ChangeHandler() {
+					public void onChange(ChangeEvent e) {
+						String gdv = gd.getValue();
+						if (gdv.equals("") || gdv.equals("0000-00-00"))
+							gd.setValue(edit_date.getValue());
+					}
+				});
 				results.setWidget(curRow, Columns.GRADE, g);
 				originalGrades.put(g, grade);
-				TextBox gd = new TextBox(); gd.setValue(cd.getDateGrade()); gd.setWidth("6em");
+				gd.setValue(cd.getDateGrade()); gd.setWidth("6em");
 				results.setWidget(curRow, Columns.DATE_GRADE, gd);
 				originalGradeDates.put(gd, cd.getDateGrade());
 			} else if (grade != null && !grade.equals("")) {
