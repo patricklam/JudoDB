@@ -27,6 +27,7 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.NamedFrame;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -44,7 +45,7 @@ public class ListWidget extends Composite {
 	private static final String CALLBACK_URL_SUFFIX_A = "&callback=";
 	private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php?guid=";
 	
-	@UiField FormPanel listForm;
+	@UiField(provided=true) FormPanel listForm = new FormPanel(new NamedFrame("_"));
 	@UiField Anchor pdf;
 	@UiField Anchor presences;
 	@UiField Anchor xls;
@@ -107,6 +108,9 @@ public class ListWidget extends Composite {
 	public String[] heads = new String[] {
 		"No", "V", "Nom", "Prenom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Cat", "Cours", "", "Saisons", "Division"
 	};
+	private boolean[] sortable = new boolean[] {
+			false, false, true, true, false, true, false, false, false, true, true, true, false, false, false
+	};
 
 	private HashMap<CheckBox, Boolean> originalVerifValues = new HashMap<CheckBox, Boolean>();
 	
@@ -157,7 +161,8 @@ public class ListWidget extends Composite {
 		
 		listEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
 		
-		getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX_Q, this);	
+		getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX_Q, this);
+		sorts.add(3); sorts.add(2);
 	}
 
 	private void save() {
@@ -348,12 +353,33 @@ public class ListWidget extends Composite {
 		}
 	}
 	
+	private ArrayList<Integer> sorts = new ArrayList<Integer>();
+	
 	@SuppressWarnings("deprecation")
 	public void showList() {
 		boolean all = "-1".equals(cours.getValue(cours.getSelectedIndex()));
 		String requestedSessionNo = session.getValue(session.getSelectedIndex());
+		final Constants.Session rs = requestedSession();
 		int count = 0, curRow;
-		ArrayList<ClientData> filteredClients = new ArrayList<ClientData>();
+		final ArrayList<ClientData> filteredClients = new ArrayList<ClientData>();
+
+		final class SortClickHandler implements ClickHandler {
+			int col;
+			SortClickHandler(int col) { this.col = col; }
+
+			public void onClick(ClickEvent e) {
+				if (sorts.get(sorts.size()-1).equals(col) ||
+						sorts.get(sorts.size()-1).equals(-col)) {
+					int q = sorts.get(sorts.size()-1);
+					sorts.remove(sorts.size()-1);
+					sorts.add(-q);
+				} else {
+					sorts.remove(new Integer(col));
+					sorts.add(col);
+				}
+				showList();
+			}
+		}
 		
 		// two passes: 1) count; 2) populate the grid
 		for (int i = 0; i < allClients.length(); i++) {
@@ -364,31 +390,61 @@ public class ListWidget extends Composite {
 			filteredClients.add(cd);
 			count++;
 		}
-		Collections.sort(filteredClients, new Comparator<ClientData>() {
-			public int compare(ClientData x, ClientData y) {
-				int z = x.getNom().compareToIgnoreCase(y.getNom());
-				if (z == 0)
-					z = x.getPrenom().compareToIgnoreCase(y.getPrenom());
-				return z; 
-			}
-		});
+
+		for (final Integer col : sorts) {
+			final int colSign = (col < 0) ? -1 : 1;
+			Collections.sort(filteredClients, new Comparator<ClientData>() {
+				public int compare(ClientData x, ClientData y) {
+					switch (col * colSign) {
+					case 2:
+						return colSign * x.getNom().compareToIgnoreCase(y.getNom());
+					case 3:
+						return colSign * x.getPrenom().compareToIgnoreCase(y.getPrenom());
+					case 5:
+						return colSign * x.getGrade().compareTo(y.getGrade());
+					case 9:
+						return colSign * x.getDDN().compareTo(y.getDDN());
+					case 10:
+						int xc = x.getCategorie(rs.effective_year).years_ago;
+						int yc = y.getCategorie(rs.effective_year).years_ago;
+						if (xc == 0) xc = Integer.MAX_VALUE;
+						if (yc == 0) yc = Integer.MAX_VALUE;
+						return colSign * (xc - yc);
+					case 11: 
+						ServiceData xsd = x.getServiceFor(rs);
+						int xcours = xsd != null ? Integer.parseInt(xsd.getCours()) : -1;
+
+						ServiceData ysd = y.getServiceFor(rs);
+						int ycours = ysd != null ? Integer.parseInt(ysd.getCours()) : -1;
+						return colSign * (xcours - ycours);
+					}
+					return 0;
+				}
+			});
+		}
 		
 		results.resize(count+1, 15);
+				
+		if (mode==Mode.FT) 
+			heads[Columns.VERIFICATION] = "FT"; 
+		else 
+			heads[Columns.VERIFICATION] = "V";
 		
 		boolean[] visibility = new boolean[] {
 				true, mode==Mode.EDIT || mode==Mode.FT, true, true, mode==Mode.EDIT || mode==Mode.FT,
 				true, true, true, true, true, true, all, false, 
 				requestedSessionNo.equals("-1"), mode==Mode.FT
 		};
-		
-		if (mode==Mode.FT) 
-			heads[Columns.VERIFICATION] = "FT"; 
-		else 
-			heads[Columns.VERIFICATION] = "V";
-		
+
 		for (int i = 0; i < heads.length; i++) {
 			if (visibility[i]) {
-				results.setText(0, i, heads[i]);
+				if (sortable[i]) {
+					Anchor a = new Anchor(heads[i]);
+					a.addClickHandler(new SortClickHandler(i));
+					results.setWidget(0, i, a);
+				}
+				else
+					results.setText(0, i, heads[i]);
 				results.getCellFormatter().setStyleName(0, i, "list-th");
 				results.getCellFormatter().setVisible(0, i, true);
 			} else { 
@@ -398,7 +454,6 @@ public class ListWidget extends Composite {
 		}
 		
 		curRow = 1;
-		Constants.Session rs = requestedSession();
 		for (ClientData cd : filteredClients) {
 			String grade = cd.getGrade();
 			if (grade != null && grade.length() >= 3) grade = grade.substring(0, 3);
