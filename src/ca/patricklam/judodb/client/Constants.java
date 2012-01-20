@@ -156,7 +156,9 @@ public class Constants {
 		new Cours("9", "Anciens 5-6 ans (D930-1100)", "D930", ""),
 		new Cours("10", "Débutants 5-6 ans (D1100-1200)", "D1100", ""),
 		new Cours("11", "Débutants 7-11 ans (MV1730-1830)", "MV1730", ""),
-		new Cours("12", "Débutants 5-6 ans (D1200-1300)", "D1200", "")
+		new Cours("12", "Débutants 5-6 ans (D1200-1300)", "D1200", ""),
+		new Cours("13", "Débutants 7+ ans (S1600-1730)", "S1600", ""),
+		new Cours("14", "Débutants 5 ans (D1300-1400)", "D1300", "")
 	};
 
 	public static final CategorieSession[] CATEGORIES_SESSIONS = new CategorieSession[] {
