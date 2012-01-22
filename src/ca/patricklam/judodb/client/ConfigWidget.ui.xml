@@ -1,0 +1,11 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<!-- ConfigWidget.ui.xml -->
+
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+	<ui:style src="ConfigWidget.css" />
+    <g:HTMLPanel ui:field="configMain">
+ 		<form id="configform" class="{style.compactform}" method="POST" target="eatFormSubmitResults">
+    	</form>
+    </g:HTMLPanel>
+ 
+</ui:UiBinder>

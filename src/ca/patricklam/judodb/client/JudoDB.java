@@ -29,7 +29,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class JudoDB implements EntryPoint {
 	static class Mode {
 		enum ActualMode {
-			LOGIN, MAIN, LIST, EDIT_CLIENT;
+			LOGIN, MAIN, LIST, EDIT_CLIENT, CONFIG;
 		};
 		ActualMode am;
 		int arg;
@@ -64,6 +64,7 @@ public class JudoDB implements EntryPoint {
 
 	/* actions */
 	private final Anchor voirListes = new Anchor("Voir listes des cours");
+	private final Anchor editConfig = new Anchor("Éditer configuration");
 	private final Anchor logout = new Anchor("Fermer session");
 	final Anchor editerListes = new Anchor("Éditer");
 	final Anchor ftListes = new Anchor("FT-303");
@@ -83,6 +84,9 @@ public class JudoDB implements EntryPoint {
 	/* view lists stuff */
 	private ListWidget l;
 
+	/* config management stuff */
+	private ConfigWidget cf;
+	
 	/* login stuff */
 	private LoginWidget login;
 	private String AUTH_OK = "OK", AUTH_EXPIRED = "EXPIRED", AUTH_BAD = "BAD";
@@ -170,17 +174,20 @@ public class JudoDB implements EntryPoint {
 		RootPanel.get("mainActions").setVisible(false);
 		RootPanel.get("listActions").setVisible(false);
 		RootPanel.get("lists").setVisible(false);
+		RootPanel.get("config").setVisible(false);
 		RootPanel.get("editClient").clear();
 
 		this.c = new ClientWidget(cid, this);
 		RootPanel.get("editClient").add(this.c);
 		RootPanel.get("editClient").setVisible(true);
+		editConfig.setVisible(false);
 	}
 	
 	public void switchMode_viewLists() {
 		RootPanel.get("search").setVisible(false);
 		RootPanel.get("mainActions").setVisible(false);
 		RootPanel.get("listActions").setVisible(true);
+		RootPanel.get("config").setVisible(false);
 		RootPanel.get("editClient").clear();
 		if (this.l == null) {
 			this.l = new ListWidget(this);
@@ -190,9 +197,29 @@ public class JudoDB implements EntryPoint {
 
 		retourner.setVisible(true);
 		voirListes.setVisible(false);
+		editConfig.setVisible(false);
 		logout.setVisible(false);
 	}
-	
+
+	public void switchMode_config() {
+		RootPanel.get("search").setVisible(false);
+		RootPanel.get("mainActions").setVisible(false);
+		RootPanel.get("listActions").setVisible(true);
+		RootPanel.get("config").setVisible(true);
+		RootPanel.get("editClient").clear();
+		RootPanel.get("lists").setVisible(false);
+
+		if (this.cf == null) {
+			this.cf = new ConfigWidget(this);
+			RootPanel.get("config").add(this.cf);
+		}
+
+		retourner.setVisible(true);
+		voirListes.setVisible(false);
+		editConfig.setVisible(false);
+		logout.setVisible(false);
+	}
+
 	public void switchMode_main() {
 		clearStatus();
 		if (login != null) {
@@ -202,6 +229,7 @@ public class JudoDB implements EntryPoint {
 		
 		RootPanel.get("editClient").setVisible(false);
 		RootPanel.get("lists").setVisible(false);
+		RootPanel.get("config").setVisible(false);
 		RootPanel.get("login").setVisible(false);
 		RootPanel.get("mainActions").setVisible(true);
 		RootPanel.get("listActions").setVisible(false);
@@ -209,12 +237,12 @@ public class JudoDB implements EntryPoint {
 
 		retourner.setVisible(false);
 		voirListes.setVisible(true);
+		editConfig.setVisible(true);
 		logout.setVisible(true);
 		
 		searchButton.setEnabled(true);
 		searchButton.setFocus(true);
 	}
-
 
 	/** Show the authentication dialog box. */
 	private void switchMode_login() {
@@ -271,6 +299,10 @@ public class JudoDB implements EntryPoint {
 		voirListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST)); }});
 		mainActions.add(voirListes);
 		mainActions.add(new Label(""));
+		editConfig.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
+		mainActions.add(editConfig);
+		mainActions.add(new Label(""));
+		
 		logout.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) { getJsonForAuth(jsonRequestId++, LOGOUT_URL + "?callback=", JudoDB.this);
 			}});
