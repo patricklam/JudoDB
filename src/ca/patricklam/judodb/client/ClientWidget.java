@@ -928,6 +928,11 @@ public class ClientWidget extends Composite {
 	}
 	
 	private void pushClientDataToServer() {
+		if (cd.getNom().equals("") || cd.getPrenom().equals("")) {
+			jdb.displayError("pas de nom ou prenom");
+			return;
+		}
+		
 		guid = UUID.uuid();
 		sid.setValue(cd.getID());
 		guid_on_form.setValue(guid);
