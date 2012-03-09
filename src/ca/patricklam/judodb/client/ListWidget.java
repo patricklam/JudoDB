@@ -107,6 +107,9 @@ public class ListWidget extends Composite {
 		NORMAL, FT, EDIT, GERER_CLASSES
 	};
 
+	final Widget[] allListModeWidgets;
+	final HashMap<Anchor, Widget[]> listModeVisibility = new HashMap<Anchor, Widget[]>();
+	
 	private Mode mode = Mode.NORMAL;
 	private boolean isFiltering;
 	
@@ -126,6 +129,22 @@ public class ListWidget extends Composite {
 	public ListWidget(JudoDB jdb) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
+
+		allListModeWidgets = new Widget[] { jdb.filtrerListes, jdb.editerListes, jdb.ftListes, 
+				  							jdb.clearXListes, jdb.normalListes, 
+				  							ft303_controls, edit_controls, session, save, quit };
+
+		listModeVisibility.put(jdb.editerListes, new Widget[] 
+				{ jdb.normalListes, jdb.filtrerListes, 
+				  jdb.clearXListes, jdb.returnToMainFromListes, 
+				  edit_controls, save, quit });
+		listModeVisibility.put(jdb.ftListes, new Widget[] 
+				{ jdb.normalListes, jdb.filtrerListes, jdb.clearXListes, 
+				  ft303_controls, jdb.returnToMainFromListes } );
+		listModeVisibility.put(jdb.normalListes, new Widget[] 
+				{ jdb.filtrerListes, jdb.editerListes, 
+				  jdb.ftListes, session, jdb.returnToMainFromListes } );
+
 		jdb.pleaseWait();
 		switchMode(Mode.NORMAL);
 		
@@ -365,6 +384,12 @@ public class ListWidget extends Composite {
 		return cd.getServiceFor(rs) != null;
 	}
 	
+	public void toggleFiltering()
+	{
+		this.isFiltering = !this.isFiltering;
+		// TODO add the other filters also
+	}
+	
 	public boolean filter(ClientData cd) {
 		// filter for season
 		if (!sessionFilter(cd))
@@ -597,47 +622,16 @@ public class ListWidget extends Composite {
 	
 	public void switchMode(Mode m) {
 		this.mode = m;
-		switch (m) {
-		case NORMAL:
-			jdb.normalListes.setVisible(false);
-			jdb.clearXListes.setVisible(false);
-			jdb.editerListes.setVisible(true);
-			jdb.ftListes.setVisible(true);
-			ft303_controls.setVisible(false);
-			edit_controls.setVisible(false);
-			session.setEnabled(true);
-			save.setVisible(false);
-			quit.setVisible(false);
-			break;
-		case EDIT:
-			session.setSelectedIndex(0);
-			session.setEnabled(false);
-			originalVerifValues.clear();
-			jdb.normalListes.setVisible(true);
-			jdb.clearXListes.setVisible(true);
-			jdb.editerListes.setVisible(false);
-			jdb.ftListes.setVisible(false);
-			ft303_controls.setVisible(false);
-			edit_controls.setVisible(true);
-			save.setVisible(true);
-			quit.setVisible(true);
-			break;
-		case FT:
-			session.setSelectedIndex(0);
-			session.setEnabled(false);
-			jdb.normalListes.setVisible(true);
-			jdb.clearXListes.setVisible(true);
-			jdb.editerListes.setVisible(false);
-			jdb.ftListes.setVisible(false);
-			ft303_controls.setVisible(true);
-			edit_controls.setVisible(false);
-			save.setVisible(false);
-			quit.setVisible(false);
-			break;
-		default:
-			break;
-		}
-		jdb.retourner.setVisible(true);
+
+		for (Widget w : allListModeWidgets) 
+			w.setVisible(false);
+		for (Widget w : listModeVisibility.get(m)) 
+			w.setVisible(true);
+		
+		// blow away state...
+		session.setSelectedIndex(0);
+		originalVerifValues.clear();
+		
 		if (cours.getItemCount() > 0)
 			showList();
 	}
