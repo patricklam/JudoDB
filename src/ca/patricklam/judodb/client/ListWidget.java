@@ -6,7 +6,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 
+import ca.patricklam.judodb.client.Constants.Categorie;
 import ca.patricklam.judodb.client.Constants.Cours;
+import ca.patricklam.judodb.client.Constants.Grade;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -68,6 +70,11 @@ public class ListWidget extends Composite {
 
 	@UiField HTMLPanel edit_controls;
 	@UiField TextBox edit_date;
+
+	@UiField HTMLPanel filter_controls;
+	@UiField ListBox division;
+	@UiField ListBox grade_lower;
+	@UiField ListBox grade_upper;
 
 	@UiField ListBox cours;
 	@UiField Grid results;
@@ -132,7 +139,7 @@ public class ListWidget extends Composite {
 
 		allListModeWidgets = new Widget[] { jdb.filtrerListes, jdb.editerListes, jdb.ftListes, 
 				  							jdb.clearXListes, jdb.normalListes, 
-				  							ft303_controls, edit_controls, session, save, quit };
+				  							ft303_controls, edit_controls, filter_controls, session, save, quit };
 
 		listModeVisibility.put(jdb.editerListes, new Widget[] 
 				{ jdb.normalListes, jdb.filtrerListes, 
@@ -160,7 +167,18 @@ public class ListWidget extends Composite {
 		}
 		session.insertItem(Constants.currentSession().abbrev, Integer.toString(Constants.currentSessionNo()), 0);
 		session.setSelectedIndex(0);
+
+		division.addItem("Tous", "-1");
+		for (Categorie c : Constants.CATEGORIES)
+			division.insertItem(c.abbrev, c.abbrev, 1);
 		
+		grade_lower.addItem("---", "-1");
+		for (Grade g : Constants.GRADES)
+			grade_lower.insertItem(g.name, g.order);
+		grade_upper.addItem("---", "-1");
+		for (Grade g : Constants.GRADES)
+			grade_upper.insertItem(g.name, g.order);
+
 		edit_date.setValue(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
 		
 		cours.addChangeHandler(new ChangeHandler() { 
@@ -387,7 +405,7 @@ public class ListWidget extends Composite {
 	public void toggleFiltering()
 	{
 		this.isFiltering = !this.isFiltering;
-		// TODO add the other filters also
+		filter_controls.setVisible(this.isFiltering);
 	}
 	
 	public boolean filter(ClientData cd) {
@@ -402,6 +420,10 @@ public class ListWidget extends Composite {
 		
 		if (selectedCours.equals(cd.getServiceFor(requestedSession()).getCours()))
 			return true;
+		
+		// TODO filter for division d'age
+		
+		// TODO filter for ceinture
 		
 		return false;
 	}

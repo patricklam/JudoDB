@@ -88,6 +88,33 @@ public class Constants {
 		}
 	}
 	
+	static class Grade {
+		final String name;
+		final int order;
+		public Grade(String name, int order) {
+			this.name = name; this.order = order;
+		}
+	}
+	
+	public static final Grade[] GRADES = new Grade[] {
+		new Grade("Blanche", -60),
+		new Grade("B/J", -55),
+		new Grade("Jaune", -50),
+		new Grade("J/O", -45),
+		new Grade("Orange", -40),
+		new Grade("O/V", -35),
+		new Grade("Verte", -30),
+		new Grade("V/B", -25),
+		new Grade("Bleue", -20),
+		new Grade("B/M", -15),
+		new Grade("Marron", -10),
+		new Grade("1D", 10),
+		new Grade("2D", 20),
+		new Grade("3D", 30),
+		new Grade("4D", 40),
+		new Grade("5D", 50)
+	};
+	
 	public static native final String webDateToMilliSec(String webDate) /*-{
     	var longDate = Date.parse(webDate);
     	return longDate.toString();
