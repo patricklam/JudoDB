@@ -111,11 +111,11 @@ public class ListWidget extends Composite {
 	}
 
 	enum Mode {
-		NORMAL, FT, EDIT, GERER_CLASSES
+		NORMAL, FT, EDIT
 	};
 
 	final Widget[] allListModeWidgets;
-	final HashMap<Anchor, Widget[]> listModeVisibility = new HashMap<Anchor, Widget[]>();
+	final HashMap<Mode, Widget[]> listModeVisibility = new HashMap<Mode, Widget[]>();
 	
 	private Mode mode = Mode.NORMAL;
 	private boolean isFiltering;
@@ -141,14 +141,14 @@ public class ListWidget extends Composite {
 				  							jdb.clearXListes, jdb.normalListes, 
 				  							ft303_controls, edit_controls, filter_controls, session, save, quit };
 
-		listModeVisibility.put(jdb.editerListes, new Widget[] 
+		listModeVisibility.put(Mode.EDIT, new Widget[] 
 				{ jdb.normalListes, jdb.filtrerListes, 
 				  jdb.clearXListes, jdb.returnToMainFromListes, 
 				  edit_controls, save, quit });
-		listModeVisibility.put(jdb.ftListes, new Widget[] 
+		listModeVisibility.put(Mode.FT, new Widget[] 
 				{ jdb.normalListes, jdb.filtrerListes, jdb.clearXListes, 
 				  ft303_controls, jdb.returnToMainFromListes } );
-		listModeVisibility.put(jdb.normalListes, new Widget[] 
+		listModeVisibility.put(Mode.NORMAL, new Widget[] 
 				{ jdb.filtrerListes, jdb.editerListes, 
 				  jdb.ftListes, session, jdb.returnToMainFromListes } );
 
