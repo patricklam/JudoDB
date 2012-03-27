@@ -170,14 +170,21 @@ public class ListWidget extends Composite {
 
 		division.addItem("Tous", "-1");
 		for (Categorie c : Constants.CATEGORIES)
-			division.insertItem(c.abbrev, c.abbrev, 1);
+			if (!c.noire)
+				division.insertItem(c.abbrev, c.abbrev, 1);
 		
-		grade_lower.addItem("---", "-1");
-		for (Grade g : Constants.GRADES)
-			grade_lower.insertItem(g.name, g.order);
-		grade_upper.addItem("---", "-1");
-		for (Grade g : Constants.GRADES)
-			grade_upper.insertItem(g.name, g.order);
+		for (int i = 0; i < Constants.GRADES.length; i++) {
+			Grade g = Constants.GRADES[i];
+			grade_lower.insertItem(g.name, String.valueOf(g.order), i);
+		}
+		grade_lower.insertItem("---", "", 0);
+		grade_lower.setSelectedIndex(0);
+		for (int i = 0; i < Constants.GRADES.length; i++) {
+			Grade g = Constants.GRADES[i];
+			grade_upper.insertItem(g.name, String.valueOf(g.order), i);
+		}
+		grade_upper.insertItem("---", "", 0);
+		grade_upper.setSelectedIndex(0);
 
 		edit_date.setValue(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
 		
@@ -193,6 +200,12 @@ public class ListWidget extends Composite {
 			public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("xls"); } });
 		xls2.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("xlsfull"); } });
+		division.addChangeHandler(new ChangeHandler() { 
+			public void onChange(ChangeEvent e) { showList(); } });
+		grade_lower.addChangeHandler(new ChangeHandler() { 
+			public void onChange(ChangeEvent e) { showList(); } });
+		grade_upper.addChangeHandler(new ChangeHandler() { 
+			public void onChange(ChangeEvent e) { showList(); } });
 		
 		createFT.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) { if (makeFT()) submit("ft"); }});
@@ -395,25 +408,21 @@ public class ListWidget extends Composite {
 		return Constants.SESSIONS[Integer.parseInt(requestedSessionNo)];
 	}
 		
-	public boolean sessionFilter(ClientData cd) {
+	public void toggleFiltering()
+	{
+		this.isFiltering = !this.isFiltering;
+		filter_controls.setVisible(this.isFiltering);
+		showList();
+	}
+	
+	private boolean sessionFilter(ClientData cd) {
 		Constants.Session rs = requestedSession();
 		if (rs == null) return true;
 		
 		return cd.getServiceFor(rs) != null;
 	}
 	
-	public void toggleFiltering()
-	{
-		this.isFiltering = !this.isFiltering;
-		filter_controls.setVisible(this.isFiltering);
-	}
-	
-	public boolean filter(ClientData cd) {
-		// filter for season
-		if (!sessionFilter(cd))
-			return false;
-
-		// filter for cours
+	private boolean coursFilter(ClientData cd) {
 		String selectedCours = cours.getValue(cours.getSelectedIndex());
 		if (selectedCours.equals("-1"))
 			return true;
@@ -421,11 +430,51 @@ public class ListWidget extends Composite {
 		if (selectedCours.equals(cd.getServiceFor(requestedSession()).getCours()))
 			return true;
 		
-		// TODO filter for division d'age
-		
-		// TODO filter for ceinture
-		
 		return false;
+	}
+	
+	private boolean divisionFilter(ClientData cd) {
+		String selectedDivision = division.getValue(division.getSelectedIndex());
+		if (selectedDivision.equals("-1"))
+			return true;
+		
+		Categorie c = cd.getCategorie((requestedSession()).effective_year);
+		if (selectedDivision.equals(c.abbrev) || selectedDivision.equals(c.aka))
+			return true;
+		return false;
+	}
+	
+	private boolean gradeFilter(ClientData cd) {
+		String lc = grade_lower.getValue(grade_lower.getSelectedIndex());
+		String uc = grade_upper.getValue(grade_upper.getSelectedIndex());
+		boolean emptyLC = lc.equals(""), emptyUC = uc.equals("");
+
+		Grade g = Constants.stringToGrade(cd.getGrade());
+		if (g != null) {
+			int lower_constraint = emptyLC ? 0 : Integer.parseInt(lc);
+			int upper_constraint = emptyUC ? 0 : Integer.parseInt(uc); 
+			return (emptyLC || lower_constraint <= g.order) &&
+					 (emptyUC || g.order <= upper_constraint);
+		} else {
+			return emptyLC && emptyUC;
+		}
+	}
+	
+	public boolean filter(ClientData cd) {
+		if (!sessionFilter(cd))
+			return false;
+		
+		if (!coursFilter(cd))
+			return false;
+
+		if (isFiltering) {
+			if (!divisionFilter(cd))
+				return false;
+			if (!gradeFilter(cd))
+				return false;
+		}
+		
+		return true;
 	}
 	
 	public void clearX() {

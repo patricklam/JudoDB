@@ -34,9 +34,11 @@ public class Constants {
 		final String abbrev;
 		final int years_ago;
 		final boolean noire;
-		public Categorie(String name, String abbrev, int years_ago, boolean noire) { 
+		final String aka; // e.g. for "U20N", this is "U20"
+		public Categorie(String name, String abbrev, int years_ago, boolean noire, String aka) { 
 			this.name = name; this.abbrev = abbrev; 
 			this.years_ago = years_ago; this.noire = noire;
+			this.aka = aka;
 		}
 	}
 
@@ -89,31 +91,57 @@ public class Constants {
 	}
 	
 	static class Grade {
-		final String name;
+		final String name; final String n3;
 		final int order;
+		public Grade(String name, String n3, int order) {
+			this.name = name; this.n3 = n3; this.order = order;
+		}
 		public Grade(String name, int order) {
-			this.name = name; this.order = order;
+			this.name = name; this.n3 = name; this.order = order;
 		}
 	}
 	
 	public static final Grade[] GRADES = new Grade[] {
-		new Grade("Blanche", -60),
+		new Grade("Blanche", "Bla", -60),
 		new Grade("B/J", -55),
-		new Grade("Jaune", -50),
+		new Grade("Jaune", "Jau", -50),
 		new Grade("J/O", -45),
-		new Grade("Orange", -40),
+		new Grade("Orange", "Ora", -40),
 		new Grade("O/V", -35),
-		new Grade("Verte", -30),
+		new Grade("Verte", "Ver", -30),
 		new Grade("V/B", -25),
-		new Grade("Bleue", -20),
+		new Grade("Bleue", "Ble", -20),
 		new Grade("B/M", -15),
-		new Grade("Marron", -10),
+		new Grade("Marron", "Mar", -10),
 		new Grade("1D", 10),
 		new Grade("2D", 20),
 		new Grade("3D", 30),
 		new Grade("4D", 40),
 		new Grade("5D", 50)
 	};
+	
+	/** Case-insensitively assigns grade to one of GRADES.
+	 * Truncate input to 3 letters.
+	 * Then, look first for exact case-insensitive matches.
+	 * Otherwise, look for a first-letter match between input and one of the grades (e.g. M and Marron).
+	 */
+	public static Grade stringToGrade(String grade) {
+		if (grade == null) return null;
+		
+		if (grade.length() >= 3) grade = grade.substring(0, 3);
+		for (Grade g : GRADES) {
+			if (g.n3.equalsIgnoreCase(grade))
+				return g;
+		}
+		
+		if (grade.length() == 1) {
+			for (Grade g : GRADES)
+				if (g.name.startsWith(grade))
+					return g;
+		}
+		
+		return null;
+	}
 	
 	public static native final String webDateToMilliSec(String webDate) /*-{
     	var longDate = Date.parse(webDate);
@@ -156,19 +184,19 @@ public class Constants {
 	}
 				
 	public static final Categorie[] CATEGORIES = new Categorie[] {
-		new Categorie("Mini-Poussin", "U7", 7, false),
-		new Categorie("Poussin", "U9", 9, false),
-		new Categorie("Benjamin", "U11", 11, false),
-		new Categorie("Minime", "U13", 13, false),
-		new Categorie("Juvénile", "U15", 15, false),
-		new Categorie("Cadet", "U17", 17, false),
-		new Categorie("Junior", "U20", 20, false),
-		new Categorie("Senior", "S", 0, false),
-		new Categorie("Cadet Noire", "U17N", 17, true),
-		new Categorie("Junior Noire", "U20N", 20, true),
-		new Categorie("Senior Noire", "SN", 0, true),
+		new Categorie("Mini-Poussin", "U7", 7, false, null),
+		new Categorie("Poussin", "U9", 9, false, null),
+		new Categorie("Benjamin", "U11", 11, false, null),
+		new Categorie("Minime", "U13", 13, false, null),
+		new Categorie("Juvénile", "U15", 15, false, null),
+		new Categorie("Cadet", "U17", 17, false, null),
+		new Categorie("Junior", "U20", 20, false, null),
+		new Categorie("Senior", "S", 0, false, null),
+		new Categorie("Cadet Noire", "U17N", 17, true, "U17"),
+		new Categorie("Junior Noire", "U20N", 20, true, "U20"),
+		new Categorie("Senior Noire", "SN", 0, true, "S"),
 	};
-	public static final Categorie EMPTY_CATEGORIE = new Categorie("", "", 0, false);
+	public static final Categorie EMPTY_CATEGORIE = new Categorie("", "", 0, false, null);
 
 	public static final Cours[] COURS = new Cours[] {
 		new Cours("0", "Adultes (LM2015-2145, V2000-2145)", "LM2015 V2000", ""),
