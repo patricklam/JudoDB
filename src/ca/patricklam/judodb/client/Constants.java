@@ -3,7 +3,7 @@ package ca.patricklam.judodb.client;
 import java.util.Date;
 
 public class Constants {	
-	public static int currentSessionNo() { return 4; }
+	public static int currentSessionNo() { return 6; }
 	public static Session currentSession() { 
 		return session(currentSessionNo()); 
 	}
@@ -159,7 +159,9 @@ public class Constants {
 		new Session(2, "A10", 2011, newDate("1/Sep/2010"), newDate("15/May/2011")),
 		new Session(3, "H11", 2011, newDate("1/Sep/2010"), newDate("15/May/2011")),
 		new Session(4, "A11", 2012, newDate("3/Sep/2011"), newDate("12/May/2012")),
-		new Session(5, "H12", 2012, newDate("3/Sep/2011"), newDate("12/May/2012"))
+		new Session(5, "H12", 2012, newDate("3/Sep/2011"), newDate("12/May/2012")),
+		new Session(6, "A12", 2013, newDate("1/Sep/2012"), newDate("11/May/2013")),
+		new Session(7, "H13", 2013, newDate("1/Sep/2012"), newDate("11/May/2013"))
 	};
 	
 	public static Session session(int seqno) {
@@ -250,6 +252,17 @@ public class Constants {
 		new CategorieSession(4, 5, "U17N", 167.00, 172.0, 73.0),
 		new CategorieSession(4, 5, "U20N", 167.00, 172.0, 73.0),
 		new CategorieSession(4, 5, "SN", 167.0, 172.0, 83.0),
+		new CategorieSession(6, 7, "U7", 118.30, 182.0, 19.0),
+		new CategorieSession(6, 7, "U9", 121.55, 187.0, 24.0),
+		new CategorieSession(6, 7, "U11", 134.55, 207.0, 34.0),
+		new CategorieSession(6, 7, "U13", 157.30, 242.0, 44.0),
+		new CategorieSession(6, 7, "U15", 193.05, 297.0, 59.0),
+		new CategorieSession(6, 7, "U17", 199.55, 307.0, 64.0),
+		new CategorieSession(6, 7, "U20", 206.05, 317.0, 74.0),
+		new CategorieSession(6, 7, "S", 228.80, 352.0, 79.0),
+		new CategorieSession(6, 7, "U17N", 167.00, 172.0, 74.0),
+		new CategorieSession(6, 7, "U20N", 167.00, 172.0, 74.0),
+		new CategorieSession(6, 7, "SN", 167.0, 172.0, 84.0),
 	};
 	
 	public static final double getFraisCours(int session, Categorie c, int sessionCount) {
