@@ -143,11 +143,11 @@ public class ListWidget extends Composite {
 
 		listModeVisibility.put(Mode.EDIT, new Widget[] 
 				{ jdb.normalListes, jdb.filtrerListes, 
-				  jdb.clearXListes, jdb.returnToMainFromListes, 
+				  jdb.clearXListes, session, jdb.returnToMainFromListes, 
 				  edit_controls, save, quit });
 		listModeVisibility.put(Mode.FT, new Widget[] 
 				{ jdb.normalListes, jdb.filtrerListes, jdb.clearXListes, 
-				  ft303_controls, jdb.returnToMainFromListes } );
+				  ft303_controls, session, jdb.returnToMainFromListes } );
 		listModeVisibility.put(Mode.NORMAL, new Widget[] 
 				{ jdb.filtrerListes, jdb.editerListes, 
 				  jdb.ftListes, session, jdb.returnToMainFromListes } );
@@ -587,6 +587,7 @@ public class ListWidget extends Composite {
 		}
 		
 		curRow = 1;
+		GWT.log("number of clients = " + filteredClients.size());
 		for (ClientData cd : filteredClients) {
 			String grade = cd.getGrade();
 			if (grade != null && grade.length() >= 3) grade = grade.substring(0, 3);
@@ -700,7 +701,7 @@ public class ListWidget extends Composite {
 			w.setVisible(true);
 		
 		// blow away state...
-		session.setSelectedIndex(0);
+		//session.setSelectedIndex(0);
 		originalVerifValues.clear();
 		
 		if (cours.getItemCount() > 0)
