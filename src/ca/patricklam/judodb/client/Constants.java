@@ -207,15 +207,18 @@ public class Constants {
 		new Cours("3", "Débutants 7-12 ans (MaJ1730-1830)", "MaJ1730", ""),
 		new Cours("4", "Débutants 5-6 ans (S900-1000)", "S900", ""),
 		new Cours("5", "Anciens 5-6 ans (S1000-1130)", "S1000", ""),
-		new Cours("6", "Anciens 5-6 ans (S1130-1300)", "S1130", ""),
+		new Cours("6", "Anciens 7-8 ans (S1130-1300)", "S1130", ""),
 		new Cours("7", "Anciens 7-9 ans (S1300-1430)", "S1300", ""),
-		new Cours("8", "Anciens 7-9 ans (S1430-1600)", "S1430", ""),
-		new Cours("9", "Anciens 5-6 ans (D930-1100)", "D930", ""),
-		new Cours("10", "Débutants 5-6 ans (D1100-1200)", "D1100", ""),
-		new Cours("11", "Débutants 7-11 ans (MV1730-1830)", "MV1730", ""),
-		new Cours("12", "Débutants 5-6 ans (D1200-1300)", "D1200", ""),
-		new Cours("13", "Débutants 7+ ans (S1600-1730)", "S1600", ""),
-		new Cours("14", "Débutants 5 ans (D1300-1400)", "D1300", "")
+		new Cours("8", "Anciens 7-10 ans (S1430-1600)", "S1430", ""),
+		new Cours("9", "Débutants (D930-1030)", "D930", ""),
+		new Cours("10", "Anciens (D1030-1130)", "D1030", ""),
+		new Cours("11", "Débutants 7-10 ans (MV1700-1800)", "MV1700", ""),
+		new Cours("12", "Anciens (D1130-1300)", "D1130", ""),
+		new Cours("13", "Débutants 7-10 ans (S1600-1730)", "S1600", ""),
+		new Cours("14", "Débutants (D1300-1400)", "D1300", ""),
+		new Cours("15", "Anciens 7-10 ans (MV1800-1900)", "MV1800", ""),
+		new Cours("16", "Débutants (D1400-1500)", "D1400", ""),
+		new Cours("17", "Autre", "X0000", ""),
 	};
 
 	public static final CategorieSession[] CATEGORIES_SESSIONS = new CategorieSession[] {
