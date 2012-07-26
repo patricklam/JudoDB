@@ -95,7 +95,8 @@ public class ClientData extends JavaScriptObject {
 		
 		GradeData m = grades.get(0); 
 		for (int i = 0; i < grades.length(); i++) {
-			if (grades.get(i).getDateGrade().compareTo(m.getDateGrade()) > 0)
+			String dg = grades.get(i).getDateGrade();
+			if (dg != null && dg.compareTo(m.getDateGrade()) > 0)
 				m = grades.get(i);
 		}
 		return m;
