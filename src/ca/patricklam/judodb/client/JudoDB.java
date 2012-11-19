@@ -12,7 +12,10 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
@@ -31,7 +34,14 @@ import com.google.gwt.user.client.ui.Widget;
 public class JudoDB implements EntryPoint {
 	static class Mode {
 		enum ActualMode {
-			LOGIN, MAIN, LIST, EDIT_CLIENT, CONFIG;
+			LOGIN(""), MAIN("main"), LIST("list"), EDIT_CLIENT("edit"), CONFIG("config");
+			final String label;
+			ActualMode(String label) { this.label = label; }
+			boolean matchesLabel(String s) {
+				if (!label.equals("") && s.startsWith(label))
+					return true;
+				return false;
+			}
 		};
 		ActualMode am;
 		int arg;
@@ -39,6 +49,23 @@ public class JudoDB implements EntryPoint {
 		public Mode(ActualMode am) { this.am = am; }
 		public Mode(ActualMode am, int arg) {
 			this.am = am; this.arg = arg;
+		}
+
+		public String toString() {
+			if (am == ActualMode.EDIT_CLIENT) return am.label + arg;
+			return am.label;
+		}
+		
+		static Mode parse(String s) {
+			for (ActualMode m : ActualMode.values())
+				if (m.matchesLabel(s)) {
+					if (m == ActualMode.EDIT_CLIENT) {
+						String n = s.substring(m.label.length());
+						return new Mode(ActualMode.EDIT_CLIENT, Integer.parseInt(n));
+					}
+					return new Mode(m);
+				}
+			return null;
 		}
 	};
 	
@@ -146,6 +173,7 @@ public class JudoDB implements EntryPoint {
 	}
 	
 	public void pushMode(Mode newMode) {
+		History.newItem(newMode.toString());
 		modes.push(newMode);
 		actuallySwitchMode(newMode);
 	}
@@ -171,6 +199,9 @@ public class JudoDB implements EntryPoint {
 			break;
 		case LOGIN:
 			switchMode_login();
+			break;
+		case CONFIG:
+			switchMode_config();
 			break;
 		}
 	}
@@ -357,6 +388,15 @@ public class JudoDB implements EntryPoint {
 		allWidgets.add(voirListes);
 		allWidgets.add(editConfig);
 		allWidgets.add(logout);
+		
+		// history handlers
+		History.addValueChangeHandler(new ValueChangeHandler<String>() {
+			public void onValueChange(ValueChangeEvent<String> event) {
+				String historyToken = event.getValue();
+				Mode m = Mode.parse(historyToken);
+				switchMode(m);
+			}
+		});
 		
 		switchMode(new Mode(Mode.ActualMode.MAIN));
 		ensureAuthentication();
