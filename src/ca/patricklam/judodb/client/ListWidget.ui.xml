@@ -11,6 +11,12 @@
 
 .ft303 {
 }
+
+.edit {
+}
+
+.filter {
+}
 </ui:style>
 
 <g:HTMLPanel>
@@ -39,6 +45,13 @@
  		  Date: <g:TextBox ui:field="date" visibleLength="10" name="date" />&nbsp;&nbsp;
  		  <g:Anchor ui:field="createFT">(créer FT)</g:Anchor>
  		</g:HTMLPanel>
+		<g:HTMLPanel ui:field="edit_controls" styleName="{style.edit}">
+ 		  Date passage: <g:TextBox ui:field="edit_date" visibleLength="10" name="edit_date" />&nbsp;&nbsp;
+ 		</g:HTMLPanel>
+	    <g:HTMLPanel ui:field="filter_controls" styleName="{style.filter}">
+	      Division: <g:ListBox ui:field="division"/>&nbsp; &nbsp;
+	      Grade: entre <g:ListBox ui:field="grade_lower"/> et <g:ListBox ui:field="grade_upper"/>&nbsp; &nbsp;
+	    </g:HTMLPanel>
 	  </g:HTMLPanel>
 	</g:FormPanel>
 

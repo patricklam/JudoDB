@@ -1,3 +1,5 @@
+.gwt
+gwt-unitCache
 *.class
 *~
 war/WEB-INF/lib/*

@@ -3,9 +3,12 @@ package ca.patricklam.judodb.client;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 
+import ca.patricklam.judodb.client.Constants.Categorie;
 import ca.patricklam.judodb.client.Constants.Cours;
+import ca.patricklam.judodb.client.Constants.Grade;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -14,6 +17,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Timer;
@@ -27,6 +31,7 @@ import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.NamedFrame;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -44,7 +49,7 @@ public class ListWidget extends Composite {
 	private static final String CALLBACK_URL_SUFFIX_A = "&callback=";
 	private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php?guid=";
 	
-	@UiField FormPanel listForm;
+	@UiField(provided=true) FormPanel listForm = new FormPanel(new NamedFrame("_"));
 	@UiField Anchor pdf;
 	@UiField Anchor presences;
 	@UiField Anchor xls;
@@ -62,7 +67,15 @@ public class ListWidget extends Composite {
 	@UiField TextBox evt;
 	@UiField TextBox date;
 	@UiField Anchor createFT;
-	
+
+	@UiField HTMLPanel edit_controls;
+	@UiField TextBox edit_date;
+
+	@UiField HTMLPanel filter_controls;
+	@UiField ListBox division;
+	@UiField ListBox grade_lower;
+	@UiField ListBox grade_upper;
+
 	@UiField ListBox cours;
 	@UiField Grid results;
 	@UiField Label nb;
@@ -98,21 +111,47 @@ public class ListWidget extends Composite {
 	}
 
 	enum Mode {
-		NORMAL, FT, EDIT, GERER_CLASSES
+		NORMAL, FT, EDIT
 	};
 
+	final Widget[] allListModeWidgets;
+	final HashMap<Mode, Widget[]> listModeVisibility = new HashMap<Mode, Widget[]>();
+	
 	private Mode mode = Mode.NORMAL;
 	private boolean isFiltering;
 	
 	public String[] heads = new String[] {
-		"", "V", "Nom", "Prenom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Cat", "Cours", "", "Saisons", "Division"
+		"No", "V", "Nom", "Prenom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Cat", "Cours", "", "Saisons", "Division"
+	};
+	private boolean[] sortable = new boolean[] {
+			false, false, true, true, false, true, false, false, false, true, true, true, false, false, false
 	};
 
 	private HashMap<CheckBox, Boolean> originalVerifValues = new HashMap<CheckBox, Boolean>();
+	private HashMap<ListBox, Integer> originalCours = new HashMap<ListBox, Integer>();
+	private HashMap<TextBox, String> originalJudoQC = new HashMap<TextBox, String>();
+	private HashMap<TextBox, String> originalGrades = new HashMap<TextBox, String>();
+	private HashMap<TextBox, String> originalGradeDates = new HashMap<TextBox, String>();
 	
 	public ListWidget(JudoDB jdb) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
+
+		allListModeWidgets = new Widget[] { jdb.filtrerListes, jdb.editerListes, jdb.ftListes, 
+				  							jdb.clearXListes, jdb.normalListes, 
+				  							ft303_controls, edit_controls, filter_controls, session, save, quit };
+
+		listModeVisibility.put(Mode.EDIT, new Widget[] 
+				{ jdb.normalListes, jdb.filtrerListes, 
+				  jdb.clearXListes, session, jdb.returnToMainFromListes, 
+				  edit_controls, save, quit });
+		listModeVisibility.put(Mode.FT, new Widget[] 
+				{ jdb.normalListes, jdb.filtrerListes, jdb.clearXListes, 
+				  ft303_controls, session, jdb.returnToMainFromListes } );
+		listModeVisibility.put(Mode.NORMAL, new Widget[] 
+				{ jdb.filtrerListes, jdb.editerListes, 
+				  jdb.ftListes, session, jdb.returnToMainFromListes } );
+
 		jdb.pleaseWait();
 		switchMode(Mode.NORMAL);
 		
@@ -128,6 +167,26 @@ public class ListWidget extends Composite {
 		}
 		session.insertItem(Constants.currentSession().abbrev, Integer.toString(Constants.currentSessionNo()), 0);
 		session.setSelectedIndex(0);
+
+		division.addItem("Tous", "-1");
+		for (Categorie c : Constants.CATEGORIES)
+			if (!c.noire)
+				division.insertItem(c.abbrev, c.abbrev, 1);
+		
+		for (int i = 0; i < Constants.GRADES.length; i++) {
+			Grade g = Constants.GRADES[i];
+			grade_lower.insertItem(g.name, String.valueOf(g.order), i);
+		}
+		grade_lower.insertItem("---", "", 0);
+		grade_lower.setSelectedIndex(0);
+		for (int i = 0; i < Constants.GRADES.length; i++) {
+			Grade g = Constants.GRADES[i];
+			grade_upper.insertItem(g.name, String.valueOf(g.order), i);
+		}
+		grade_upper.insertItem("---", "", 0);
+		grade_upper.setSelectedIndex(0);
+
+		edit_date.setValue(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
 		
 		cours.addChangeHandler(new ChangeHandler() { 
 			public void onChange(ChangeEvent e) { showList(); } });
@@ -141,6 +200,12 @@ public class ListWidget extends Composite {
 			public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("xls"); } });
 		xls2.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("xlsfull"); } });
+		division.addChangeHandler(new ChangeHandler() { 
+			public void onChange(ChangeEvent e) { showList(); } });
+		grade_lower.addChangeHandler(new ChangeHandler() { 
+			public void onChange(ChangeEvent e) { showList(); } });
+		grade_upper.addChangeHandler(new ChangeHandler() { 
+			public void onChange(ChangeEvent e) { showList(); } });
 		
 		createFT.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) { if (makeFT()) submit("ft"); }});
@@ -157,7 +222,8 @@ public class ListWidget extends Composite {
 		
 		listEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
 		
-		getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX_Q, this);	
+		getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX_Q, this);
+		sorts.add(3); sorts.add(2);
 	}
 
 	private void save() {
@@ -175,7 +241,33 @@ public class ListWidget extends Composite {
 			if (cb != null && cb.getValue() != originalVerifValues.get(cb)) {
 				String cid = results.getText(i, Columns.CID);
 				String v = cb.getValue() ? "1" : "0";
-				dv.append(cid + ",verification,"+v+";");
+				dv.append(cid + ",Sverification,"+v+";");
+			}
+			Widget lbw = results.getWidget(i, Columns.COURS_DESC);
+			if (lbw != null && lbw instanceof ListBox) {
+				ListBox lb = (ListBox) lbw;
+				if (lb.getSelectedIndex() != originalCours.get(lb)) {
+					String cid = results.getText(i, Columns.CID);
+					dv.append(cid + ",Scours,"+lb.getSelectedIndex()+";");				
+				}
+			}
+			Widget jqw = results.getWidget(i, Columns.JUDOQC);
+			if (jqw != null && jqw instanceof TextBox) {
+				TextBox jq = (TextBox) jqw;
+				if (!jq.getValue().equals(originalJudoQC.get(jq))) {
+					String cid = results.getText(i, Columns.CID);
+					dv.append(cid + ",Caffiliation,"+jq.getValue()+";");				
+				}
+			}
+			Widget gw = results.getWidget(i, Columns.GRADE);
+			if (gw != null && gw instanceof TextBox) {
+				TextBox g = (TextBox) gw, 
+						gd = (TextBox)results.getWidget(i, Columns.DATE_GRADE);
+				if (!g.getValue().equals(originalGrades.get(g)) ||
+						!gd.getValue().equals(originalGradeDates.get(gd))) {
+					String cid = results.getText(i, Columns.CID);
+					dv.append(cid + ",G,"+g.getValue()+"|"+gd.getValue()+";");
+				}
 			}
 		}
 		dataToSave.setValue(dv.toString());
@@ -316,19 +408,21 @@ public class ListWidget extends Composite {
 		return Constants.SESSIONS[Integer.parseInt(requestedSessionNo)];
 	}
 		
-	public boolean sessionFilter(ClientData cd) {
+	public void toggleFiltering()
+	{
+		this.isFiltering = !this.isFiltering;
+		filter_controls.setVisible(this.isFiltering);
+		showList();
+	}
+	
+	private boolean sessionFilter(ClientData cd) {
 		Constants.Session rs = requestedSession();
 		if (rs == null) return true;
 		
 		return cd.getServiceFor(rs) != null;
 	}
 	
-	public boolean filter(ClientData cd) {
-		// filter for season
-		if (!sessionFilter(cd))
-			return false;
-
-		// filter for cours
+	private boolean coursFilter(ClientData cd) {
 		String selectedCours = cours.getValue(cours.getSelectedIndex());
 		if (selectedCours.equals("-1"))
 			return true;
@@ -337,6 +431,50 @@ public class ListWidget extends Composite {
 			return true;
 		
 		return false;
+	}
+	
+	private boolean divisionFilter(ClientData cd) {
+		String selectedDivision = division.getValue(division.getSelectedIndex());
+		if (selectedDivision.equals("-1"))
+			return true;
+		
+		Categorie c = cd.getCategorie((requestedSession()).effective_year);
+		if (selectedDivision.equals(c.abbrev) || selectedDivision.equals(c.aka))
+			return true;
+		return false;
+	}
+	
+	private boolean gradeFilter(ClientData cd) {
+		String lc = grade_lower.getValue(grade_lower.getSelectedIndex());
+		String uc = grade_upper.getValue(grade_upper.getSelectedIndex());
+		boolean emptyLC = lc.equals(""), emptyUC = uc.equals("");
+
+		Grade g = Constants.stringToGrade(cd.getGrade());
+		if (g != null) {
+			int lower_constraint = emptyLC ? 0 : Integer.parseInt(lc);
+			int upper_constraint = emptyUC ? 0 : Integer.parseInt(uc); 
+			return (emptyLC || lower_constraint <= g.order) &&
+					 (emptyUC || g.order <= upper_constraint);
+		} else {
+			return emptyLC && emptyUC;
+		}
+	}
+	
+	public boolean filter(ClientData cd) {
+		if (!sessionFilter(cd))
+			return false;
+		
+		if (!coursFilter(cd))
+			return false;
+
+		if (isFiltering) {
+			if (!divisionFilter(cd))
+				return false;
+			if (!gradeFilter(cd))
+				return false;
+		}
+		
+		return true;
 	}
 	
 	public void clearX() {
@@ -348,12 +486,33 @@ public class ListWidget extends Composite {
 		}
 	}
 	
+	private ArrayList<Integer> sorts = new ArrayList<Integer>();
+	
 	@SuppressWarnings("deprecation")
 	public void showList() {
 		boolean all = "-1".equals(cours.getValue(cours.getSelectedIndex()));
 		String requestedSessionNo = session.getValue(session.getSelectedIndex());
+		final Constants.Session rs = requestedSession();
 		int count = 0, curRow;
-		ArrayList<ClientData> filteredClients = new ArrayList<ClientData>();
+		final ArrayList<ClientData> filteredClients = new ArrayList<ClientData>();
+
+		final class SortClickHandler implements ClickHandler {
+			int col;
+			SortClickHandler(int col) { this.col = col; }
+
+			public void onClick(ClickEvent e) {
+				if (sorts.get(sorts.size()-1).equals(col) ||
+						sorts.get(sorts.size()-1).equals(-col)) {
+					int q = sorts.get(sorts.size()-1);
+					sorts.remove(sorts.size()-1);
+					sorts.add(-q);
+				} else {
+					sorts.remove(new Integer(col));
+					sorts.add(col);
+				}
+				showList();
+			}
+		}
 		
 		// two passes: 1) count; 2) populate the grid
 		for (int i = 0; i < allClients.length(); i++) {
@@ -364,31 +523,61 @@ public class ListWidget extends Composite {
 			filteredClients.add(cd);
 			count++;
 		}
-		Collections.sort(filteredClients, new Comparator<ClientData>() {
-			public int compare(ClientData x, ClientData y) {
-				int z = x.getNom().compareToIgnoreCase(y.getNom());
-				if (z == 0)
-					z = x.getPrenom().compareToIgnoreCase(y.getPrenom());
-				return z; 
-			}
-		});
+
+		for (final Integer col : sorts) {
+			final int colSign = (col < 0) ? -1 : 1;
+			Collections.sort(filteredClients, new Comparator<ClientData>() {
+				public int compare(ClientData x, ClientData y) {
+					switch (col * colSign) {
+					case 2:
+						return colSign * x.getNom().compareToIgnoreCase(y.getNom());
+					case 3:
+						return colSign * x.getPrenom().compareToIgnoreCase(y.getPrenom());
+					case 5:
+						return colSign * x.getGrade().compareTo(y.getGrade());
+					case 9:
+						return colSign * x.getDDN().compareTo(y.getDDN());
+					case 10:
+						int xc = x.getCategorie(rs.effective_year).years_ago;
+						int yc = y.getCategorie(rs.effective_year).years_ago;
+						if (xc == 0) xc = Integer.MAX_VALUE;
+						if (yc == 0) yc = Integer.MAX_VALUE;
+						return colSign * (xc - yc);
+					case 11: 
+						ServiceData xsd = x.getServiceFor(rs);
+						int xcours = xsd != null ? Integer.parseInt(xsd.getCours()) : -1;
+
+						ServiceData ysd = y.getServiceFor(rs);
+						int ycours = ysd != null ? Integer.parseInt(ysd.getCours()) : -1;
+						return colSign * (xcours - ycours);
+					}
+					return 0;
+				}
+			});
+		}
 		
 		results.resize(count+1, 15);
-		
-		boolean[] visibility = new boolean[] {
-				false, mode==Mode.EDIT || mode==Mode.FT, true, true, mode==Mode.EDIT || mode==Mode.FT,
-				true, true, true, true, true, true, all, false, 
-				requestedSessionNo.equals("-1"), mode==Mode.FT
-		};
-		
+				
 		if (mode==Mode.FT) 
 			heads[Columns.VERIFICATION] = "FT"; 
 		else 
 			heads[Columns.VERIFICATION] = "V";
 		
+		boolean[] visibility = new boolean[] {
+				true, mode==Mode.EDIT || mode==Mode.FT, true, true, mode==Mode.EDIT || mode==Mode.FT,
+				true, true, true, true, true, true, mode==Mode.EDIT || all, false, 
+				requestedSessionNo.equals("-1"), mode==Mode.FT
+		};
+
 		for (int i = 0; i < heads.length; i++) {
 			if (visibility[i]) {
-				results.setText(0, i, heads[i]);
+				if (sortable[i]) {
+					Anchor a = new Anchor(heads[i]);
+					a.addClickHandler(new SortClickHandler(i));
+					results.setWidget(0, i, a);
+				}
+				else
+					results.setText(0, i, heads[i]);
 				results.getCellFormatter().setStyleName(0, i, "list-th");
 				results.getCellFormatter().setVisible(0, i, true);
 			} else { 
@@ -398,7 +587,7 @@ public class ListWidget extends Composite {
 		}
 		
 		curRow = 1;
-		Constants.Session rs = requestedSession();
+		GWT.log("number of clients = " + filteredClients.size());
 		for (ClientData cd : filteredClients) {
 			String grade = cd.getGrade();
 			if (grade != null && grade.length() >= 3) grade = grade.substring(0, 3);
@@ -416,15 +605,36 @@ public class ListWidget extends Composite {
 			results.setWidget(curRow, Columns.PRENOM, prenomAnchor);
 			results.setText(curRow, Columns.SEXE, cd.getSexe());
 			
-			if (grade != null && !grade.equals("")) {
+			results.setText(curRow, Columns.GRADE, "");
+			results.setText(curRow, Columns.DATE_GRADE, "");
+			if (mode == Mode.EDIT) {
+				TextBox g = new TextBox(); 
+				final TextBox gd = new TextBox(); 
+				g.setValue(grade); g.setWidth("3em");
+				g.addChangeHandler(new ChangeHandler() {
+					public void onChange(ChangeEvent e) {
+						String gdv = gd.getValue();
+						if (gdv.equals("") || gdv.equals("0000-00-00"))
+							gd.setValue(edit_date.getValue());
+					}
+				});
+				results.setWidget(curRow, Columns.GRADE, g);
+				originalGrades.put(g, grade);
+				gd.setValue(cd.getDateGrade()); gd.setWidth("6em");
+				results.setWidget(curRow, Columns.DATE_GRADE, gd);
+				originalGradeDates.put(gd, cd.getDateGrade());
+			} else if (grade != null && !grade.equals("")) {
 				results.setText(curRow, Columns.GRADE, grade);
 				results.setText(curRow, Columns.DATE_GRADE, cd.getDateGrade());
-			} else {
-				results.setText(curRow, Columns.GRADE, "");
-				results.setText(curRow, Columns.DATE_GRADE, "");
 			}
 			results.setText(curRow, Columns.TEL, cd.getTel());
-			results.setText(curRow, Columns.JUDOQC, cd.getJudoQC());
+			if (mode == Mode.EDIT) {
+				TextBox jqc = new TextBox(); jqc.setValue(cd.getJudoQC()); jqc.setWidth("4em");
+				results.setWidget(curRow, Columns.JUDOQC, jqc);
+				originalJudoQC.put(jqc, cd.getJudoQC());
+			} else {
+				results.setText(curRow, Columns.JUDOQC, cd.getJudoQC());
+			}
 			results.setText(curRow, Columns.DDN, cd.getDDNString());
 			results.setText(curRow, Columns.CATEGORIE, cd.getCategorie((rs == null ? Constants.currentSession() : rs).effective_year).abbrev);
 
@@ -446,13 +656,19 @@ public class ListWidget extends Composite {
 				results.clearCell(curRow, Columns.DIVISION);
 			}
 			
-			if (cours != -1 && cours < Constants.COURS.length) {
+			results.setText(curRow, Columns.COURS_DESC, "");
+			results.setText(curRow, Columns.COURS_NUM, "");				
+
+			if (mode == Mode.EDIT) {
+				ListBox w = newCoursWidget(cours);
+				results.setWidget(curRow, Columns.COURS_DESC, w);
+				results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));				
+				originalCours.put(w, cours);
+			} else if (cours != -1 && cours < Constants.COURS.length) {
 				results.setText(curRow, Columns.COURS_DESC, Constants.COURS[cours].short_desc);
 				results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
-			} else {
-				results.setText(curRow, Columns.COURS_DESC, "");
-				results.setText(curRow, Columns.COURS_NUM, "");				
 			}
+			
 			if (requestedSessionNo.equals("-1")) {
 				results.setText(curRow, Columns.SESSION, cd.getAllActiveSaisons());
 			} else {
@@ -467,46 +683,27 @@ public class ListWidget extends Composite {
 		nb.setText("Nombre inscrit: "+count);
 	}
 	
+	private ListBox newCoursWidget(int cours) {
+		ListBox lb = new ListBox();
+		for (Constants.Cours c : Constants.COURS) {
+			lb.addItem(c.short_desc, c.seqno);
+		}
+		lb.setSelectedIndex(cours);
+		return lb;
+	}
+	
 	public void switchMode(Mode m) {
 		this.mode = m;
-		switch (m) {
-		case NORMAL:
-			jdb.normalListes.setVisible(false);
-			jdb.clearXListes.setVisible(false);
-			jdb.editerListes.setVisible(true);
-			jdb.ftListes.setVisible(true);
-			ft303_controls.setVisible(false);
-			session.setEnabled(true);
-			save.setVisible(false);
-			quit.setVisible(false);
-			break;
-		case EDIT:
-			session.setSelectedIndex(0);
-			session.setEnabled(false);
-			originalVerifValues.clear();
-			jdb.normalListes.setVisible(true);
-			jdb.clearXListes.setVisible(true);
-			jdb.editerListes.setVisible(false);
-			jdb.ftListes.setVisible(false);
-			ft303_controls.setVisible(false);
-			save.setVisible(true);
-			quit.setVisible(true);
-			break;
-		case FT:
-			session.setSelectedIndex(0);
-			session.setEnabled(false);
-			jdb.normalListes.setVisible(true);
-			jdb.clearXListes.setVisible(true);
-			jdb.editerListes.setVisible(false);
-			jdb.ftListes.setVisible(false);
-			ft303_controls.setVisible(true);
-			save.setVisible(false);
-			quit.setVisible(false);
-			break;
-		default:
-			break;
-		}
-		jdb.retourner.setVisible(true);
+
+		for (Widget w : allListModeWidgets) 
+			w.setVisible(false);
+		for (Widget w : listModeVisibility.get(m)) 
+			w.setVisible(true);
+		
+		// blow away state...
+		//session.setSelectedIndex(0);
+		originalVerifValues.clear();
+		
 		if (cours.getItemCount() > 0)
 			showList();
 	}
@@ -576,7 +773,7 @@ public class ListWidget extends Composite {
 	     document.body.removeChild(script);
 	     delete window[callback];
 	     delete window[callback + "done"];
-	   }, 5000);
+	   }, 10000);
 
 	   document.body.appendChild(script);
 	  }-*/;

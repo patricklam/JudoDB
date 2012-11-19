@@ -37,6 +37,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.datepicker.client.CalendarUtil;
 
 public class ClientWidget extends Composite {
 	interface MyUiBinder extends UiBinder<Widget, ClientWidget> {}
@@ -269,8 +270,8 @@ public class ClientWidget extends Composite {
 		else {
 			this.cd = JavaScriptObject.createObject().cast();
 			this.cd.setID(null); this.cd.setNom(""); 
-			this.cd.setVille("Anjou (QC)"); this.cd.setCodePostal("H1K ");
-			this.cd.setTel("514-");
+			
+			this.cd.makeDefault();
 			
 			JsArray<ServiceData> sa = JavaScriptObject.createArray().cast();
 			ServiceData sd = ServiceData.newServiceData();
@@ -728,6 +729,23 @@ public class ClientWidget extends Composite {
 		return d1.getYear() == d2.getYear() && d1.getMonth() == d2.getMonth() && d1.getDate() == d2.getDate();
 	}
 	
+	private double proratedFrais(int sessionId, Constants.Categorie c, int sessionCount, Date dateInscription) {
+		// calculate number of weeks between start of session and dateInscription
+		// calculate total number of weeks
+		// divide, then add Constants.PRORATA_PENALITE
+		
+		double baseCost = Constants.getFraisCours(sessionId, c, sessionCount);
+
+		Date sessionStart = Constants.session(sessionId).debut_cours;
+		Date sessionEnd = Constants.session(sessionId).fin_cours;
+		double totalWeeks = (CalendarUtil.getDaysBetween(sessionStart, sessionEnd) + 6) / 7.0;
+		double elapsedWeeks = (CalendarUtil.getDaysBetween(dateInscription, sessionEnd) + 6) / 7.0;
+		
+		double prorataCost = baseCost * ((elapsedWeeks + Constants.PRORATA_PENALITE) / totalWeeks);
+		
+		return Math.min(baseCost, prorataCost);
+	}
+	
 	private void updateFrais() {
 		ServiceData sd = cd.getServices().get(currentServiceNumber);
 		Date dateInscription = DateTimeFormat.getFormat("yyyy-MM-dd").parse(sd.getDateInscription());
@@ -748,8 +766,7 @@ public class ClientWidget extends Composite {
 
 		Constants.Categorie c = cd.getCategorie(Constants.currentSession().effective_year);
 		
-		double dCategorieFrais = Constants.getFraisCours
-			(Constants.currentSessionNo(), c, sessionCount);
+		double dCategorieFrais = proratedFrais(Constants.currentSessionNo(), c, sessionCount, dateInscription);
 		
 		double dEscompteFrais = 0.0;
 		if (escompte.getValue(escompte.getSelectedIndex()).equals("-1")) {
@@ -798,15 +815,9 @@ public class ClientWidget extends Composite {
 	private void updateCopySib() {
 		copysib.setVisible(false);
 		// check 1) address fields are empty and 2) there exists a sibling
-		StringBuffer addrFields = new StringBuffer();
-		addrFields.append(adresse.getText());
-		addrFields.append(ville.getText());
-		addrFields.append(codePostal.getText());
-		addrFields.append(tel.getText());
-		addrFields.append(tel_contact_urgence.getText());
-		addrFields.append(courriel.getText());
-		if (!addrFields.toString().equals(""))
-			return;
+		// Note that the following check relies on the data being saved
+		// to the ClientData, which is true after you enter the birthday.
+		if (!cd.isDefault()) return;
 		
 		// oh well, tough luck!
 		if (jdb.allClients == null) return;
@@ -917,6 +928,11 @@ public class ClientWidget extends Composite {
 	}
 	
 	private void pushClientDataToServer() {
+		if (cd.getNom().equals("") || cd.getPrenom().equals("")) {
+			jdb.displayError("pas de nom ou prenom");
+			return;
+		}
+		
 		guid = UUID.uuid();
 		sid.setValue(cd.getID());
 		guid_on_form.setValue(guid);

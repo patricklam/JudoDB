@@ -1,7 +1,9 @@
 package ca.patricklam.judodb.client;
 
+import java.util.Date;
+
 public class Constants {	
-	public static int currentSessionNo() { return 4; }
+	public static int currentSessionNo() { return 6; }
 	public static Session currentSession() { 
 		return session(currentSessionNo()); 
 	}
@@ -11,15 +13,19 @@ public class Constants {
 	public static final String CLUB = "Anjou";
 	public static final String CLUBNO = "C047";
 	public static final int VETERAN = 35;
+	public static final int PRORATA_PENALITE = 5;
 	
 	static class Session {
 		final int seqno;
 		final String abbrev;
 		final int effective_year;
+		final Date debut_cours;
+		final Date fin_cours;
 		
-		public Session(int seqno, String abbrev, int effective_year) {
+		public Session(int seqno, String abbrev, int effective_year, Date debut_cours, Date fin_cours) {
 			this.seqno = seqno; this.abbrev = abbrev;
 			this.effective_year = effective_year;
+			this.debut_cours = debut_cours; this.fin_cours = fin_cours;
 		}
 	}
 	
@@ -28,9 +34,11 @@ public class Constants {
 		final String abbrev;
 		final int years_ago;
 		final boolean noire;
-		public Categorie(String name, String abbrev, int years_ago, boolean noire) { 
+		final String aka; // e.g. for "U20N", this is "U20"
+		public Categorie(String name, String abbrev, int years_ago, boolean noire, String aka) { 
 			this.name = name; this.abbrev = abbrev; 
 			this.years_ago = years_ago; this.noire = noire;
+			this.aka = aka;
 		}
 	}
 
@@ -82,13 +90,78 @@ public class Constants {
 		}
 	}
 	
+	static class Grade {
+		final String name; final String n3;
+		final int order;
+		public Grade(String name, String n3, int order) {
+			this.name = name; this.n3 = n3; this.order = order;
+		}
+		public Grade(String name, int order) {
+			this.name = name; this.n3 = name; this.order = order;
+		}
+	}
+	
+	public static final Grade[] GRADES = new Grade[] {
+		new Grade("Blanche", "Bla", -60),
+		new Grade("B/J", -55),
+		new Grade("Jaune", "Jau", -50),
+		new Grade("J/O", -45),
+		new Grade("Orange", "Ora", -40),
+		new Grade("O/V", -35),
+		new Grade("Verte", "Ver", -30),
+		new Grade("V/B", -25),
+		new Grade("Bleue", "Ble", -20),
+		new Grade("B/M", -15),
+		new Grade("Marron", "Mar", -10),
+		new Grade("1D", 10),
+		new Grade("2D", 20),
+		new Grade("3D", 30),
+		new Grade("4D", 40),
+		new Grade("5D", 50)
+	};
+	
+	/** Case-insensitively assigns grade to one of GRADES.
+	 * Truncate input to 3 letters.
+	 * Then, look first for exact case-insensitive matches.
+	 * Otherwise, look for a first-letter match between input and one of the grades (e.g. M and Marron).
+	 */
+	public static Grade stringToGrade(String grade) {
+		if (grade == null) return null;
+		
+		if (grade.length() >= 3) grade = grade.substring(0, 3);
+		for (Grade g : GRADES) {
+			if (g.n3.equalsIgnoreCase(grade))
+				return g;
+		}
+		
+		if (grade.length() == 1) {
+			for (Grade g : GRADES)
+				if (g.name.startsWith(grade))
+					return g;
+		}
+		
+		return null;
+	}
+	
+	public static native final String webDateToMilliSec(String webDate) /*-{
+    	var longDate = Date.parse(webDate);
+    	return longDate.toString();
+  	}-*/;
+
+	public static Date newDate(String s) {
+		long longDate = Long.parseLong(webDateToMilliSec(s));
+		return new Date(longDate);
+	}
+	
 	public static final Session[] SESSIONS = new Session[] {
-		new Session(0, "A09", 2010),
-		new Session(1, "H10", 2010),
-		new Session(2, "A10", 2011),
-		new Session(3, "H11", 2011),
-		new Session(4, "A11", 2012),
-		new Session(5, "H12", 2012)
+		new Session(0, "A09", 2010, newDate("1/Sep/2009"), newDate("15/May/2010")),
+		new Session(1, "H10", 2010, newDate("1/Sep/2009"), newDate("15/May/2010")),
+		new Session(2, "A10", 2011, newDate("1/Sep/2010"), newDate("15/May/2011")),
+		new Session(3, "H11", 2011, newDate("1/Sep/2010"), newDate("15/May/2011")),
+		new Session(4, "A11", 2012, newDate("3/Sep/2011"), newDate("12/May/2012")),
+		new Session(5, "H12", 2012, newDate("3/Sep/2011"), newDate("12/May/2012")),
+		new Session(6, "A12", 2013, newDate("1/Sep/2012"), newDate("11/May/2013")),
+		new Session(7, "H13", 2013, newDate("1/Sep/2012"), newDate("11/May/2013"))
 	};
 	
 	public static Session session(int seqno) {
@@ -113,19 +186,19 @@ public class Constants {
 	}
 				
 	public static final Categorie[] CATEGORIES = new Categorie[] {
-		new Categorie("Mini-Poussin", "U7", 7, false),
-		new Categorie("Poussin", "U9", 9, false),
-		new Categorie("Benjamin", "U11", 11, false),
-		new Categorie("Minime", "U13", 13, false),
-		new Categorie("Juvénile", "U15", 15, false),
-		new Categorie("Cadet", "U17", 17, false),
-		new Categorie("Junior", "U20", 20, false),
-		new Categorie("Senior", "S", 0, false),
-		new Categorie("Cadet Noire", "U17N", 17, true),
-		new Categorie("Junior Noire", "U20N", 20, true),
-		new Categorie("Senior Noire", "SN", 0, true),
+		new Categorie("Mini-Poussin", "U7", 7, false, null),
+		new Categorie("Poussin", "U9", 9, false, null),
+		new Categorie("Benjamin", "U11", 11, false, null),
+		new Categorie("Minime", "U13", 13, false, null),
+		new Categorie("Juvénile", "U15", 15, false, null),
+		new Categorie("Cadet", "U17", 17, false, null),
+		new Categorie("Junior", "U20", 20, false, null),
+		new Categorie("Senior", "S", 0, false, null),
+		new Categorie("Cadet Noire", "U17N", 17, true, "U17"),
+		new Categorie("Junior Noire", "U20N", 20, true, "U20"),
+		new Categorie("Senior Noire", "SN", 0, true, "S"),
 	};
-	public static final Categorie EMPTY_CATEGORIE = new Categorie("", "", 0, false);
+	public static final Categorie EMPTY_CATEGORIE = new Categorie("", "", 0, false, null);
 
 	public static final Cours[] COURS = new Cours[] {
 		new Cours("0", "Adultes (LM2015-2145, V2000-2145)", "LM2015 V2000", ""),
@@ -134,13 +207,18 @@ public class Constants {
 		new Cours("3", "Débutants 7-12 ans (MaJ1730-1830)", "MaJ1730", ""),
 		new Cours("4", "Débutants 5-6 ans (S900-1000)", "S900", ""),
 		new Cours("5", "Anciens 5-6 ans (S1000-1130)", "S1000", ""),
-		new Cours("6", "Anciens 5-6 ans (S1130-1300)", "S1130", ""),
+		new Cours("6", "Anciens 7-8 ans (S1130-1300)", "S1130", ""),
 		new Cours("7", "Anciens 7-9 ans (S1300-1430)", "S1300", ""),
-		new Cours("8", "Anciens 7-9 ans (S1430-1600)", "S1430", ""),
-		new Cours("9", "Anciens 5-6 ans (D930-1100)", "D930", ""),
-		new Cours("10", "Débutants 5-6 ans (D1100-1200)", "D1100", ""),
-		new Cours("11", "Débutants 7-11 ans (MV1730-1830)", "MV1730", ""),
-		new Cours("12", "Débutants 5-6 ans (D1200-1300)", "D1200", "")
+		new Cours("8", "Anciens 7-10 ans (S1430-1600)", "S1430", ""),
+		new Cours("9", "Débutants (D930-1030)", "D930", ""),
+		new Cours("10", "Anciens (D1030-1130)", "D1030", ""),
+		new Cours("11", "Débutants 7-10 ans (MV1700-1800)", "MV1700", ""),
+		new Cours("12", "Anciens (D1130-1300)", "D1130", ""),
+		new Cours("13", "Débutants 7-10 ans (S1600-1730)", "S1600", ""),
+		new Cours("14", "Débutants (D1300-1400)", "D1300", ""),
+		new Cours("15", "Anciens 7-10 ans (MV1800-1900)", "MV1800", ""),
+		new Cours("16", "Débutants (D1400-1500)", "D1400", ""),
+		new Cours("17", "Autre", "X0000", ""),
 	};
 
 	public static final CategorieSession[] CATEGORIES_SESSIONS = new CategorieSession[] {
@@ -177,6 +255,17 @@ public class Constants {
 		new CategorieSession(4, 5, "U17N", 167.00, 172.0, 73.0),
 		new CategorieSession(4, 5, "U20N", 167.00, 172.0, 73.0),
 		new CategorieSession(4, 5, "SN", 167.0, 172.0, 83.0),
+		new CategorieSession(6, 7, "U7", 118.30, 182.0, 19.0),
+		new CategorieSession(6, 7, "U9", 121.55, 187.0, 24.0),
+		new CategorieSession(6, 7, "U11", 134.55, 207.0, 34.0),
+		new CategorieSession(6, 7, "U13", 157.30, 242.0, 44.0),
+		new CategorieSession(6, 7, "U15", 193.05, 297.0, 59.0),
+		new CategorieSession(6, 7, "U17", 199.55, 307.0, 64.0),
+		new CategorieSession(6, 7, "U20", 206.05, 317.0, 74.0),
+		new CategorieSession(6, 7, "S", 228.80, 352.0, 79.0),
+		new CategorieSession(6, 7, "U17N", 167.00, 172.0, 74.0),
+		new CategorieSession(6, 7, "U20N", 167.00, 172.0, 74.0),
+		new CategorieSession(6, 7, "SN", 167.0, 172.0, 84.0),
 	};
 	
 	public static final double getFraisCours(int session, Categorie c, int sessionCount) {
