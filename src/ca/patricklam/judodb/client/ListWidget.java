@@ -23,9 +23,11 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 public class ListWidget extends Composite {
@@ -34,6 +36,7 @@ public class ListWidget extends Composite {
 	JudoDB jdb;
 	
 	private JsArray<ClientData> allClients;
+	private HashMap<String, ClientData> cidToCD = new HashMap<String, ClientData>();
 	
 	private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
 	private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
@@ -55,6 +58,11 @@ public class ListWidget extends Composite {
 	@UiField Hidden data_full;
 	@UiField Hidden auxdata;
 	
+	@UiField HTMLPanel ft303_controls;
+	@UiField TextBox evt;
+	@UiField TextBox date;
+	@UiField Anchor createFT;
+	
 	@UiField ListBox cours;
 	@UiField Grid results;
 	@UiField Label nb;
@@ -71,11 +79,24 @@ public class ListWidget extends Composite {
 	
 	@UiField ListBox session;
 
-	private class Rows {
+	private class Columns {
 		final static int CID = 0;
-		final static int VERIFICATION = 10;
+		final static int VERIFICATION = 1;
+		final static int NOM = 2;
+		final static int PRENOM = 3;
+		final static int SEXE = 4;
+		final static int GRADE = 5;
+		final static int DATE_GRADE = 6;
+		final static int TEL = 7;
+		final static int JUDOQC = 8;
+		final static int DDN = 9;
+		final static int CATEGORIE = 10;
+		final static int COURS_DESC = 11;
+		final static int COURS_NUM = 12;
+		final static int SESSION = 13;
+		final static int DIVISION = 14;
 	}
-	
+
 	enum Mode {
 		NORMAL, FT, EDIT, GERER_CLASSES
 	};
@@ -84,13 +105,11 @@ public class ListWidget extends Composite {
 	private boolean isFiltering;
 	
 	public String[] heads = new String[] {
-		"", "Nom", "Prenom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Cat", "V", "Cours", "", "Saisons"
+		"", "V", "Nom", "Prenom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Cat", "Cours", "", "Saisons", "Division"
 	};
 
 	private HashMap<CheckBox, Boolean> originalVerifValues = new HashMap<CheckBox, Boolean>();
 	
-	//var widthsForEditing = [-1, -1, -1, 1, 3, 8, -1, 8, -1, -1, -1, -1, -1];
-
 	public ListWidget(JudoDB jdb) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
@@ -115,14 +134,16 @@ public class ListWidget extends Composite {
 		session.addChangeHandler(new ChangeHandler() { 
 			public void onChange(ChangeEvent e) { showList(); } });
 		pdf.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent e) { clearFull(); submit("pdf"); } });
+			public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("pdf"); } });
 		presences.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent e) { clearFull(); submit("presences"); } });
+			public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("presences"); } });
 		xls.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent e) { clearFull(); submit("xls"); } });
+			public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("xls"); } });
 		xls2.addClickHandler(new ClickHandler() {
-			public void onClick(ClickEvent e) { computeFull(); submit("xlsfull"); } });
+			public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("xlsfull"); } });
 		
+		createFT.addClickHandler(new ClickHandler() {
+			public void onClick(ClickEvent e) { if (makeFT()) submit("ft"); }});
 		save.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) {
 				save();
@@ -150,9 +171,9 @@ public class ListWidget extends Composite {
 		
 		StringBuffer dv = new StringBuffer();
 		for (int i = 0; i < results.getRowCount(); i++) {
-			CheckBox cb = (CheckBox)results.getWidget(i, Rows.VERIFICATION);
+			CheckBox cb = (CheckBox)results.getWidget(i, Columns.VERIFICATION);
 			if (cb != null && cb.getValue() != originalVerifValues.get(cb)) {
-				String cid = results.getText(i, 0);
+				String cid = results.getText(i, Columns.CID);
 				String v = cb.getValue() ? "1" : "0";
 				dv.append(cid + ",verification,"+v+";");
 			}
@@ -230,36 +251,63 @@ public class ListWidget extends Composite {
 		for (int i = 0; i < allClients.length(); i++) {
 			ClientData cd = allClients.get(i);
 			if (!sessionFilter(cd)) continue;
-			
-			dv += cd.getNom() + "|";
-			dv += cd.getPrenom() + "|";
-			dv += cd.getJudoQC() + "|";
-			dv += cd.getDDNString() + "|";
-			dv += cd.getCategorie(requestedSession().effective_year).abbrev + "|";
-			dv += cd.getCourriel() + "|";
-			dv += cd.getAdresse() + "|";
-			dv += cd.getVille() + "|";
-			dv += cd.getCodePostal() + "|";
-			dv += cd.getTel() + "|";
-			dv += cd.getCarteAnjou() + "|";
-			dv += cd.getNomContactUrgence() + "|";
-			dv += cd.getTelContactUrgence() + "|";
-			dv += cd.getMostRecentGrade().getGrade() + "|";
-			dv += cd.getMostRecentGrade().getDateGrade() + "|";
-			ServiceData sd = cd.getServiceFor(requestedSession()); 
-			if (sd != null && !sd.getCours().equals(""))
-				dv += Constants.COURS[Integer.parseInt(sd.getCours())].short_desc + "|";
-			else
-				dv += "|";
-			dv += "*";
+
+			dv += toDVFullString(cd) + "*";
 		}
 		data_full.setValue(dv);
+	}
+	
+	private String toDVFullString(ClientData cd) {
+		String dv = "";
+		
+		dv += cd.getNom() + "|";
+		dv += cd.getPrenom() + "|";
+		dv += cd.getSexe() + "|";
+		dv += cd.getJudoQC() + "|";
+		dv += cd.getDDNString() + "|";
+		dv += cd.getCategorie(requestedSession().effective_year).abbrev + "|";
+		dv += cd.getCourriel() + "|";
+		dv += cd.getAdresse() + "|";
+		dv += cd.getVille() + "|";
+		dv += cd.getCodePostal() + "|";
+		dv += cd.getTel() + "|";
+		dv += cd.getCarteAnjou() + "|";
+		dv += cd.getTelContactUrgence() + "|";
+		dv += cd.getMostRecentGrade().getGrade() + "|";
+		dv += cd.getMostRecentGrade().getDateGrade() + "|";
+		ServiceData sd = cd.getServiceFor(requestedSession()); 
+		if (sd != null && !sd.getCours().equals(""))
+			dv += Constants.COURS[Integer.parseInt(sd.getCours())].short_desc + "|";
+		else
+			dv += "|";
+		return dv;
 	}
 	
 	private void submit(String act) {
 		addMetaData();
 		listForm.setAction(JudoDB.BASE_URL+"listes"+act+".php");
 		listForm.submit();
+	}
+	
+	private boolean makeFT() {
+		StringBuffer dv = new StringBuffer("");
+		for (int i = 1; i < results.getRowCount(); i++) {
+			CheckBox cb = (CheckBox)results.getWidget(i, Columns.VERIFICATION);
+			if (cb != null && cb.getValue()) {
+				ClientData cd = cidToCD.get(results.getText(i, Columns.CID));
+
+				StringBuffer post = new StringBuffer();
+				ListBox w = (ListBox)(results.getWidget(i, Columns.DIVISION));
+				if (w != null)
+					post.append(w.getValue(w.getSelectedIndex()));
+				post.append("|");
+				dv.append(toDVFullString(cd) + post + "*");			
+			}
+		}
+		data.setValue("");
+		data_full.setValue(dv.toString());
+		auxdata.setValue(Constants.CLUB + "|" + Constants.CLUBNO);
+		return !dv.equals("");
 	}
 
 	public Constants.Session requestedSession() {
@@ -293,13 +341,14 @@ public class ListWidget extends Composite {
 	
 	public void clearX() {
 		for (int i = 0; i < results.getRowCount(); i++) {
-			CheckBox cb = (CheckBox)results.getWidget(i, Rows.VERIFICATION);
+			CheckBox cb = (CheckBox)results.getWidget(i, Columns.VERIFICATION);
 			if (cb != null && cb.getValue()) {
 				cb.setValue(false);
 			}
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void showList() {
 		boolean all = "-1".equals(cours.getValue(cours.getSelectedIndex()));
 		String requestedSessionNo = session.getValue(session.getSelectedIndex());
@@ -309,6 +358,7 @@ public class ListWidget extends Composite {
 		// two passes: 1) count; 2) populate the grid
 		for (int i = 0; i < allClients.length(); i++) {
 			ClientData cd = allClients.get(i);
+			cidToCD.put(cd.getID(), cd);
 			if (!filter(cd)) continue;
 			
 			filteredClients.add(cd);
@@ -323,13 +373,18 @@ public class ListWidget extends Composite {
 			}
 		});
 		
-		results.resize(count+1, 14);
+		results.resize(count+1, 15);
 		
 		boolean[] visibility = new boolean[] {
-				mode==Mode.FT, true, true, mode==Mode.EDIT || mode==Mode.FT,
-				true, true, true, true, true, true, mode==Mode.EDIT, all, false, 
-				requestedSessionNo.equals("-1")
+				false, mode==Mode.EDIT || mode==Mode.FT, true, true, mode==Mode.EDIT || mode==Mode.FT,
+				true, true, true, true, true, true, all, false, 
+				requestedSessionNo.equals("-1"), mode==Mode.FT
 		};
+		
+		if (mode==Mode.FT) 
+			heads[Columns.VERIFICATION] = "FT"; 
+		else 
+			heads[Columns.VERIFICATION] = "V";
 		
 		for (int i = 0; i < heads.length; i++) {
 			if (visibility[i]) {
@@ -356,48 +411,58 @@ public class ListWidget extends Composite {
 			nomAnchor.addClickHandler(c);
 			prenomAnchor.addClickHandler(c);
 
-			results.setText(curRow, Rows.CID, cd.getID());
-			results.setWidget(curRow, 1, nomAnchor);
-			results.setWidget(curRow, 2, prenomAnchor);
-			results.setText(curRow, 3, cd.getSexe());
+			results.setText(curRow, Columns.CID, cd.getID());
+			results.setWidget(curRow, Columns.NOM, nomAnchor);
+			results.setWidget(curRow, Columns.PRENOM, prenomAnchor);
+			results.setText(curRow, Columns.SEXE, cd.getSexe());
 			
 			if (grade != null && !grade.equals("")) {
-				results.setText(curRow, 4, grade);
-				results.setText(curRow, 5, cd.getDateGrade());
+				results.setText(curRow, Columns.GRADE, grade);
+				results.setText(curRow, Columns.DATE_GRADE, cd.getDateGrade());
 			} else {
-				results.setText(curRow, 4, "");
-				results.setText(curRow, 5, "");
+				results.setText(curRow, Columns.GRADE, "");
+				results.setText(curRow, Columns.DATE_GRADE, "");
 			}
-			results.setText(curRow, 6, cd.getTel());
-			results.setText(curRow, 7, cd.getJudoQC());
-			results.setText(curRow, 8, cd.getDDNString());
-			results.setText(curRow, 9, cd.getCategorie((rs == null ? Constants.currentSession() : rs).effective_year).abbrev);
+			results.setText(curRow, Columns.TEL, cd.getTel());
+			results.setText(curRow, Columns.JUDOQC, cd.getJudoQC());
+			results.setText(curRow, Columns.DDN, cd.getDDNString());
+			results.setText(curRow, Columns.CATEGORIE, cd.getCategorie((rs == null ? Constants.currentSession() : rs).effective_year).abbrev);
 
-			if (visibility[Rows.VERIFICATION]) {
+			if (visibility[Columns.VERIFICATION]) {
 				CheckBox cb = new CheckBox();
-				results.setWidget(curRow, Rows.VERIFICATION, cb);
-				cb.setValue(sd.getVerification());
-				originalVerifValues.put(cb, sd.getVerification());
+				results.setWidget(curRow, Columns.VERIFICATION, cb);
+				if (mode==Mode.EDIT) { 
+					cb.setValue(sd.getVerification());
+					originalVerifValues.put(cb, sd.getVerification());
+				}
+			}
+			
+			if (visibility[Columns.DIVISION] && (Constants.currentSession().effective_year - (cd.getDDN().getYear() + 1900)) > Constants.VETERAN) {
+				ListBox d = new ListBox();
+				d.addItem("Senior", "S");
+				d.addItem("Masters", "M");
+				results.setWidget(curRow, Columns.DIVISION, d);
+			} else {
+				results.clearCell(curRow, Columns.DIVISION);
 			}
 			
 			if (cours != -1 && cours < Constants.COURS.length) {
-				results.setText(curRow, 11, Constants.COURS[cours].short_desc);
-				results.setText(curRow, 12, Integer.toString(cours));
+				results.setText(curRow, Columns.COURS_DESC, Constants.COURS[cours].short_desc);
+				results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
 			} else {
-				results.setText(curRow, 11, "");
-				results.setText(curRow, 12, "");				
+				results.setText(curRow, Columns.COURS_DESC, "");
+				results.setText(curRow, Columns.COURS_NUM, "");				
 			}
 			if (requestedSessionNo.equals("-1")) {
-				results.setText(curRow, 13, cd.getAllActiveSaisons());
+				results.setText(curRow, Columns.SESSION, cd.getAllActiveSaisons());
 			} else {
-				results.setText(curRow, 13, "");
+				results.setText(curRow, Columns.SESSION, "");
 			}
 			
 			for (int j = 0; j < visibility.length; j++)
 				results.getCellFormatter().setVisible(curRow, j, visibility[j]);
 			curRow++;
 		}
-		collectDV();
 		
 		nb.setText("Nombre inscrit: "+count);
 	}
@@ -409,6 +474,8 @@ public class ListWidget extends Composite {
 			jdb.normalListes.setVisible(false);
 			jdb.clearXListes.setVisible(false);
 			jdb.editerListes.setVisible(true);
+			jdb.ftListes.setVisible(true);
+			ft303_controls.setVisible(false);
 			session.setEnabled(true);
 			save.setVisible(false);
 			quit.setVisible(false);
@@ -420,8 +487,21 @@ public class ListWidget extends Composite {
 			jdb.normalListes.setVisible(true);
 			jdb.clearXListes.setVisible(true);
 			jdb.editerListes.setVisible(false);
+			jdb.ftListes.setVisible(false);
+			ft303_controls.setVisible(false);
 			save.setVisible(true);
 			quit.setVisible(true);
+			break;
+		case FT:
+			session.setSelectedIndex(0);
+			session.setEnabled(false);
+			jdb.normalListes.setVisible(true);
+			jdb.clearXListes.setVisible(true);
+			jdb.editerListes.setVisible(false);
+			jdb.ftListes.setVisible(false);
+			ft303_controls.setVisible(true);
+			save.setVisible(false);
+			quit.setVisible(false);
 			break;
 		default:
 			break;
