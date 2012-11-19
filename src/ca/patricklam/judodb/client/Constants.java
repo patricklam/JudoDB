@@ -6,8 +6,11 @@ public class Constants {
 		return session(currentSessionNo()); 
 	}
 	
-	public static double PASSEPORT_JUDO_QC = 5.0;
-	public static double NON_ANJOU = 5.0;
+	public static final double PASSEPORT_JUDO_QC = 5.0;
+	public static final double NON_ANJOU = 5.0;
+	public static final String CLUB = "Anjou";
+	public static final String CLUBNO = "C047";
+	public static final int VETERAN = 35;
 	
 	static class Session {
 		final int seqno;
