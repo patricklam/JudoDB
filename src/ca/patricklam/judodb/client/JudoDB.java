@@ -43,8 +43,8 @@ public class JudoDB implements EntryPoint {
 	
 	// testing db:
 	//public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb-backend/";
-
 	public static final String BASE_URL = "http://www.judo-anjou.qc.ca/anjoudb-backend/";
+	
 	private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
 	private static final String AUTHENTICATE_URL = BASE_URL + "authenticate.php"; // used for testing authentication
 	private static final String LOGOUT_URL = BASE_URL + "logout.php"; 
@@ -65,6 +65,7 @@ public class JudoDB implements EntryPoint {
 	private final Anchor voirListes = new Anchor("Voir listes des cours");
 	private final Anchor logout = new Anchor("Fermer session");
 	final Anchor editerListes = new Anchor("Éditer");
+	final Anchor ftListes = new Anchor("FT-303");
 	final Anchor clearXListes = new Anchor("Effacer les X");
 	final Anchor normalListes = new Anchor("Voir listes");
 	final Anchor retourner = new Anchor("Retourner");
@@ -222,7 +223,8 @@ public class JudoDB implements EntryPoint {
 		login.focus();
 	}
 
-	public void invalidateListWidget() {
+	public void invalidateListWidget() {		
+		this.l.removeFromParent();
 		this.l = null;
 	}
 	
@@ -278,6 +280,10 @@ public class JudoDB implements EntryPoint {
 		editerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
 			if (JudoDB.this.l != null) JudoDB.this.l.switchMode(ListWidget.Mode.EDIT); }});
 		listActions.add(editerListes);
+		listActions.add(new Label(""));
+		ftListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
+			if (JudoDB.this.l != null) JudoDB.this.l.switchMode(ListWidget.Mode.FT); }});
+		listActions.add(ftListes);
 		listActions.add(new Label(""));
 		clearXListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
 			if (JudoDB.this.l != null) JudoDB.this.l.clearX(); }});

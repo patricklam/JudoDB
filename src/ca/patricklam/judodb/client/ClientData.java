@@ -112,6 +112,7 @@ public class ClientData extends JavaScriptObject {
 	}
 	
 	public final Date getDDN() {
+		if (getDDNString() == null) return null;
 		try {
 			return DateTimeFormat.getFormat("yyyy-MM-dd").parse(getDDNString());
 		} catch (IllegalArgumentException e) { return null; }

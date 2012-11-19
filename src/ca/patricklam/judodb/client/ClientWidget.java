@@ -151,9 +151,9 @@ public class ClientWidget extends Composite {
 	public interface BlurbTemplate extends SafeHtmlTemplates {
 		@Template 
 	      ("<p>Je {0} certifie que les informations inscrites sur ce formulaire sont véridiques. "+
-	       "J'adhère au Club Judo Anjou. J'accepte tous les risques d'accident liés à la pratique du "+
+	       "En adhèrant au Club Judo Anjou, j'accepte tous les risques d'accident liés à la pratique du "+
 	       "judo qui pourraient survenir dans les locaux ou lors d'activités extérieurs organisées par le Club. "+
-	       "J'accepte de respecter les règlements du Club.</p>"+
+	       "J'accepte de respecter les règlements du Club en tout temps y compris lors des déplacements.</p>"+
 	       "<h4>Politique de remboursement</h4>"+
 	       "<p>Aucun remboursement ne sera accordé sans présentation d'un certificat médical du participant. "+
 	       "Seuls les frais de cours correspondant à la période restante sont remboursables. "+
@@ -305,7 +305,7 @@ public class ClientWidget extends Composite {
 		if (y >= 18) {
 			nn = nom; mm = "membre";
 		} else {
-			nn = "__________________________, parent ou tuteur du membre,";
+			nn = "__________________________, parent ou tuteur du membre indiqué plus haut,";
 			mm = "parent ou tuteur";
 		}
 		
