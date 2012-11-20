@@ -109,7 +109,8 @@ public class JudoDB implements EntryPoint {
 	JsArray<ClientSummary> allClients;
 	private String searchString;
 	private int firstSearchResultToDisplay = 0;
-	private Stack<Mode> modes = new Stack<Mode>();
+	private Stack<Mode> modeStack = new Stack<Mode>();
+	private Mode currentMode = null;
 	
 	private boolean isAuthenticated = false;
 	private boolean authenticationPending = false;
@@ -165,90 +166,79 @@ public class JudoDB implements EntryPoint {
 		}
 	}
 
-	// modes
-	public Mode getCurrentMode() {
-		return modes.peek();
-	}
-	
+	// modes	
 	public void switchMode(Mode newMode) {
-		pushMode(newMode);
-	}
-	
-	public void pushMode(Mode newMode) {
-		modes.push(newMode);
-		actuallySwitchMode(newMode);
+		if (currentMode != null) 
+			modeStack.push(currentMode);
+		currentMode = newMode;
+		_switchMode(newMode);
 	}
 	
 	public void popMode() {
-		if (!modes.isEmpty()) {
-			modes.pop();
-			if (!modes.isEmpty())
-				actuallySwitchMode(modes.peek());
+		if (!modeStack.isEmpty()) {
+			currentMode = modeStack.peek();
+			_switchMode(currentMode);
+			
+			modeStack.pop();
 		}
 	}
 	
-	private void actuallySwitchMode(Mode newMode) {
+	private void _switchMode(Mode newMode) {
 		History.newItem(newMode.toString(), false);
-		switch (newMode.am) {
-		case EDIT_CLIENT:
-			switchMode_editClient(newMode.arg);
-			break;
-		case LIST:
-			switchMode_viewLists();
-			break;
-		case MAIN:
-			switchMode_main();
-			break;
-		case CONFIG:
-			switchMode_config();
-			break;
-		}
-	}
-	
-	private void switchMode_editClient (int cid) {
 		for (Widget w : allWidgets) 
 			w.setVisible(false);
 
+		switch (newMode.am) {
+		case EDIT_CLIENT:
+			_switchMode_editClient(newMode.arg);
+			break;
+		case LIST:
+			_switchMode_viewLists();
+			break;
+		case MAIN:
+			_switchMode_main();
+			break;
+		case CONFIG:
+			_switchMode_config();
+			break;
+		}
+	}
+	
+	private void _switchMode_editClient (int cid) {
 		RootPanel.get("editClient").clear();
 		this.c = new ClientWidget(cid, this);
 		RootPanel.get("editClient").add(this.c);
 		RootPanel.get("editClient").setVisible(true);
 	}
 	
-	public void switchMode_viewLists() {
+	public void _switchMode_viewLists() {
 		if (this.l == null) {
 			this.l = new ListWidget(this);
 			RootPanel.get("lists").add(this.l);
 		}
 		RootPanel.get("editClient").clear();
 
-		for (Widget w : allWidgets) 
-			w.setVisible(false);
 		RootPanel.get("listActions").setVisible(true);
 		RootPanel.get("lists").setVisible(true);
 
 		this.l.switchMode(ListWidget.Mode.NORMAL);
 	}
 
-	public void switchMode_config() {
+	public void _switchMode_config() {
 		if (this.cf == null) {
 			this.cf = new ConfigWidget(this);
 			RootPanel.get("config").add(this.cf);
 		}
 		RootPanel.get("editClient").clear();
 
-		for (Widget w : allWidgets) 
-			w.setVisible(false);
 		RootPanel.get("listActions").setVisible(true);
 		RootPanel.get("config").setVisible(true);
 		returnToMainFromListes.setVisible(true);
 	}
 
-	public void switchMode_main() {
+	public void _switchMode_main() {
 		clearStatus();
 		
-		for (Widget w : allWidgets) 
-			w.setVisible(false);
 		RootPanel.get("mainActions").setVisible(true);
 		RootPanel.get("search").setVisible(true);
 		voirListes.setVisible(true);
