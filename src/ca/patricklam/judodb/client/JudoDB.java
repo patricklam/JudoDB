@@ -175,7 +175,6 @@ public class JudoDB implements EntryPoint {
 	}
 	
 	public void pushMode(Mode newMode) {
-		GWT.log("pushing "+newMode.toString());
 		modes.push(newMode);
 		actuallySwitchMode(newMode);
 	}
@@ -190,7 +189,6 @@ public class JudoDB implements EntryPoint {
 	
 	private void actuallySwitchMode(Mode newMode) {
 		History.newItem(newMode.toString(), false);
-		GWT.log("hi");
 		switch (newMode.am) {
 		case EDIT_CLIENT:
 			switchMode_editClient(newMode.arg);
