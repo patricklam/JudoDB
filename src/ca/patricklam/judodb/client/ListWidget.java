@@ -587,7 +587,6 @@ public class ListWidget extends Composite {
 		}
 		
 		curRow = 1;
-		GWT.log("number of clients = " + filteredClients.size());
 		for (ClientData cd : filteredClients) {
 			String grade = cd.getGrade();
 			if (grade != null && grade.length() >= 3) grade = grade.substring(0, 3);

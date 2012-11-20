@@ -34,11 +34,11 @@ import com.google.gwt.user.client.ui.Widget;
 public class JudoDB implements EntryPoint {
 	static class Mode {
 		enum ActualMode {
-			LOGIN(""), MAIN("main"), LIST("list"), EDIT_CLIENT("edit"), CONFIG("config");
+			MAIN("main"), LIST("list"), EDIT_CLIENT("edit"), CONFIG("config");
 			final String label;
 			ActualMode(String label) { this.label = label; }
 			boolean matchesLabel(String s) {
-				if (!label.equals("") && s.startsWith(label))
+				if (s.startsWith(label))
 					return true;
 				return false;
 			}
@@ -111,6 +111,9 @@ public class JudoDB implements EntryPoint {
 	private int firstSearchResultToDisplay = 0;
 	private Stack<Mode> modes = new Stack<Mode>();
 	
+	private boolean isAuthenticated = false;
+	private boolean authenticationPending = false;
+	
 	/* edit client stuff */
 	private ClientWidget c;
 
@@ -121,7 +124,7 @@ public class JudoDB implements EntryPoint {
 	private ConfigWidget cf;
 	
 	/* login stuff */
-	private LoginWidget login;
+	private LoginWidget login = new LoginWidget(this);
 	private String AUTH_OK = "OK", AUTH_EXPIRED = "EXPIRED", AUTH_BAD = "BAD";
 	static class Authenticated extends JavaScriptObject {
 		protected Authenticated() {}
@@ -158,8 +161,8 @@ public class JudoDB implements EntryPoint {
 		public EditClientHandler(int cid) { this.cid = cid; }
 		
 		public void onClick(ClickEvent event) {
-			pushMode(new Mode (Mode.ActualMode.EDIT_CLIENT, cid));
-		}		
+			switchMode(new Mode (Mode.ActualMode.EDIT_CLIENT, cid));
+		}
 	}
 
 	// modes
@@ -168,12 +171,11 @@ public class JudoDB implements EntryPoint {
 	}
 	
 	public void switchMode(Mode newMode) {
-		modes.clear();
 		pushMode(newMode);
 	}
 	
 	public void pushMode(Mode newMode) {
-		History.newItem(newMode.toString());
+		GWT.log("pushing "+newMode.toString());
 		modes.push(newMode);
 		actuallySwitchMode(newMode);
 	}
@@ -182,11 +184,13 @@ public class JudoDB implements EntryPoint {
 		if (!modes.isEmpty()) {
 			modes.pop();
 			if (!modes.isEmpty())
-			actuallySwitchMode(modes.peek());
+				actuallySwitchMode(modes.peek());
 		}
 	}
 	
 	private void actuallySwitchMode(Mode newMode) {
+		History.newItem(newMode.toString(), false);
+		GWT.log("hi");
 		switch (newMode.am) {
 		case EDIT_CLIENT:
 			switchMode_editClient(newMode.arg);
@@ -196,9 +200,6 @@ public class JudoDB implements EntryPoint {
 			break;
 		case MAIN:
 			switchMode_main();
-			break;
-		case LOGIN:
-			switchMode_login();
 			break;
 		case CONFIG:
 			switchMode_config();
@@ -247,10 +248,6 @@ public class JudoDB implements EntryPoint {
 
 	public void switchMode_main() {
 		clearStatus();
-		if (login != null) {
-			RootPanel.get("login").remove(login);
-			login = null;
-		}
 		
 		for (Widget w : allWidgets) 
 			w.setVisible(false);
@@ -262,18 +259,6 @@ public class JudoDB implements EntryPoint {
 		
 		searchButton.setEnabled(true);
 		searchButton.setFocus(true);
-	}
-
-	/** Show the authentication dialog box. */
-	private void switchMode_login() {
-		this.login = new LoginWidget(this);
-		RootPanel.get("login").add(login);
-
-		for (Widget w : allWidgets) 
-			w.setVisible(false);
-
-		RootPanel.get("login").setVisible(true);
-		login.focus();
 	}
 
 	/** After changing any data, invalidate the old list. */
@@ -359,9 +344,9 @@ public class JudoDB implements EntryPoint {
 		listActions.add(returnToMainFromListes);
 		listActions.add(new Label(""));
 
-		// hide the login box
-		RootPanel.get("login").setVisible(false);
-
+		// enable login box's glassing
+		login.setGlassEnabled(true);
+		
 		// Focus the cursor on the name field when the app loads
 		searchField.setFocus(true);
 		searchField.selectAll();
@@ -379,7 +364,6 @@ public class JudoDB implements EntryPoint {
 		allWidgets.add(RootPanel.get("editClient"));
 		allWidgets.add(RootPanel.get("lists"));
 		allWidgets.add(RootPanel.get("config"));
-		allWidgets.add(RootPanel.get("login"));
 		allWidgets.add(RootPanel.get("mainActions"));
 		allWidgets.add(RootPanel.get("listActions"));
 		allWidgets.add(RootPanel.get("search"));
@@ -462,7 +446,6 @@ public class JudoDB implements EntryPoint {
 	 * Handle the response to the request for search data.
 	 */
 	public void handleJsonSearchResponse(JavaScriptObject jso) {
-		GWT.log("handle search response, null is " + ((jso == null) ? "yes" : "no"));
 	    if (jso == null) {
 	      displayError("pas de réponse; veuillez re-essayer");
 	      return;
@@ -505,7 +488,13 @@ public class JudoDB implements EntryPoint {
 	 * Else display the authbox. */
 	public void ensureAuthentication() {
 		clearStatus();
-	    getJsonForAuth(jsonRequestId++, AUTHENTICATE_URL + "?callback=", JudoDB.this);
+		
+		if (isAuthenticated) return;
+		
+		if (!authenticationPending) {
+			authenticationPending = true;
+		    getJsonForAuth(jsonRequestId++, AUTHENTICATE_URL + "?callback=", JudoDB.this);
+		}
 	}
 	
 	public native static void getJsonForAuth(int requestId, String url,
@@ -539,17 +528,19 @@ public class JudoDB implements EntryPoint {
 	    	return;
 	    }
 
+	    authenticationPending = false;
 	    Authenticated a = jso.cast();
 	    if (a.getAuthenticated().equals(AUTH_OK)) {
-	    	switchMode(new Mode(Mode.ActualMode.MAIN));
 	    	setStatus("merci, identifié avec succes.");
+	    	login.hide();
 	    	new Timer() { public void run() { clearStatus(); } }.schedule(1000);
 	    	return;
 	    } else if (a.getAuthenticated().equals(AUTH_BAD) || 
 	    		a.getAuthenticated().equals(AUTH_EXPIRED)) {
-	    	pushMode(new Mode(Mode.ActualMode.LOGIN));
+	    	login.center();
 	    } else {
 	    	displayError("Bad response from auth script.");
+	    	login.center();
 	    	return;
 	    }
 	}

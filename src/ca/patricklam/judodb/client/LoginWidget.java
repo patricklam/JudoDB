@@ -10,12 +10,12 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.PasswordTextBox;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
-public class LoginWidget extends Composite {
+public class LoginWidget extends PopupPanel {
 	interface MyUiBinder extends UiBinder<Widget, LoginWidget> {}
 	public static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
 	JudoDB jdb;
@@ -28,10 +28,12 @@ public class LoginWidget extends Composite {
 	@UiField TextBox loginid;
 	@UiField PasswordTextBox password;
 	@UiField Button entrer;
-
+	
 	public LoginWidget(JudoDB jdb) {
+		super(false);
+		
 		this.jdb = jdb;
-		initWidget(uiBinder.createAndBindUi(this));
+		setWidget(uiBinder.createAndBindUi(this));
 
 	    getJsonForChallenge(jdb.jsonRequestId++, REQUEST_CHALLENGE_URL + "?callback=", this);
 
@@ -52,7 +54,6 @@ public class LoginWidget extends Composite {
 	}
 
 	private void submit() {
-		LoginWidget.this.jdb.popMode();
 	    String url = AUTHENTICATE_URL;
 	    url += "?username=" + loginid.getText();
 	    url += "&response=" + hex_md5(challenge+hex_md5(password.getText()));			    				
