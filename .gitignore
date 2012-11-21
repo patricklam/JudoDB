@@ -1,4 +1,5 @@
 .settings/org.eclipse.core.resources.prefs
+.settings/com.google.appengine.eclipse.core.prefs
 .gwt
 gwt-unitCache
 *.class
