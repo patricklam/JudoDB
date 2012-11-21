@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -302,7 +301,10 @@ public class JudoDB implements EntryPoint {
 		mainActions.add(new Label(""));
 		
 		logout.addClickHandler(new ClickHandler() { 
-			public void onClick(ClickEvent e) { getJsonForAuth(jsonRequestId++, LOGOUT_URL + "?callback=", JudoDB.this);
+			public void onClick(ClickEvent e) { 
+				getJsonForAuth(jsonRequestId++, LOGOUT_URL + "?callback=", JudoDB.this); 
+				isAuthenticated = false; 
+				authenticationPending = false;
 			}});
 		mainActions.add(logout);
 
@@ -523,12 +525,16 @@ public class JudoDB implements EntryPoint {
 	    	login.hide();
 	    	new Timer() { public void run() { clearStatus(); } }.schedule(1000);
 	    	return;
-	    } else if (a.getAuthenticated().equals(AUTH_BAD) || 
-	    		a.getAuthenticated().equals(AUTH_EXPIRED)) {
-	    	login.center();
+	    } else if (a.getAuthenticated().equals(AUTH_EXPIRED)) {
+	    	login.renewChallenge(); login.center();
+	    } else if (a.getAuthenticated().equals(AUTH_BAD)) { 
+	    	displayError("mot de passe invalide; veuillez re-essayer");
+	    	new Timer() { public void run() { clearStatus(); } }.schedule(1000);
+	    	login.renewChallenge(); login.center();
 	    } else {
 	    	displayError("Bad response from auth script.");
-	    	login.center();
+	    	new Timer() { public void run() { clearStatus(); } }.schedule(1000);
+	    	login.renewChallenge(); login.center();
 	    	return;
 	    }
 	}

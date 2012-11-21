@@ -34,8 +34,7 @@ public class LoginWidget extends PopupPanel {
 		
 		this.jdb = jdb;
 		setWidget(uiBinder.createAndBindUi(this));
-
-	    getJsonForChallenge(jdb.jsonRequestId++, REQUEST_CHALLENGE_URL + "?callback=", this);
+		renewChallenge();
 
 	    password.addKeyUpHandler(new KeyUpHandler() {
 	    	public void onKeyUp(KeyUpEvent event) {
@@ -53,7 +52,13 @@ public class LoginWidget extends PopupPanel {
 
 	}
 
+	public void renewChallenge() {
+	    getJsonForChallenge(jdb.jsonRequestId++, REQUEST_CHALLENGE_URL + "?callback=", this);
+	}
+	
 	private void submit() {
+		jdb.setStatus("veuillez patienter...");
+		
 	    String url = AUTHENTICATE_URL;
 	    url += "?username=" + loginid.getText();
 	    url += "&response=" + hex_md5(challenge+hex_md5(password.getText()));			    				
