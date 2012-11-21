@@ -6,6 +6,7 @@ import ca.patricklam.judodb.client.Constants.Categorie;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
 public class ClientData extends JavaScriptObject {
@@ -115,7 +116,7 @@ public class ClientData extends JavaScriptObject {
 	public final Date getDDN() {
 		if (getDDNString() == null) return null;
 		try {
-			return DateTimeFormat.getFormat("yyyy-MM-dd").parse(getDDNString());
+			return Constants.DB_DATE_FORMAT.parse(getDDNString());
 		} catch (IllegalArgumentException e) { return null; }
 	}
 	
@@ -126,7 +127,7 @@ public class ClientData extends JavaScriptObject {
 	public final Categorie getCategorie(int current_year) {
 		Date d = getDDN();
 		if (d == null) return Constants.EMPTY_CATEGORIE;
-		
+	
 		int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(d));
 		
 		for (int i = 0; i < Constants.CATEGORIES.length; i++) {

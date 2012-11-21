@@ -64,7 +64,7 @@ public class JudoDB implements EntryPoint {
 					}
 					return new Mode(m);
 				}
-			return null;
+			return new Mode(ActualMode.MAIN);
 		}
 	};
 	
@@ -372,7 +372,7 @@ public class JudoDB implements EntryPoint {
 			}
 		});
 		
-		switchMode(new Mode(Mode.ActualMode.MAIN));
+		History.fireCurrentHistoryState();
 		ensureAuthentication();
 	}
 

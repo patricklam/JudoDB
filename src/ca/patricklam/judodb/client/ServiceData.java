@@ -3,12 +3,12 @@ package ca.patricklam.judodb.client;
 import java.util.Date;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.i18n.client.DateTimeFormat;
 
 public class ServiceData extends JavaScriptObject {
 	protected ServiceData() {}
 
 	public final native String getID() /*-{ return this.id; }-*/;
+	/** returns date d'inscription in DB format */
 	public final native String getDateInscription() /*-{ return this.date_inscription == null ? "" : this.date_inscription; }-*/;
 	public final native void setDateInscription(String date_inscription) /*-{ this.date_inscription = date_inscription; }-*/;
 	public final native String getSaisons() /*-{ return this.saisons == null ? "" : this.saisons; }-*/;
@@ -47,7 +47,7 @@ public class ServiceData extends JavaScriptObject {
 	public final native void setSolde(boolean solde) /*-{ this.solde = solde ? "1" : "0"; }-*/;
 	
 	public final void inscrireAujourdhui() { 
-		setDateInscription(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+		setDateInscription(Constants.DB_DATE_FORMAT.format(new Date()));
 	}
 	
 	public static final native ServiceData newServiceData() /*-{

@@ -19,7 +19,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -284,7 +283,7 @@ public class ClientWidget extends Composite {
 			
 			JsArray<GradeData> ga = JavaScriptObject.createArray().cast();
 			GradeData gd = JavaScriptObject.createObject().cast();
-			gd.setGrade("Blanche"); gd.setDateGrade(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+			gd.setGrade("Blanche"); gd.setDateGrade(Constants.DB_DATE_FORMAT.format(new Date()));
 			ga.set(0, gd);
 			this.cd.setGrades(ga);
 			loadClientData();
@@ -310,7 +309,7 @@ public class ClientWidget extends Composite {
 			mm = "parent ou tuteur";
 		}
 		
-		SafeHtml blurbContents = BLURB.blurb(nn, mm, DateTimeFormat.getFormat("yyyy-MM-dd").format(today));
+		SafeHtml blurbContents = BLURB.blurb(nn, mm, Constants.STD_DATE_FORMAT.format(today));
 		
 		blurb.clear();
 		blurb.add(new HTMLPanel(blurbContents));
@@ -321,7 +320,8 @@ public class ClientWidget extends Composite {
 		cid.setInnerText(cd.getID());
 		nom.setText(cd.getNom());
 		prenom.setText(cd.getPrenom());
-		ddn.setText(cd.getDDNString());
+		Date ddns = cd.getDDN(); 
+		ddn.setText(ddns == null ? Constants.DUMMY_DATE : Constants.STD_DATE_FORMAT.format(ddns));
 		sexe.setText(cd.getSexe());
 		adresse.setText(cd.getAdresse());
 		ville.setText(cd.getVille());
@@ -348,7 +348,7 @@ public class ClientWidget extends Composite {
 		date_inscription.clear();
 		boolean hasToday = false, isToday = false;
 		boolean hasThisSession = cd.getServiceFor(Constants.currentSession()) != null; 
-		String todayString = DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()); 
+		String todayString = Constants.DB_DATE_FORMAT.format(new Date()); 
 		
 		for (int i = 0; i < cd.getServices().length(); i++) {
 			ServiceData ssd = cd.getServices().get(i);
@@ -356,7 +356,7 @@ public class ClientWidget extends Composite {
 				hasToday = true;
 				isToday = (i == currentServiceNumber);
 			}
-			date_inscription.addItem(ssd.getDateInscription(), Integer.toString(i));
+			date_inscription.addItem(Constants.dbToStdDate(ssd.getDateInscription()), Integer.toString(i));
 		}
 		date_inscription.setSelectedIndex(currentServiceNumber);
 		inscrire.setVisible(!hasToday && !hasThisSession);
@@ -403,7 +403,7 @@ public class ClientWidget extends Composite {
 	private void saveClientData() {
 		cd.setNom(nom.getText());
 		cd.setPrenom(prenom.getText());
-		cd.setDDNString(ddn.getText());
+		cd.setDDNString(Constants.stdToDbDate(ddn.getText()));
 		cd.setSexe(sexe.getText());
 		
 		cd.setAdresse(adresse.getText());
@@ -421,7 +421,7 @@ public class ClientWidget extends Composite {
 		if (currentServiceNumber == -1) return;
 		
 		ServiceData sd = cd.getServices().get(currentServiceNumber);
-		sd.setDateInscription(removeCommas(date_inscription.getItemText(currentServiceNumber)));
+		sd.setDateInscription(removeCommas(Constants.stdToDbDate(date_inscription.getItemText(currentServiceNumber))));
 		sd.setSaisons(removeCommas(saisons.getText()));
 		sd.setVerification(verification.getValue());
 		sd.setCours(Integer.toString(cours.getSelectedIndex()));
@@ -462,12 +462,12 @@ public class ClientWidget extends Composite {
 		Arrays.sort(grades, new GradeData.GradeComparator());
 		
 		for (int i = 0; i < grades.length; i++) {
-			setGradesTableRow(i+1, grades[i].getGrade(), grades[i].getDateGrade());
+			setGradesTableRow(i+1, grades[i].getGrade(), Constants.dbToStdDate(grades[i].getDateGrade()));
 		}
 		setGradesTableRow(grades.length+1, "", "");
 
 		grade.setText(cd.getGrade());
-		date_grade.setText(cd.getDateGrade());
+		date_grade.setText(Constants.dbToStdDate(cd.getDateGrade()));
 	}
 
 	private void setGradesTableRow(int row, String grade, String dateGrade) {
@@ -523,7 +523,7 @@ public class ClientWidget extends Composite {
 			if (!g.equals("")) {
 				GradeData gd = GradeData.createObject().cast();
 				gd.setGrade(g.replaceAll(",", ";")); 
-				gd.setDateGrade(gdate.replaceAll(",", ";"));
+				gd.setDateGrade(Constants.stdToDbDate(gdate).replaceAll(",", ";"));
 				newGradesList.add(gd);
 			}
 		}
@@ -564,15 +564,15 @@ public class ClientWidget extends Composite {
 		public void onChange(ChangeEvent e) { 
 			// either no previous grade or no previous date-grade;
 			// erase the old grade
-			if (date_grade.getText().equals("0000-00-00") || cd.getGrade().equals("")) {
-				date_grade.setText(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+			if (date_grade.getText().equals(Constants.DUMMY_DATE) || cd.getGrade().equals("")) {
+				date_grade.setText(Constants.STD_DATE_FORMAT.format(new Date()));
 				setGradesTableRow(1, grade.getText(), date_grade.getText());
 				saveGradesData();
 			} else {
 				// old grade set, and has date;  keep the old grade-date in the array
 				// and update the array.
 				ensureGradeSpace.onChange(null);
-				date_grade.setText(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+				date_grade.setText(Constants.STD_DATE_FORMAT.format(new Date()));
 				setGradesTableRow(0, 
 						grade.getText(), date_grade.getText());
 				saveGradesData();
@@ -582,7 +582,7 @@ public class ClientWidget extends Composite {
 
 	private final ChangeHandler directGradeDateChangeHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { 
-			// if you change the grade-date, and grade is not empty, then
+			// TODO: if you change the grade-date, and grade is not empty, then
 			// update the array.
 		}
 	};
@@ -673,7 +673,7 @@ public class ClientWidget extends Composite {
 		for (int i = 1; i < gradeTable.getRowCount(); i++) {
 			String gv = getGradeTableTextBox(i, 0).getText();
 			String gdv = getGradeTableTextBox(i, 1).getText();
-			if (gdv.equals("0000-00-00") || (!gv.equals("") && gv.equals("")))
+			if (gdv.equals(Constants.DUMMY_DATE) || (!gv.equals("") && gv.equals("")))
 				empty++;
 		}
 		return empty;
@@ -748,9 +748,10 @@ public class ClientWidget extends Composite {
 	
 	private void updateFrais() {
 		ServiceData sd = cd.getServices().get(currentServiceNumber);
-		Date dateInscription = DateTimeFormat.getFormat("yyyy-MM-dd").parse(sd.getDateInscription());
+
+		Date dateInscription = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
 		escompteFrais.setReadOnly(true);
-		
+
 		// do not update frais for previous inscriptions
 		if (!sameDate(dateInscription, new Date()))
 			return;

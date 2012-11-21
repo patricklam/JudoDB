@@ -2,11 +2,25 @@ package ca.patricklam.judodb.client;
 
 import java.util.Date;
 
+import com.google.gwt.i18n.client.DateTimeFormat;
+
 public class Constants {	
 	public static int currentSessionNo() { return 6; }
 	public static Session currentSession() { 
 		return session(currentSessionNo()); 
 	}
+	
+	public static final String STD_DATE_FORMAT_STRING = "dd/MM/yyyy";
+	public static final DateTimeFormat STD_DATE_FORMAT = DateTimeFormat.getFormat(Constants.STD_DATE_FORMAT_STRING);
+	public static final String DB_DATE_FORMAT_STRING = "yyyy-MM-dd";
+	public static final DateTimeFormat DB_DATE_FORMAT = DateTimeFormat.getFormat(Constants.DB_DATE_FORMAT_STRING);
+	public static final String dbToStdDate(String d) {
+		return STD_DATE_FORMAT.format(DB_DATE_FORMAT.parse(d));
+	}
+	public static final String stdToDbDate(String d) {
+		return DB_DATE_FORMAT.format(STD_DATE_FORMAT.parse(d));
+	}
+	public static final String DUMMY_DATE = "01/01/0000";
 	
 	public static final double PASSEPORT_JUDO_QC = 5.0;
 	public static final double NON_ANJOU = 5.0;
@@ -191,7 +205,7 @@ public class Constants {
 		new Categorie("Benjamin", "U11", 11, false, null),
 		new Categorie("Minime", "U13", 13, false, null),
 		new Categorie("Juvénile", "U15", 15, false, null),
-		new Categorie("Cadet", "U17", 17, false, null),
+		new Categorie("Cadet", "U18", 18, false, null),
 		new Categorie("Junior", "U20", 20, false, null),
 		new Categorie("Senior", "S", 0, false, null),
 		new Categorie("Cadet Noire", "U17N", 17, true, "U17"),
@@ -260,10 +274,10 @@ public class Constants {
 		new CategorieSession(6, 7, "U11", 134.55, 207.0, 34.0),
 		new CategorieSession(6, 7, "U13", 157.30, 242.0, 44.0),
 		new CategorieSession(6, 7, "U15", 193.05, 297.0, 59.0),
-		new CategorieSession(6, 7, "U17", 199.55, 307.0, 64.0),
+		new CategorieSession(6, 7, "U18", 199.55, 307.0, 64.0),
 		new CategorieSession(6, 7, "U20", 206.05, 317.0, 74.0),
 		new CategorieSession(6, 7, "S", 228.80, 352.0, 79.0),
-		new CategorieSession(6, 7, "U17N", 167.00, 172.0, 74.0),
+		new CategorieSession(6, 7, "U18N", 167.00, 172.0, 74.0),
 		new CategorieSession(6, 7, "U20N", 167.00, 172.0, 74.0),
 		new CategorieSession(6, 7, "SN", 167.0, 172.0, 84.0),
 	};
