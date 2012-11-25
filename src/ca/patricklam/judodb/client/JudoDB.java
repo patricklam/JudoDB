@@ -111,7 +111,7 @@ public class JudoDB implements EntryPoint {
 	private Stack<Mode> modeStack = new Stack<Mode>();
 	private Mode currentMode = null;
 	
-	private boolean isAuthenticated = false;
+	boolean isAuthenticated = false;
 	private boolean authenticationPending = false;
 	
 	/* edit client stuff */
@@ -373,6 +373,7 @@ public class JudoDB implements EntryPoint {
 		});
 		
 		History.fireCurrentHistoryState();
+		modeStack.push(new Mode(Mode.ActualMode.MAIN));
 		ensureAuthentication();
 	}
 
@@ -523,6 +524,8 @@ public class JudoDB implements EntryPoint {
 	    if (a.getAuthenticated().equals(AUTH_OK)) {
 	    	setStatus("merci, identifié avec succes.");
 	    	login.hide();
+	    	isAuthenticated = true;
+	    	_switchMode(currentMode);
 	    	new Timer() { public void run() { clearStatus(); } }.schedule(1000);
 	    	return;
 	    } else if (a.getAuthenticated().equals(AUTH_EXPIRED)) {

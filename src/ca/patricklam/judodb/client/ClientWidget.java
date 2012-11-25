@@ -178,7 +178,6 @@ public class ClientWidget extends Composite {
 		initWidget(uiBinder.createAndBindUi(this));
 		clientform = FormElement.as(clientMain.getElementById("clientform"));
 		clientform.setAction(PUSH_ONE_CLIENT_URL);
-		jdb.pleaseWait();
 		deleted.setValue("");
 		
 		for (Constants.Cours c : Constants.COURS) {
@@ -264,6 +263,10 @@ public class ClientWidget extends Composite {
 			}
 		});
 
+		if (!jdb.isAuthenticated)
+			return;
+		
+		jdb.pleaseWait();
 		if (cid != -1)
 			getJsonForPull(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
 		else {
