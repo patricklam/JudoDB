@@ -2,6 +2,7 @@ package ca.patricklam.judodb.client;
 
 import java.util.Date;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
 public class Constants {	
@@ -10,17 +11,20 @@ public class Constants {
 		return session(currentSessionNo()); 
 	}
 	
+	public static final String STD_DUMMY_DATE = "01/01/0000";
+	public static final String DB_DUMMY_DATE = "0000-00-00";
 	public static final String STD_DATE_FORMAT_STRING = "dd/MM/yyyy";
 	public static final DateTimeFormat STD_DATE_FORMAT = DateTimeFormat.getFormat(Constants.STD_DATE_FORMAT_STRING);
 	public static final String DB_DATE_FORMAT_STRING = "yyyy-MM-dd";
 	public static final DateTimeFormat DB_DATE_FORMAT = DateTimeFormat.getFormat(Constants.DB_DATE_FORMAT_STRING);
 	public static final String dbToStdDate(String d) {
+		if (d.equals(DB_DUMMY_DATE)) return STD_DUMMY_DATE;
 		return STD_DATE_FORMAT.format(DB_DATE_FORMAT.parse(d));
 	}
 	public static final String stdToDbDate(String d) {
+		if (d.equals(STD_DUMMY_DATE)) return DB_DUMMY_DATE;
 		return DB_DATE_FORMAT.format(STD_DATE_FORMAT.parse(d));
 	}
-	public static final String DUMMY_DATE = "01/01/0000";
 	
 	public static final double PASSEPORT_JUDO_QC = 5.0;
 	public static final double NON_ANJOU = 5.0;

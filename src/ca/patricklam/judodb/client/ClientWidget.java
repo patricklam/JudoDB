@@ -321,7 +321,7 @@ public class ClientWidget extends Composite {
 		nom.setText(cd.getNom());
 		prenom.setText(cd.getPrenom());
 		Date ddns = cd.getDDN(); 
-		ddn.setText(ddns == null ? Constants.DUMMY_DATE : Constants.STD_DATE_FORMAT.format(ddns));
+		ddn.setText(ddns == null ? Constants.STD_DUMMY_DATE : Constants.STD_DATE_FORMAT.format(ddns));
 		sexe.setText(cd.getSexe());
 		adresse.setText(cd.getAdresse());
 		ville.setText(cd.getVille());
@@ -564,7 +564,7 @@ public class ClientWidget extends Composite {
 		public void onChange(ChangeEvent e) { 
 			// either no previous grade or no previous date-grade;
 			// erase the old grade
-			if (date_grade.getText().equals(Constants.DUMMY_DATE) || cd.getGrade().equals("")) {
+			if (date_grade.getText().equals(Constants.STD_DUMMY_DATE) || cd.getGrade().equals("")) {
 				date_grade.setText(Constants.STD_DATE_FORMAT.format(new Date()));
 				setGradesTableRow(1, grade.getText(), date_grade.getText());
 				saveGradesData();
@@ -673,7 +673,7 @@ public class ClientWidget extends Composite {
 		for (int i = 1; i < gradeTable.getRowCount(); i++) {
 			String gv = getGradeTableTextBox(i, 0).getText();
 			String gdv = getGradeTableTextBox(i, 1).getText();
-			if (gdv.equals(Constants.DUMMY_DATE) || (!gv.equals("") && gv.equals("")))
+			if (gdv.equals(Constants.STD_DUMMY_DATE) || (!gv.equals("") && gv.equals("")))
 				empty++;
 		}
 		return empty;
