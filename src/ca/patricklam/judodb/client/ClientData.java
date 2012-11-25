@@ -6,7 +6,6 @@ import ca.patricklam.judodb.client.Constants.Categorie;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.shared.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
 public class ClientData extends JavaScriptObject {
