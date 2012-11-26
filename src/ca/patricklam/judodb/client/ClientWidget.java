@@ -49,7 +49,8 @@ public class ClientWidget extends Composite {
 
 	@UiField TextBox nom;
 	@UiField TextBox prenom;
-	@UiField TextBox ddn;
+	@UiField TextBox ddn_display;
+	@UiField Hidden ddn;
 	@UiField TextBox sexe;
 
 	@UiField Anchor copysib;
@@ -220,7 +221,7 @@ public class ClientWidget extends Composite {
 		tel_contact_urgence.addChangeHandler(updateCopySibHandler);
 		courriel.addChangeHandler(updateCopySibHandler);
 		
-		ddn.addChangeHandler(recomputeHandler);
+		ddn_display.addChangeHandler(recomputeHandler);
 		grade.addChangeHandler(directGradeChangeHandler);
 		date_grade.addChangeHandler(directGradeDateChangeHandler);
 		grade.addChangeHandler(recomputeHandler);
@@ -324,7 +325,8 @@ public class ClientWidget extends Composite {
 		nom.setText(cd.getNom());
 		prenom.setText(cd.getPrenom());
 		Date ddns = cd.getDDN(); 
-		ddn.setText(ddns == null ? Constants.STD_DUMMY_DATE : Constants.STD_DATE_FORMAT.format(ddns));
+		ddn_display.setText(ddns == null ? Constants.STD_DUMMY_DATE : Constants.STD_DATE_FORMAT.format(ddns));
+		ddn.setValue(ddns == null ? Constants.DB_DUMMY_DATE : Constants.DB_DATE_FORMAT.format(ddns));
 		sexe.setText(cd.getSexe());
 		adresse.setText(cd.getAdresse());
 		ville.setText(cd.getVille());
@@ -406,7 +408,7 @@ public class ClientWidget extends Composite {
 	private void saveClientData() {
 		cd.setNom(nom.getText());
 		cd.setPrenom(prenom.getText());
-		cd.setDDNString(Constants.stdToDbDate(ddn.getText()));
+		cd.setDDNString(Constants.stdToDbDate(ddn_display.getText()));
 		cd.setSexe(sexe.getText());
 		
 		cd.setAdresse(adresse.getText());
