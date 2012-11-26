@@ -2,7 +2,6 @@ package ca.patricklam.judodb.client;
 
 import java.util.Date;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.DateTimeFormat;
 
 public class Constants {	
@@ -18,11 +17,11 @@ public class Constants {
 	public static final String DB_DATE_FORMAT_STRING = "yyyy-MM-dd";
 	public static final DateTimeFormat DB_DATE_FORMAT = DateTimeFormat.getFormat(Constants.DB_DATE_FORMAT_STRING);
 	public static final String dbToStdDate(String d) {
-		if (d.equals(DB_DUMMY_DATE)) return STD_DUMMY_DATE;
+		if (d.equals(DB_DUMMY_DATE) || d.equals("")) return STD_DUMMY_DATE;
 		return STD_DATE_FORMAT.format(DB_DATE_FORMAT.parse(d));
 	}
 	public static final String stdToDbDate(String d) {
-		if (d.equals(STD_DUMMY_DATE)) return DB_DUMMY_DATE;
+		if (d.equals(STD_DUMMY_DATE) || d.equals("")) return DB_DUMMY_DATE;
 		return DB_DATE_FORMAT.format(STD_DATE_FORMAT.parse(d));
 	}
 	

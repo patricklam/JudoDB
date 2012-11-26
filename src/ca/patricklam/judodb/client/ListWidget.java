@@ -17,7 +17,6 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Timer;
@@ -186,7 +185,7 @@ public class ListWidget extends Composite {
 		grade_upper.insertItem("---", "", 0);
 		grade_upper.setSelectedIndex(0);
 
-		edit_date.setValue(DateTimeFormat.getFormat("yyyy-MM-dd").format(new Date()));
+		edit_date.setValue(Constants.STD_DATE_FORMAT.format(new Date()));
 		
 		cours.addChangeHandler(new ChangeHandler() { 
 			public void onChange(ChangeEvent e) { showList(); } });
@@ -260,14 +259,39 @@ public class ListWidget extends Composite {
 				}
 			}
 			Widget gw = results.getWidget(i, Columns.GRADE);
+			
+			// if the grade changed (but not the date)---delete old grade
+			// if the grade didn't change but the date changed---delete old grade/date, but use old grade (untruncated) as new grade
+			// if the grade and date changed---don't delete anything
 			if (gw != null && gw instanceof TextBox) {
 				TextBox g = (TextBox) gw, 
 						gd = (TextBox)results.getWidget(i, Columns.DATE_GRADE);
-				if (!g.getValue().equals(originalGrades.get(g)) ||
-						!gd.getValue().equals(originalGradeDates.get(gd))) {
-					String cid = results.getText(i, Columns.CID);
-					dv.append(cid + ",G,"+g.getValue()+"|"+gd.getValue()+";");
-				}
+				boolean changed = false, deleteOld = false;
+				String origGrade = originalGrades.get(g), ogs;
+				String newGrade = g.getValue(), ngs;
+				
+				if (origGrade == null) origGrade = "";
+				ogs = new String(origGrade); ngs = new String(newGrade);
+				if (ogs.length() >= 3) ogs = ogs.substring(0, 3);
+				if (ngs.length() >= 3) ngs = ngs.substring(0, 3);
+				
+				String ogd = originalGradeDates.get(gd);
+				String ngd = Constants.stdToDbDate(gd.getValue());
+
+				if (!ogs.equals(ngs) && ngd.equals(ogd)) 
+					{ changed = true; deleteOld = true; }
+				if (ogs.equals(ngs) && !ngd.equals(ogd))
+					{ changed = true; ngs = origGrade; deleteOld = true; }
+				if (!ogs.equals(ngs) && !ngd.equals(ogd))
+					{ changed = true; }
+				// otherwise, everything is equal, no changes.
+				
+				String cid = results.getText(i, Columns.CID);					
+
+				if (deleteOld)
+					dv.append(cid + ",!,"+origGrade+"|"+ogd+";");
+				if (changed)
+					dv.append(cid + ",G,"+ngs+"|"+ngd+";");
 			}
 		}
 		dataToSave.setValue(dv.toString());
@@ -613,18 +637,18 @@ public class ListWidget extends Composite {
 				g.addChangeHandler(new ChangeHandler() {
 					public void onChange(ChangeEvent e) {
 						String gdv = gd.getValue();
-						if (gdv.equals("") || gdv.equals("0000-00-00"))
+						if (gdv.equals("") || gdv.equals(Constants.STD_DUMMY_DATE))
 							gd.setValue(edit_date.getValue());
 					}
 				});
 				results.setWidget(curRow, Columns.GRADE, g);
-				originalGrades.put(g, grade);
-				gd.setValue(cd.getDateGrade()); gd.setWidth("6em");
+				originalGrades.put(g, cd.getGrade());
+				gd.setValue(Constants.dbToStdDate(cd.getDateGrade())); gd.setWidth("6em");
 				results.setWidget(curRow, Columns.DATE_GRADE, gd);
 				originalGradeDates.put(gd, cd.getDateGrade());
 			} else if (grade != null && !grade.equals("")) {
 				results.setText(curRow, Columns.GRADE, grade);
-				results.setText(curRow, Columns.DATE_GRADE, cd.getDateGrade());
+				results.setText(curRow, Columns.DATE_GRADE, Constants.dbToStdDate(cd.getDateGrade()));
 			}
 			results.setText(curRow, Columns.TEL, cd.getTel());
 			if (mode == Mode.EDIT) {
@@ -634,7 +658,8 @@ public class ListWidget extends Composite {
 			} else {
 				results.setText(curRow, Columns.JUDOQC, cd.getJudoQC());
 			}
-			results.setText(curRow, Columns.DDN, cd.getDDNString());
+			Date ddns = cd.getDDN(); 
+			results.setText(curRow, Columns.DDN, ddns == null ? Constants.STD_DUMMY_DATE : Constants.STD_DATE_FORMAT.format(ddns));
 			results.setText(curRow, Columns.CATEGORIE, cd.getCategorie((rs == null ? Constants.currentSession() : rs).effective_year).abbrev);
 
 			if (visibility[Columns.VERIFICATION]) {
