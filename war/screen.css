@@ -14,3 +14,7 @@
 .blurb {
   display: none;
 }
+
+.darkBG {
+  background-color: #eee;
+}

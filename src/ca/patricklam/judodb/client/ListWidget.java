@@ -699,8 +699,12 @@ public class ListWidget extends Composite {
 				results.setText(curRow, Columns.SESSION, "");
 			}
 			
-			for (int j = 0; j < visibility.length; j++)
+			for (int j = 0; j < visibility.length; j++) 
 				results.getCellFormatter().setVisible(curRow, j, visibility[j]);
+
+			if (curRow % 2 == 1)
+				results.getRowFormatter().setStyleName(curRow, "darkBG");
+			
 			curRow++;
 		}
 		
