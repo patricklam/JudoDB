@@ -349,11 +349,13 @@ public class ListWidget extends Composite {
 	}
 	
 	private void collectDV() {
-		String dv = "";
+		String dv = "|";
 		for (int i = 1; i < results.getRowCount(); i++) {
-			for (int j = 1; j < results.getColumnCount(); j++)
+			for (int j = 0; j < results.getColumnCount(); j++) {
+				if (j == Columns.VERIFICATION) continue;
 				dv += results.getText(i, j) + "|";
-			dv += "*";
+			}
+			dv += "*|";
 		}
 		data.setValue(dv);
 	}
