@@ -211,7 +211,7 @@ public class Constants {
 		new Division("Cadet", "U18", 18, false, null),
 		new Division("Junior", "U20", 20, false, null),
 		new Division("Senior", "S", 0, false, null),
-		new Division("Cadet Noire", "U17N", 17, true, "U17"),
+		new Division("Cadet Noire", "U18N", 18, true, "U18"),
 		new Division("Junior Noire", "U20N", 20, true, "U20"),
 		new Division("Senior Noire", "SN", 0, true, "S"),
 	};
