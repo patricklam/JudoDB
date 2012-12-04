@@ -2,7 +2,7 @@ package ca.patricklam.judodb.client;
 
 import java.util.Date;
 
-import ca.patricklam.judodb.client.Constants.Categorie;
+import ca.patricklam.judodb.client.Constants.Division;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
@@ -123,19 +123,19 @@ public class ClientData extends JavaScriptObject {
 		return getGrade() != null && getGrade().endsWith("D");
 	}
 		
-	public final Categorie getCategorie(int current_year) {
+	public final Division getDivision(int current_year) {
 		Date d = getDDN();
-		if (d == null) return Constants.EMPTY_CATEGORIE;
+		if (d == null) return Constants.EMPTY_DIVISION;
 	
 		int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(d));
 		
-		for (int i = 0; i < Constants.CATEGORIES.length; i++) {
-			if (isNoire() == Constants.CATEGORIES[i].noire &&
-					((Constants.CATEGORIES[i].years_ago == 0) ||
-					 (current_year - Constants.CATEGORIES[i].years_ago < year)))
-				return Constants.CATEGORIES[i];
+		for (int i = 0; i < Constants.DIVISIONS.length; i++) {
+			if (isNoire() == Constants.DIVISIONS[i].noire &&
+					((Constants.DIVISIONS[i].years_ago == 0) ||
+					 (current_year - Constants.DIVISIONS[i].years_ago < year)))
+				return Constants.DIVISIONS[i];
 		}		
-		return Constants.EMPTY_CATEGORIE;
+		return Constants.EMPTY_DIVISION;
 	}
 	
 	/* deprecated */

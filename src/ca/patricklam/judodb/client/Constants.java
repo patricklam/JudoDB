@@ -46,13 +46,13 @@ public class Constants {
 		}
 	}
 	
-	static class Categorie {
+	static class Division {
 		final String name;
 		final String abbrev;
 		final int years_ago;
 		final boolean noire;
 		final String aka; // e.g. for "U20N", this is "U20"
-		public Categorie(String name, String abbrev, int years_ago, boolean noire, String aka) { 
+		public Division(String name, String abbrev, int years_ago, boolean noire, String aka) { 
 			this.name = name; this.abbrev = abbrev; 
 			this.years_ago = years_ago; this.noire = noire;
 			this.aka = aka;
@@ -202,20 +202,20 @@ public class Constants {
 		return "";
 	}
 				
-	public static final Categorie[] CATEGORIES = new Categorie[] {
-		new Categorie("Mini-Poussin", "U7", 7, false, null),
-		new Categorie("Poussin", "U9", 9, false, null),
-		new Categorie("Benjamin", "U11", 11, false, null),
-		new Categorie("Minime", "U13", 13, false, null),
-		new Categorie("Juvénile", "U15", 15, false, null),
-		new Categorie("Cadet", "U18", 18, false, null),
-		new Categorie("Junior", "U20", 20, false, null),
-		new Categorie("Senior", "S", 0, false, null),
-		new Categorie("Cadet Noire", "U17N", 17, true, "U17"),
-		new Categorie("Junior Noire", "U20N", 20, true, "U20"),
-		new Categorie("Senior Noire", "SN", 0, true, "S"),
+	public static final Division[] DIVISIONS = new Division[] {
+		new Division("Mini-Poussin", "U7", 7, false, null),
+		new Division("Poussin", "U9", 9, false, null),
+		new Division("Benjamin", "U11", 11, false, null),
+		new Division("Minime", "U13", 13, false, null),
+		new Division("Juvénile", "U15", 15, false, null),
+		new Division("Cadet", "U18", 18, false, null),
+		new Division("Junior", "U20", 20, false, null),
+		new Division("Senior", "S", 0, false, null),
+		new Division("Cadet Noire", "U17N", 17, true, "U17"),
+		new Division("Junior Noire", "U20N", 20, true, "U20"),
+		new Division("Senior Noire", "SN", 0, true, "S"),
 	};
-	public static final Categorie EMPTY_CATEGORIE = new Categorie("", "", 0, false, null);
+	public static final Division EMPTY_DIVISION = new Division("", "", 0, false, null);
 
 	public static final Cours[] COURS = new Cours[] {
 		new Cours("0", "Adultes (LM2015-2145, V2000-2145)", "LM2015 V2000", ""),
@@ -285,7 +285,7 @@ public class Constants {
 		new CategorieSession(6, 7, "SN", 167.0, 172.0, 84.0),
 	};
 	
-	public static final double getFraisCours(int session, Categorie c, int sessionCount) {
+	public static final double getFraisCours(int session, Division c, int sessionCount) {
 		for (CategorieSession cs : CATEGORIES_SESSIONS)
 			if (cs.session_seqno_min <= session && 
 					session <= cs.session_seqno_max && 
@@ -297,7 +297,7 @@ public class Constants {
 		return 0.0;
 	}
 
-	public static final double getFrais2Session(int session, Categorie c) {
+	public static final double getFrais2Session(int session, Division c) {
 		for (CategorieSession cs : CATEGORIES_SESSIONS)
 			if (cs.session_seqno_min <= session && 
 					session <= cs.session_seqno_max && 
@@ -307,7 +307,7 @@ public class Constants {
 		return 0.0;
 	}
 	
-	public static final double getFraisJudoQC(int session, Categorie c) {
+	public static final double getFraisJudoQC(int session, Division c) {
 		for (CategorieSession cs : CATEGORIES_SESSIONS)
 			if (cs.session_seqno_min <= session && 
 					session <= cs.session_seqno_max && 

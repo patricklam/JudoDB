@@ -734,7 +734,7 @@ public class ClientWidget extends Composite {
 		return d1.getYear() == d2.getYear() && d1.getMonth() == d2.getMonth() && d1.getDate() == d2.getDate();
 	}
 	
-	private double proratedFrais(int sessionId, Constants.Categorie c, int sessionCount, Date dateInscription) {
+	private double proratedFrais(int sessionId, Constants.Division c, int sessionCount, Date dateInscription) {
 		// calculate number of weeks between start of session and dateInscription
 		// calculate total number of weeks
 		// divide, then add Constants.PRORATA_PENALITE
@@ -770,7 +770,7 @@ public class ClientWidget extends Composite {
 
 		saisons.setText(Constants.getCurrentSessionIds(sessionCount));
 
-		Constants.Categorie c = cd.getCategorie(Constants.currentSession().effective_year);
+		Constants.Division c = cd.getDivision(Constants.currentSession().effective_year);
 		
 		double dCategorieFrais = proratedFrais(Constants.currentSessionNo(), c, sessionCount, dateInscription);
 		
@@ -872,7 +872,7 @@ public class ClientWidget extends Composite {
 
 		ServiceData sd = cd.getServices().get(currentServiceNumber);
 		if (sd != null && !sd.getSaisons().equals("")) {
-			Constants.Categorie c = cd.getCategorie(Constants.session(sd.getSaisons()).effective_year);
+			Constants.Division c = cd.getDivision(Constants.session(sd.getSaisons()).effective_year);
 			categorie.setText(c.abbrev);
 		}
 

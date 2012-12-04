@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 
-import ca.patricklam.judodb.client.Constants.Categorie;
+import ca.patricklam.judodb.client.Constants.Division;
 import ca.patricklam.judodb.client.Constants.Cours;
 import ca.patricklam.judodb.client.Constants.Grade;
 
@@ -102,11 +102,11 @@ public class ListWidget extends Composite {
 		final static int TEL = 7;
 		final static int JUDOQC = 8;
 		final static int DDN = 9;
-		final static int CATEGORIE = 10;
+		final static int DIVISION = 10;
 		final static int COURS_DESC = 11;
 		final static int COURS_NUM = 12;
 		final static int SESSION = 13;
-		final static int DIVISION = 14;
+		final static int DIVISION_SM = 14;
 	}
 
 	enum Mode {
@@ -168,7 +168,7 @@ public class ListWidget extends Composite {
 		session.setSelectedIndex(0);
 
 		division.addItem("Tous", "-1");
-		for (Categorie c : Constants.CATEGORIES)
+		for (Division c : Constants.DIVISIONS)
 			if (!c.noire)
 				division.insertItem(c.abbrev, c.abbrev, 1);
 		
@@ -381,7 +381,7 @@ public class ListWidget extends Composite {
 		dv += cd.getSexe() + "|";
 		dv += cd.getJudoQC() + "|";
 		dv += cd.getDDNString() + "|";
-		dv += cd.getCategorie(requestedSession().effective_year).abbrev + "|";
+		dv += cd.getDivision(requestedSession().effective_year).abbrev + "|";
 		dv += cd.getCourriel() + "|";
 		dv += cd.getAdresse() + "|";
 		dv += cd.getVille() + "|";
@@ -413,7 +413,7 @@ public class ListWidget extends Composite {
 				ClientData cd = cidToCD.get(results.getText(i, Columns.CID));
 
 				StringBuffer post = new StringBuffer();
-				ListBox w = (ListBox)(results.getWidget(i, Columns.DIVISION));
+				ListBox w = (ListBox)(results.getWidget(i, Columns.DIVISION_SM));
 				if (w != null)
 					post.append(w.getValue(w.getSelectedIndex()));
 				post.append("|");
@@ -462,7 +462,7 @@ public class ListWidget extends Composite {
 		if (selectedDivision.equals("-1"))
 			return true;
 		
-		Categorie c = cd.getCategorie((requestedSession()).effective_year);
+		Division c = cd.getDivision((requestedSession()).effective_year);
 		if (selectedDivision.equals(c.abbrev) || selectedDivision.equals(c.aka))
 			return true;
 		return false;
@@ -562,8 +562,8 @@ public class ListWidget extends Composite {
 					case 9:
 						return colSign * x.getDDN().compareTo(y.getDDN());
 					case 10:
-						int xc = x.getCategorie(rs.effective_year).years_ago;
-						int yc = y.getCategorie(rs.effective_year).years_ago;
+						int xc = x.getDivision(rs.effective_year).years_ago;
+						int yc = y.getDivision(rs.effective_year).years_ago;
 						if (xc == 0) xc = Integer.MAX_VALUE;
 						if (yc == 0) yc = Integer.MAX_VALUE;
 						return colSign * (xc - yc);
@@ -660,7 +660,7 @@ public class ListWidget extends Composite {
 			}
 			Date ddns = cd.getDDN(); 
 			results.setText(curRow, Columns.DDN, ddns == null ? Constants.STD_DUMMY_DATE : Constants.STD_DATE_FORMAT.format(ddns));
-			results.setText(curRow, Columns.CATEGORIE, cd.getCategorie((rs == null ? Constants.currentSession() : rs).effective_year).abbrev);
+			results.setText(curRow, Columns.DIVISION, cd.getDivision((rs == null ? Constants.currentSession() : rs).effective_year).abbrev);
 
 			if (visibility[Columns.VERIFICATION]) {
 				CheckBox cb = new CheckBox();
@@ -672,13 +672,13 @@ public class ListWidget extends Composite {
 				}
 			}
 			
-			if (visibility[Columns.DIVISION] && (Constants.currentSession().effective_year - (cd.getDDN().getYear() + 1900)) > Constants.VETERAN) {
+			if (visibility[Columns.DIVISION_SM] && (Constants.currentSession().effective_year - (cd.getDDN().getYear() + 1900)) > Constants.VETERAN) {
 				ListBox d = new ListBox();
 				d.addItem("Senior", "S");
 				d.addItem("Masters", "M");
-				results.setWidget(curRow, Columns.DIVISION, d);
+				results.setWidget(curRow, Columns.DIVISION_SM, d);
 			} else {
-				results.clearCell(curRow, Columns.DIVISION);
+				results.clearCell(curRow, Columns.DIVISION_SM);
 			}
 			
 			results.setText(curRow, Columns.COURS_DESC, "");
