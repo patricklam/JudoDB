@@ -664,6 +664,7 @@ public class ListWidget extends Composite {
 
 			if (visibility[Columns.VERIFICATION]) {
 				CheckBox cb = new CheckBox();
+				cb.addStyleName("noprint");
 				results.setWidget(curRow, Columns.VERIFICATION, cb);
 				if (mode==Mode.EDIT) { 
 					cb.setValue(sd.getVerification());
