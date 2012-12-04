@@ -66,7 +66,7 @@
           </label>
    		  <label>Cat&eacute;gorie d'&acirc;ge<br /><g:TextBox ui:field="categorie" visibleLength = "5"/></label>
    		  <label>Saisons<br /><g:TextBox ui:field="saisons" visibleLength="8" /> <g:Hidden ui:field="saisons_encoded" name="saisons_encoded" /></label>
-   		  <label style="font-size:80%">Affiliation Judo QC verifi&eacute;<br /><g:CheckBox ui:field="verification"/> <g:Hidden ui:field="verification_encoded" name="verification_encoded" />
+   		  <label style="font-size:80%"><span class="noprint">Affiliation Judo QC verifi&eacute;<br /><g:CheckBox ui:field="verification"/></span> <g:Hidden ui:field="verification_encoded" name="verification_encoded" />
  		  </label>
   		 </div>
   		
