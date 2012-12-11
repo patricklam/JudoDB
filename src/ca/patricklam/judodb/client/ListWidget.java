@@ -135,6 +135,7 @@ public class ListWidget extends Composite {
 	public ListWidget(JudoDB jdb) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
+		listForm.addStyleName("noprint");
 
 		allListModeWidgets = new Widget[] { jdb.filtrerListes, jdb.editerListes, jdb.ftListes, 
 				  							jdb.clearXListes, jdb.normalListes, 
