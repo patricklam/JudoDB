@@ -14,6 +14,9 @@ public class ConfigWidget extends Composite {
 	private static final String PULL_CONFIG_URL = JudoDB.BASE_URL + "pull_config.php";
 	//private static final String PUSH_CONFIG_URL = JudoDB.BASE_URL + "push_config.php";
 	private static final String CALLBACK_URL_SUFFIX_Q = "?callback=";
+	
+	// useful URLs: http://www.filsa.net/2010/01/23/more-on-tablayoutpanel/
+	// http://www.filsa.net/2010/01/21/gwt-notes-tablayoutpanel/
 
 	// club data:
 	// nom du club

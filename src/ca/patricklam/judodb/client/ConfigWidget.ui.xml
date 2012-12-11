@@ -6,6 +6,20 @@
     <g:HTMLPanel ui:field="configMain">
  		<form id="configform" class="{style.compactform}" method="POST" target="eatFormSubmitResults">
     	</form>
+    	<g:TabLayoutPanel ui:field="configTabPanel" barHeight="2" barUnit="EM">
+    		<g:tab>
+        		<g:header>Club</g:header>
+        		<g:FlowPanel>
+        			<g:Anchor ui:field='nom_club'>Nom du club:</g:Anchor>
+        		</g:FlowPanel>
+    		</g:tab>
+    		<g:tab>
+        		<g:header>Sessions</g:header>
+        		<g:FlowPanel>
+        			<g:Anchor ui:field='nom_session'>Nom du session:</g:Anchor> 
+        	    </g:FlowPanel>                    
+    		</g:tab>                        
+		</g:TabLayoutPanel> 
     </g:HTMLPanel>
  
 </ui:UiBinder>
