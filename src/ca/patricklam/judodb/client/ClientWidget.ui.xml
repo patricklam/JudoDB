@@ -61,7 +61,7 @@
  		<fieldset> <legend>Inscription</legend>
   		 <div class="{style.fourper}">
    		  <label>Date d'inscription
-           <g:Anchor ui:field="inscrire"><span class="noprint">(inscrire)</span></g:Anchor> <g:Anchor ui:field="modifier"><span class="noprint">(modifier)</span></g:Anchor> <g:Anchor ui:field="desinscrire"><span id="desinscrire" class="noprint">(désinscrire)</span></g:Anchor><br />
+           <span class="noprint"><g:InlineLabel ui:field="semaines"></g:InlineLabel></span> <g:Anchor ui:field="inscrire"><span class="noprint">(inscrire)</span></g:Anchor> <g:Anchor ui:field="modifier"><span class="noprint">(modifier)</span></g:Anchor> <g:Anchor ui:field="desinscrire"><span id="desinscrire" class="noprint">(désinscrire)</span></g:Anchor><br />
            <g:ListBox ui:field="date_inscription" /> <g:Hidden ui:field="date_inscription_encoded" name="date_inscription_encoded" />
           </label>
    		  <label>Cat&eacute;gorie d'&acirc;ge<br /><g:TextBox ui:field="categorie" visibleLength = "5"/></label>

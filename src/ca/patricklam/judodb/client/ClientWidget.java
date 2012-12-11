@@ -32,6 +32,8 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.InlineLabel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
@@ -70,6 +72,7 @@ public class ClientWidget extends Composite {
 	@UiField TextBox tel_contact_urgence;
 
 	@UiField ListBox date_inscription;
+	@UiField InlineLabel semaines;
 	@UiField Anchor inscrire;
 	@UiField Anchor modifier;
 	@UiField Anchor desinscrire;
@@ -745,9 +748,13 @@ public class ClientWidget extends Composite {
 		Date sessionEnd = Constants.session(sessionId).fin_cours;
 		double totalWeeks = (CalendarUtil.getDaysBetween(sessionStart, sessionEnd) + 6) / 7.0;
 		double elapsedWeeks = (CalendarUtil.getDaysBetween(dateInscription, sessionEnd) + 6) / 7.0;
+		int ew = (int)(elapsedWeeks+0.5), tw = (int)(totalWeeks+0.5);
+		if (ew < tw)
+			semaines.setText(" ("+ew+"/"+tw+")");
+		else
+			semaines.setText("");
 		
-		double prorataCost = baseCost * ((elapsedWeeks + Constants.PRORATA_PENALITE) / totalWeeks);
-		
+		double prorataCost = baseCost * (elapsedWeeks / totalWeeks) + Constants.PRORATA_PENALITE;
 		return Math.min(baseCost, prorataCost);
 	}
 	
@@ -757,22 +764,20 @@ public class ClientWidget extends Composite {
 		Date dateInscription = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
 		escompteFrais.setReadOnly(true);
 
+		int sessionCount = 1;
+		if (sessions.getValue(sessions.getSelectedIndex()).equals("2")) {
+			sessionCount = 2;
+		}
+		Constants.Division c = cd.getDivision(Constants.currentSession().effective_year);		
+		double dCategorieFrais = proratedFrais(Constants.currentSessionNo(), c, sessionCount, dateInscription);
+
 		// do not update frais for previous inscriptions
 		if (!sameDate(dateInscription, new Date()))
 			return;
 		
 		NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
 
-		int sessionCount = 1;
-		if (sessions.getValue(sessions.getSelectedIndex()).equals("2")) {
-			sessionCount = 2;
-		}
-
 		saisons.setText(Constants.getCurrentSessionIds(sessionCount));
-
-		Constants.Division c = cd.getDivision(Constants.currentSession().effective_year);
-		
-		double dCategorieFrais = proratedFrais(Constants.currentSessionNo(), c, sessionCount, dateInscription);
 		
 		double dEscompteFrais = 0.0;
 		if (escompte.getValue(escompte.getSelectedIndex()).equals("-1")) {
