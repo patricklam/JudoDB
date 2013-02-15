@@ -37,7 +37,6 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.datepicker.client.CalendarUtil;
 
 public class ClientWidget extends Composite {
 	interface MyUiBinder extends UiBinder<Widget, ClientWidget> {}
@@ -229,7 +228,7 @@ public class ClientWidget extends Composite {
 		grade.addChangeHandler(recomputeHandler);
 		date_inscription.addChangeHandler(changeSaisonHandler);
 		sessions.addChangeHandler(recomputeHandler);
-		escompte.addChangeHandler(recomputeHandler);
+		escompte.addChangeHandler(changeEscompteHandler);
 		cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
 		escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
 		sans_affiliation.addValueChangeHandler(recomputeValueHandler);
@@ -403,7 +402,7 @@ public class ClientWidget extends Composite {
 		frais.setText(sd.getFrais());
 		solde.setValue(sd.getSolde());
 		
-		recompute();
+		updateDynamicFields();
 	}
 
 	/** Puts data from the form back onto ClientData. */
@@ -594,8 +593,15 @@ public class ClientWidget extends Composite {
 		}
 	};
 
+    private final ChangeHandler changeEscompteHandler = new ChangeHandler() {
+        public void onChange(ChangeEvent e) {
+            if (escompte.getValue(escompte.getSelectedIndex()).equals("-1") && cas_special_pct.getValue().equals("-1"))
+                cas_special_pct.setValue("0");
+            updateDynamicFields(); 
+        }
+    };
 	private final ChangeHandler recomputeHandler = new ChangeHandler() {
-		public void onChange(ChangeEvent e) { recompute(); }
+		public void onChange(ChangeEvent e) { updateDynamicFields(); }
 	};
 	private final ChangeHandler changeSaisonHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { 
@@ -608,20 +614,22 @@ public class ClientWidget extends Composite {
 		public void onChange(ChangeEvent e) { updateCopySib(); }
 	};
 	private final ValueChangeHandler<Boolean> recomputeValueHandler = new ValueChangeHandler<Boolean>() {
-		public void onValueChange(ValueChangeEvent<Boolean> e) { recompute(); }
+		public void onValueChange(ValueChangeEvent<Boolean> e) { updateDynamicFields(); }
 	};
 
 	private final ChangeHandler clearEscomptePctAndRecomputeHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { 
 			cas_special_pct.setValue("-1");
-			recompute(); 
+			regularizeEscompte();
+			updateDynamicFields(); 
 		}
 	};
 
 	private final ChangeHandler clearEscompteAmtAndRecomputeHandler = new ChangeHandler() {
 		public void onChange(ChangeEvent e) { 
 			escompteFrais.setValue("-1");
-			recompute(); 
+            regularizeEscompte();
+			updateDynamicFields(); 
 		}
 	};
 
@@ -638,7 +646,7 @@ public class ClientWidget extends Composite {
 			sd.inscrireAujourdhui();
 			currentServiceNumber = cd.getMostRecentServiceNumber();
 			loadClientData(); 
-			recompute(); 
+			updateDynamicFields(); 
 		}
 	};
 
@@ -655,7 +663,7 @@ public class ClientWidget extends Composite {
 			sd.inscrireAujourdhui();
 			currentServiceNumber = cd.getMostRecentServiceNumber();
 			loadClientData(); 
-			recompute(); 
+			updateDynamicFields(); 
 		}
 	};
 	
@@ -671,7 +679,7 @@ public class ClientWidget extends Composite {
 			cd.setServices(newServices);
 			currentServiceNumber = cd.getMostRecentServiceNumber();
 			loadClientData(); 
-			recompute(); 
+			updateDynamicFields(); 
 		}
 	};
 	
@@ -735,71 +743,50 @@ public class ClientWidget extends Composite {
 	private boolean sameDate(Date d1, Date d2) {
 		return d1.getYear() == d2.getYear() && d1.getMonth() == d2.getMonth() && d1.getDate() == d2.getDate();
 	}
+
+	/** Enables user to edit both % escompte and escompte amount by putting them in synch.
+	 * Works directly at the View level, not the Model level. */
+	private void regularizeEscompte() {
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd);
+	      
+        if (CostCalculator.isCasSpecial(sd)) {
+            NumberFormat nf = NumberFormat.getDecimalFormat();
+            if (cas_special_pct.getValue().equals("-1")) {
+                float actualEscompteFrais = parseFloat(stripDollars(escompteFrais.getValue()));
+                if (actualEscompteFrais > 0) {
+                    actualEscompteFrais *= -1;
+                    escompteFrais.setValue(nf.format(actualEscompteFrais));
+                }
+                cas_special_pct.setValue(nf.format(-100 * actualEscompteFrais / dCategorieFrais));
+            } else if (escompteFrais.getValue().equals("-1")) {
+                String cpct = stripDollars(cas_special_pct.getValue());
+                float fCpct = parseFloat(cpct); 
+                if (fCpct < 0) {
+                    fCpct *= -1; 
+                    cas_special_pct.setValue(nf.format(fCpct));
+                }
+                escompteFrais.setValue(nf.format(-fCpct * dCategorieFrais / 100.0));
+            }
+        }
+	}
 	
+	/** View-level method to pull information from ServiceData and put it onto the form in currency format. */
 	private void updateFrais() {
-		ServiceData sd = cd.getServices().get(currentServiceNumber);
-
-		Date dateInscription = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
-		escompteFrais.setReadOnly(true);
-
-		int sessionCount = 1;
-		if (sessions.getValue(sessions.getSelectedIndex()).equals("2")) {
-			sessionCount = 2;
-		}
-		Constants.Division c = cd.getDivision(Constants.currentSession().effective_year);		
-		double dCategorieFrais = CostCalculator.proratedFrais(Constants.currentSessionNo(), c, sessionCount, dateInscription);
-		semaines.setText(CostCalculator.getWeeksSummary(Constants.currentSessionNo(), dateInscription));
-
-		// do not update frais for previous inscriptions
-		if (!sameDate(dateInscription, new Date()))
-			return;
-		
-		NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
-
-		saisons.setText(Constants.getCurrentSessionIds(sessionCount));
-		
-		double dEscompteFrais = 0.0;
-		if (escompte.getValue(escompte.getSelectedIndex()).equals("-1")) {
-			NumberFormat nf = NumberFormat.getDecimalFormat();
-			if (cas_special_pct.getValue().equals("-1")) {
-				String ef = stripDollars(escompteFrais.getValue());
-				float fEf = parseFloat(ef);
-				cas_special_pct.setValue(nf.format(-100 * fEf / dCategorieFrais));
-				if (fEf > 0) {
-					fEf *= -1;
-					escompteFrais.setValue(nf.format(fEf));
-				}
-			} else if (escompteFrais.getValue().equals("-1")) {
-				String cpct = stripDollars(cas_special_pct.getValue());
-				float fCpct = parseFloat(cpct); 
-				if (fCpct < 0) {
-					fCpct *= -1; 
-					cas_special_pct.setValue(nf.format(fCpct));
-				}
-				escompteFrais.setValue(nf.format(-fCpct * dCategorieFrais / 100.0));				
-			}
-			dEscompteFrais = parseFloat(stripDollars(escompteFrais.getValue()));
-			escompteFrais.setReadOnly(false); 
-		} else {
-			dEscompteFrais = -dCategorieFrais * parseFloat(escompte.getValue(escompte.getSelectedIndex())) / 100; 
-		}
-		
-		double dAffiliationFrais = 0.0;
-		if (!sans_affiliation.getValue())
-			dAffiliationFrais = Constants.getFraisJudoQC(Constants.currentSessionNo(), c);
-
-		double dSuppFrais = parseFloat(stripDollars(judogi.getText()));
-		if (passeport.getValue())
-			dSuppFrais += Constants.PASSEPORT_JUDO_QC;
-		if (non_anjou.getValue())
-			dSuppFrais += Constants.NON_ANJOU;
-
-		categorieFrais.setText (cf.format(dCategorieFrais));
-		affiliationFrais.setText (cf.format(dAffiliationFrais));
-		escompteFrais.setValue(cf.format(dEscompteFrais));
-		suppFrais.setText(cf.format(dSuppFrais));
-
-		frais.setText(cf.format(dCategorieFrais + dAffiliationFrais + dEscompteFrais + dSuppFrais));		
+        NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+        Date dateInscription = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
+        int sessionCount = sd.getSessionCount();
+        
+        semaines.setText(CostCalculator.getWeeksSummary(Constants.currentSessionNo(), dateInscription));
+        escompteFrais.setReadOnly(!CostCalculator.isCasSpecial(sd));
+        
+        saisons.setText(Constants.getCurrentSessionIds(sessionCount));
+		categorieFrais.setText (cf.format(Double.parseDouble(sd.getCategorieFrais())));
+		affiliationFrais.setText (cf.format(Double.parseDouble(sd.getAffiliationFrais())));
+		escompteFrais.setValue(cf.format(Double.parseDouble(sd.getEscompteFrais())));
+		suppFrais.setText(cf.format(Double.parseDouble(sd.getSuppFrais())));
+		frais.setText(cf.format(Double.parseDouble(sd.getFrais())));		
 	}
 	
 	private void updateCopySib() {
@@ -845,9 +832,11 @@ public class ClientWidget extends Composite {
 		d.updateCopySib();
 	}
 	
-	private void recompute() {
+	private void updateDynamicFields() {
 		saveClientData();
-
+        recompute();
+        
+		/* view stuff here */
 		Display d = Display.NONE;
 		if (escompte.getValue(escompte.getSelectedIndex()).equals("-1")) 
 			d = Display.INLINE;
@@ -859,10 +848,26 @@ public class ClientWidget extends Composite {
 			Constants.Division c = cd.getDivision(Constants.session(sd.getSaisons()).effective_year);
 			categorie.setText(c.abbrev);
 		}
-
+		
 		updateBlurb();
-		updateFrais();
+        updateFrais();
 		updateCopySib();
+	}
+	
+    /** Model-level method to recompute costs. */
+	private void recompute() {
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+
+        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd);
+        double dEscompteFrais = CostCalculator.escompteFrais(sd, dCategorieFrais);
+        double dAffiliationFrais = CostCalculator.affiliationFrais(cd, sd);
+        double dSuppFrais = CostCalculator.suppFrais(sd);
+        
+        sd.setCategorieFrais(Double.toString(dCategorieFrais));
+        sd.setEscompteFrais(Double.toString(dEscompteFrais));
+        sd.setAffiliationFrais(Double.toString(dAffiliationFrais));
+        sd.setSuppFrais(Double.toString(dSuppFrais));
+        sd.setFrais(Double.toString(dCategorieFrais + dAffiliationFrais + dEscompteFrais + dSuppFrais));
 	}
 
 	private void encodeServices() {
