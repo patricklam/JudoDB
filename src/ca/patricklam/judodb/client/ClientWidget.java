@@ -740,6 +740,7 @@ public class ClientWidget extends Composite {
 		// calculate number of weeks between start of session and dateInscription
 		// calculate total number of weeks
 		// divide, then add Constants.PRORATA_PENALITE
+        // but only use the prorated frais if ew < tw - 4
 		
 		double baseCost = Constants.getFraisCours(sessionId, c, sessionCount);
 
@@ -754,7 +755,10 @@ public class ClientWidget extends Composite {
 			semaines.setText("");
 		
 		double prorataCost = baseCost * (elapsedWeeks / totalWeeks) + Constants.PRORATA_PENALITE;
-		return Math.min(baseCost, prorataCost);
+		if (ew < tw - 4)
+		    return Math.min(baseCost, prorataCost);
+		else
+		    return baseCost;
 	}
 	
 	private void updateFrais() {
