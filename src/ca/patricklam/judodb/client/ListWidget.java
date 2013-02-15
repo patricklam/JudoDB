@@ -66,6 +66,10 @@ public class ListWidget extends Composite {
 	@UiField TextBox evt;
 	@UiField TextBox date;
 	@UiField Anchor createFT;
+	
+	@UiField HTMLPanel impot_controls;
+	@UiField Anchor recalc;
+	@UiField Anchor mailmerge;
 
 	@UiField HTMLPanel edit_controls;
 	@UiField TextBox edit_date;
@@ -110,7 +114,7 @@ public class ListWidget extends Composite {
 	}
 
 	enum Mode {
-		NORMAL, FT, EDIT
+		NORMAL, FT, EDIT, IMPOT
 	};
 
 	final Widget[] allListModeWidgets;
@@ -148,9 +152,12 @@ public class ListWidget extends Composite {
 		listModeVisibility.put(Mode.FT, new Widget[] 
 				{ jdb.normalListes, jdb.filtrerListes, jdb.clearXListes, 
 				  ft303_controls, session, jdb.returnToMainFromListes } );
+        listModeVisibility.put(Mode.IMPOT, new Widget[] 
+                { jdb.normalListes, jdb.filtrerListes, jdb.clearXListes, 
+                  impot_controls, session, jdb.returnToMainFromListes } );
 		listModeVisibility.put(Mode.NORMAL, new Widget[] 
 				{ jdb.filtrerListes, jdb.editerListes, 
-				  jdb.ftListes, session, jdb.returnToMainFromListes } );
+				  jdb.ftListes, jdb.impotListes, session, jdb.returnToMainFromListes } );
 
 		jdb.pleaseWait();
 		switchMode(Mode.NORMAL);
@@ -206,6 +213,9 @@ public class ListWidget extends Composite {
 			public void onChange(ChangeEvent e) { showList(); } });
 		grade_upper.addChangeHandler(new ChangeHandler() { 
 			public void onChange(ChangeEvent e) { showList(); } });
+
+	    recalc.addClickHandler(new ClickHandler() {
+	            public void onClick(ClickEvent e) { recalc(); } });
 		
 		createFT.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) { if (makeFT()) submit("ft"); }});
@@ -306,6 +316,12 @@ public class ListWidget extends Composite {
 	
 	private void reset() {
 		getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX_Q, this);	
+	}
+	
+	private void recalc() {
+        for (int i = 0; i < results.getRowCount(); i++) {
+            // TODO get the Client and recalc it.
+        }	    
 	}
 	
 	private void addMetaData() {
