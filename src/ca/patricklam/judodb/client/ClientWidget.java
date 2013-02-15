@@ -515,7 +515,7 @@ public class ClientWidget extends Composite {
 					!getGradeTableTextBox(rc-1, 1).getText().equals("")) {
 				gradeTable.resize(rc+1, 2);
 				setGradesTableRow(rc, "", "");
-			}			
+			}
 		}
 	};
 	
@@ -736,31 +736,6 @@ public class ClientWidget extends Composite {
 		return d1.getYear() == d2.getYear() && d1.getMonth() == d2.getMonth() && d1.getDate() == d2.getDate();
 	}
 	
-	private double proratedFrais(int sessionId, Constants.Division c, int sessionCount, Date dateInscription) {
-		// calculate number of weeks between start of session and dateInscription
-		// calculate total number of weeks
-		// divide, then add Constants.PRORATA_PENALITE
-        // but only use the prorated frais if ew < tw - 4
-		
-		double baseCost = Constants.getFraisCours(sessionId, c, sessionCount);
-
-		Date sessionStart = Constants.session(sessionId).debut_cours;
-		Date sessionEnd = Constants.session(sessionId).fin_cours;
-		double totalWeeks = (CalendarUtil.getDaysBetween(sessionStart, sessionEnd) + 6) / 7.0;
-		double elapsedWeeks = (CalendarUtil.getDaysBetween(dateInscription, sessionEnd) + 6) / 7.0;
-		int ew = (int)(elapsedWeeks+0.5), tw = (int)(totalWeeks+0.5);
-		if (ew < tw)
-			semaines.setText(" ("+ew+"/"+tw+")");
-		else
-			semaines.setText("");
-		
-		double prorataCost = baseCost * (elapsedWeeks / totalWeeks) + Constants.PRORATA_PENALITE;
-		if (ew < tw - 4)
-		    return Math.min(baseCost, prorataCost);
-		else
-		    return baseCost;
-	}
-	
 	private void updateFrais() {
 		ServiceData sd = cd.getServices().get(currentServiceNumber);
 
@@ -772,7 +747,8 @@ public class ClientWidget extends Composite {
 			sessionCount = 2;
 		}
 		Constants.Division c = cd.getDivision(Constants.currentSession().effective_year);		
-		double dCategorieFrais = proratedFrais(Constants.currentSessionNo(), c, sessionCount, dateInscription);
+		double dCategorieFrais = CostCalculator.proratedFrais(Constants.currentSessionNo(), c, sessionCount, dateInscription);
+		semaines.setText(CostCalculator.getWeeksSummary(Constants.currentSessionNo(), dateInscription));
 
 		// do not update frais for previous inscriptions
 		if (!sameDate(dateInscription, new Date()))
