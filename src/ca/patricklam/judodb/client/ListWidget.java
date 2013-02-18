@@ -143,7 +143,7 @@ public class ListWidget extends Composite {
 
 		allListModeWidgets = new Widget[] { jdb.filtrerListes, jdb.editerListes, jdb.ftListes, 
 				  							jdb.clearXListes, jdb.normalListes, 
-				  							ft303_controls, edit_controls, filter_controls, session, save, quit };
+				  							ft303_controls, edit_controls, filter_controls, impot_controls, session, save, quit };
 
 		listModeVisibility.put(Mode.EDIT, new Widget[] 
 				{ jdb.normalListes, jdb.filtrerListes, 
@@ -215,10 +215,13 @@ public class ListWidget extends Composite {
 			public void onChange(ChangeEvent e) { showList(); } });
 
 	    recalc.addClickHandler(new ClickHandler() {
-	            public void onClick(ClickEvent e) { recalc(); } });
-		
+	        public void onClick(ClickEvent e) { recalc(); } });
+	    mailmerge.addClickHandler(new ClickHandler() {
+	        public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("impot"); } });
+	    
 		createFT.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) { if (makeFT()) submit("ft"); }});
+
 		save.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) {
 				save();
@@ -320,7 +323,9 @@ public class ListWidget extends Composite {
 	
 	private void recalc() {
         for (int i = 0; i < results.getRowCount(); i++) {
-            // TODO get the Client and recalc it.
+            ClientData cd = cidToCD.get(results.getText(i, Columns.CID));
+            ServiceData sd = cd.getServiceFor(Constants.currentSession()); 
+            CostCalculator.recompute(cd, sd);
         }	    
 	}
 	
@@ -410,11 +415,16 @@ public class ListWidget extends Composite {
 		dv += cd.getTelContactUrgence() + "|";
 		dv += cd.getMostRecentGrade().getGrade() + "|";
 		dv += cd.getMostRecentGrade().getDateGrade() + "|";
-		ServiceData sd = cd.getServiceFor(requestedSession()); 
-		if (sd != null && !sd.getCours().equals(""))
-			dv += Constants.COURS[Integer.parseInt(sd.getCours())].short_desc + "|";
-		else
-			dv += "|";
+        ServiceData sd = cd.getServiceFor(Constants.currentSession()); 
+		CostCalculator.recompute(cd, sd);
+		if (sd != null && !sd.getCours().equals("")) {
+			dv += Constants.COURS[Integer.parseInt(sd.getCours())].short_desc;
+		}
+		dv += "|";
+		if (sd != null) {
+		    dv += sd.getFrais();
+		}
+		dv += "|";
 		return dv;
 	}
 	
@@ -558,6 +568,8 @@ public class ListWidget extends Composite {
 		}
 		
 		// two passes: 1) count; 2) populate the grid
+		if (allClients == null) return;
+		
 		for (int i = 0; i < allClients.length(); i++) {
 			ClientData cd = allClients.get(i);
 			cidToCD.put(cd.getID(), cd);
