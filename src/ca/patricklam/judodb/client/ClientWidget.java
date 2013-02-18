@@ -834,7 +834,8 @@ public class ClientWidget extends Composite {
 	
 	private void updateDynamicFields() {
 		saveClientData();
-        recompute();
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+        CostCalculator.recompute(cd, sd);
         
 		/* view stuff here */
 		Display d = Display.NONE;
@@ -843,7 +844,6 @@ public class ClientWidget extends Composite {
 		((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(d);
 		((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);
 
-		ServiceData sd = cd.getServices().get(currentServiceNumber);
 		if (sd != null && !sd.getSaisons().equals("")) {
 			Constants.Division c = cd.getDivision(Constants.session(sd.getSaisons()).effective_year);
 			categorie.setText(c.abbrev);
@@ -854,22 +854,6 @@ public class ClientWidget extends Composite {
 		updateCopySib();
 	}
 	
-    /** Model-level method to recompute costs. */
-	private void recompute() {
-        ServiceData sd = cd.getServices().get(currentServiceNumber);
-
-        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd);
-        double dEscompteFrais = CostCalculator.escompteFrais(sd, dCategorieFrais);
-        double dAffiliationFrais = CostCalculator.affiliationFrais(cd, sd);
-        double dSuppFrais = CostCalculator.suppFrais(sd);
-        
-        sd.setCategorieFrais(Double.toString(dCategorieFrais));
-        sd.setEscompteFrais(Double.toString(dEscompteFrais));
-        sd.setAffiliationFrais(Double.toString(dAffiliationFrais));
-        sd.setSuppFrais(Double.toString(dSuppFrais));
-        sd.setFrais(Double.toString(dCategorieFrais + dAffiliationFrais + dEscompteFrais + dSuppFrais));
-	}
-
 	private void encodeServices() {
 		StringBuffer di = new StringBuffer(), sais = new StringBuffer(), 
 			v = new StringBuffer(), cf = new StringBuffer(), c = new StringBuffer(), 

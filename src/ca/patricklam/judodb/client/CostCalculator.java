@@ -84,6 +84,19 @@ public class CostCalculator {
             return " ("+ew+"/"+tw+")";
         else
             return "";
+    }
+    
+    /** Model-level method to recompute costs. */
+    public static void recompute(ClientData cd, ServiceData sd) {
+      double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd);
+      double dEscompteFrais = CostCalculator.escompteFrais(sd, dCategorieFrais);
+      double dAffiliationFrais = CostCalculator.affiliationFrais(cd, sd);
+      double dSuppFrais = CostCalculator.suppFrais(sd);
         
+      sd.setCategorieFrais(Double.toString(dCategorieFrais));
+      sd.setEscompteFrais(Double.toString(dEscompteFrais));
+      sd.setAffiliationFrais(Double.toString(dAffiliationFrais));
+      sd.setSuppFrais(Double.toString(dSuppFrais));
+      sd.setFrais(Double.toString(dCategorieFrais + dAffiliationFrais + dEscompteFrais + dSuppFrais));
     }
 }
