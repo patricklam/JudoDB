@@ -18,10 +18,15 @@ public class CostCalculator {
         return (int)(totalWeeks+0.5);
     }
     
-    static double proratedFraisCours(ClientData cd, ServiceData sd) {
+    static double fraisCours(ClientData cd, ServiceData sd) {
         int sessionId = Constants.currentSessionNo();
         Constants.Division c = cd.getDivision(Constants.currentSession().effective_year);
         int sessionCount = sd.getSessionCount();
+        return Constants.getFraisCours(sessionId, c, sessionCount);
+    }
+    
+    static double proratedFraisCours(ClientData cd, ServiceData sd) {
+        int sessionId = Constants.currentSessionNo();
         Date dateInscription = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
 
         // calculate number of weeks between start of session and dateInscription
@@ -31,7 +36,7 @@ public class CostCalculator {
         
         int ew = elapsedWeeks(sessionId, dateInscription);
         int tw = totalWeeks(sessionId, dateInscription);
-        double baseCost = Constants.getFraisCours(sessionId, c, sessionCount);
+        double baseCost = fraisCours(cd, sd);
         double prorataCost = baseCost * ((double)ew / (double)tw) + Constants.PRORATA_PENALITE;
         if (ew < tw - 4)
             return Math.min(baseCost, prorataCost);
@@ -87,11 +92,12 @@ public class CostCalculator {
     }
     
     /** Model-level method to recompute costs. */
-    public static void recompute(ClientData cd, ServiceData sd) {
-      double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd);
-      double dEscompteFrais = CostCalculator.escompteFrais(sd, dCategorieFrais);
-      double dAffiliationFrais = CostCalculator.affiliationFrais(cd, sd);
-      double dSuppFrais = CostCalculator.suppFrais(sd);
+    public static void recompute(ClientData cd, ServiceData sd, boolean prorata) {
+      double dCategorieFrais = proratedFraisCours(cd, sd);
+      if (!prorata) dCategorieFrais = fraisCours(cd, sd);
+      double dEscompteFrais = escompteFrais(sd, dCategorieFrais);
+      double dAffiliationFrais = affiliationFrais(cd, sd);
+      double dSuppFrais = suppFrais(sd);
         
       sd.setCategorieFrais(Double.toString(dCategorieFrais));
       sd.setEscompteFrais(Double.toString(dEscompteFrais));

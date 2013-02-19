@@ -57,10 +57,11 @@ td {
  		  <g:Anchor ui:field="createFT">(créer FT)</g:Anchor>
  		</g:HTMLPanel>
 		<g:HTMLPanel ui:field="impot_controls" styleName="{style.impot}">
- 		  <g:Anchor ui:field="recalc">recalcul des prix</g:Anchor>
-		  <g:Anchor ui:field="mailmerge">(créer tous)</g:Anchor>
+ 		  <!--  <g:Anchor ui:field="recalc">recalcul des prix</g:Anchor> -->
+ 		  <label>Utiliser les prorata: <g:CheckBox ui:field="prorata" value="true"/></label>
+		  <g:Anchor ui:field="mailmerge">Créer reçus</g:Anchor>
  		</g:HTMLPanel>
-				<g:HTMLPanel ui:field="edit_controls" styleName="{style.edit}">
+		<g:HTMLPanel ui:field="edit_controls" styleName="{style.edit}">
  		  Date passage: <g:TextBox ui:field="edit_date" visibleLength="10" name="edit_date" />&nbsp;&nbsp;
  		</g:HTMLPanel>
 	    <g:HTMLPanel ui:field="filter_controls" styleName="{style.filter}">

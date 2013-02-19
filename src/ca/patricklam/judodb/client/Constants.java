@@ -3,6 +3,7 @@ package ca.patricklam.judodb.client;
 import java.util.Date;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.NumberFormat;
 
 public class Constants {	
 	public static int currentSessionNo() { return 6; }
@@ -24,6 +25,7 @@ public class Constants {
 		if (d.equals(STD_DUMMY_DATE) || d.equals("")) return DB_DUMMY_DATE;
 		return DB_DATE_FORMAT.format(STD_DATE_FORMAT.parse(d));
 	}
+	public static final NumberFormat currencyFormat = NumberFormat.getFormat("0.00");
 	
 	public static final double PASSEPORT_JUDO_QC = 5.0;
 	public static final double NON_ANJOU = 5.0;

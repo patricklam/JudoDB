@@ -6,8 +6,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 
-import ca.patricklam.judodb.client.Constants.Division;
 import ca.patricklam.judodb.client.Constants.Cours;
+import ca.patricklam.judodb.client.Constants.Division;
 import ca.patricklam.judodb.client.Constants.Grade;
 
 import com.google.gwt.core.client.GWT;
@@ -68,7 +68,8 @@ public class ListWidget extends Composite {
 	@UiField Anchor createFT;
 	
 	@UiField HTMLPanel impot_controls;
-	@UiField Anchor recalc;
+	/*@UiField Anchor recalc;*/
+	@UiField CheckBox prorata;
 	@UiField Anchor mailmerge;
 
 	@UiField HTMLPanel edit_controls;
@@ -214,10 +215,10 @@ public class ListWidget extends Composite {
 		grade_upper.addChangeHandler(new ChangeHandler() { 
 			public void onChange(ChangeEvent e) { showList(); } });
 
-	    recalc.addClickHandler(new ClickHandler() {
-	        public void onClick(ClickEvent e) { recalc(); } });
+/*	    recalc.addClickHandler(new ClickHandler() {
+	        public void onClick(ClickEvent e) { recalc(); } }); */
 	    mailmerge.addClickHandler(new ClickHandler() {
-	        public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("impot"); } });
+	        public void onClick(ClickEvent e) { collectDV(); computeImpotMailMerge(); submit("impot"); } });
 	    
 		createFT.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent e) { if (makeFT()) submit("ft"); }});
@@ -325,7 +326,7 @@ public class ListWidget extends Composite {
         for (int i = 0; i < results.getRowCount(); i++) {
             ClientData cd = cidToCD.get(results.getText(i, Columns.CID));
             ServiceData sd = cd.getServiceFor(Constants.currentSession()); 
-            CostCalculator.recompute(cd, sd);
+            CostCalculator.recompute(cd, sd, true);
         }	    
 	}
 	
@@ -416,7 +417,7 @@ public class ListWidget extends Composite {
 		dv += cd.getMostRecentGrade().getGrade() + "|";
 		dv += cd.getMostRecentGrade().getDateGrade() + "|";
         ServiceData sd = cd.getServiceFor(Constants.currentSession()); 
-		CostCalculator.recompute(cd, sd);
+		CostCalculator.recompute(cd, sd, prorata.getValue());
 		if (sd != null && !sd.getCours().equals("")) {
 			dv += Constants.COURS[Integer.parseInt(sd.getCours())].short_desc;
 		}
@@ -427,7 +428,51 @@ public class ListWidget extends Composite {
 		dv += "|";
 		return dv;
 	}
-	
+
+   private void computeImpotMailMerge() {
+        String dv = "";
+        ArrayList<ClientData> filteredClients = new ArrayList<ClientData>();
+        
+        for (int i = 0; i < allClients.length(); i++) {
+            ClientData cd = allClients.get(i);
+            if (!sessionFilter(cd)) continue;
+            
+            Division d = cd.getDivision(requestedSession().effective_year); 
+            if (d.abbrev.equals("S") || d.aka.equals("S")) continue;
+            filteredClients.add(cd);
+        }
+
+        Collections.sort(filteredClients, new Comparator<ClientData>() {
+            public int compare(ClientData x, ClientData y) {
+                if (!x.getNom().equals(y.getNom()))
+                    return x.getNom().compareTo(y.getNom());
+                return x.getPrenom().compareTo(y.getPrenom());
+            }
+        });
+        
+        for (ClientData cd : filteredClients) {    
+            dv += toDVImpot(cd) + "*";
+        }
+        
+        data_full.setValue(dv);
+    }
+
+   private String toDVImpot(ClientData cd) {
+       String dv = "";
+       
+       dv += cd.getID() + "|";
+       dv += cd.getPrenom() + " " + cd.getNom() + "|";
+       dv += cd.getDDNString() + "|";
+       ServiceData sd = cd.getServiceFor(Constants.currentSession()); 
+       CostCalculator.recompute(cd, sd, prorata.getValue());
+       if (sd != null) {
+           dv += Constants.currencyFormat.format(Double.parseDouble(sd.getFrais()));
+       }
+       dv += "|";
+       return dv;
+   }
+
+   
 	private void submit(String act) {
 		addMetaData();
 		listForm.setAction(JudoDB.BASE_URL+"listes"+act+".php");

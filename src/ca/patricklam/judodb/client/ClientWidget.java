@@ -835,7 +835,7 @@ public class ClientWidget extends Composite {
 	private void updateDynamicFields() {
 		saveClientData();
         ServiceData sd = cd.getServices().get(currentServiceNumber);
-        CostCalculator.recompute(cd, sd);
+        CostCalculator.recompute(cd, sd, true);
         
 		/* view stuff here */
 		Display d = Display.NONE;
