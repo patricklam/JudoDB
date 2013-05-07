@@ -6,7 +6,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 
 public class Constants {	
-	public static int currentSessionNo() { return 6; }
+	public static int currentSessionNo() { return 8; }
 	public static Session currentSession() { 
 		return session(currentSessionNo()); 
 	}
@@ -180,7 +180,9 @@ public class Constants {
 		new Session(4, "A11", 2012, newDate("3/Sep/2011"), newDate("12/May/2012")),
 		new Session(5, "H12", 2012, newDate("3/Sep/2011"), newDate("12/May/2012")),
 		new Session(6, "A12", 2013, newDate("1/Sep/2012"), newDate("11/May/2013")),
-		new Session(7, "H13", 2013, newDate("1/Sep/2012"), newDate("11/May/2013"))
+		new Session(7, "H13", 2013, newDate("1/Sep/2012"), newDate("11/May/2013")),
+        new Session(8, "A13", 2014, newDate("1/Sep/2013"), newDate("11/May/2014")),
+        new Session(9, "H14", 2014, newDate("1/Sep/2013"), newDate("11/May/2014"))
 	};
 	
 	public static Session session(int seqno) {
@@ -205,11 +207,11 @@ public class Constants {
 	}
 				
 	public static final Division[] DIVISIONS = new Division[] {
-		new Division("Mini-Poussin", "U7", 7, false, null),
-		new Division("Poussin", "U9", 9, false, null),
-		new Division("Benjamin", "U11", 11, false, null),
-		new Division("Minime", "U13", 13, false, null),
-		new Division("Juvénile", "U15", 15, false, null),
+		new Division("Mini-Poussin", "U8", 8, false, null),
+		new Division("Poussin", "U10", 10, false, null),
+		new Division("Benjamin", "U12", 12, false, null),
+		new Division("Minime", "U14", 14, false, null),
+		new Division("Juvénile", "U16", 16, false, null),
 		new Division("Cadet", "U18", 18, false, null),
 		new Division("Junior", "U21", 21, false, null),
 		new Division("Senior", "S", 0, false, null),
@@ -241,50 +243,61 @@ public class Constants {
 	};
 
 	public static final CategorieSession[] CATEGORIES_SESSIONS = new CategorieSession[] {
-		new CategorieSession(0, 1, "U7",  100.0, 175.0, 10.0),
-		new CategorieSession(0, 1, "U9",  100.0, 175.0, 15.0),
-		new CategorieSession(0, 1, "U11", 115.0, 195.0, 25.0),
-		new CategorieSession(0, 1, "U13", 150.0, 225.0, 35.0),
-		new CategorieSession(0, 1, "U15", 185.0, 290.0, 45.0),
+		new CategorieSession(0, 1, "U8",  100.0, 175.0, 10.0),
+		new CategorieSession(0, 1, "U10",  100.0, 175.0, 15.0),
+		new CategorieSession(0, 1, "U12", 115.0, 195.0, 25.0),
+		new CategorieSession(0, 1, "U14", 150.0, 225.0, 35.0),
+		new CategorieSession(0, 1, "U16", 185.0, 290.0, 45.0),
 		new CategorieSession(0, 1, "U18", 185.0, 290.0, 50.0),
 		new CategorieSession(0, 1, "U21", 185.0, 300.0, 60.0),
 		new CategorieSession(0, 1, "S",   210.0, 345.0, 65.0),
 		new CategorieSession(0, 1, "U18N", 140.0, 140.0, 90.0),
 		new CategorieSession(0, 1, "U21N", 140.0, 140.0, 90.0),
 		new CategorieSession(0, 1, "SN", 140.0, 140.0, 100.0),
-		new CategorieSession(2, 3, "U7", 109.0, 174.0, 11.0),
-		new CategorieSession(2, 3, "U9", 109.0, 179.0, 16.0),
-		new CategorieSession(2, 3, "U11", 129.0, 199.0, 26.0),
-		new CategorieSession(2, 3, "U13", 159.0, 234.0, 36.0),
-		new CategorieSession(2, 3, "U15", 189.0, 289.0, 46.0),
+		new CategorieSession(2, 3, "U8", 109.0, 174.0, 11.0),
+		new CategorieSession(2, 3, "U10", 109.0, 179.0, 16.0),
+		new CategorieSession(2, 3, "U12", 129.0, 199.0, 26.0),
+		new CategorieSession(2, 3, "U14", 159.0, 234.0, 36.0),
+		new CategorieSession(2, 3, "U16", 189.0, 289.0, 46.0),
 		new CategorieSession(2, 3, "U18", 194.0, 299.0, 51.0),
 		new CategorieSession(2, 3, "U21", 199.0, 309.0, 61.0),
 		new CategorieSession(2, 3, "S", 214.0, 344.0, 61.0),
 		new CategorieSession(2, 3, "U18N", 145.0, 145.0, 90.0),
 		new CategorieSession(2, 3, "U21N", 145.0, 145.0, 90.0),
 		new CategorieSession(2, 3, "SN", 145.0, 145.0, 100.0),
-		new CategorieSession(4, 5, "U7", 118.30, 182.0, 18.0),
-		new CategorieSession(4, 5, "U9", 121.55, 187.0, 23.0),
-		new CategorieSession(4, 5, "U11", 134.55, 207.0, 33.0),
-		new CategorieSession(4, 5, "U13", 157.30, 242.0, 43.0),
-		new CategorieSession(4, 5, "U15", 193.05, 297.0, 58.0),
+		new CategorieSession(4, 5, "U8", 118.30, 182.0, 18.0),
+		new CategorieSession(4, 5, "U10", 121.55, 187.0, 23.0),
+		new CategorieSession(4, 5, "U12", 134.55, 207.0, 33.0),
+		new CategorieSession(4, 5, "U14", 157.30, 242.0, 43.0),
+		new CategorieSession(4, 5, "U16", 193.05, 297.0, 58.0),
 		new CategorieSession(4, 5, "U18", 199.55, 307.0, 63.0),
 		new CategorieSession(4, 5, "U21", 206.05, 317.0, 73.0),
 		new CategorieSession(4, 5, "S", 228.80, 352.0, 78.0),
 		new CategorieSession(4, 5, "U18N", 167.00, 172.0, 73.0),
 		new CategorieSession(4, 5, "U21N", 167.00, 172.0, 73.0),
 		new CategorieSession(4, 5, "SN", 167.0, 172.0, 83.0),
-		new CategorieSession(6, 7, "U7", 116.0, 177.0, 18.0),
-		new CategorieSession(6, 7, "U9", 119.0, 182.0, 23.0),
-		new CategorieSession(6, 7, "U11", 132.0, 202.0, 33.0),
-		new CategorieSession(6, 7, "U13", 155.0, 237.0, 43.0),
-		new CategorieSession(6, 7, "U15", 190.0, 292.0, 58.0),
+		new CategorieSession(6, 7, "U8", 116.0, 177.0, 18.0),
+		new CategorieSession(6, 7, "U10", 119.0, 182.0, 23.0),
+		new CategorieSession(6, 7, "U12", 132.0, 202.0, 33.0),
+		new CategorieSession(6, 7, "U14", 155.0, 237.0, 43.0),
+		new CategorieSession(6, 7, "U16", 190.0, 292.0, 58.0),
 		new CategorieSession(6, 7, "U18", 197.0, 302.0, 63.0),
 		new CategorieSession(6, 7, "U21", 203.0, 312.0, 73.0),
 		new CategorieSession(6, 7, "S", 226.0, 347.0, 78.0),
 		new CategorieSession(6, 7, "U18N", 167.00, 167.0, 73.0),
 		new CategorieSession(6, 7, "U21N", 167.00, 167.0, 73.0),
 		new CategorieSession(6, 7, "SN", 167.0, 167.0, 83.0),
+        new CategorieSession(8, 9, "U8", 121.0, 182.0, 18.0),
+        new CategorieSession(8, 9, "U10", 124.0, 187.0, 23.0),
+        new CategorieSession(8, 9, "U12", 137.0, 207.0, 33.0),
+        new CategorieSession(8, 9, "U14", 160.0, 242.0, 43.0),
+        new CategorieSession(8, 9, "U16", 195.0, 297.0, 58.0),
+        new CategorieSession(8, 9, "U18", 202.0, 307.0, 63.0),
+        new CategorieSession(8, 9, "U21", 208.0, 317.0, 73.0),
+        new CategorieSession(8, 9, "S", 231.0, 352.0, 78.0),
+        new CategorieSession(8, 9, "U18N", 172.00, 172.0, 73.0),
+        new CategorieSession(8, 9, "U21N", 172.00, 172.0, 73.0),
+        new CategorieSession(8, 9, "SN", 172.0, 172.0, 83.0),
 	};
 	
 	public static final double getFraisCours(int session, Division c, int sessionCount) {

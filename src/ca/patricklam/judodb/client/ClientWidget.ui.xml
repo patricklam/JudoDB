@@ -83,7 +83,7 @@
           <span class="{style.fraisOnRight}"><label> - escompte<br /><g:TextBox ui:field="escompteFrais" visibleLength="15" /><g:Hidden ui:field="escompteFrais_encoded" name="escompte_special_encoded"/></label></span>
          </div>
          <div class="{style.fourper}">
-   		  <label>Déjà affili&eacute; Judo Qu&eacute;bec 2012-13<br /><g:CheckBox ui:field="sans_affiliation"/> <g:Hidden ui:field="sans_affiliation_encoded" name="sans_affiliation_encoded" /></label>
+   		  <label>Déjà affili&eacute; Judo Qu&eacute;bec 2013-14<br /><g:CheckBox ui:field="sans_affiliation"/> <g:Hidden ui:field="sans_affiliation_encoded" name="sans_affiliation_encoded" /></label>
           <span class="{style.fraisOnRight}"><label>Affiliation Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliationFrais" visibleLength="15" /> <g:Hidden ui:field="affiliationFrais_encoded" name="affiliation_frais_encoded" /></label></span>
          </div>
          <div class="{style.fourper}">
