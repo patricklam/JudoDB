@@ -337,7 +337,9 @@ public class Constants {
 		new Escompte("1", "2e membre", 10),
 		new Escompte("2", "3e membre", 15),
 		new Escompte("3", "4e membre", 20),
-		new Escompte("4", "Membre du CA", 50),
-		new Escompte("5", "Cas spécial", -1)
+		new Escompte("4", "5e membre", 25),
+		new Escompte("5", "Nouvel(le) ami(e)", 10),
+		new Escompte("6", "Membre du CA", 50),
+		new Escompte("7", "Cas spécial", -1)
 	};
 }
