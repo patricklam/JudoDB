@@ -92,7 +92,7 @@ public class ClientWidget extends Composite {
 	@UiField CheckBox affiliation_initiation;
 	@UiField TextBox affiliationFrais;
 
-	@UiField TextBox judogi;
+	@UiField ListBox judogi;
 	@UiField CheckBox passeport;
 	@UiField CheckBox non_anjou;
 	@UiField TextBox suppFrais;
@@ -192,6 +192,9 @@ public class ClientWidget extends Composite {
 		for (Constants.Escompte e : Constants.ESCOMPTES) {
 			escompte.addItem(e.name, Integer.toString(e.amount));
 		}
+		for (Constants.Judogi j : Constants.JUDOGIS) {
+			judogi.addItem(j.name, j.seqno);
+		}
 		
 		gradeHistory.setVisible(false);
 		categorie.setReadOnly(true);
@@ -199,7 +202,6 @@ public class ClientWidget extends Composite {
 		categorieFrais.setReadOnly(true); categorieFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		cas_special_pct.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		escompteFrais.setReadOnly(true); escompteFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
-		judogi.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		affiliationFrais.setReadOnly(true); affiliationFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		suppFrais.setReadOnly(true); suppFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
 		frais.setReadOnly(true); frais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
@@ -396,8 +398,11 @@ public class ClientWidget extends Composite {
 		cas_special_pct.setReadOnly(!isToday);
 		escompteFrais.setText(sd.getEscompteFrais());
 
-		judogi.setText(sd.getJudogi());
-		judogi.setReadOnly(!isToday);
+		for (Constants.Judogi j : Constants.JUDOGIS) {
+			if (j.amount.equals(sd.getJudogi()))
+				judogi.setSelectedIndex(Integer.parseInt(j.seqno));
+		}
+		judogi.setEnabled(isToday);
 		passeport.setValue(sd.getPasseport());
 		passeport.setEnabled(isToday);
 		non_anjou.setValue(sd.getNonAnjou());
@@ -448,7 +453,7 @@ public class ClientWidget extends Composite {
 		sd.setCasSpecialPct(stripDollars(cas_special_pct.getText()));
 		sd.setEscompteFrais(stripDollars(escompteFrais.getText()));
 		
-		sd.setJudogi(stripDollars(judogi.getText()));
+		sd.setJudogi(Constants.judogi(judogi.getValue(judogi.getSelectedIndex())));
 		sd.setPasseport(passeport.getValue());
 		sd.setNonAnjou(non_anjou.getValue());
 		sd.setSuppFrais(stripDollars(suppFrais.getText()));

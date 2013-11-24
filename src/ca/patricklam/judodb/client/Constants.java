@@ -84,12 +84,29 @@ public class Constants {
 			this.seqno = seqno; this.name = name; this.amount = amount;
 		}
 	}
-	
+
 	public static final int escompte(String seqno) {
 		for (Escompte e : ESCOMPTES) 
 			if (e.seqno.equals(seqno))
 				return e.amount;
 		return 0;
+	}
+
+	static class Judogi {
+		final String seqno;
+		final String name;
+		final String amount; 
+		
+		public Judogi(String seqno, String name, String amount) {
+			this.seqno = seqno; this.name = name; this.amount = amount;
+		}
+	}
+
+	public static final String judogi(String seqno) {
+		for (Judogi j : JUDOGIS)
+			if (j.seqno.equals(seqno))
+				return j.amount;
+		return "0";
 	}
 	
 	static class CategorieSession {
@@ -343,4 +360,13 @@ public class Constants {
 		new Escompte("6", "Membre du CA", 50),
 		new Escompte("7", "Cas spécial", -1)
 	};
+	
+	public static final Judogi[] JUDOGIS = new Judogi[] {
+		new Judogi("0", "Aucun", "0"),
+		new Judogi("1", "000/00 (55$)", "55"),
+		new Judogi("2", "0/1 (60$)", "60"),
+		new Judogi("3", "2/3 (65$)", "65"),
+		new Judogi("4", "4/5/6 (75$)", "75")
+	};
+
 }
