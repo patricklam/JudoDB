@@ -15,7 +15,9 @@ public class ServiceData extends JavaScriptObject {
 	public final native void setSaisons(String saisons) /*-{ this.saisons = saisons; }-*/;
 	public final native boolean getSansAffiliation() /*-{ return this.sans_affiliation != '0'; }-*/;
 	public final native void setSansAffiliation(boolean sans_affiliation) /*-{ this.sans_affiliation = sans_affiliation ? "1" : "0"; }-*/;
-	public final native String getCours() /*-{ return this.cours; }-*/;
+	public final native boolean getAffiliationInitiation() /*-{ return this.affiliation_initiation != '0'; }-*/;
+    public final native void setAffiliationInitiation(boolean affiliation_initiation) /*-{ this.affiliation_initiation = affiliation_initiation ? "1" : "0"; }-*/;
+    public final native String getCours() /*-{ return this.cours; }-*/;
 	public final native void setCours(String cours) /*-{ this.cours = cours; }-*/;
 	public final native int getSessionCount() /*-{ return this.sessions == null ? 2 : parseInt(this.sessions); }-*/;
 	public final native void setSessionCount(int sessions) /*-{ this.sessions = sessions.toString(); }-*/;
@@ -56,6 +58,7 @@ public class ServiceData extends JavaScriptObject {
     		date_inscription: "",
     		saisons: "",
     		sans_affiliation: "0",
+            affiliation_initiation: "0",
     		cours: "0",
     		sessions: "2",
     		passeport: "0",

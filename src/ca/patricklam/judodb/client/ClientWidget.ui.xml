@@ -84,7 +84,8 @@
          </div>
          <div class="{style.fourper}">
    		  <label>Déjà affili&eacute; Judo Qu&eacute;bec 2013-14<br /><g:CheckBox ui:field="sans_affiliation"/> <g:Hidden ui:field="sans_affiliation_encoded" name="sans_affiliation_encoded" /></label>
-          <span class="{style.fraisOnRight}"><label>Affiliation Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliationFrais" visibleLength="15" /> <g:Hidden ui:field="affiliationFrais_encoded" name="affiliation_frais_encoded" /></label></span>
+   		  <label>Affiliation initiation<br /><g:CheckBox ui:field="affiliation_initiation"/> <g:Hidden ui:field="affiliation_initiation_encoded" name="affiliation_initiation_encoded" /></label>
+   		  <span class="{style.fraisOnRight}"><label>Affiliation Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliationFrais" visibleLength="15" /> <g:Hidden ui:field="affiliationFrais_encoded" name="affiliation_frais_encoded" /></label></span>
          </div>
          <div class="{style.fourper}">
           <label>Co&ucirc;t judogi<br /><g:TextBox ui:field="judogi" visibleLength="8"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></label>

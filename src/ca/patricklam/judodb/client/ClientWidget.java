@@ -89,6 +89,7 @@ public class ClientWidget extends Composite {
 	@UiField TextBox escompteFrais;
 
 	@UiField CheckBox sans_affiliation;
+	@UiField CheckBox affiliation_initiation;
 	@UiField TextBox affiliationFrais;
 
 	@UiField TextBox judogi;
@@ -117,6 +118,7 @@ public class ClientWidget extends Composite {
 	@UiField Hidden escompteFrais_encoded;
 
 	@UiField Hidden sans_affiliation_encoded;
+	@UiField Hidden affiliation_initiation_encoded;
 	@UiField Hidden affiliationFrais_encoded;
 
 	@UiField Hidden judogi_encoded;
@@ -232,6 +234,7 @@ public class ClientWidget extends Composite {
 		cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
 		escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
 		sans_affiliation.addValueChangeHandler(recomputeValueHandler);
+		affiliation_initiation.addValueChangeHandler(recomputeValueHandler);
 		judogi.addChangeHandler(recomputeHandler);
 		passeport.addValueChangeHandler(recomputeValueHandler);
 		non_anjou.addValueChangeHandler(recomputeValueHandler);
@@ -381,6 +384,8 @@ public class ClientWidget extends Composite {
 		
 		sans_affiliation.setValue(sd.getSansAffiliation());
 		sans_affiliation.setEnabled(isToday);
+		affiliation_initiation.setValue(sd.getAffiliationInitiation());
+		affiliation_initiation.setEnabled(isToday);
 		affiliationFrais.setText(sd.getAffiliationFrais());
 
 		escompte.setSelectedIndex(sd.getEscompteType());
@@ -435,6 +440,7 @@ public class ClientWidget extends Composite {
 		sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 		
 		sd.setSansAffiliation(sans_affiliation.getValue());
+		sd.setAffiliationInitiation(affiliation_initiation.getValue());
 		sd.setAffiliationFrais(stripDollars(affiliationFrais.getText()));
 		
 		sd.setEscompteType(escompte.getSelectedIndex());
@@ -877,6 +883,7 @@ public class ClientWidget extends Composite {
 			csp.append(sd.getCasSpecialPct()+",");
 			ef.append(sd.getEscompteFrais()+",");
 			sa.append(sd.getSansAffiliation() ? "1," : "0,");
+			sa.append(sd.getAffiliationInitiation() ? "1," : "0,");
 			af.append(sd.getAffiliationFrais()+",");
 			j.append(sd.getJudogi()+",");
 			p.append(sd.getPasseport()+",");
@@ -897,6 +904,7 @@ public class ClientWidget extends Composite {
 		cas_special_pct_encoded.setValue(csp.toString());
 		escompteFrais_encoded.setValue(ef.toString());
 		sans_affiliation_encoded.setValue(sa.toString());
+		affiliation_initiation_encoded.setValue(sa.toString());
 		affiliationFrais_encoded.setValue(af.toString());
 		judogi_encoded.setValue(j.toString());
 		passeport_encoded.setValue(p.toString());

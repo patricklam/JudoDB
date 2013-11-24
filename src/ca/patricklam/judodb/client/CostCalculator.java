@@ -47,11 +47,16 @@ public class CostCalculator {
     static double affiliationFrais(ClientData cd, ServiceData sd) {
         int sessionId = Constants.currentSessionNo();
         boolean sans_affiliation = sd.getSansAffiliation();
+        boolean affiliation_initiation = sd.getAffiliationInitiation();
         Constants.Division c = cd.getDivision(Constants.currentSession().effective_year);
         
         double dAffiliationFrais = 0.0;
-        if (!sans_affiliation)
-            dAffiliationFrais = Constants.getFraisJudoQC(sessionId, c);
+        if (!sans_affiliation) {
+            if (affiliation_initiation) 
+                dAffiliationFrais = Constants.COUT_JUDOQC_INITIATION;
+            else
+                dAffiliationFrais = Constants.getFraisJudoQC(sessionId, c);
+        }
         return dAffiliationFrais;
     }
     
