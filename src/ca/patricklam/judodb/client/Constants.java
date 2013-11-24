@@ -28,7 +28,7 @@ public class Constants {
 	public static final NumberFormat currencyFormat = NumberFormat.getFormat("0.00");
 	
 	public static final double PASSEPORT_JUDO_QC = 5.0;
-	public static final double NON_ANJOU = 5.0;
+	public static final double NON_ANJOU = 20.0;
 	public static final String CLUB = "Anjou";
 	public static final String CLUBNO = "C047";
 	public static final int VETERAN = 35;
@@ -240,24 +240,11 @@ public class Constants {
 	public static final Division EMPTY_DIVISION = new Division("", "", 0, false, null);
 
 	public static final Cours[] COURS = new Cours[] {
-		new Cours("0", "Adultes (LM2015-2145, V2000-2145)", "LM2015 V2000", ""),
-		new Cours("1", "Équipe compétition (LM1830-2015, V2000-2145)", "LM1830 V2000", ""),
-		new Cours("2", "Intérmediares 7-12 ans (L1730-1830, V1830-2000)", "L1730 V1830", ""),
-		new Cours("3", "Débutants 7-12 ans (MaJ1730-1830)", "MaJ1730", ""),
-		new Cours("4", "Débutants 5-6 ans (S900-1000)", "S900", ""),
-		new Cours("5", "Anciens 5-6 ans (S1000-1130)", "S1000", ""),
-		new Cours("6", "Anciens 7-8 ans (S1130-1300)", "S1130", ""),
-		new Cours("7", "Anciens 7-9 ans (S1300-1430)", "S1300", ""),
-		new Cours("8", "Anciens 7-10 ans (S1430-1600)", "S1430", ""),
-		new Cours("9", "Débutants (D930-1030)", "D930", ""),
-		new Cours("10", "Anciens (D1030-1130)", "D1030", ""),
-		new Cours("11", "Débutants 7-10 ans (MV1700-1800)", "MV1700", ""),
-		new Cours("12", "Anciens (D1130-1300)", "D1130", ""),
-		new Cours("13", "Débutants 7-10 ans (S1600-1730)", "S1600", ""),
-		new Cours("14", "Débutants (D1300-1400)", "D1300", ""),
-		new Cours("15", "Anciens 7-10 ans (MV1800-1900)", "MV1800", ""),
-		new Cours("16", "Débutants (D1400-1500)", "D1400", ""),
-		new Cours("17", "Autre", "X0000", ""),
+		new Cours("0", "7-13 ans (MaJ1830-2000)", "MaJ1830", ""),
+		new Cours("1", "14 et plus (MaJ 2000-2130)", "MaJ2000", ""),
+		new Cours("2", "5-6 ans (D930-1030)", "D930", ""),
+		new Cours("3", "7-12 ans (D1030-1200)", "D1030", ""),
+		new Cours("4", "Autre", "X0000", ""),
 	};
 
 	public static final CategorieSession[] CATEGORIES_SESSIONS = new CategorieSession[] {
@@ -305,14 +292,14 @@ public class Constants {
 		new CategorieSession(6, 7, "U18N", 167.00, 167.0, 73.0),
 		new CategorieSession(6, 7, "U21N", 167.00, 167.0, 73.0),
 		new CategorieSession(6, 7, "SN", 167.0, 167.0, 83.0),
-        new CategorieSession(8, 9, "U8", 121.0, 182.0, 18.0),
-        new CategorieSession(8, 9, "U10", 124.0, 187.0, 23.0),
-        new CategorieSession(8, 9, "U12", 137.0, 207.0, 33.0),
-        new CategorieSession(8, 9, "U14", 160.0, 242.0, 43.0),
-        new CategorieSession(8, 9, "U16", 195.0, 297.0, 58.0),
-        new CategorieSession(8, 9, "U18", 202.0, 307.0, 63.0),
-        new CategorieSession(8, 9, "U21", 208.0, 317.0, 73.0),
-        new CategorieSession(8, 9, "S", 231.0, 352.0, 78.0),
+        new CategorieSession(8, 9, "U8", 125.0, 125.0, 18.0),
+        new CategorieSession(8, 9, "U10", 130.0, 130.0, 23.0),
+        new CategorieSession(8, 9, "U12", 140.0, 140.0, 33.0),
+        new CategorieSession(8, 9, "U14", 150.0, 150.0, 43.0),
+        new CategorieSession(8, 9, "U16", 185.0, 185.0, 58.0),
+        new CategorieSession(8, 9, "U18", 185.0, 185.0, 63.0),
+        new CategorieSession(8, 9, "U21", 190.0, 190.0, 73.0),
+        new CategorieSession(8, 9, "S", 210.0, 210.0, 78.0),
         new CategorieSession(8, 9, "U18N", 172.00, 172.0, 73.0),
         new CategorieSession(8, 9, "U21N", 172.00, 172.0, 73.0),
         new CategorieSession(8, 9, "SN", 172.0, 172.0, 83.0),

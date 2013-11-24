@@ -72,7 +72,7 @@ public class JudoDB implements EntryPoint {
 	
 	// testing db:
 	//public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb-backend/";
-	public static final String BASE_URL = "http://www.judo-anjou.qc.ca/anjoudb-backend/";
+	public static final String BASE_URL = "http://www.judo-anjou.qc.ca/mascouche-backend/";
 	
 	private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
 	private static final String AUTHENTICATE_URL = BASE_URL + "authenticate.php"; // used for testing authentication
