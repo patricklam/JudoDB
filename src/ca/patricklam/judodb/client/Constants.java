@@ -6,6 +6,8 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 
 public class Constants {	
+	public static boolean ENABLE_PRORATA = true;
+   
 	public static int currentSessionNo() { return 8; }
 	public static Session currentSession() { 
 		return session(currentSessionNo()); 
