@@ -1,1 +1,0 @@
-rsync -avz /home/plam/workspace/JudoDB/war/* cja@anjou.uwaterloo.ca:public_html/mascouchedb/
