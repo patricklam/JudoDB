@@ -38,7 +38,7 @@ public class CostCalculator {
         int tw = totalWeeks(sessionId, dateInscription);
         double baseCost = fraisCours(cd, sd);
         double prorataCost = baseCost * ((double)ew / (double)tw) + Constants.PRORATA_PENALITE;
-        if (ew < tw - 4)
+        if (Constants.ENABLE_PRORATA && (ew < tw - 4))
             return Math.min(baseCost, prorataCost);
         else
             return baseCost;
