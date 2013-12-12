@@ -21,13 +21,18 @@ public class CostCalculator {
     static double fraisCours(ClientData cd, ServiceData sd) {
         int sessionId = Constants.currentSessionNo();
         Constants.Division c = cd.getDivision(Constants.currentSession().effective_year);
-        int sessionCount = sd.getSessionCount();
+        int sessionCount = 2; try { sessionCount = sd.getSessionCount(); } catch (Exception e) {}
         return Constants.getFraisCours(sessionId, c, sessionCount);
     }
     
     static double proratedFraisCours(ClientData cd, ServiceData sd) {
         int sessionId = Constants.currentSessionNo();
-        Date dateInscription = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
+        double baseCost = fraisCours(cd, sd);
+        if (!Constants.ENABLE_PRORATA || sd == null || sd.getDateInscription() == null)
+        	return baseCost;
+        
+        Date dateInscription = null;
+        try { dateInscription = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription()); } catch (Exception e) { return baseCost; }
 
         // calculate number of weeks between start of session and dateInscription
         // calculate total number of weeks
@@ -36,15 +41,16 @@ public class CostCalculator {
         
         int ew = elapsedWeeks(sessionId, dateInscription);
         int tw = totalWeeks(sessionId, dateInscription);
-        double baseCost = fraisCours(cd, sd);
         double prorataCost = baseCost * ((double)ew / (double)tw) + Constants.PRORATA_PENALITE;
-        if (Constants.ENABLE_PRORATA && (ew < tw - 4))
+        if (ew < tw - 4)
             return Math.min(baseCost, prorataCost);
         else
             return baseCost;
     }
     
     static double affiliationFrais(ClientData cd, ServiceData sd) {
+    	if (sd == null) return 0.0;
+    	
         int sessionId = Constants.currentSessionNo();
         boolean sans_affiliation = sd.getSansAffiliation();
         boolean affiliation_initiation = sd.getAffiliationInitiation();
@@ -61,7 +67,10 @@ public class CostCalculator {
     }
     
     static double suppFrais(ServiceData sd) {
-        double judogiFrais = Double.parseDouble(sd.getJudogi());
+    	if (sd == null) return 0.0;
+
+    	double judogiFrais = 0.0;
+        try { judogiFrais = Double.parseDouble(sd.getJudogi()); } catch (Exception e) {}
         boolean passeport = sd.getPasseport();
         boolean non_anjou = sd.getNonAnjou();
 
@@ -78,6 +87,8 @@ public class CostCalculator {
     }
     
     static double escompteFrais(ServiceData sd, double dCategorieFrais) {
+    	if (sd == null) return 0.0;
+    	
         double escomptePct;
         if (isCasSpecial(sd)) {
             escomptePct = Double.parseDouble(sd.getCasSpecialPct());
@@ -103,11 +114,13 @@ public class CostCalculator {
       double dEscompteFrais = escompteFrais(sd, dCategorieFrais);
       double dAffiliationFrais = affiliationFrais(cd, sd);
       double dSuppFrais = suppFrais(sd);
-        
-      sd.setCategorieFrais(Double.toString(dCategorieFrais));
-      sd.setEscompteFrais(Double.toString(dEscompteFrais));
-      sd.setAffiliationFrais(Double.toString(dAffiliationFrais));
-      sd.setSuppFrais(Double.toString(dSuppFrais));
-      sd.setFrais(Double.toString(dCategorieFrais + dAffiliationFrais + dEscompteFrais + dSuppFrais));
+      
+      if (sd != null) {
+    	  sd.setCategorieFrais(Double.toString(dCategorieFrais));
+    	  sd.setEscompteFrais(Double.toString(dEscompteFrais));
+    	  sd.setAffiliationFrais(Double.toString(dAffiliationFrais));
+    	  sd.setSuppFrais(Double.toString(dSuppFrais));
+    	  sd.setFrais(Double.toString(dCategorieFrais + dAffiliationFrais + dEscompteFrais + dSuppFrais));
+      }
     }
 }
