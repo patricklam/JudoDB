@@ -661,7 +661,7 @@ public class ClientWidget extends Composite {
 		}
 	};
 
-	/** Resets the date d'inscription for the current seesion to today's date. */
+	/** Resets the date d'inscription for the current session to today's date. */
 	private final ClickHandler modifierClickHandler = new ClickHandler() {
 		public void onClick(ClickEvent e) { 
 			ServiceData sd = cd.getServiceFor(Constants.currentSession());
