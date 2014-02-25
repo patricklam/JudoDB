@@ -869,7 +869,7 @@ public class ClientWidget extends Composite {
 		StringBuffer di = new StringBuffer(), sais = new StringBuffer(), 
 			v = new StringBuffer(), cf = new StringBuffer(), c = new StringBuffer(), 
 			sess = new StringBuffer(), e = new StringBuffer(), csn = new StringBuffer(), 
-			csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(), 
+			csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(), ai = new StringBuffer(),
 			af = new StringBuffer(), j = new StringBuffer(), p = new StringBuffer(), 
 			n = new StringBuffer(), sf = new StringBuffer(), s = new StringBuffer(), 
 			f = new StringBuffer();
@@ -888,7 +888,7 @@ public class ClientWidget extends Composite {
 			csp.append(sd.getCasSpecialPct()+",");
 			ef.append(sd.getEscompteFrais()+",");
 			sa.append(sd.getSansAffiliation() ? "1," : "0,");
-			sa.append(sd.getAffiliationInitiation() ? "1," : "0,");
+			ai.append(sd.getAffiliationInitiation() ? "1," : "0,");
 			af.append(sd.getAffiliationFrais()+",");
 			j.append(sd.getJudogi()+",");
 			p.append(sd.getPasseport()+",");
@@ -909,7 +909,7 @@ public class ClientWidget extends Composite {
 		cas_special_pct_encoded.setValue(csp.toString());
 		escompteFrais_encoded.setValue(ef.toString());
 		sans_affiliation_encoded.setValue(sa.toString());
-		affiliation_initiation_encoded.setValue(sa.toString());
+		affiliation_initiation_encoded.setValue(ai.toString());
 		affiliationFrais_encoded.setValue(af.toString());
 		judogi_encoded.setValue(j.toString());
 		passeport_encoded.setValue(p.toString());
