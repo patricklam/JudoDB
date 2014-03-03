@@ -401,6 +401,7 @@ public class ListWidget extends Composite {
 	private String toDVFullString(ClientData cd) {
 		String dv = "";
 		
+		dv += cd.getID() + "|";
 		dv += cd.getNom() + "|";
 		dv += cd.getPrenom() + "|";
 		dv += cd.getSexe() + "|";
