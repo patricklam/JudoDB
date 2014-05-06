@@ -89,7 +89,6 @@
          </div>
          <div class="{style.fourper}">
           <label>Co&ucirc;t judogi<br /><g:ListBox ui:field="judogi"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></label>
-          <label style="font-size:80%">Passeport Judo QC (5 $)<br /><g:CheckBox ui:field="passeport"/><g:Hidden ui:field="passeport_encoded" name="passeport_encoded" /></label>
           <label style="font-size:80%">Pas de carte Anjou (5 $)<br /><g:CheckBox ui:field="non_anjou"/><g:Hidden ui:field="non_anjou_encoded" name="non_anjou_encoded" /></label>
           <span class="{style.fraisOnRight}"><label>Autres frais<br /><g:TextBox ui:field="suppFrais" visibleLength="15" /><g:Hidden ui:field="suppFrais_encoded" name="supp_frais_encoded" /></label></span>
         </div>

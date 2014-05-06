@@ -202,7 +202,9 @@ public class Constants {
 		new Session(6, "A12", 2013, newDate("1/Sep/2012"), newDate("11/May/2013")),
 		new Session(7, "H13", 2013, newDate("1/Sep/2012"), newDate("11/May/2013")),
         new Session(8, "A13", 2014, newDate("1/Sep/2013"), newDate("11/May/2014")),
-        new Session(9, "H14", 2014, newDate("1/Sep/2013"), newDate("11/May/2014"))
+        new Session(9, "H14", 2014, newDate("1/Sep/2013"), newDate("11/May/2014")),
+        new Session(10, "A14", 2015, newDate("1/Sep/2014"), newDate("10/May/2015")),
+        new Session(11, "H15", 2015, newDate("1/Sep/2014"), newDate("10/May/2015"))
 	};
 	
 	public static Session session(int seqno) {
@@ -318,6 +320,17 @@ public class Constants {
         new CategorieSession(8, 9, "U18N", 172.00, 172.0, 73.0),
         new CategorieSession(8, 9, "U21N", 172.00, 172.0, 73.0),
         new CategorieSession(8, 9, "SN", 172.0, 172.0, 83.0),
+        new CategorieSession(10, 11, "U8", 126.0, 187.0, 19.0),
+        new CategorieSession(10, 11, "U10", 129.0, 192.0, 24.0),
+        new CategorieSession(10, 11, "U12", 142.0, 212.0, 34.0),
+        new CategorieSession(10, 11, "U14", 165.0, 247.0, 44.0),
+        new CategorieSession(10, 11, "U16", 200.0, 302.0, 59.0),
+        new CategorieSession(10, 11, "U18", 207.0, 312.0, 64.0),
+        new CategorieSession(10, 11, "U21", 213.0, 322.0, 74.0),
+        new CategorieSession(10, 11, "S", 236.0, 357.0, 79.0),
+        new CategorieSession(10, 11, "U18N", 177.00, 177.0, 74.0),
+        new CategorieSession(10, 11, "U21N", 177.00, 177.0, 74.0),
+        new CategorieSession(10, 11, "SN", 177.0, 177.0, 84.0),
 	};
 	
 	public static final double getFraisCours(int session, Division c, int sessionCount) {

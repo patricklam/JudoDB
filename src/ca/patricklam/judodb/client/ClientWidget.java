@@ -93,7 +93,6 @@ public class ClientWidget extends Composite {
 	@UiField TextBox affiliationFrais;
 
 	@UiField ListBox judogi;
-	@UiField CheckBox passeport;
 	@UiField CheckBox non_anjou;
 	@UiField TextBox suppFrais;
 
@@ -122,7 +121,6 @@ public class ClientWidget extends Composite {
 	@UiField Hidden affiliationFrais_encoded;
 
 	@UiField Hidden judogi_encoded;
-	@UiField Hidden passeport_encoded;
 	@UiField Hidden non_anjou_encoded;
 	@UiField Hidden suppFrais_encoded;
 
@@ -238,7 +236,6 @@ public class ClientWidget extends Composite {
 		sans_affiliation.addValueChangeHandler(recomputeValueHandler);
 		affiliation_initiation.addValueChangeHandler(recomputeValueHandler);
 		judogi.addChangeHandler(recomputeHandler);
-		passeport.addValueChangeHandler(recomputeValueHandler);
 		non_anjou.addValueChangeHandler(recomputeValueHandler);
 		
 		saveAndReturnClientButton.addClickHandler(new ClickHandler() { 
@@ -403,8 +400,6 @@ public class ClientWidget extends Composite {
 				judogi.setSelectedIndex(Integer.parseInt(j.seqno));
 		}
 		judogi.setEnabled(isToday);
-		passeport.setValue(sd.getPasseport());
-		passeport.setEnabled(isToday);
 		non_anjou.setValue(sd.getNonAnjou());
 		non_anjou.setEnabled(isToday);
 		suppFrais.setText(sd.getSuppFrais());	
@@ -454,7 +449,6 @@ public class ClientWidget extends Composite {
 		sd.setEscompteFrais(stripDollars(escompteFrais.getText()));
 		
 		sd.setJudogi(Constants.judogi(judogi.getValue(judogi.getSelectedIndex())));
-		sd.setPasseport(passeport.getValue());
 		sd.setNonAnjou(non_anjou.getValue());
 		sd.setSuppFrais(stripDollars(suppFrais.getText()));
 		
@@ -891,7 +885,9 @@ public class ClientWidget extends Composite {
 			ai.append(sd.getAffiliationInitiation() ? "1," : "0,");
 			af.append(sd.getAffiliationFrais()+",");
 			j.append(sd.getJudogi()+",");
-			p.append(sd.getPasseport()+",");
+			// disabled passeport
+			//p.append(sd.getPasseport()+",");
+			p.append("0,");
 			n.append(sd.getNonAnjou()+",");
 			sf.append(sd.getSuppFrais()+",");
 			s.append(sd.getSolde() ? "1,":"0,");
@@ -912,7 +908,6 @@ public class ClientWidget extends Composite {
 		affiliation_initiation_encoded.setValue(ai.toString());
 		affiliationFrais_encoded.setValue(af.toString());
 		judogi_encoded.setValue(j.toString());
-		passeport_encoded.setValue(p.toString());
 		non_anjou_encoded.setValue(n.toString());
 		suppFrais_encoded.setValue(sf.toString());
 		solde_encoded.setValue(s.toString());
