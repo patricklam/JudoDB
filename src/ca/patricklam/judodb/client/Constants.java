@@ -8,7 +8,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 public class Constants {	
 	public static boolean ENABLE_PRORATA = true;
 
-	public static int currentSessionNo() { return 8; }
+	public static int currentSessionNo() { return 10; }
 	public static Session currentSession() { 
 		return session(currentSessionNo()); 
 	}
@@ -320,17 +320,17 @@ public class Constants {
         new CategorieSession(8, 9, "U18N", 172.00, 172.0, 73.0),
         new CategorieSession(8, 9, "U21N", 172.00, 172.0, 73.0),
         new CategorieSession(8, 9, "SN", 172.0, 172.0, 83.0),
-        new CategorieSession(10, 11, "U8", 136.0, 197.0, 19.0),
-        new CategorieSession(10, 11, "U10", 139.0, 202.0, 24.0),
-        new CategorieSession(10, 11, "U12", 152.0, 222.0, 34.0),
-        new CategorieSession(10, 11, "U14", 175.0, 257.0, 44.0),
-        new CategorieSession(10, 11, "U16", 210.0, 312.0, 59.0),
-        new CategorieSession(10, 11, "U18", 217.0, 322.0, 64.0),
-        new CategorieSession(10, 11, "U21", 223.0, 332.0, 74.0),
-        new CategorieSession(10, 11, "S", 236.0, 367.0, 79.0),
-        new CategorieSession(10, 11, "U18N", 187.00, 187.0, 74.0),
-        new CategorieSession(10, 11, "U21N", 187.00, 187.0, 74.0),
-        new CategorieSession(10, 11, "SN", 187.0, 187.0, 84.0),
+        new CategorieSession(10, 11, "U8", 146.0, 207.0, 19.0),
+        new CategorieSession(10, 11, "U10", 149.0, 212.0, 24.0),
+        new CategorieSession(10, 11, "U12", 162.0, 232.0, 34.0),
+        new CategorieSession(10, 11, "U14", 185.0, 267.0, 44.0),
+        new CategorieSession(10, 11, "U16", 220.0, 322.0, 59.0),
+        new CategorieSession(10, 11, "U18", 227.0, 332.0, 64.0),
+        new CategorieSession(10, 11, "U21", 233.0, 342.0, 74.0),
+        new CategorieSession(10, 11, "S", 246.0, 377.0, 79.0),
+        new CategorieSession(10, 11, "U18N", 197.00, 197.0, 74.0),
+        new CategorieSession(10, 11, "U21N", 197.00, 197.0, 74.0),
+        new CategorieSession(10, 11, "SN", 197.0, 197.0, 84.0),
 	};
 	
 	public static final double getFraisCours(int session, Division c, int sessionCount) {
