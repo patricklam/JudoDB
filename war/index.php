@@ -22,7 +22,21 @@
         in order for this application to display correctly.
       </div>
     </noscript>
-	<p><span id="statusContainer">&nbsp;</span></p>
+
+    <?php
+       require_once 'openid.php';
+       require '_config.php';
+       $openid = new LightOpenID($HOST);
+
+       $openid->identity = 'https://www.google.com/accounts/o8/id';
+       $openid->required = array('contact/email');
+       $openid->returnUrl = $LOGIN_URL;
+
+       session_start();
+       if (!isset($_SESSION['authenticated'])) echo '<a href=' . $openid->authUrl(). '>S\'identifier avec Google</a>';
+    ?>
+
+   	<p><span id="statusContainer">&nbsp;</span></p>
 
 	<div id="search">
 	  <h1>Recherche judoka</h1>
@@ -34,7 +48,7 @@
     <div id="config"></div>
 
     <div id="rightbar" class="noprint">
-      <div id="listActions">
+      <div id="listActions" style="display:none">
         <h3>Actions</h3>
          <p id="actionList">  
          </p>
@@ -45,6 +59,6 @@
          </p>
       </div>
     </div>
-  
+
   </body>
 </html>
