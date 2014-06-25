@@ -907,7 +907,6 @@ public class ListWidget extends Composite {
 
 	    if (cro.getResult() == null || !cro.getResult().equals("OK")) {
 	    	jdb.displayError("le serveur n'a pas accepté les données");
-	    	jdb.ensureAuthentication();
 			new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
 	    }
 	    else {

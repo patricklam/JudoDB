@@ -15,7 +15,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -71,12 +70,11 @@ public class JudoDB implements EntryPoint {
 	public static final int MAX_RESULTS = 10;
 	
 	// testing db:
-	//public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb-backend/";
+	//public static final String BASE_URL = "http://localhost/~plam/anjoudb-backend/";
 	public static final String BASE_URL = "http://www.judo-anjou.qc.ca/anjoudb-backend/";
 	
 	private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
 	private static final String AUTHENTICATE_URL = BASE_URL + "authenticate.php"; // used for testing authentication
-	private static final String LOGOUT_URL = BASE_URL + "logout.php"; 
 	int jsonRequestId = 0;
 	
 	private final Label statusLabel = new Label();
@@ -93,7 +91,7 @@ public class JudoDB implements EntryPoint {
 	/* actions */
 	private final Anchor voirListes = new Anchor("Voir listes des cours");
 	private final Anchor editConfig = new Anchor("Éditer configuration");
-	private final Anchor logout = new Anchor("Fermer session");
+	private final Anchor logout = new Anchor("Fermer session", "logout.php");
 
 	final Anchor filtrerListes = new Anchor("Filtrer");
 	final Anchor editerListes = new Anchor("Éditer");
@@ -112,9 +110,6 @@ public class JudoDB implements EntryPoint {
 	private Stack<Mode> modeStack = new Stack<Mode>();
 	private Mode currentMode = null;
 	
-	boolean isAuthenticated = false;
-	private boolean authenticationPending = false;
-	
 	/* edit client stuff */
 	private ClientWidget c;
 
@@ -123,16 +118,7 @@ public class JudoDB implements EntryPoint {
 
 	/* config management stuff */
 	private ConfigWidget cf;
-	
-	/* login stuff */
-	private LoginWidget login = new LoginWidget(this);
-	private String AUTH_OK = "OK", AUTH_EXPIRED = "EXPIRED", AUTH_BAD = "BAD";
-	static class Authenticated extends JavaScriptObject {
-		protected Authenticated() {}
-
-		public final native String getAuthenticated() /*-{ return this.authenticated; }-*/;
-	}	
-	
+		
 	// Create a handler for the searchButton and nameField
 	class SearchHandler implements ClickHandler, KeyUpHandler {
 		public void onClick(ClickEvent event) {
@@ -300,13 +286,6 @@ public class JudoDB implements EntryPoint {
 		editConfig.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
 		mainActions.add(editConfig);
 		mainActions.add(new Label(""));
-		
-		logout.addClickHandler(new ClickHandler() { 
-			public void onClick(ClickEvent e) { 
-				getJsonForAuth(jsonRequestId++, LOGOUT_URL + "?callback=", JudoDB.this); 
-				isAuthenticated = false; 
-				authenticationPending = false;
-			}});
 		mainActions.add(logout);
 
 		// right bar actions: list
@@ -339,9 +318,6 @@ public class JudoDB implements EntryPoint {
 		listActions.add(returnToMainFromListes);
 		listActions.add(new Label(""));
 
-		// enable login box's glassing
-		login.setGlassEnabled(true);
-		
 		// Focus the cursor on the name field when the app loads
 		searchField.setFocus(true);
 		searchField.selectAll();
@@ -379,7 +355,6 @@ public class JudoDB implements EntryPoint {
 		
 		History.fireCurrentHistoryState();
 		modeStack.push(new Mode(Mode.ActualMode.MAIN));
-		ensureAuthentication();
 	}
 
 	private native String removeAccents(String s) /*-{
@@ -478,74 +453,6 @@ public class JudoDB implements EntryPoint {
 
 	   document.body.appendChild(script);
 	  }-*/;
-
-	// authentication stuff
-	/** Start the authentication process: if authenticated, do nothing. 
-	 * Else display the authbox. */
-	public void ensureAuthentication() {
-		clearStatus();
-		
-		if (isAuthenticated) return;
-		
-		if (!authenticationPending) {
-			authenticationPending = true;
-		    getJsonForAuth(jsonRequestId++, AUTHENTICATE_URL + "?callback=", JudoDB.this);
-		}
-	}
-	
-	public native static void getJsonForAuth(int requestId, String url,
-		      JudoDB handler) /*-{
-		   var callback = "callback" + requestId;
-
-		   var script = document.createElement("script");
-		   script.setAttribute("src", url+callback);
-		   script.setAttribute("type", "text/javascript");
-		   window[callback] = function(jsonObj) {
-		     window[callback + "done"] = true;
-		     handler.@ca.patricklam.judodb.client.JudoDB::handleJsonAuthResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
-		   }
-
-		   setTimeout(function() {
-		     if (!window[callback + "done"]) {
-		       handler.@ca.patricklam.judodb.client.JudoDB::handleJsonAuthResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
-		     }
-
-		     document.body.removeChild(script);
-		     delete window[callback];
-		     delete window[callback + "done"];
-		   }, 1000);
-
-		   document.body.appendChild(script);
-		  }-*/;
-
-	public void handleJsonAuthResponse(JavaScriptObject jso) {
-	    if (jso == null) {
-	    	ensureAuthentication();
-	    	return;
-	    }
-
-	    authenticationPending = false;
-	    Authenticated a = jso.cast();
-	    if (a.getAuthenticated().equals(AUTH_OK)) {
-	    	setStatus("merci, identifié avec succes.");
-	    	login.hide();
-	    	isAuthenticated = true;
-	    	_switchMode(currentMode);
-	    	new Timer() { public void run() { clearStatus(); } }.schedule(1000);
-	    	return;
-	    } else if (a.getAuthenticated().equals(AUTH_EXPIRED)) {
-	    	login.renewChallenge(); login.center();
-	    } else if (a.getAuthenticated().equals(AUTH_BAD)) { 
-	    	displayError("mot de passe invalide; veuillez re-essayer");
-	    	new Timer() { public void run() { clearStatus(); } }.schedule(1000);
-	    	login.renewChallenge(); login.center();
-	    } else {
-	    	displayError("Bad response from auth script.");
-	    	new Timer() { public void run() { clearStatus(); } }.schedule(1000);
-	    	login.renewChallenge(); login.center();
-	    	return;
-	    }
-	}
 		
 	/**
 	 * Convert the string 'json' into a JavaScript object.

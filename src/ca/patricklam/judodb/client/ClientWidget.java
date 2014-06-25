@@ -266,9 +266,6 @@ public class ClientWidget extends Composite {
 				copysib();
 			}
 		});
-
-		if (!jdb.isAuthenticated)
-			return;
 		
 		jdb.pleaseWait();
 		if (cid != -1)
