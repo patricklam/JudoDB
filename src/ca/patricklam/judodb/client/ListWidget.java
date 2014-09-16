@@ -130,26 +130,25 @@ public class ListWidget extends Composite {
  	class CoursHandler implements ChangeHandler {
 
 	  public void onChange(ChangeEvent event) {
-	    generateCourseList();	    
+	    generateCoursList();	    
 	    showList();
 	  }
 
-	  void generateCourseList() {
+	  void generateCoursList() {
 	    jdb.clearStatus();
 	    String url = PULL_CLUB_COURS_URL;
 	    url = URL.encode(url) + "?club_id=" + jdb.selectedClubId + "&callback=";
 	    jdb.pleaseWait();
-	    getJsonForCourSearch(jdb.jsonRequestId++, url, ListWidget.this);
+	    getJsonForCoursSearch(jdb.jsonRequestId++, url, ListWidget.this);
 	  }
 	}
 	
 	class ClubSearchHandler implements ChangeHandler {
   	  public void onChange(ChangeEvent e) {
-	    jdb.setStatus("Calling OnChange");
 	    int idx = dropDownUserClubs.getSelectedIndex();
 	    jdb.selectedClubId = jdb.getClubId(idx);
 	    jdb.selectedClub = idx;
-	    courseHandler.generateCourseList();
+	    coursHandler.generateCoursList();
 	  }
 	}
 	  
@@ -181,7 +180,7 @@ public class ListWidget extends Composite {
 	private HashMap<TextBox, String> originalGrades = new HashMap<TextBox, String>();
 	private HashMap<TextBox, String> originalGradeDates = new HashMap<TextBox, String>();
 	
-	private CoursHandler courseHandler = new CoursHandler();
+	private CoursHandler coursHandler = new CoursHandler();
 	private ClubSearchHandler csHandler = new ClubSearchHandler();	
 
 	public ListWidget(JudoDB jdb) {
@@ -244,7 +243,7 @@ public class ListWidget extends Composite {
 
 		edit_date.setValue(Constants.STD_DATE_FORMAT.format(new Date()));
 		
-		cours.addChangeHandler(courseHandler);
+		cours.addChangeHandler(coursHandler);
 		dropDownUserClubs.addChangeHandler(csHandler);
 
 		session.addChangeHandler(new ChangeHandler() { 
@@ -857,7 +856,7 @@ public class ListWidget extends Composite {
 
 		//Initialize listbox with clubs and related courses		
 		generateClubList();
-		courseHandler.generateCourseList();
+		coursHandler.generateCoursList();
 
 		// blow away state...
 		//session.setSelectedIndex(0);
@@ -867,10 +866,10 @@ public class ListWidget extends Composite {
 			showList();
 	}
 	
-	private void loadCourSearchResults(JsArrayString loadedCours) {
+	private void loadCoursSearchResults(JsArrayString loadedCours) {
 	  cours.clear();
 	  this.allCours = loadedCours;
-	  displayCourSearchResults();
+	  displayCoursSearchResults();
 	}
 
 	private void loadClubSearchResults(JsArray<ClubSummary> clubs) {
@@ -879,7 +878,7 @@ public class ListWidget extends Composite {
 	  displayClubSearchResults();
 	}
 
-	private void displayCourSearchResults() {
+	private void displayCoursSearchResults() {
 	  cours.setVisibleItemCount(1);
 	  cours.clear();
 	  for(int i = 0; i < allCours.length(); ++i) {
@@ -911,12 +910,12 @@ public class ListWidget extends Composite {
 	    return jso;
 	}-*/;
 
-  	public void handleJsonCourSearchResponse(JavaScriptObject jso) {
+  	public void handleJsonCoursSearchResponse(JavaScriptObject jso) {
 	    if (jso == null) {
 	      jdb.displayError("pas de réponse; veuillez re-essayer");
 	      return;
 	    }
-	    loadCourSearchResults((JsArrayString)jso);
+	    loadCoursSearchResults((JsArrayString)jso);
 	  }
 
   	/**
@@ -930,7 +929,7 @@ public class ListWidget extends Composite {
 	    loadClubSearchResults(asArrayOfClubSummary (jso));
 	  }
 
-	public native static void getJsonForCourSearch(int requestId, String url,
+	public native static void getJsonForCoursSearch(int requestId, String url,
 	      ListWidget handler) /*-{
 	   var callback = "callback" + requestId;
 
@@ -938,13 +937,13 @@ public class ListWidget extends Composite {
 	   script.setAttribute("src", url+callback);
 	   script.setAttribute("type", "text/javascript");
 	   window[callback] = function(jsonObj) {
-	     handler.@ca.patricklam.judodb.client.ListWidget::handleJsonCourSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
+	     handler.@ca.patricklam.judodb.client.ListWidget::handleJsonCoursSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
 	     window[callback + "done"] = true;
 	   }
 
 	   setTimeout(function() {
 	     if (!window[callback + "done"]) {
-	       handler.@ca.patricklam.judodb.client.ListWidget::handleJsonCourSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
+	       handler.@ca.patricklam.judodb.client.ListWidget::handleJsonCoursSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
 	     }
 
 	     document.body.removeChild(script);
