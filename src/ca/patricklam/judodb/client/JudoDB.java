@@ -7,6 +7,8 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
@@ -25,6 +27,9 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.ListBox;
+
+import com.google.gwt.uibinder.client.UiField;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -70,10 +75,12 @@ public class JudoDB implements EntryPoint {
 	public static final int MAX_RESULTS = 10;
 	
 	// testing db:
+	//public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb-backend/";
 	//public static final String BASE_URL = "http://localhost/~plam/anjoudb-backend/";
-	public static final String BASE_URL = "http://www.judo-anjou.qc.ca/anjoudb-backend/";
+	public static final String BASE_URL = "http://berkeley.uwaterloo.ca/~xnoumbis/judodb-backend/";
 	
 	private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
+	public static final String PULL_CLUB_LIST_URL = BASE_URL + "pull_club_list.php";
 	private static final String AUTHENTICATE_URL = BASE_URL + "authenticate.php"; // used for testing authentication
 	int jsonRequestId = 0;
 	
@@ -81,8 +88,10 @@ public class JudoDB implements EntryPoint {
 
 	/* search stuff */
 	private final VerticalPanel searchResultsPanel = new VerticalPanel();
+	private final VerticalPanel clubSearchResultsPanel = new VerticalPanel();
 	private final TextBox searchField = new TextBox();
 	private final FlexTable searchResults = new FlexTable();
+	private final FlexTable clubSearchResults = new FlexTable();
 	private final Button searchButton = new Button("Recherche");
 	private final Button newClientButton = new Button("Nouveau client");
 	private final Button nextResultsButton = new Button("Résultats suivants");
@@ -101,14 +110,19 @@ public class JudoDB implements EntryPoint {
 	final Anchor normalListes = new Anchor("Voir listes");
 	final Anchor returnToMainFromListes = new Anchor("Retourner");
 
+	private ListBox dropDownUserClubs = new ListBox();
+	
 	ArrayList<Widget> allWidgets = new ArrayList<Widget>();
 	
 	/* state */
 	JsArray<ClientSummary> allClients;
+	JsArray<ClubSummary> allClubs;
 	private String searchString;
 	private int firstSearchResultToDisplay = 0;
 	private Stack<Mode> modeStack = new Stack<Mode>();
 	private Mode currentMode = null;
+
+	ClubSearchHandler csHandler = new ClubSearchHandler();
 	
 	/* edit client stuff */
 	private ClientWidget c;
@@ -118,7 +132,39 @@ public class JudoDB implements EntryPoint {
 
 	/* config management stuff */
 	private ConfigWidget cf;
-		
+
+	String selectedClubId = null;
+	int selectedClub = -1;
+
+	class ClubSearchHandler implements ChangeHandler {
+  	  public void onChange(ChangeEvent e) {
+	    int i = dropDownUserClubs.getSelectedIndex();
+	    String v = getClubId(i);
+	    if (null != v) {
+	      selectedClubId = v;
+	      selectedClub = i;
+	    }
+	  }
+	}
+
+	String getClubId(int selectedIndex){
+	  for (int k = 0; k < allClubs.length(); ++k) {
+	    ClubSummary cs = allClubs.get(k);
+	    String s = "[" + cs.getNumeroClub() + "] " + cs.getNom();
+	    if (dropDownUserClubs.getValue(k).equalsIgnoreCase(s))
+	      return cs.getId();
+	  }
+	  return null;
+	}
+
+	void generateClubList() {
+	    statusLabel.setText("");
+	    String url = PULL_CLUB_LIST_URL;
+	    url = URL.encode(url) + "?callback=";
+	    pleaseWait();
+	    getJsonForClubSearch(jsonRequestId++, url, JudoDB.this);
+	  }
+
 	// Create a handler for the searchButton and nameField
 	class SearchHandler implements ClickHandler, KeyUpHandler {
 		public void onClick(ClickEvent event) {
@@ -142,7 +188,7 @@ public class JudoDB implements EntryPoint {
 		    getJsonForSearch(jsonRequestId++, url, JudoDB.this);
 		}
 	}
-	
+
 	class EditClientHandler implements ClickHandler {
 		private int cid;
 		public EditClientHandler(int cid) { this.cid = cid; }
@@ -227,9 +273,13 @@ public class JudoDB implements EntryPoint {
 		
 		RootPanel.get("mainActions").setVisible(true);
 		RootPanel.get("search").setVisible(true);
+		RootPanel.get("rightbar").setVisible(true);
 		voirListes.setVisible(true);
 		editConfig.setVisible(true);
 		logout.setVisible(true);
+
+		generateClubList();
+		dropDownUserClubs.setVisible(true);
 		
 		searchButton.setEnabled(true);
 		searchButton.setFocus(true);
@@ -252,9 +302,11 @@ public class JudoDB implements EntryPoint {
 		RootPanel.get("search").add(searchField);
 		RootPanel.get("search").add(searchButton);
 		RootPanel.get("search").add(newClientButton);
-		
+
+
 		// edit client buttons		
 		final Label resultsLabel = new Label("Résultats: ");
+		final Label clubResultsLabel = new Label("Liste des Clubs: ");
 		
 		final Panel searchNavPanel = new HorizontalPanel();
 		searchNavPanel.add(nextResultsButton);
@@ -278,10 +330,16 @@ public class JudoDB implements EntryPoint {
 		searchResultsPanel.setVisible(false);
 		RootPanel.get("search").add(searchResultsPanel);
 		
+		clubSearchResultsPanel.add(clubResultsLabel);
+		clubSearchResultsPanel.add(clubSearchResults);
+		clubSearchResultsPanel.setVisible(false);
+		RootPanel.get("search").add(clubSearchResultsPanel);
+
 		// right bar actions: main
 		Panel mainActions = RootPanel.get("mainActions");
 		voirListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST)); }});
 		mainActions.add(voirListes);
+		mainActions.add(new Label(""));
 		mainActions.add(new Label(""));
 		editConfig.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
 		mainActions.add(editConfig);
@@ -289,29 +347,44 @@ public class JudoDB implements EntryPoint {
 		mainActions.add(logout);
 
 		// right bar actions: list
+		RootPanel.get("rightbar").add(dropDownUserClubs);
+		dropDownUserClubs.addChangeHandler(csHandler);
+		
 		Panel listActions = RootPanel.get("listActions");
 		filtrerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
 			if (JudoDB.this.l != null) JudoDB.this.l.toggleFiltering(); }});
 		listActions.add(filtrerListes);
 		listActions.add(new Label(""));
 		editerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
-			if (JudoDB.this.l != null) JudoDB.this.l.switchMode(ListWidget.Mode.EDIT); }});
+			if (JudoDB.this.l != null) { 
+			  JudoDB.this.l.switchMode(ListWidget.Mode.EDIT); 
+			}
+		}});
 		listActions.add(editerListes);
 		listActions.add(new Label(""));
 		ftListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
-			if (JudoDB.this.l != null) JudoDB.this.l.switchMode(ListWidget.Mode.FT); }});
+		  if (JudoDB.this.l != null) { 
+			  JudoDB.this.l.switchMode(ListWidget.Mode.FT); 
+		  }
+		}});
 		listActions.add(ftListes);
-        listActions.add(new Label(""));
-        impotListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
-            if (JudoDB.this.l != null) JudoDB.this.l.switchMode(ListWidget.Mode.IMPOT); }});
-        listActions.add(impotListes);
+        	listActions.add(new Label(""));
+        	impotListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
+		  if (JudoDB.this.l != null) { 
+			  JudoDB.this.l.switchMode(ListWidget.Mode.IMPOT); 
+			}
+		}});
+        	listActions.add(impotListes);
 		listActions.add(new Label(""));
 		clearXListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
 			if (JudoDB.this.l != null) JudoDB.this.l.clearX(); }});
 		listActions.add(clearXListes);
 		listActions.add(new Label(""));
 		normalListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
-			if (JudoDB.this.l != null) JudoDB.this.l.switchMode(ListWidget.Mode.NORMAL); }});
+		   if (JudoDB.this.l != null) { 
+			  JudoDB.this.l.switchMode(ListWidget.Mode.NORMAL); 
+			}
+		}});
 		listActions.add(normalListes);
 		listActions.add(new Label(""));
 		returnToMainFromListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.MAIN)); }});
@@ -331,6 +404,7 @@ public class JudoDB implements EntryPoint {
 		EditClientHandler ehandler = new EditClientHandler(-1);
 		newClientButton.addClickHandler(ehandler);
 
+
 		// initialize sets of widgets (subpanels)
 		allWidgets.add(RootPanel.get("editClient"));
 		allWidgets.add(RootPanel.get("lists"));
@@ -343,6 +417,7 @@ public class JudoDB implements EntryPoint {
 		allWidgets.add(voirListes);
 		allWidgets.add(editConfig);
 		allWidgets.add(logout);
+		allWidgets.add(dropDownUserClubs);
 		
 		// history handlers
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -453,7 +528,74 @@ public class JudoDB implements EntryPoint {
 
 	   document.body.appendChild(script);
 	  }-*/;
-		
+	
+	private void loadClubSearchResults(JsArray<ClubSummary> clubs) {
+		clubSearchResults.removeAllRows();
+		firstSearchResultToDisplay = 0;
+		this.allClubs = clubs;
+		displayClubSearchResults();
+	}
+
+	private void displayClubSearchResults() {
+	  dropDownUserClubs.clear();
+	  dropDownUserClubs.setVisibleItemCount(1);
+	  ClubSummary cs = null;
+	  
+	  for(int i = 0; i < allClubs.length(); ++i) {
+	    cs = allClubs.get(i);
+	    String s = "[" + cs.getNumeroClub() + "] " + cs.getNom();
+	    dropDownUserClubs.addItem(s);
+	  }
+
+	  if (-1 == selectedClub)
+	    selectedClub = allClubs.length() - 1;
+
+	  dropDownUserClubs.setSelectedIndex(selectedClub);
+	  
+	  clubSearchResultsPanel.setVisible(true);
+	}
+
+  	/**
+	 * Handle the response to the request for the user list of club.
+	 */
+	public void handleJsonClubSearchResponse(JavaScriptObject jso) {
+	    if (jso == null) {
+	      displayError("pas de réponse; veuillez re-essayer");
+	      return;
+	    }
+	    clearStatus();
+	    loadClubSearchResults(asArrayOfClubSummary (jso));
+	  }
+
+  	/**
+	 * Make call to remote server to get the
+	 * list of club the user has access to.
+	 */
+	public native static void getJsonForClubSearch(int requestId, String url,
+	      JudoDB handler) /*-{
+	   var callback = "callback" + requestId;
+
+	   var script = document.createElement("script");
+	   script.setAttribute("src", url+callback);
+	   script.setAttribute("type", "text/javascript");
+	   window[callback] = function(jsonObj) {
+	     handler.@ca.patricklam.judodb.client.JudoDB::handleJsonClubSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
+	     window[callback + "done"] = true;
+	   }
+
+	   setTimeout(function() {
+	     if (!window[callback + "done"]) {
+	       handler.@ca.patricklam.judodb.client.JudoDB::handleJsonClubSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
+	     }
+
+	     document.body.removeChild(script);
+	     delete window[callback];
+	     delete window[callback + "done"];
+	   }, 10000);
+
+	   document.body.appendChild(script);
+	  }-*/;
+	
 	/**
 	 * Convert the string 'json' into a JavaScript object.
 	 */
@@ -461,6 +603,13 @@ public class JudoDB implements EntryPoint {
 	    return jso;
 	}-*/;
 	
+	/**
+	 * Convert the string 'json' into a JavaScript object.
+	 */
+	private final native JsArray<ClubSummary> asArrayOfClubSummary(JavaScriptObject jso) /*-{
+	    return jso;
+	}-*/;
+
 	void displayError(String error) {
 		statusLabel.addStyleName("status-error");
 		statusLabel.removeStyleName("status-info");

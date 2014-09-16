@@ -1,3 +1,4 @@
+
 package ca.patricklam.judodb.client;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import ca.patricklam.judodb.client.Constants.Grade;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -33,6 +35,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.NamedFrame;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.http.client.URL;
 
 public class ListWidget extends Composite {
 	interface MyUiBinder extends UiBinder<Widget, ListWidget> {}
@@ -40,9 +43,12 @@ public class ListWidget extends Composite {
 	JudoDB jdb;
 	
 	private JsArray<ClientData> allClients;
+	private JsArray<ClubSummary> allClubs;
+	private JsArrayString allCours;
 	private HashMap<String, ClientData> cidToCD = new HashMap<String, ClientData>();
 	
 	private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
+	private static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
 	private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
 	private static final String CALLBACK_URL_SUFFIX_Q = "?callback=";
 	private static final String CALLBACK_URL_SUFFIX_A = "&callback=";
@@ -61,6 +67,8 @@ public class ListWidget extends Composite {
 	@UiField Hidden data;
 	@UiField Hidden data_full;
 	@UiField Hidden auxdata;
+	
+	@UiField Hidden club_id;
 	
 	@UiField HTMLPanel ft303_controls;
 	@UiField TextBox evt;
@@ -95,6 +103,7 @@ public class ListWidget extends Composite {
 	private int pushTries;
 	
 	@UiField ListBox session;
+	@UiField ListBox dropDownUserClubs;
 
 	private class Columns {
 		final static int CID = 0;
@@ -118,6 +127,41 @@ public class ListWidget extends Composite {
 		NORMAL, FT, EDIT, IMPOT
 	};
 
+ 	class CoursHandler implements ChangeHandler {
+
+	  public void onChange(ChangeEvent event) {
+	    generateCourseList();	    
+	    showList();
+	  }
+
+	  void generateCourseList() {
+	    jdb.clearStatus();
+	    String url = PULL_CLUB_COURS_URL;
+	    url = URL.encode(url) + "?club_id=" + jdb.selectedClubId + "&callback=";
+	    jdb.pleaseWait();
+	    getJsonForCourSearch(jdb.jsonRequestId++, url, ListWidget.this);
+	  }
+	}
+	
+	class ClubSearchHandler implements ChangeHandler {
+  	  public void onChange(ChangeEvent e) {
+	    jdb.setStatus("Calling OnChange");
+	    int idx = dropDownUserClubs.getSelectedIndex();
+	    jdb.selectedClubId = jdb.getClubId(idx);
+	    jdb.selectedClub = idx;
+	    courseHandler.generateCourseList();
+	  }
+	}
+	  
+	void generateClubList() {
+	  jdb.clearStatus();
+	  String url = jdb.PULL_CLUB_LIST_URL;
+	  url = URL.encode(url) + "?callback=";
+	  jdb.pleaseWait();
+	  getJsonForClubSearch(jdb.jsonRequestId++, url, ListWidget.this);
+	}
+	
+
 	final Widget[] allListModeWidgets;
 	final HashMap<Mode, Widget[]> listModeVisibility = new HashMap<Mode, Widget[]>();
 	
@@ -137,6 +181,9 @@ public class ListWidget extends Composite {
 	private HashMap<TextBox, String> originalGrades = new HashMap<TextBox, String>();
 	private HashMap<TextBox, String> originalGradeDates = new HashMap<TextBox, String>();
 	
+	private CoursHandler courseHandler = new CoursHandler();
+	private ClubSearchHandler csHandler = new ClubSearchHandler();	
+
 	public ListWidget(JudoDB jdb) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
@@ -144,21 +191,22 @@ public class ListWidget extends Composite {
 
 		allListModeWidgets = new Widget[] { jdb.filtrerListes, jdb.editerListes, jdb.ftListes, 
 				  							jdb.clearXListes, jdb.normalListes, 
-				  							ft303_controls, edit_controls, filter_controls, impot_controls, session, save, quit };
+				  							ft303_controls, edit_controls, filter_controls,
+											impot_controls, session, save, quit, dropDownUserClubs };
 
 		listModeVisibility.put(Mode.EDIT, new Widget[] 
 				{ jdb.normalListes, jdb.filtrerListes, 
 				  jdb.clearXListes, session, jdb.returnToMainFromListes, 
-				  edit_controls, save, quit });
+				  edit_controls, save, quit, dropDownUserClubs });
 		listModeVisibility.put(Mode.FT, new Widget[] 
 				{ jdb.normalListes, jdb.filtrerListes, jdb.clearXListes, 
-				  ft303_controls, session, jdb.returnToMainFromListes } );
-        listModeVisibility.put(Mode.IMPOT, new Widget[] 
-                { jdb.normalListes, jdb.filtrerListes, jdb.clearXListes, 
-                  impot_controls, session, jdb.returnToMainFromListes } );
+				  ft303_controls, session, jdb.returnToMainFromListes, dropDownUserClubs } );
+        	listModeVisibility.put(Mode.IMPOT, new Widget[] 
+                		{ jdb.normalListes, jdb.filtrerListes, jdb.clearXListes, 
+                  		  impot_controls, session, jdb.returnToMainFromListes, dropDownUserClubs } );
 		listModeVisibility.put(Mode.NORMAL, new Widget[] 
 				{ jdb.filtrerListes, jdb.editerListes, 
-				  jdb.ftListes, jdb.impotListes, session, jdb.returnToMainFromListes } );
+				  jdb.ftListes, jdb.impotListes, session, jdb.returnToMainFromListes, dropDownUserClubs } );
 
 		jdb.pleaseWait();
 		switchMode(Mode.NORMAL);
@@ -196,8 +244,9 @@ public class ListWidget extends Composite {
 
 		edit_date.setValue(Constants.STD_DATE_FORMAT.format(new Date()));
 		
-		cours.addChangeHandler(new ChangeHandler() { 
-			public void onChange(ChangeEvent e) { showList(); } });
+		cours.addChangeHandler(courseHandler);
+		dropDownUserClubs.addChangeHandler(csHandler);
+
 		session.addChangeHandler(new ChangeHandler() { 
 			public void onChange(ChangeEvent e) { showList(); } });
 		pdf.addClickHandler(new ClickHandler() {
@@ -479,7 +528,7 @@ public class ListWidget extends Composite {
 		listForm.setAction(JudoDB.BASE_URL+"listes"+act+".php");
 		listForm.submit();
 	}
-	
+
 	private boolean makeFT() {
 		StringBuffer dv = new StringBuffer("");
 		for (int i = 1; i < results.getRowCount(); i++) {
@@ -802,10 +851,14 @@ public class ListWidget extends Composite {
 		this.mode = m;
 
 		for (Widget w : allListModeWidgets) 
-			w.setVisible(false);
+			w.setVisible(false);		
 		for (Widget w : listModeVisibility.get(m)) 
 			w.setVisible(true);
-		
+
+		//Initialize listbox with clubs and related courses		
+		generateClubList();
+		courseHandler.generateCourseList();
+
 		// blow away state...
 		//session.setSelectedIndex(0);
 		originalVerifValues.clear();
@@ -814,6 +867,123 @@ public class ListWidget extends Composite {
 			showList();
 	}
 	
+	private void loadCourSearchResults(JsArrayString loadedCours) {
+	  cours.clear();
+	  this.allCours = loadedCours;
+	  displayCourSearchResults();
+	}
+
+	private void loadClubSearchResults(JsArray<ClubSummary> clubs) {
+	  dropDownUserClubs.clear();
+	  this.allClubs = clubs;
+	  displayClubSearchResults();
+	}
+
+	private void displayCourSearchResults() {
+	  cours.setVisibleItemCount(1);
+	  cours.clear();
+	  for(int i = 0; i < allCours.length(); ++i) {
+	    String cSeqNo = allCours.get(i);
+	    for (Constants.Cours c : Constants.COURS) {
+	      if (c.seqno.equals(cSeqNo))
+		cours.addItem(c.name, c.seqno);
+	    }
+	  }
+	}
+
+	private void displayClubSearchResults() {
+	  dropDownUserClubs.clear();
+	  dropDownUserClubs.setVisibleItemCount(1);
+	  ClubSummary cs = null;
+	  for(int i = 0; i < allClubs.length(); ++i) {
+	    cs = allClubs.get(i);
+	    String s = "[" + cs.getNumeroClub() + "] " + cs.getNom();
+	    dropDownUserClubs.addItem(s);
+	  }
+
+	  dropDownUserClubs.setSelectedIndex(jdb.selectedClub);
+	}
+
+	/**
+	 * Convert the string 'json' into a JavaScript object.
+	 */
+	private final native JsArray<ClubSummary> asArrayOfClubSummary(JavaScriptObject jso) /*-{
+	    return jso;
+	}-*/;
+
+  	public void handleJsonCourSearchResponse(JavaScriptObject jso) {
+	    if (jso == null) {
+	      jdb.displayError("pas de réponse; veuillez re-essayer");
+	      return;
+	    }
+	    loadCourSearchResults((JsArrayString)jso);
+	  }
+
+  	/**
+	 * Handle the response to the request for the user list of club.
+	 */
+	public void handleJsonClubSearchResponse(JavaScriptObject jso) {
+	    if (jso == null) {
+	      jdb.displayError("pas de réponse; veuillez re-essayer");
+	      return;
+	    }
+	    loadClubSearchResults(asArrayOfClubSummary (jso));
+	  }
+
+	public native static void getJsonForCourSearch(int requestId, String url,
+	      ListWidget handler) /*-{
+	   var callback = "callback" + requestId;
+
+	   var script = document.createElement("script");
+	   script.setAttribute("src", url+callback);
+	   script.setAttribute("type", "text/javascript");
+	   window[callback] = function(jsonObj) {
+	     handler.@ca.patricklam.judodb.client.ListWidget::handleJsonCourSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
+	     window[callback + "done"] = true;
+	   }
+
+	   setTimeout(function() {
+	     if (!window[callback + "done"]) {
+	       handler.@ca.patricklam.judodb.client.ListWidget::handleJsonCourSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
+	     }
+
+	     document.body.removeChild(script);
+	     delete window[callback];
+	     delete window[callback + "done"];
+	   }, 10000);
+
+	   document.body.appendChild(script);
+	  }-*/;
+
+  	/**
+	 * Make call to remote server to get the
+	 * list of club the user has access to.
+	 */
+	public native static void getJsonForClubSearch(int requestId, String url,
+	      ListWidget handler) /*-{
+	   var callback = "callback" + requestId;
+
+	   var script = document.createElement("script");
+	   script.setAttribute("src", url+callback);
+	   script.setAttribute("type", "text/javascript");
+	   window[callback] = function(jsonObj) {
+	     handler.@ca.patricklam.judodb.client.ListWidget::handleJsonClubSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
+	     window[callback + "done"] = true;
+	   }
+
+	   setTimeout(function() {
+	     if (!window[callback + "done"]) {
+	       handler.@ca.patricklam.judodb.client.ListWidget::handleJsonClubSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
+	     }
+
+	     document.body.removeChild(script);
+	     delete window[callback];
+	     delete window[callback + "done"];
+	   }, 10000);
+
+	   document.body.appendChild(script);
+	  }-*/;
+
 	/**
 	 * Make call to remote server.
 	 */
@@ -923,4 +1093,5 @@ public class ListWidget extends Composite {
 				(jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX_A, ListWidget.this);
 		}}.schedule(1000);	
 	}
+
 }

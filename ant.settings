@@ -1,0 +1,4 @@
+user.tools=${user.home}/tools
+
+lib.gwt=${user.tools}/gwt-2.5.0
+

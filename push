@@ -1,1 +1,3 @@
-rsync -avz /home/plam/workspace/JudoDB/war/* cja@anjou.uwaterloo.ca:public_html/anjoudb/
+FRONTEND="$PWD/war"
+ant && \
+rsync -avz --delete $FRONTEND/* $HOME/public_html/judodb
