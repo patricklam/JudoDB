@@ -6,6 +6,11 @@
 <ui:style>
 .session {
 	position:absolute;
+	top:1.5em; right: 10em; margin-left: 1px;
+}
+
+.userclub {
+	position:absolute;
 	top:1.5em; right: 1em;
 }
 
@@ -32,6 +37,7 @@ td {
     
 <g:HTMLPanel>
 	<g:ListBox ui:field="session" visibleItemCount="1" styleName="{style.session}" />
+	<g:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" styleName="{style.userclub}" />
 	<h1 id="stdTitle" class="noprint">Listes des cours</h1>
 
 	<g:FormPanel ui:field="listForm" method="post">
@@ -50,6 +56,8 @@ td {
 		<g:Hidden ui:field="data" name="data"/>
 		<g:Hidden ui:field="data_full" name="data_full"/>
 		<g:Hidden ui:field="auxdata" name="auxdata"/>
+
+		<g:Hidden ui:field="club_id" name="club_id"/>
 	    </g:HorizontalPanel>
 		<g:HTMLPanel ui:field="ft303_controls" styleName="{style.ft303}">
  		  &Eacute;v&eacute;nement: <g:TextBox ui:field="evt" name="evt" />&nbsp; &nbsp; 
