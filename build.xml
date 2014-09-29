@@ -25,6 +25,9 @@
     <!-- Add any additional server libs that need to be copied -->
   </target>
 
+  <target name="css" description="Copy CSS to war/judodb/">
+  </target>
+
   <target name="javac" depends="libs" description="Compile java source to bytecode">
     <mkdir dir="war/WEB-INF/classes"/>
     <javac srcdir="src" includes="**" encoding="utf-8"
@@ -55,6 +58,7 @@
       <arg value="-style"/>
       <arg value="PRETTY"/>
     </java>
+    <copy todir="war/judodb" file="war/JudoDB.css" />
   </target>
 
   <target name="devmode" depends="javac" description="Run development mode">
