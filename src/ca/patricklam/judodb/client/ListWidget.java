@@ -637,6 +637,8 @@ public class ListWidget extends Composite {
 	
 	@SuppressWarnings("deprecation")
 	public void showList() {
+		if (cours.getItemCount() == 0) return;
+        
 		boolean all = "-1".equals(cours.getValue(cours.getSelectedIndex()));
 		String requestedSessionNo = session.getValue(session.getSelectedIndex());
 		final Constants.Session rs = requestedSession();

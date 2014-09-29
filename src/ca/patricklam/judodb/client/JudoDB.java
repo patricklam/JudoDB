@@ -77,7 +77,7 @@ public class JudoDB implements EntryPoint {
 	// testing db:
 	//public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb-backend/";
 	//public static final String BASE_URL = "http://localhost/~plam/anjoudb-backend/";
-	public static final String BASE_URL = "http://berkeley.uwaterloo.ca/~xnoumbis/judodb-backend/";
+	public static final String BASE_URL = "http://www.basejudo.com/backend/";
 	
 	private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
 	public static final String PULL_CLUB_LIST_URL = BASE_URL + "pull_club_list.php";
@@ -88,7 +88,7 @@ public class JudoDB implements EntryPoint {
 
 	/* search stuff */
 	private final VerticalPanel searchResultsPanel = new VerticalPanel();
-	private final VerticalPanel clubSearchResultsPanel = new VerticalPanel();
+	private final VerticalPanel clubListResultsPanel = new VerticalPanel();
 	private final TextBox searchField = new TextBox();
 	private final FlexTable searchResults = new FlexTable();
 	private final FlexTable clubSearchResults = new FlexTable();
@@ -133,36 +133,39 @@ public class JudoDB implements EntryPoint {
 	/* config management stuff */
 	private ConfigWidget cf;
 
+	int selectedClub = 0;
 	String selectedClubId = null;
-	int selectedClub = -1;
 
 	class ClubSearchHandler implements ChangeHandler {
-  	  public void onChange(ChangeEvent e) {
-	    int i = dropDownUserClubs.getSelectedIndex();
-	    String v = getClubId(i);
-	    if (null != v) {
-	      selectedClubId = v;
-	      selectedClub = i;
-	    }
-	  }
-	}
+        @Override
+        public void onChange(ChangeEvent e) {
+            // doesn't work, why?
+            refreshSelectedClub();
+        }
+    }
 
-	String getClubId(int selectedIndex){
-	  for (int k = 0; k < allClubs.length(); ++k) {
-	    ClubSummary cs = allClubs.get(k);
-	    String s = "[" + cs.getNumeroClub() + "] " + cs.getNom();
-	    if (dropDownUserClubs.getValue(k).equalsIgnoreCase(s))
-	      return cs.getId();
-	  }
-	  return null;
-	}
+    String getClubId(int selectedIndex){
+        for (int k = 0; k < allClubs.length(); ++k) {
+            ClubSummary cs = allClubs.get(k);
+            String s = "[" + cs.getNumeroClub() + "] " + cs.getNom();
+            if (dropDownUserClubs.getValue(k).equalsIgnoreCase(s))
+                return cs.getId();
+        }
+        return null;
+    }
+
+    /* ack gross hack, should fix clubsearchhandler */
+    private void refreshSelectedClub() {
+        selectedClub = dropDownUserClubs.getSelectedIndex();
+        selectedClubId = dropDownUserClubs.getValue(selectedClub);
+    }
 
 	void generateClubList() {
-	    statusLabel.setText("");
-	    String url = PULL_CLUB_LIST_URL;
-	    url = URL.encode(url) + "?callback=";
-	    pleaseWait();
-	    getJsonForClubSearch(jsonRequestId++, url, JudoDB.this);
+		statusLabel.setText("");
+		String url = PULL_CLUB_LIST_URL;
+		url = URL.encode(url) + "?callback=";
+		pleaseWait();
+		getJsonForClubList(jsonRequestId++, url, JudoDB.this);
 	  }
 
 	// Create a handler for the searchButton and nameField
@@ -330,10 +333,10 @@ public class JudoDB implements EntryPoint {
 		searchResultsPanel.setVisible(false);
 		RootPanel.get("search").add(searchResultsPanel);
 		
-		clubSearchResultsPanel.add(clubResultsLabel);
-		clubSearchResultsPanel.add(clubSearchResults);
-		clubSearchResultsPanel.setVisible(false);
-		RootPanel.get("search").add(clubSearchResultsPanel);
+		clubListResultsPanel.add(clubResultsLabel);
+		clubListResultsPanel.add(clubSearchResults);
+		clubListResultsPanel.setVisible(false);
+		RootPanel.get("search").add(clubListResultsPanel);
 
 		// right bar actions: main
 		Panel mainActions = RootPanel.get("mainActions");
@@ -459,7 +462,8 @@ public class JudoDB implements EntryPoint {
 
 	private void displaySearchResults() {
 		int resultCount = 0, displayedCount = 0;
-		
+        refreshSelectedClub();
+        
 		if (firstSearchResultToDisplay != 0)
 			prevResultsButton.setVisible(true);
 			
@@ -467,6 +471,16 @@ public class JudoDB implements EntryPoint {
 			ClientSummary cs = allClients.get(i);
 			String s = "[" + cs.getId() + "] " + cs.getPrenom() + " " + cs.getNom();
 
+            if (selectedClub != 0) {
+                boolean found = false;
+                for (int j = 0; j < cs.getClubs().length(); j++) {
+                    int cn = Integer.parseInt(cs.getClubs().get(j));
+                    if (selectedClub == cn)
+                        found = true;
+                }
+                if (!found) continue;
+            }
+            
 			String ss = removeAccents(s);
 			if (!ss.contains(searchString)) continue;
 			
@@ -529,49 +543,47 @@ public class JudoDB implements EntryPoint {
 	   document.body.appendChild(script);
 	  }-*/;
 	
-	private void loadClubSearchResults(JsArray<ClubSummary> clubs) {
+	private void loadClubListResults(JsArray<ClubSummary> clubs) {
 		clubSearchResults.removeAllRows();
 		firstSearchResultToDisplay = 0;
 		this.allClubs = clubs;
-		displayClubSearchResults();
+		displayClubListResults();
 	}
 
-	private void displayClubSearchResults() {
+	private void displayClubListResults() {
 	  dropDownUserClubs.clear();
+      dropDownUserClubs.addItem("TOUS");
 	  dropDownUserClubs.setVisibleItemCount(1);
 	  ClubSummary cs = null;
-	  
+
 	  for(int i = 0; i < allClubs.length(); ++i) {
 	    cs = allClubs.get(i);
 	    String s = "[" + cs.getNumeroClub() + "] " + cs.getNom();
-	    dropDownUserClubs.addItem(s);
+	    dropDownUserClubs.addItem(s, cs.getNumeroClub());
 	  }
-
-	  if (-1 == selectedClub)
-	    selectedClub = allClubs.length() - 1;
 
 	  dropDownUserClubs.setSelectedIndex(selectedClub);
 	  
-	  clubSearchResultsPanel.setVisible(true);
+	  clubListResultsPanel.setVisible(true);
 	}
 
   	/**
 	 * Handle the response to the request for the user list of club.
 	 */
-	public void handleJsonClubSearchResponse(JavaScriptObject jso) {
+	public void handleJsonClubListResponse(JavaScriptObject jso) {
 	    if (jso == null) {
 	      displayError("pas de réponse; veuillez re-essayer");
 	      return;
 	    }
 	    clearStatus();
-	    loadClubSearchResults(asArrayOfClubSummary (jso));
+	    loadClubListResults(asArrayOfClubSummary (jso));
 	  }
 
   	/**
 	 * Make call to remote server to get the
 	 * list of club the user has access to.
 	 */
-	public native static void getJsonForClubSearch(int requestId, String url,
+	public native static void getJsonForClubList(int requestId, String url,
 	      JudoDB handler) /*-{
 	   var callback = "callback" + requestId;
 
@@ -579,13 +591,13 @@ public class JudoDB implements EntryPoint {
 	   script.setAttribute("src", url+callback);
 	   script.setAttribute("type", "text/javascript");
 	   window[callback] = function(jsonObj) {
-	     handler.@ca.patricklam.judodb.client.JudoDB::handleJsonClubSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
+	     handler.@ca.patricklam.judodb.client.JudoDB::handleJsonClubListResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
 	     window[callback + "done"] = true;
 	   }
 
 	   setTimeout(function() {
 	     if (!window[callback + "done"]) {
-	       handler.@ca.patricklam.judodb.client.JudoDB::handleJsonClubSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
+	       handler.@ca.patricklam.judodb.client.JudoDB::handleJsonClubListResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
 	     }
 
 	     document.body.removeChild(script);

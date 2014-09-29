@@ -1,19 +1,425 @@
-function judodb(){var Q='',yb='" for "gwt:onLoadErrorFn"',wb='" for "gwt:onPropertyErrorFn"',jb='"><\/script>',$='#',Gb='&',rc='.cache.html',ab='/',mb='//',Zb='27302698B968E7920592C55809C71FA4',_b='2E877A93354F706597B6F4AE9C666681',ac='38EB6114E917FB3A3A25FCEA184D818A',bc='42B0389FC5FC6C5F2CDD6D4BDCEFDF99',cc='47D3209F4121C46FD3D6B50F94737FA8',dc='50BAC40F11D669D6DE7516926989D59B',ec='515921610CE3354A4DA87C092FC82152',fc='51C003AC4C5EDE4852CFFF0B9DCFD046',gc='61259E13E4908651D502E08AF979C6C2',hc='70FC6D924819E17CB36B762DE1429436',ic='8340B1FD26E4BEC136D012A393E3673A',jc='89F84EFC5763CBCA57E7C029F5F42FD7',kc='8E6C725BA1F0A14B633312A79C4B8524',qc=':',qb='::',Ac='<script defer="defer">judodb.onInjectionDone(\'judodb\')<\/script>',ib='<script id="',tb='=',_='?',lc='AEBDBEE19DEE1D84E4B7A80332BA506F',vb='Bad handler "',mc='C968DDFE7D34F660ED5ABD32A8D57D32',nc='D7D550353915B2A059B5619CCBFA487B',zc='DOMContentLoaded',oc='E8195A7E809986CF0B11FF9D2BDF866F',pc='F518A8468E105F0B2C3B186BE8D8C1BF',yc='JudoDB.css',kb='SCRIPT',Jb='Unexpected exception in locale detection, using default: ',Ib='_',Hb='__gwt_Locale',hb='__gwt_marker_judodb',lb='base',db='baseUrl',U='begin',T='bootstrap',cb='clear.cache.gif',sb='content',Eb='default',Z='end',Yb='fr',$b='fr_CA',Sb='gecko',Tb='gecko1_8',V='gwt.codesvr=',W='gwt.hosted=',X='gwt.hybrid',sc='gwt/clean/clean.css',xb='gwt:onLoadErrorFn',ub='gwt:onPropertyErrorFn',rb='gwt:property',xc='head',Wb='hosted.html?judodb',wc='href',Rb='ie6',Qb='ie8',Pb='ie9',zb='iframe',bb='img',Ab="javascript:''",R='judodb',fb='judodb.nocache.js',pb='judodb::',tc='link',Vb='loadExternalRefs',Db='locale',Fb='locale=',nb='meta',Cb='moduleRequested',Y='moduleStartup',Ob='msie',ob='name',Lb='opera',Bb='position:absolute;width:0;height:0;border:none',uc='rel',Nb='safari',eb='script',Xb='selectingPermutation',S='startup',vc='stylesheet',gb='undefined',Ub='unknown',Kb='user.agent',Mb='webkit';var m=window,n=document,o=m.__gwtStatsEvent?function(a){return m.__gwtStatsEvent(a)}:null,p=m.__gwtStatsSessionId?m.__gwtStatsSessionId:null,q,r,s,t=Q,u={},v=[],w=[],x=[],y=0,z,A;o&&o({moduleName:R,sessionId:p,subSystem:S,evtGroup:T,millis:(new Date).getTime(),type:U});if(!m.__gwt_stylesLoaded){m.__gwt_stylesLoaded={}}if(!m.__gwt_scriptsLoaded){m.__gwt_scriptsLoaded={}}function B(){var b=false;try{var c=m.location.search;return (c.indexOf(V)!=-1||(c.indexOf(W)!=-1||m.external&&m.external.gwtOnLoad))&&c.indexOf(X)==-1}catch(a){}B=function(){return b};return b}
-function C(){if(q&&r){var b=n.getElementById(R);var c=b.contentWindow;if(B()){c.__gwt_getProperty=function(a){return I(a)}}judodb=null;c.gwtOnLoad(z,R,t,y);o&&o({moduleName:R,sessionId:p,subSystem:S,evtGroup:Y,millis:(new Date).getTime(),type:Z})}}
-function D(){function e(a){var b=a.lastIndexOf($);if(b==-1){b=a.length}var c=a.indexOf(_);if(c==-1){c=a.length}var d=a.lastIndexOf(ab,Math.min(c,b));return d>=0?a.substring(0,d+1):Q}
-function f(a){if(a.match(/^\w+:\/\//)){}else{var b=n.createElement(bb);b.src=a+cb;a=e(b.src)}return a}
-function g(){var a=G(db);if(a!=null){return a}return Q}
-function h(){var a=n.getElementsByTagName(eb);for(var b=0;b<a.length;++b){if(a[b].src.indexOf(fb)!=-1){return e(a[b].src)}}return Q}
-function i(){var a;if(typeof isBodyLoaded==gb||!isBodyLoaded()){var b=hb;var c;n.write(ib+b+jb);c=n.getElementById(b);a=c&&c.previousSibling;while(a&&a.tagName!=kb){a=a.previousSibling}if(c){c.parentNode.removeChild(c)}if(a&&a.src){return e(a.src)}}return Q}
-function j(){var a=n.getElementsByTagName(lb);if(a.length>0){return a[a.length-1].href}return Q}
-function k(){var a=n.location;return a.href==a.protocol+mb+a.host+a.pathname+a.search+a.hash}
-var l=g();if(l==Q){l=h()}if(l==Q){l=i()}if(l==Q){l=j()}if(l==Q&&k()){l=e(n.location.href)}l=f(l);t=l;return l}
-function E(){var b=document.getElementsByTagName(nb);for(var c=0,d=b.length;c<d;++c){var e=b[c],f=e.getAttribute(ob),g;if(f){f=f.replace(pb,Q);if(f.indexOf(qb)>=0){continue}if(f==rb){g=e.getAttribute(sb);if(g){var h,i=g.indexOf(tb);if(i>=0){f=g.substring(0,i);h=g.substring(i+1)}else{f=g;h=Q}u[f]=h}}else if(f==ub){g=e.getAttribute(sb);if(g){try{A=eval(g)}catch(a){alert(vb+g+wb)}}}else if(f==xb){g=e.getAttribute(sb);if(g){try{z=eval(g)}catch(a){alert(vb+g+yb)}}}}}}
-function F(a,b){return b in v[a]}
-function G(a){var b=u[a];return b==null?null:b}
-function H(a,b){var c=x;for(var d=0,e=a.length-1;d<e;++d){c=c[a[d]]||(c[a[d]]=[])}c[a[e]]=b}
-function I(a){var b=w[a](),c=v[a];if(b in c){return b}var d=[];for(var e in c){d[c[e]]=e}if(A){A(a,d,b)}throw null}
-var J;function K(){if(!J){J=true;var a=n.createElement(zb);a.src=Ab;a.id=R;a.style.cssText=Bb;a.tabIndex=-1;n.body.appendChild(a);o&&o({moduleName:R,sessionId:p,subSystem:S,evtGroup:Y,millis:(new Date).getTime(),type:Cb});a.contentWindow.location.replace(t+M)}}
-w[Db]=function(){var b=null;var c=Eb;try{if(!b){var d=location.search;var e=d.indexOf(Fb);if(e>=0){var f=d.substring(e+7);var g=d.indexOf(Gb,e);if(g<0){g=d.length}b=d.substring(e+7,g)}}if(!b){b=G(Db)}if(!b){b=m[Hb]}if(b){c=b}while(b&&!F(Db,b)){var h=b.lastIndexOf(Ib);if(h<0){b=null;break}b=b.substring(0,h)}}catch(a){alert(Jb+a)}m[Hb]=c;return b||Eb};v[Db]={'default':0,fr:1,fr_CA:2};w[Kb]=function(){var b=navigator.userAgent.toLowerCase();var c=function(a){return parseInt(a[1])*1000+parseInt(a[2])};if(function(){return b.indexOf(Lb)!=-1}())return Lb;if(function(){return b.indexOf(Mb)!=-1}())return Nb;if(function(){return b.indexOf(Ob)!=-1&&n.documentMode>=9}())return Pb;if(function(){return b.indexOf(Ob)!=-1&&n.documentMode>=8}())return Qb;if(function(){var a=/msie ([0-9]+)\.([0-9]+)/.exec(b);if(a&&a.length==3)return c(a)>=6000}())return Rb;if(function(){return b.indexOf(Sb)!=-1}())return Tb;return Ub};v[Kb]={gecko1_8:0,ie6:1,ie8:2,ie9:3,opera:4,safari:5};judodb.onScriptLoad=function(){if(J){r=true;C()}};judodb.onInjectionDone=function(){q=true;o&&o({moduleName:R,sessionId:p,subSystem:S,evtGroup:Vb,millis:(new Date).getTime(),type:Z});C()};E();D();var L;var M;if(B()){if(m.external&&(m.external.initModule&&m.external.initModule(R))){m.location.reload();return}M=Wb;L=Q}o&&o({moduleName:R,sessionId:p,subSystem:S,evtGroup:T,millis:(new Date).getTime(),type:Xb});if(!B()){try{H([Yb,Tb],Zb);H([$b,Rb],_b);H([Yb,Lb],ac);H([$b,Tb],bc);H([Yb,Nb],cc);H([Yb,Pb],dc);H([Eb,Tb],ec);H([$b,Pb],fc);H([Eb,Pb],gc);H([Yb,Qb],hc);H([Eb,Rb],ic);H([Eb,Qb],jc);H([Yb,Rb],kc);H([Eb,Lb],lc);H([$b,Lb],mc);H([Eb,Nb],nc);H([$b,Nb],oc);H([$b,Qb],pc);L=x[I(Db)][I(Kb)];var N=L.indexOf(qc);if(N!=-1){y=Number(L.substring(N+1));L=L.substring(0,N)}M=L+rc}catch(a){return}}var O;function P(){if(!s){s=true;if(!__gwt_stylesLoaded[sc]){var a=n.createElement(tc);__gwt_stylesLoaded[sc]=a;a.setAttribute(uc,vc);a.setAttribute(wc,t+sc);n.getElementsByTagName(xc)[0].appendChild(a)}if(!__gwt_stylesLoaded[yc]){var a=n.createElement(tc);__gwt_stylesLoaded[yc]=a;a.setAttribute(uc,vc);a.setAttribute(wc,t+yc);n.getElementsByTagName(xc)[0].appendChild(a)}C();if(n.removeEventListener){n.removeEventListener(zc,P,false)}if(O){clearInterval(O)}}}
-if(n.addEventListener){n.addEventListener(zc,function(){K();P()},false)}var O=setInterval(function(){if(/loaded|complete/.test(n.readyState)){K();P()}},50);o&&o({moduleName:R,sessionId:p,subSystem:S,evtGroup:T,millis:(new Date).getTime(),type:Z});o&&o({moduleName:R,sessionId:p,subSystem:S,evtGroup:Vb,millis:(new Date).getTime(),type:U});n.write(Ac)}
+function judodb(){
+  var $wnd_0 = window, $doc_0 = document, $stats = $wnd_0.__gwtStatsEvent?function(a){
+    return $wnd_0.__gwtStatsEvent(a);
+  }
+  :null, $sessionId_0 = $wnd_0.__gwtStatsSessionId?$wnd_0.__gwtStatsSessionId:null, scriptsDone, loadDone, bodyDone, base = '', metaProps = {}, values = [], providers = [], answers = [], softPermutationId = 0, onLoadErrorFunc, propertyErrorFunc;
+  $stats && $stats({moduleName:'judodb', sessionId:$sessionId_0, subSystem:'startup', evtGroup:'bootstrap', millis:(new Date).getTime(), type:'begin'});
+  if (!$wnd_0.__gwt_stylesLoaded) {
+    $wnd_0.__gwt_stylesLoaded = {};
+  }
+  if (!$wnd_0.__gwt_scriptsLoaded) {
+    $wnd_0.__gwt_scriptsLoaded = {};
+  }
+  function isHostedMode(){
+    var result = false;
+    try {
+      var query = $wnd_0.location.search;
+      return (query.indexOf('gwt.codesvr=') != -1 || (query.indexOf('gwt.hosted=') != -1 || $wnd_0.external && $wnd_0.external.gwtOnLoad)) && query.indexOf('gwt.hybrid') == -1;
+    }
+     catch (e) {
+    }
+    isHostedMode = function(){
+      return result;
+    }
+    ;
+    return result;
+  }
+
+  function maybeStartModule(){
+    if (scriptsDone && loadDone) {
+      var iframe = $doc_0.getElementById('judodb');
+      var frameWnd = iframe.contentWindow;
+      if (isHostedMode()) {
+        frameWnd.__gwt_getProperty = function(name_0){
+          return computePropValue(name_0);
+        }
+        ;
+      }
+      judodb = null;
+      frameWnd.gwtOnLoad(onLoadErrorFunc, 'judodb', base, softPermutationId);
+      $stats && $stats({moduleName:'judodb', sessionId:$sessionId_0, subSystem:'startup', evtGroup:'moduleStartup', millis:(new Date).getTime(), type:'end'});
+    }
+  }
+
+  function computeScriptBase(){
+    function getDirectoryOfFile(path){
+      var hashIndex = path.lastIndexOf('#');
+      if (hashIndex == -1) {
+        hashIndex = path.length;
+      }
+      var queryIndex = path.indexOf('?');
+      if (queryIndex == -1) {
+        queryIndex = path.length;
+      }
+      var slashIndex = path.lastIndexOf('/', Math.min(queryIndex, hashIndex));
+      return slashIndex >= 0?path.substring(0, slashIndex + 1):'';
+    }
+
+    function ensureAbsoluteUrl(url){
+      if (url.match(/^\w+:\/\//)) {
+      }
+       else {
+        var img = $doc_0.createElement('img');
+        img.src = url + 'clear.cache.gif';
+        url = getDirectoryOfFile(img.src);
+      }
+      return url;
+    }
+
+    function tryMetaTag(){
+      var metaVal = __gwt_getMetaProperty('baseUrl');
+      if (metaVal != null) {
+        return metaVal;
+      }
+      return '';
+    }
+
+    function tryNocacheJsTag(){
+      var scriptTags = $doc_0.getElementsByTagName('script');
+      for (var i = 0; i < scriptTags.length; ++i) {
+        if (scriptTags[i].src.indexOf('judodb.nocache.js') != -1) {
+          return getDirectoryOfFile(scriptTags[i].src);
+        }
+      }
+      return '';
+    }
+
+    function tryMarkerScript(){
+      var thisScript;
+      if (typeof isBodyLoaded == 'undefined' || !isBodyLoaded()) {
+        var markerId = '__gwt_marker_judodb';
+        var markerScript;
+        $doc_0.write('<script id="' + markerId + '"><\/script>');
+        markerScript = $doc_0.getElementById(markerId);
+        thisScript = markerScript && markerScript.previousSibling;
+        while (thisScript && thisScript.tagName != 'SCRIPT') {
+          thisScript = thisScript.previousSibling;
+        }
+        if (markerScript) {
+          markerScript.parentNode.removeChild(markerScript);
+        }
+        if (thisScript && thisScript.src) {
+          return getDirectoryOfFile(thisScript.src);
+        }
+      }
+      return '';
+    }
+
+    function tryBaseTag(){
+      var baseElements = $doc_0.getElementsByTagName('base');
+      if (baseElements.length > 0) {
+        return baseElements[baseElements.length - 1].href;
+      }
+      return '';
+    }
+
+    function isLocationOk(){
+      var loc = $doc_0.location;
+      return loc.href == loc.protocol + '//' + loc.host + loc.pathname + loc.search + loc.hash;
+    }
+
+    var tempBase = tryMetaTag();
+    if (tempBase == '') {
+      tempBase = tryNocacheJsTag();
+    }
+    if (tempBase == '') {
+      tempBase = tryMarkerScript();
+    }
+    if (tempBase == '') {
+      tempBase = tryBaseTag();
+    }
+    if (tempBase == '' && isLocationOk()) {
+      tempBase = getDirectoryOfFile($doc_0.location.href);
+    }
+    tempBase = ensureAbsoluteUrl(tempBase);
+    base = tempBase;
+    return tempBase;
+  }
+
+  function processMetas(){
+    var metas = document.getElementsByTagName('meta');
+    for (var i = 0, n = metas.length; i < n; ++i) {
+      var meta = metas[i], name_0 = meta.getAttribute('name'), content_0;
+      if (name_0) {
+        name_0 = name_0.replace('judodb::', '');
+        if (name_0.indexOf('::') >= 0) {
+          continue;
+        }
+        if (name_0 == 'gwt:property') {
+          content_0 = meta.getAttribute('content');
+          if (content_0) {
+            var value, eq = content_0.indexOf('=');
+            if (eq >= 0) {
+              name_0 = content_0.substring(0, eq);
+              value = content_0.substring(eq + 1);
+            }
+             else {
+              name_0 = content_0;
+              value = '';
+            }
+            metaProps[name_0] = value;
+          }
+        }
+         else if (name_0 == 'gwt:onPropertyErrorFn') {
+          content_0 = meta.getAttribute('content');
+          if (content_0) {
+            try {
+              propertyErrorFunc = eval(content_0);
+            }
+             catch (e) {
+              alert('Bad handler "' + content_0 + '" for "gwt:onPropertyErrorFn"');
+            }
+          }
+        }
+         else if (name_0 == 'gwt:onLoadErrorFn') {
+          content_0 = meta.getAttribute('content');
+          if (content_0) {
+            try {
+              onLoadErrorFunc = eval(content_0);
+            }
+             catch (e) {
+              alert('Bad handler "' + content_0 + '" for "gwt:onLoadErrorFn"');
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function __gwt_isKnownPropertyValue(propName, propValue){
+    return propValue in values[propName];
+  }
+
+  function __gwt_getMetaProperty(name_0){
+    var value = metaProps[name_0];
+    return value == null?null:value;
+  }
+
+  function unflattenKeylistIntoAnswers(propValArray, value){
+    var answer = answers;
+    for (var i = 0, n = propValArray.length - 1; i < n; ++i) {
+      answer = answer[propValArray[i]] || (answer[propValArray[i]] = []);
+    }
+    answer[propValArray[n]] = value;
+  }
+
+  function computePropValue(propName){
+    var value = providers[propName](), allowedValuesMap = values[propName];
+    if (value in allowedValuesMap) {
+      return value;
+    }
+    var allowedValuesList = [];
+    for (var k in allowedValuesMap) {
+      allowedValuesList[allowedValuesMap[k]] = k;
+    }
+    if (propertyErrorFunc) {
+      propertyErrorFunc(propName, allowedValuesList, value);
+    }
+    throw null;
+  }
+
+  var frameInjected;
+  function maybeInjectFrame(){
+    if (!frameInjected) {
+      frameInjected = true;
+      var iframe = $doc_0.createElement('iframe');
+      iframe.src = "javascript:''";
+      iframe.id = 'judodb';
+      iframe.style.cssText = 'position:absolute;width:0;height:0;border:none';
+      iframe.tabIndex = -1;
+      $doc_0.body.appendChild(iframe);
+      $stats && $stats({moduleName:'judodb', sessionId:$sessionId_0, subSystem:'startup', evtGroup:'moduleStartup', millis:(new Date).getTime(), type:'moduleRequested'});
+      iframe.contentWindow.location.replace(base + initialHtml);
+    }
+  }
+
+  providers['locale'] = function(){
+    var locale = null;
+    var rtlocale = 'default';
+    try {
+      if (!locale) {
+        var queryParam = location.search;
+        var qpStart = queryParam.indexOf('locale=');
+        if (qpStart >= 0) {
+          var value = queryParam.substring(qpStart + 7);
+          var end = queryParam.indexOf('&', qpStart);
+          if (end < 0) {
+            end = queryParam.length;
+          }
+          locale = queryParam.substring(qpStart + 7, end);
+        }
+      }
+      if (!locale) {
+        locale = __gwt_getMetaProperty('locale');
+      }
+      if (!locale) {
+        locale = $wnd_0['__gwt_Locale'];
+      }
+      if (locale) {
+        rtlocale = locale;
+      }
+      while (locale && !__gwt_isKnownPropertyValue('locale', locale)) {
+        var lastIndex = locale.lastIndexOf('_');
+        if (lastIndex < 0) {
+          locale = null;
+          break;
+        }
+        locale = locale.substring(0, lastIndex);
+      }
+    }
+     catch (e) {
+      alert('Unexpected exception in locale detection, using default: ' + e);
+    }
+    $wnd_0['__gwt_Locale'] = rtlocale;
+    return locale || 'default';
+  }
+  ;
+  values['locale'] = {'default':0, fr:1, fr_CA:2};
+  providers['user.agent'] = function(){
+    var ua = navigator.userAgent.toLowerCase();
+    var makeVersion = function(result){
+      return parseInt(result[1]) * 1000 + parseInt(result[2]);
+    }
+    ;
+    if (function(){
+      return ua.indexOf('opera') != -1;
+    }
+    ())
+      return 'opera';
+    if (function(){
+      return ua.indexOf('webkit') != -1;
+    }
+    ())
+      return 'safari';
+    if (function(){
+      return ua.indexOf('msie') != -1 && $doc_0.documentMode >= 9;
+    }
+    ())
+      return 'ie9';
+    if (function(){
+      return ua.indexOf('msie') != -1 && $doc_0.documentMode >= 8;
+    }
+    ())
+      return 'ie8';
+    if (function(){
+      var result = /msie ([0-9]+)\.([0-9]+)/.exec(ua);
+      if (result && result.length == 3)
+        return makeVersion(result) >= 6000;
+    }
+    ())
+      return 'ie6';
+    if (function(){
+      return ua.indexOf('gecko') != -1;
+    }
+    ())
+      return 'gecko1_8';
+    return 'unknown';
+  }
+  ;
+  values['user.agent'] = {gecko1_8:0, ie6:1, ie8:2, ie9:3, opera:4, safari:5};
+  judodb.onScriptLoad = function(){
+    if (frameInjected) {
+      loadDone = true;
+      maybeStartModule();
+    }
+  }
+  ;
+  judodb.onInjectionDone = function(){
+    scriptsDone = true;
+    $stats && $stats({moduleName:'judodb', sessionId:$sessionId_0, subSystem:'startup', evtGroup:'loadExternalRefs', millis:(new Date).getTime(), type:'end'});
+    maybeStartModule();
+  }
+  ;
+  processMetas();
+  computeScriptBase();
+  var strongName;
+  var initialHtml;
+  if (isHostedMode()) {
+    if ($wnd_0.external && ($wnd_0.external.initModule && $wnd_0.external.initModule('judodb'))) {
+      $wnd_0.location.reload();
+      return;
+    }
+    initialHtml = 'hosted.html?judodb';
+    strongName = '';
+  }
+  $stats && $stats({moduleName:'judodb', sessionId:$sessionId_0, subSystem:'startup', evtGroup:'bootstrap', millis:(new Date).getTime(), type:'selectingPermutation'});
+  if (!isHostedMode()) {
+    try {
+      unflattenKeylistIntoAnswers(['default', 'ie9'], '1ED43A804F9413391A210CDF7F76AA48');
+      unflattenKeylistIntoAnswers(['default', 'safari'], '22E12B192E267996C9B9BAF37FC0298D');
+      unflattenKeylistIntoAnswers(['fr', 'opera'], '4511B45996D486B1581097C1D8F14DDA');
+      unflattenKeylistIntoAnswers(['default', 'opera'], '4957A808E55C8CB6D89D89B24D18CB62');
+      unflattenKeylistIntoAnswers(['fr_CA', 'ie8'], '52F5953146C692924CDB9F8509DC65BD');
+      unflattenKeylistIntoAnswers(['fr_CA', 'opera'], '61A03491031669DB5F7576C3A59B6B79');
+      unflattenKeylistIntoAnswers(['default', 'ie6'], '684D4C6AB206385C72C664FFD709331E');
+      unflattenKeylistIntoAnswers(['fr_CA', 'gecko1_8'], '8A69A950F6F6FB9574094705558E3FCD');
+      unflattenKeylistIntoAnswers(['fr', 'ie9'], '984EC617FC971608FE1EF806DF810D5E');
+      unflattenKeylistIntoAnswers(['fr', 'ie8'], 'A3924D9E2E78DDFA84F89CEBD2140EAD');
+      unflattenKeylistIntoAnswers(['default', 'gecko1_8'], 'B8DAB928ECF2DD7ED27AE63452215609');
+      unflattenKeylistIntoAnswers(['fr', 'ie6'], 'C6EC9E9526A129652F35646AA13A9A4B');
+      unflattenKeylistIntoAnswers(['fr_CA', 'ie9'], 'CA8987A7BB9D4AC354C654AE32EE0FE4');
+      unflattenKeylistIntoAnswers(['fr', 'safari'], 'D11422C653AFFD243B19ACE0964EE05D');
+      unflattenKeylistIntoAnswers(['fr_CA', 'ie6'], 'D4BE7BE5D5A8A34AC182FA1127670882');
+      unflattenKeylistIntoAnswers(['fr_CA', 'safari'], 'EBE374BDD39EBD88D88D6B14D6775D91');
+      unflattenKeylistIntoAnswers(['fr', 'gecko1_8'], 'FE5BCE6553172D5E206DFC262FE648C4');
+      unflattenKeylistIntoAnswers(['default', 'ie8'], 'FFF434582D3D68C6AB60F0777478ADCB');
+      strongName = answers[computePropValue('locale')][computePropValue('user.agent')];
+      var idx = strongName.indexOf(':');
+      if (idx != -1) {
+        softPermutationId = Number(strongName.substring(idx + 1));
+        strongName = strongName.substring(0, idx);
+      }
+      initialHtml = strongName + '.cache.html';
+    }
+     catch (e) {
+      return;
+    }
+  }
+  var onBodyDoneTimerId;
+  function onBodyDone(){
+    if (!bodyDone) {
+      bodyDone = true;
+      if (!__gwt_stylesLoaded['gwt/clean/clean.css']) {
+        var l = $doc_0.createElement('link');
+        __gwt_stylesLoaded['gwt/clean/clean.css'] = l;
+        l.setAttribute('rel', 'stylesheet');
+        l.setAttribute('href', base + 'gwt/clean/clean.css');
+        $doc_0.getElementsByTagName('head')[0].appendChild(l);
+      }
+      if (!__gwt_stylesLoaded['JudoDB.css']) {
+        var l = $doc_0.createElement('link');
+        __gwt_stylesLoaded['JudoDB.css'] = l;
+        l.setAttribute('rel', 'stylesheet');
+        l.setAttribute('href', base + 'JudoDB.css');
+        $doc_0.getElementsByTagName('head')[0].appendChild(l);
+      }
+      maybeStartModule();
+      if ($doc_0.removeEventListener) {
+        $doc_0.removeEventListener('DOMContentLoaded', onBodyDone, false);
+      }
+      if (onBodyDoneTimerId) {
+        clearInterval(onBodyDoneTimerId);
+      }
+    }
+  }
+
+  if ($doc_0.addEventListener) {
+    $doc_0.addEventListener('DOMContentLoaded', function(){
+      maybeInjectFrame();
+      onBodyDone();
+    }
+    , false);
+  }
+  var onBodyDoneTimerId = setInterval(function(){
+    if (/loaded|complete/.test($doc_0.readyState)) {
+      maybeInjectFrame();
+      onBodyDone();
+    }
+  }
+  , 50);
+  $stats && $stats({moduleName:'judodb', sessionId:$sessionId_0, subSystem:'startup', evtGroup:'bootstrap', millis:(new Date).getTime(), type:'end'});
+  $stats && $stats({moduleName:'judodb', sessionId:$sessionId_0, subSystem:'startup', evtGroup:'loadExternalRefs', millis:(new Date).getTime(), type:'begin'});
+  $doc_0.write('<script defer="defer">judodb.onInjectionDone(\'judodb\')<\/script>');
+}
+
 judodb();
