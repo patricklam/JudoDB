@@ -385,7 +385,9 @@ public class ClientWidget extends Composite {
 		affiliation_initiation.setEnabled(isToday);
 		affiliationFrais.setText(sd.getAffiliationFrais());
 
-		escompte.setSelectedIndex(sd.getEscompteType());
+		int escompteIndex = sd.getEscompteType();
+		if (escompteIndex >= 0 && escompteIndex < escompte.getItemCount())
+			escompte.setSelectedIndex(escompteIndex);
 		escompte.setEnabled(isToday);
 		cas_special_note.setText(sd.getCasSpecialNote());
 		cas_special_note.setReadOnly(!isToday);

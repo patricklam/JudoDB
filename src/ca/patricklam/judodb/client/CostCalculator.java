@@ -28,7 +28,7 @@ public class CostCalculator {
     static double proratedFraisCours(ClientData cd, ServiceData sd) {
         int sessionId = Constants.currentSessionNo();
         double baseCost = fraisCours(cd, sd);
-        if (!Constants.ENABLE_PRORATA || sd == null || sd.getDateInscription() == null)
+        if (!Constants.ENABLE_PRORATA || sd == null || sd.getDateInscription() == null || sd.getDateInscription() == "0000-00-00")
         	return baseCost;
         
         Date dateInscription = null;
