@@ -135,18 +135,18 @@ public class ListWidget extends Composite {
 
 	  void generateCoursList() {
 	    jdb.clearStatus();
-	    String url = PULL_CLUB_COURS_URL;
-	    url = URL.encode(url) + "?club_id=" + jdb.selectedClubId + "&callback=";
-	    jdb.pleaseWait();
-	    getJsonForCoursSearch(jdb.jsonRequestId++, url, ListWidget.this);
+		String url = PULL_CLUB_COURS_URL;
+		url = URL.encode(url) + "?club_id=" + jdb.selectedClubId + "&callback=";
+		jdb.pleaseWait();
+		getJsonForCoursSearch(jdb.jsonRequestId++, url, ListWidget.this);
 	  }
 	}
 	
 	class ClubListHandler implements ChangeHandler {
-  	  public void onChange(ChangeEvent e) {
-        jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
-        jdb.selectedClubId = dropDownUserClubs.getValue(jdb.selectedClub);
-	    coursHandler.generateCoursList();
+	  public void onChange(ChangeEvent e) {
+		jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
+		jdb.selectedClubId = dropDownUserClubs.getValue(jdb.selectedClub);
+		coursHandler.generateCoursList();
 	  }
 	}
 	  
