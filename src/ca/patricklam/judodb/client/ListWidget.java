@@ -459,7 +459,7 @@ public class ListWidget extends Composite {
 		dv += cd.getVille() + "|";
 		dv += cd.getCodePostal() + "|";
 		dv += cd.getTel() + "|";
-		dv += cd.getCarteAnjou() + "|";
+		dv += cd.getCarteResident() + "|";
 		dv += cd.getTelContactUrgence() + "|";
 		dv += cd.getMostRecentGrade().getGrade() + "|";
 		dv += cd.getMostRecentGrade().getDateGrade() + "|";
@@ -913,6 +913,8 @@ public class ListWidget extends Composite {
 	}-*/;
 
   	public void handleJsonCoursSearchResponse(JavaScriptObject jso) {
+		jdb.clearStatus();
+
 	    if (jso == null) {
 	      jdb.displayError("pas de réponse; veuillez re-essayer");
 	      return;
@@ -924,6 +926,8 @@ public class ListWidget extends Composite {
 	 * Handle the response to the request for the user list of club.
 	 */
 	public void handleJsonClubListResponse(JavaScriptObject jso) {
+		jdb.clearStatus();
+
 	    if (jso == null) {
 	      jdb.displayError("pas de réponse; veuillez re-essayer");
 	      return;

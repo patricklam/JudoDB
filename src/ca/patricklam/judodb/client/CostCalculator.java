@@ -54,12 +54,15 @@ public class CostCalculator {
         int sessionId = Constants.currentSessionNo();
         boolean sans_affiliation = sd.getSansAffiliation();
         boolean affiliation_initiation = sd.getAffiliationInitiation();
+        boolean affiliation_ecole = sd.getAffiliationEcole();
         Constants.Division c = cd.getDivision(Constants.currentSession().effective_year);
         
         double dAffiliationFrais = 0.0;
         if (!sans_affiliation) {
             if (affiliation_initiation) 
                 dAffiliationFrais = Constants.COUT_JUDOQC_INITIATION;
+            else if (affiliation_ecole)
+                dAffiliationFrais = Constants.COUT_JUDOQC_ECOLE;
             else
                 dAffiliationFrais = Constants.getFraisJudoQC(sessionId, c);
         }
@@ -72,13 +75,13 @@ public class CostCalculator {
     	double judogiFrais = 0.0;
         try { judogiFrais = Double.parseDouble(sd.getJudogi()); } catch (Exception e) {}
         boolean passeport = sd.getPasseport();
-        boolean non_anjou = sd.getNonAnjou();
+        boolean resident = sd.getResident();
 
         double dSuppFrais = judogiFrais;
         if (passeport)
             dSuppFrais += Constants.PASSEPORT_JUDO_QC;
-        if (non_anjou)
-            dSuppFrais += Constants.NON_ANJOU;
+        if (resident)
+            dSuppFrais -= Constants.RESIDENT;
         return dSuppFrais;
     }
 

@@ -6,7 +6,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 
 public class Constants {	
-	public static boolean ENABLE_PRORATA = true;
+	public static boolean ENABLE_PRORATA = false;
 
 	public static int currentSessionNo() { return 10; }
 	public static Session currentSession() { 
@@ -30,12 +30,13 @@ public class Constants {
 	public static final NumberFormat currencyFormat = NumberFormat.getFormat("0.00");
 	
 	public static final double PASSEPORT_JUDO_QC = 5.0;
-	public static final double NON_ANJOU = 5.0;
+	public static final double RESIDENT = 5.0;
 	public static final String CLUB = "Anjou";
 	public static final String CLUBNO = "C047";
 	public static final int VETERAN = 35;
 	public static final int PRORATA_PENALITE = 5;
 	public static final int COUT_JUDOQC_INITIATION = 10;
+	public static final int COUT_JUDOQC_ECOLE = 5;
 	
 	static class Session {
 		final int seqno;

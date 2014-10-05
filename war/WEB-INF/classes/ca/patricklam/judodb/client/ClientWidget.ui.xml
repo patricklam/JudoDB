@@ -44,14 +44,14 @@
  		 </div>
 		</fieldset>
 
- 		<fieldset> <legend>Autres renseignments</legend>
+ 		<fieldset> <legend>Autres renseignements</legend>
  		 <div class="{style.fourper}">
    		  <label>Num&eacute;ro Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliation" visibleLength="8" name="affiliation"/></label>
    		  <label>Grade judo <span class="noprint">(<g:Anchor ui:field="showgrades">histoire</g:Anchor>)</span><br /><g:TextBox ui:field="grade" visibleLength="8"/></label>
 	      <label>Date du grade<br /><g:TextBox ui:field="date_grade" visibleLength="10"/></label>
 	      <g:Hidden ui:field="grades_encoded" name="grades_encoded" />
 	      <g:Hidden ui:field="grade_dates_encoded" name="grade_dates_encoded" />
-   		  <label style="font-size:80%">N° arrondissement Anjou<br /><g:TextBox ui:field="carte_anjou" name="carte_anjou" visibleLength="13"/></label>
+   		  <label style="font-size:80%">N° carte municipale<br /><g:TextBox ui:field="carte_resident" name="carte_resident" visibleLength="13"/></label>
    	     </div>
  		 <div class="{style.oneper}">
    		  <label>Nom re&ccedil;u imp&ocirc;t<br /><g:TextBox ui:field="nom_recu_impot" name="nom_recu_impot" visibleLength="40"/></label>
@@ -66,7 +66,7 @@
           </label>
    		  <label>Cat&eacute;gorie d'&acirc;ge<br /><g:TextBox ui:field="categorie" visibleLength = "5"/></label>
    		  <label>Saisons<br /><g:TextBox ui:field="saisons" visibleLength="8" /> <g:Hidden ui:field="saisons_encoded" name="saisons_encoded" /></label>
-   		  <label style="font-size:80%"><span class="noprint">Affiliation Judo QC verifi&eacute;<br /><g:CheckBox ui:field="verification"/></span> <g:Hidden ui:field="verification_encoded" name="verification_encoded" />
+   		  <label style="font-size:80%"><span class="noprint">Affiliation Judo QC encoy&eacute;<br /><g:CheckBox ui:field="verification"/></span> <g:Hidden ui:field="verification_encoded" name="verification_encoded" />
  		  </label>
   		 </div>
   		
@@ -83,17 +83,18 @@
           <span class="{style.fraisOnRight}"><label> - escompte<br /><g:TextBox ui:field="escompteFrais" visibleLength="15" /><g:Hidden ui:field="escompteFrais_encoded" name="escompte_special_encoded"/></label></span>
          </div>
          <div class="{style.fourper}">
-   		  <label>Déjà affili&eacute; Judo Qu&eacute;bec 2013-14<br /><g:CheckBox ui:field="sans_affiliation"/> <g:Hidden ui:field="sans_affiliation_encoded" name="sans_affiliation_encoded" /></label>
+   		  <label>Déjà affili&eacute; Judo Qu&eacute;bec 2014-15<br /><g:CheckBox ui:field="sans_affiliation"/> <g:Hidden ui:field="sans_affiliation_encoded" name="sans_affiliation_encoded" /></label>
+   		  <label>Affiliation &eacute;cole<br /><g:CheckBox ui:field="affiliation_ecole"/> <g:Hidden ui:field="affiliation_ecole_encoded" name="affiliation_ecole_encoded" /></label>
    		  <label>Affiliation initiation<br /><g:CheckBox ui:field="affiliation_initiation"/> <g:Hidden ui:field="affiliation_initiation_encoded" name="affiliation_initiation_encoded" /></label>
    		  <span class="{style.fraisOnRight}"><label>Affiliation Judo Qu&eacute;bec<br /><g:TextBox ui:field="affiliationFrais" visibleLength="15" /> <g:Hidden ui:field="affiliationFrais_encoded" name="affiliation_frais_encoded" /></label></span>
          </div>
-         <div class="{style.fourper}">
+         <div class="{style.fourper}" style="border-bottom: 1px grey;">
           <label>Co&ucirc;t judogi<br /><g:ListBox ui:field="judogi"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></label>
-          <label style="font-size:80%">Pas de carte Anjou (5 $)<br /><g:CheckBox ui:field="non_anjou"/><g:Hidden ui:field="non_anjou_encoded" name="non_anjou_encoded" /></label>
+          <label style="font-size:80%">Rabais r&eacute;sident<br /><g:CheckBox ui:field="resident"/><g:Hidden ui:field="resident_encoded" name="resident_encoded" /></label>
           <span class="{style.fraisOnRight}"><label>Autres frais<br /><g:TextBox ui:field="suppFrais" visibleLength="15" /><g:Hidden ui:field="suppFrais_encoded" name="supp_frais_encoded" /></label></span>
         </div>
         <div class="{style.fourper}">
-          <label>Solde reste &agrave; payer<br /><g:CheckBox ui:field="solde"/><g:Hidden ui:field="solde_encoded" name="solde_encoded" /></label>
+          <label>Paiement complet&eacute;<br /><g:CheckBox ui:field="solde"/><g:Hidden ui:field="solde_encoded" name="solde_encoded" /></label>
           <span class="{style.fraisOnRight}"><label>Frais total<br /><g:TextBox ui:field="frais" visibleLength="15" /><g:Hidden ui:field="frais_encoded" name="frais_encoded" /></label></span>
         </div>
        </fieldset>

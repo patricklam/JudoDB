@@ -17,14 +17,16 @@ public class ServiceData extends JavaScriptObject {
 	public final native void setSansAffiliation(boolean sans_affiliation) /*-{ this.sans_affiliation = sans_affiliation ? "1" : "0"; }-*/;
 	public final native boolean getAffiliationInitiation() /*-{ return this.affiliation_initiation != '0'; }-*/;
     public final native void setAffiliationInitiation(boolean affiliation_initiation) /*-{ this.affiliation_initiation = affiliation_initiation ? "1" : "0"; }-*/;
+	public final native boolean getAffiliationEcole() /*-{ return this.affiliation_ecole != '0'; }-*/;
+    public final native void setAffiliationEcole(boolean affiliation_ecole) /*-{ this.affiliation_ecole = affiliation_ecole ? "1" : "0"; }-*/;
     public final native String getCours() /*-{ return this.cours; }-*/;
 	public final native void setCours(String cours) /*-{ this.cours = cours; }-*/;
 	public final native int getSessionCount() /*-{ return (this.sessions == null || this.sessions == "") ? 2 : parseInt(this.sessions); }-*/;
 	public final native void setSessionCount(int sessions) /*-{ this.sessions = sessions.toString(); }-*/;
 	public final native boolean getPasseport() /*-{ return this.passeport != '0'; }-*/;
 	public final native void setPasseport(boolean passeport) /*-{ this.passeport = passeport ? "1" : "0"; }-*/;
-	public final native boolean getNonAnjou() /*-{ return this.non_anjou != '0'; }-*/;
-	public final native void setNonAnjou(boolean non_anjou) /*-{ this.non_anjou = non_anjou ? "1" : "0"; }-*/;
+	public final native boolean getResident() /*-{ return this.resident != '0'; }-*/;
+	public final native void setResident(boolean resident) /*-{ this.resident = resident ? "1" : "0"; }-*/;
 	public final native int getEscompteType() /*-{ return this.escompte == null ? 0 : parseInt(this.escompte); }-*/;
 	public final native void setEscompteType(int escompte) /*-{ this.escompte = escompte.toString(); }-*/;
 	public final native String getCasSpecialNote() /*-{ return this.cas_special_note; }-*/;
@@ -59,10 +61,11 @@ public class ServiceData extends JavaScriptObject {
     		saisons: "",
     		sans_affiliation: "0",
             affiliation_initiation: "0",
+            affiliation_ecole: "0",
     		cours: "0",
     		sessions: "2",
     		passeport: "0",
-    		non_anjou: "0",
+    		resident: "0",
     		judogi: "0.0",
     		escompte: "0",
     		categorie_frais: "0.0",

@@ -64,7 +64,7 @@ public class ClientWidget extends Composite {
 	@UiField TextBox grade;
 	@UiField Anchor showgrades;
 	@UiField TextBox date_grade;
-	@UiField TextBox carte_anjou;
+	@UiField TextBox carte_resident;
 	@UiField TextBox nom_recu_impot;
 
 	@UiField TextBox tel_contact_urgence;
@@ -90,10 +90,11 @@ public class ClientWidget extends Composite {
 
 	@UiField CheckBox sans_affiliation;
 	@UiField CheckBox affiliation_initiation;
+	@UiField CheckBox affiliation_ecole;
 	@UiField TextBox affiliationFrais;
 
 	@UiField ListBox judogi;
-	@UiField CheckBox non_anjou;
+	@UiField CheckBox resident;
 	@UiField TextBox suppFrais;
 
 	@UiField CheckBox solde;
@@ -118,10 +119,11 @@ public class ClientWidget extends Composite {
 
 	@UiField Hidden sans_affiliation_encoded;
 	@UiField Hidden affiliation_initiation_encoded;
+	@UiField Hidden affiliation_ecole_encoded;
 	@UiField Hidden affiliationFrais_encoded;
 
 	@UiField Hidden judogi_encoded;
-	@UiField Hidden non_anjou_encoded;
+	@UiField Hidden resident_encoded;
 	@UiField Hidden suppFrais_encoded;
 
 	@UiField Hidden solde_encoded;
@@ -153,7 +155,7 @@ public class ClientWidget extends Composite {
 	public interface BlurbTemplate extends SafeHtmlTemplates {
 		@Template 
 	      ("<p>Je {0} certifie que les informations inscrites sur ce formulaire sont véridiques. "+
-	       "En adhèrant au Club Judo Anjou, j'accepte tous les risques d'accident liés à la pratique du "+
+	       "En adhèrant au Club Judo "+Constants.CLUB+", j'accepte tous les risques d'accident liés à la pratique du "+
 	       "judo qui pourraient survenir dans les locaux ou lors d'activités extérieurs organisées par le Club. "+
 	       "J'accepte de respecter les règlements du Club en tout temps y compris lors des déplacements.</p>"+
 	       "<h4>Politique de remboursement</h4>"+
@@ -235,8 +237,9 @@ public class ClientWidget extends Composite {
 		escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
 		sans_affiliation.addValueChangeHandler(recomputeValueHandler);
 		affiliation_initiation.addValueChangeHandler(recomputeValueHandler);
+		affiliation_ecole.addValueChangeHandler(recomputeValueHandler);
 		judogi.addChangeHandler(recomputeHandler);
-		non_anjou.addValueChangeHandler(recomputeValueHandler);
+		resident.addValueChangeHandler(recomputeValueHandler);
 		
 		saveAndReturnClientButton.addClickHandler(new ClickHandler() { 
 			public void onClick(ClickEvent e) {
@@ -335,7 +338,7 @@ public class ClientWidget extends Composite {
 		courriel.setText(cd.getCourriel());
 
 		affiliation.setText(cd.getJudoQC());
-		carte_anjou.setText(cd.getCarteAnjou());
+		carte_resident.setText(cd.getCarteResident());
 		nom_recu_impot.setText(cd.getNomRecuImpot());
 
 		tel_contact_urgence.setText(cd.getTelContactUrgence());
@@ -383,6 +386,8 @@ public class ClientWidget extends Composite {
 		sans_affiliation.setEnabled(isToday);
 		affiliation_initiation.setValue(sd.getAffiliationInitiation());
 		affiliation_initiation.setEnabled(isToday);
+		affiliation_ecole.setValue(sd.getAffiliationEcole());
+		affiliation_ecole.setEnabled(isToday);
 		affiliationFrais.setText(sd.getAffiliationFrais());
 
 		int escompteIndex = sd.getEscompteType();
@@ -400,8 +405,8 @@ public class ClientWidget extends Composite {
 				judogi.setSelectedIndex(Integer.parseInt(j.seqno));
 		}
 		judogi.setEnabled(isToday);
-		non_anjou.setValue(sd.getNonAnjou());
-		non_anjou.setEnabled(isToday);
+		resident.setValue(sd.getResident());
+		resident.setEnabled(isToday);
 		suppFrais.setText(sd.getSuppFrais());	
 		
 		frais.setText(sd.getFrais());
@@ -424,7 +429,7 @@ public class ClientWidget extends Composite {
 		cd.setCourriel(courriel.getText());
 
 		cd.setJudoQC(affiliation.getText());
-		cd.setCarteAnjou(carte_anjou.getText());
+		cd.setCarteResident(carte_resident.getText());
 		cd.setNomRecuImpot(nom_recu_impot.getText());
 
 		cd.setTelContactUrgence(tel_contact_urgence.getText());
@@ -441,6 +446,7 @@ public class ClientWidget extends Composite {
 		
 		sd.setSansAffiliation(sans_affiliation.getValue());
 		sd.setAffiliationInitiation(affiliation_initiation.getValue());
+		sd.setAffiliationEcole(affiliation_ecole.getValue());
 		sd.setAffiliationFrais(stripDollars(affiliationFrais.getText()));
 		
 		sd.setEscompteType(escompte.getSelectedIndex());
@@ -449,7 +455,7 @@ public class ClientWidget extends Composite {
 		sd.setEscompteFrais(stripDollars(escompteFrais.getText()));
 		
 		sd.setJudogi(Constants.judogi(judogi.getValue(judogi.getSelectedIndex())));
-		sd.setNonAnjou(non_anjou.getValue());
+		sd.setResident(resident.getValue());
 		sd.setSuppFrais(stripDollars(suppFrais.getText()));
 		
 		sd.setFrais(stripDollars(frais.getText()));
@@ -863,7 +869,7 @@ public class ClientWidget extends Composite {
 		StringBuffer di = new StringBuffer(), sais = new StringBuffer(), 
 			v = new StringBuffer(), cf = new StringBuffer(), c = new StringBuffer(), 
 			sess = new StringBuffer(), e = new StringBuffer(), csn = new StringBuffer(), 
-			csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(), ai = new StringBuffer(),
+			csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(), ai = new StringBuffer(), ae = new StringBuffer(),
 			af = new StringBuffer(), j = new StringBuffer(), p = new StringBuffer(), 
 			n = new StringBuffer(), sf = new StringBuffer(), s = new StringBuffer(), 
 			f = new StringBuffer();
@@ -883,12 +889,13 @@ public class ClientWidget extends Composite {
 			ef.append(sd.getEscompteFrais()+",");
 			sa.append(sd.getSansAffiliation() ? "1," : "0,");
 			ai.append(sd.getAffiliationInitiation() ? "1," : "0,");
+			ae.append(sd.getAffiliationEcole() ? "1," : "0,");
 			af.append(sd.getAffiliationFrais()+",");
 			j.append(sd.getJudogi()+",");
 			// disabled passeport
 			//p.append(sd.getPasseport()+",");
 			p.append("0,");
-			n.append(sd.getNonAnjou()+",");
+			n.append(sd.getResident()+",");
 			sf.append(sd.getSuppFrais()+",");
 			s.append(sd.getSolde() ? "1,":"0,");
 			f.append(sd.getFrais()+",");
@@ -906,9 +913,10 @@ public class ClientWidget extends Composite {
 		escompteFrais_encoded.setValue(ef.toString());
 		sans_affiliation_encoded.setValue(sa.toString());
 		affiliation_initiation_encoded.setValue(ai.toString());
+		affiliation_ecole_encoded.setValue(ae.toString());
 		affiliationFrais_encoded.setValue(af.toString());
 		judogi_encoded.setValue(j.toString());
-		non_anjou_encoded.setValue(n.toString());
+		resident_encoded.setValue(n.toString());
 		suppFrais_encoded.setValue(sf.toString());
 		solde_encoded.setValue(s.toString());
 		frais_encoded.setValue(f.toString());

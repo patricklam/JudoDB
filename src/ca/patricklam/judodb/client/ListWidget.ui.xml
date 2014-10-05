@@ -44,7 +44,7 @@ td {
 	  <g:HTMLPanel>
 	    <g:HorizontalPanel>
 		<g:InlineLabel>Cours&nbsp;</g:InlineLabel><g:ListBox ui:field="cours" visibleItemCount="1" />
-		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="pdf">(PDF)</g:Anchor>
+		<g:InlineLabel>&nbsp;sortir: </g:InlineLabel><g:Anchor ui:field="pdf">(PDF)</g:Anchor>
 		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="presences">(présences)</g:Anchor>
 		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="xls">(XLS)</g:Anchor>
 		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="xls2">(XLS complet)</g:Anchor>

@@ -108,7 +108,7 @@ public class JudoDB implements EntryPoint {
 	final Anchor impotListes = new Anchor("Reçus d'impot");
 	final Anchor clearXListes = new Anchor("Effacer les X");
 	final Anchor normalListes = new Anchor("Voir listes");
-	final Anchor returnToMainFromListes = new Anchor("Retourner");
+	final Anchor returnToMainFromListes = new Anchor("Retour page principale");
 
 	private ListBox dropDownUserClubs = new ListBox();
 	

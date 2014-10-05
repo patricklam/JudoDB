@@ -65,7 +65,7 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] != "yes")
 	<link type="text/css" rel="stylesheet" href="screen.css" media="screen">
 	<link type="text/css" rel="stylesheet" href="print.css" media="print">
 
-    <title>Facturation Club Judo Anjou</title>
+    <title>Facturation Judo Qu&eacute;bec</title>
     <script type="text/javascript" language="javascript" src="judodb/judodb.nocache.js"></script>
   </head>
 

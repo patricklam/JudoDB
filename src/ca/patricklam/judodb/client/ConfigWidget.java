@@ -24,7 +24,7 @@ public class ConfigWidget extends Composite {
 	
 	// montants (should theoretically be stored with the session)
 	// passeport judo QC [5]
-	// frais non-anjou [5]
+	// frais non-resident [5]
 	// penalty for prorata (percent of cost) [5]
 
 	// misc:

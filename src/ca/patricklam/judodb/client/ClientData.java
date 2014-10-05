@@ -40,8 +40,8 @@ public class ClientData extends JavaScriptObject {
 	public final native JsArray<GradeData> getGrades() /*-{ return this.grades; }-*/;
 	public final native void setGrades(JsArray<GradeData> grades) /*-{ this.grades = grades; }-*/;
 	
-	public final native String getCarteAnjou() /*-{ return this.carte_anjou; }-*/;
-	public final native void setCarteAnjou(String carte_anjou) /*-{ this.carte_anjou = carte_anjou; }-*/;
+	public final native String getCarteResident() /*-{ return this.carte_resident; }-*/;
+	public final native void setCarteResident(String carte_resident) /*-{ this.carte_resident = carte_resident; }-*/;
 	public final native String getNomRecuImpot() /*-{ return this.nom_recu_impot; }-*/;
 	public final native void setNomRecuImpot(String nom_recu_impot) /*-{ this.nom_recu_impot = nom_recu_impot; }-*/;
 	
