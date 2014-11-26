@@ -4,10 +4,7 @@
 gwt-unitCache
 *.class
 *~
-war/WEB-INF/lib/*
-war/WEB-INF/deploy/*
-war/WEB-INF/classes/*
-war/judodb/*
-
+war
+html-src/_config.php
 
 

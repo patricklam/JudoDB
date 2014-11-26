@@ -1,0 +1,59 @@
+body {
+  font-family: arial, sans-serif;
+  font-size: 83%;
+  background: white;
+  margin: 1.5em;
+}
+
+/** Most GWT widgets already have a style name defined */
+.gwt-Anchor {
+  cursor: pointer;
+}
+
+.list-th {
+ font-weight: bold;
+}
+
+.status-error {
+  color: red;
+  background: white;
+}
+
+.status-info {
+  color: black;
+  background: #F2E635;
+  padding:0.5em;
+}
+
+/* login */
+#login {
+ position:fixed;
+ padding: 1em;
+ top:25%; left:40%; background:#ccc;
+ cursor: pointer;
+}
+
+#entrerButton {
+  margin: 15px 6px 6px;
+}
+
+#statusContainer {
+  position:absolute;
+  left:35%;
+  top:0%;
+}
+
+.actions a {
+ color: blue;
+}
+
+#actions #returnAction #clearAction {
+  padding: 2em;
+}
+
+#rightbar {
+  position: absolute;
+  top: 20%;
+  right: 5em;
+}
+
