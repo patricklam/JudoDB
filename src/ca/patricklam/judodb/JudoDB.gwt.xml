@@ -28,5 +28,5 @@
            value="true" />
            
   <stylesheet src="JudoDB.css" />
-
+  <collapse-all-properties />
 </module>
