@@ -22,7 +22,6 @@
 
   <!-- Specify the paths for translatable code                    -->
   <source path='judodb/client'/>
-  <!--<source path='shared'/>-->
   
   <set-configuration-property name="UiBinder.useSafeHtmlTemplates"
            value="true" />
