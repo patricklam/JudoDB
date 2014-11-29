@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 import ca.patricklam.judodb.client.Constants.Cours;
 import ca.patricklam.judodb.client.Constants.Division;
@@ -150,7 +151,6 @@ public class ListWidget extends Composite {
 	class ClubListHandler implements ChangeHandler {
 	  public void onChange(ChangeEvent e) {
 		jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
-		jdb.selectedClubId = dropDownUserClubs.getValue(jdb.selectedClub);
 		coursHandler.generateCoursList();
 	  }
 	}
@@ -892,11 +892,11 @@ public class ListWidget extends Composite {
 	  dropDownUserClubs.addItem("TOUS");
 	  dropDownUserClubs.setVisibleItemCount(1);
 	  ClubSummary cs = null;
-
-	  for(int i = 0; i < jdb.allClubs.length(); ++i) {
-	    cs = jdb.allClubs.get(i);
-	    String s = "[" + cs.getNumeroClub() + "] " + cs.getNom();
-	    dropDownUserClubs.addItem(s, cs.getNumeroClub());
+	  
+	  for (Map.Entry<Integer, ClubSummary> entry : jdb.idxToClub.entrySet()) {
+	    Integer k = entry.getKey();
+	    String clubStr = JudoDB.getClubText(entry.getValue());
+	    dropDownUserClubs.insertItem(clubStr, k);
 	  }
 
 	  dropDownUserClubs.setSelectedIndex(jdb.selectedClub);

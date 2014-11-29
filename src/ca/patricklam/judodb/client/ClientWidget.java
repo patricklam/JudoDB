@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -144,6 +145,8 @@ public class ClientWidget extends Composite {
 	@UiField Anchor saveGrades;
 	@UiField Anchor annulerGrades;
 
+	@UiField ListBox dropDownUserClubs;
+
 	private final FormElement clientform;
 	
 	private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php?id=";
@@ -176,14 +179,19 @@ public class ClientWidget extends Composite {
 	
 	private String sibid;
 	private List<ChangeHandler> onPopulated = new ArrayList<ChangeHandler>();
-		
+	
+	private ClubListHandler clubListHandler;
+
 	public ClientWidget(int cid, JudoDB jdb) {
 		this.jdb = jdb;
 		initWidget(uiBinder.createAndBindUi(this));
 		clientform = FormElement.as(clientMain.getElementById("clientform"));
 		clientform.setAction(PUSH_ONE_CLIENT_URL);
 		deleted.setValue("");
-		
+		clubListHandler = new ClubListHandler();
+		dropDownUserClubs.addChangeHandler(clubListHandler);
+		displayClubListResults();
+
 		for (Constants.Cours c : Constants.COURS) {
 			cours.addItem(c.name, c.seqno);
 		}
@@ -297,7 +305,30 @@ public class ClientWidget extends Composite {
 			jdb.clearStatus();
 		}
 	}
-	
+
+	class ClubListHandler implements ChangeHandler {
+	  public void onChange(ChangeEvent event) {
+	    jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
+	    displayClubListResults();
+	  }
+	}
+
+	void displayClubListResults() {
+	  jdb.clearStatus();
+	  dropDownUserClubs.clear();
+	  dropDownUserClubs.addItem("---");
+	  dropDownUserClubs.setVisibleItemCount(1);
+	  ClubSummary cs = null;
+
+	  for (Map.Entry<Integer, ClubSummary> entry : jdb.idxToClub.entrySet()) {
+	    Integer k = entry.getKey();
+	    String clubStr = JudoDB.getClubText(entry.getValue());
+	    dropDownUserClubs.insertItem(clubStr, k);
+	  }
+
+	  dropDownUserClubs.setSelectedIndex(jdb.selectedClub);
+	}
+
 	@SuppressWarnings("deprecation")
 	private void updateBlurb() {
 		if (cd.getDDNString() == null) return;
@@ -413,6 +444,7 @@ public class ClientWidget extends Composite {
 		solde.setValue(sd.getSolde());
 		
 		updateDynamicFields();
+		displayClubListResults();
 	}
 
 	/** Puts data from the form back onto ClientData. */
@@ -421,7 +453,7 @@ public class ClientWidget extends Composite {
 		cd.setPrenom(prenom.getText());
 		cd.setDDNString(Constants.stdToDbDate(ddn_display.getText()));
 		cd.setSexe(sexe.getText());
-		
+
 		cd.setAdresse(adresse.getText());
 		cd.setVille(ville.getText());
 		cd.setCodePostal(codePostal.getText());
