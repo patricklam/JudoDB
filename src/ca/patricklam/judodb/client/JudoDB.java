@@ -2,6 +2,7 @@ package ca.patricklam.judodb.client;
 
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.HashMap;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -111,6 +112,7 @@ public class JudoDB implements EntryPoint {
 	final Anchor returnToMainFromListes = new Anchor("Retour page principale");
 
 	private ListBox dropDownUserClubs = new ListBox();
+	HashMap<Integer, ClubSummary> idxToClub = new HashMap<Integer, ClubSummary>();
 	
 	ArrayList<Widget> allWidgets = new ArrayList<Widget>();
 	
@@ -134,7 +136,6 @@ public class JudoDB implements EntryPoint {
 	private ConfigWidget cf;
 
 	int selectedClub = 0;
-	String selectedClubId = null;
 
 	class ClubSearchHandler implements ChangeHandler {
         @Override
@@ -144,20 +145,9 @@ public class JudoDB implements EntryPoint {
         }
     }
 
-    String getClubId(int selectedIndex){
-        for (int k = 0; k < allClubs.length(); ++k) {
-            ClubSummary cs = allClubs.get(k);
-            String s = "[" + cs.getNumeroClub() + "] " + cs.getNom();
-            if (dropDownUserClubs.getValue(k).equalsIgnoreCase(s))
-                return cs.getId();
-        }
-        return null;
-    }
-
     /* ack gross hack, should fix clubsearchhandler */
     private void refreshSelectedClub() {
         selectedClub = dropDownUserClubs.getSelectedIndex();
-        selectedClubId = dropDownUserClubs.getValue(selectedClub);
     }
 
 	void generateClubList() {
@@ -550,16 +540,35 @@ public class JudoDB implements EntryPoint {
 		displayClubListResults();
 	}
 
+	String getNumeroSelectedClub(){
+	  if (0 == selectedClub) return "-1";
+	  ClubSummary cs = idxToClub.get(selectedClub);
+	  return cs.getNumeroClub();
+	}
+
+	String getSelectedClubId(){
+	  if (0 != selectedClub) return idxToClub.get(selectedClub).getId();
+	  else return "";
+	}
+
+	static String getClubText(ClubSummary cs) {
+	  return "[" + cs.getNumeroClub() + "] " + cs.getNom();
+	}
+
+	ClubSummary getClubSummary(int clubListBoxIndex) {
+	  return idxToClub.get(clubListBoxIndex);
+	}
+
 	private void displayClubListResults() {
 	  dropDownUserClubs.clear();
-      dropDownUserClubs.addItem("TOUS");
+	  dropDownUserClubs.addItem("TOUS");
 	  dropDownUserClubs.setVisibleItemCount(1);
 	  ClubSummary cs = null;
 
 	  for(int i = 0; i < allClubs.length(); ++i) {
 	    cs = allClubs.get(i);
-	    String s = "[" + cs.getNumeroClub() + "] " + cs.getNom();
-	    dropDownUserClubs.addItem(s, cs.getNumeroClub());
+	    dropDownUserClubs.addItem(getClubText(cs), cs.getNumeroClub());
+	    idxToClub.put(i+1, cs); //We add one because "TOUS" occupies index 0
 	  }
 
 	  dropDownUserClubs.setSelectedIndex(selectedClub);
