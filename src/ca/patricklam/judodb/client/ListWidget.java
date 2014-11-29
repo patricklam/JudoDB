@@ -43,7 +43,6 @@ public class ListWidget extends Composite {
 	JudoDB jdb;
 	
 	private JsArray<ClientData> allClients;
-	private JsArrayString allCours;
 	private HashMap<String, ClientData> cidToCD = new HashMap<String, ClientData>();
 	
 	private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
@@ -127,9 +126,7 @@ public class ListWidget extends Composite {
 	};
 
  	class CoursHandler implements ChangeHandler {
-
 	  public void onChange(ChangeEvent event) {
-	    generateCoursList();	    
 	    showList();
 	  }
 
@@ -215,11 +212,6 @@ public class ListWidget extends Composite {
 
 		jdb.pleaseWait();
 		switchMode(Mode.NORMAL);
-		
-		cours.addItem("Tous", "-1");
-		for (Constants.Cours c : Constants.COURS) {
-			cours.addItem(c.name, c.seqno);
-		}
 		
 		session.addItem("Tous", "-1");
 		for (Constants.Session s : Constants.SESSIONS) {
@@ -879,28 +871,20 @@ public class ListWidget extends Composite {
 			showList();
 	}
 	
-	private void loadCoursSearchResults(JsArrayString loadedCours) {
-	  cours.clear();
-	  this.allCours = loadedCours;
-	  displayCoursSearchResults();
+	private void loadCoursSearchResults(JsArray<CoursSummary> coursArray) {
+        cours.setVisibleItemCount(1);
+        cours.clear();
+        cours.addItem("Tous", "-1");
+        for (int i = 0; i < coursArray.length(); i++) {
+            CoursSummary c = coursArray.get(i);
+            cours.addItem(c.getShortDesc(), c.getSeqno());
+        }
 	}
 
 	private void loadClubListResults(JsArray<ClubSummary> clubs) {
 	  dropDownUserClubs.clear();
 	  jdb.allClubs = clubs;
 	  displayClubListResults();
-	}
-
-	private void displayCoursSearchResults() {
-	  cours.setVisibleItemCount(1);
-	  cours.clear();
-	  for(int i = 0; i < allCours.length(); ++i) {
-	    String cSeqNo = allCours.get(i);
-	    for (Constants.Cours c : Constants.COURS) {
-	      if (c.seqno.equals(cSeqNo))
-		cours.addItem(c.name, c.seqno);
-	    }
-	  }
 	}
 
 	private void displayClubListResults() {
@@ -932,7 +916,7 @@ public class ListWidget extends Composite {
 	      jdb.displayError("pas de réponse; veuillez re-essayer");
 	      return;
 	    }
-	    loadCoursSearchResults((JsArrayString)jso);
+	    loadCoursSearchResults((JsArray<CoursSummary>)jso);
 	  }
 
   	/**
