@@ -29,6 +29,10 @@ label {
  font-size: xx-large;
 }
 
+.clubBox {
+ display: none;
+}
+
 .gwt-Button {
   display: none;
 }

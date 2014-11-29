@@ -90,7 +90,6 @@ public class JudoDB implements EntryPoint {
 	private final VerticalPanel clubListResultsPanel = new VerticalPanel();
 	private final TextBox searchField = new TextBox();
 	private final FlexTable searchResults = new FlexTable();
-	private final FlexTable clubSearchResults = new FlexTable();
 	private final Button searchButton = new Button("Recherche");
 	private final Button newClientButton = new Button("Nouveau client");
 	private final Button nextResultsButton = new Button("Résultats suivants");
@@ -308,7 +307,6 @@ public class JudoDB implements EntryPoint {
 
 		// edit client buttons		
 		final Label resultsLabel = new Label("Résultats: ");
-		final Label clubResultsLabel = new Label("Liste des Clubs: ");
 		
 		final Panel searchNavPanel = new HorizontalPanel();
 		searchNavPanel.add(nextResultsButton);
@@ -331,11 +329,6 @@ public class JudoDB implements EntryPoint {
 		searchResultsPanel.add(searchNavPanel);
 		searchResultsPanel.setVisible(false);
 		RootPanel.get("search").add(searchResultsPanel);
-		
-		clubListResultsPanel.add(clubResultsLabel);
-		clubListResultsPanel.add(clubSearchResults);
-		clubListResultsPanel.setVisible(false);
-		RootPanel.get("search").add(clubListResultsPanel);
 
 		// right bar actions: main
 		Panel mainActions = RootPanel.get("mainActions");
@@ -348,10 +341,11 @@ public class JudoDB implements EntryPoint {
 		mainActions.add(new Label(""));
 		mainActions.add(logout);
 
-		// right bar actions: list
-		RootPanel.get("rightbar").add(dropDownUserClubs);
+		RootPanel.get("search").add(dropDownUserClubs);
+		dropDownUserClubs.setStyleName("clubBox");
 		dropDownUserClubs.addChangeHandler(csHandler);
 		
+		// right bar actions: list
 		Panel listActions = RootPanel.get("listActions");
 		filtrerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { 
 			if (JudoDB.this.l != null) JudoDB.this.l.toggleFiltering(); }});
@@ -543,7 +537,6 @@ public class JudoDB implements EntryPoint {
 	  }-*/;
 	
 	private void loadClubListResults(JsArray<ClubSummary> clubs) {
-		clubSearchResults.removeAllRows();
 		firstSearchResultToDisplay = 0;
 		this.allClubs = clubs;
 		displayClubListResults();
