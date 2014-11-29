@@ -5,6 +5,11 @@
   display:none;
 }
 
+.clubBox {
+ position:absolute;
+ top:1.5em; right: 1em;
+}
+
 .cid {
  position:absolute;
  top:1.5em; right: 1em;

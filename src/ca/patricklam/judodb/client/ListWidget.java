@@ -44,7 +44,6 @@ public class ListWidget extends Composite {
 	JudoDB jdb;
 	
 	private JsArray<ClientData> allClients;
-	private JsArrayString allCours;
 	private HashMap<String, ClientData> cidToCD = new HashMap<String, ClientData>();
 	
 	private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
@@ -128,16 +127,22 @@ public class ListWidget extends Composite {
 	};
 
  	class CoursHandler implements ChangeHandler {
-
 	  public void onChange(ChangeEvent event) {
-	    generateCoursList();	    
 	    showList();
 	  }
 
 	  void generateCoursList() {
 	    jdb.clearStatus();
 		String url = PULL_CLUB_COURS_URL;
-		url = URL.encode(url) + "?club_id=" + jdb.getSelectedClubId() + "&callback=";
+		url = URL.encode(url);
+		int s = requestedSessionNo();
+		if (s == -1) s = Constants.currentSession().seqno;
+
+		url += "?session_seqno=" + s;
+		if (jdb.selectedClub != 0 && jdb.selectedClubId != null) {
+			url += "&numero_club=" + jdb.selectedClubId;
+		} 
+		url += CALLBACK_URL_SUFFIX_A;
 		jdb.pleaseWait();
 		getJsonForCoursSearch(jdb.jsonRequestId++, url, ListWidget.this);
 	  }
@@ -207,11 +212,6 @@ public class ListWidget extends Composite {
 
 		jdb.pleaseWait();
 		switchMode(Mode.NORMAL);
-		
-		cours.addItem("Tous", "-1");
-		for (Constants.Cours c : Constants.COURS) {
-			cours.addItem(c.name, c.seqno);
-		}
 		
 		session.addItem("Tous", "-1");
 		for (Constants.Session s : Constants.SESSIONS) {
@@ -547,10 +547,15 @@ public class ListWidget extends Composite {
 		return !dv.equals("");
 	}
 
+	public int requestedSessionNo() {
+		if (session == null || session.getSelectedIndex() == -1) return -1;
+		return Integer.parseInt(session.getValue(session.getSelectedIndex()));
+	}
+	
 	public Constants.Session requestedSession() {
-		String requestedSessionNo = session.getValue(session.getSelectedIndex());
-		if (requestedSessionNo.equals("-1")) return null;
-		return Constants.SESSIONS[Integer.parseInt(requestedSessionNo)];
+		int requestedSessionNo = requestedSessionNo();
+		if (requestedSessionNo == -1) return null;
+		return Constants.SESSIONS[requestedSessionNo];
 	}
 		
 	public void toggleFiltering()
@@ -638,7 +643,7 @@ public class ListWidget extends Composite {
 		if (cours.getItemCount() == 0) return;
         
 		boolean all = "-1".equals(cours.getValue(cours.getSelectedIndex()));
-		String requestedSessionNo = session.getValue(session.getSelectedIndex());
+		int requestedSessionNo = requestedSessionNo();
 		final Constants.Session rs = requestedSession();
 		int count = 0, curRow;
 		final ArrayList<ClientData> filteredClients = new ArrayList<ClientData>();
@@ -715,7 +720,7 @@ public class ListWidget extends Composite {
 		boolean[] visibility = new boolean[] {
 				true, mode==Mode.EDIT || mode==Mode.FT, true, true, mode==Mode.EDIT || mode==Mode.FT,
 				true, true, true, true, true, true, mode==Mode.EDIT || all, false, 
-				requestedSessionNo.equals("-1"), mode==Mode.FT
+				requestedSessionNo == -1, mode==Mode.FT
 		};
 
 		for (int i = 0; i < heads.length; i++) {
@@ -819,7 +824,7 @@ public class ListWidget extends Composite {
 				results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
 			}
 			
-			if (requestedSessionNo.equals("-1")) {
+			if (requestedSessionNo == -1) {
 				results.setText(curRow, Columns.SESSION, cd.getAllActiveSaisons());
 			} else {
 				results.setText(curRow, Columns.SESSION, "");
@@ -866,28 +871,20 @@ public class ListWidget extends Composite {
 			showList();
 	}
 	
-	private void loadCoursSearchResults(JsArrayString loadedCours) {
-	  cours.clear();
-	  this.allCours = loadedCours;
-	  displayCoursSearchResults();
+	private void loadCoursSearchResults(JsArray<CoursSummary> coursArray) {
+        cours.setVisibleItemCount(1);
+        cours.clear();
+        cours.addItem("Tous", "-1");
+        for (int i = 0; i < coursArray.length(); i++) {
+            CoursSummary c = coursArray.get(i);
+            cours.addItem(c.getShortDesc(), c.getSeqno());
+        }
 	}
 
 	private void loadClubListResults(JsArray<ClubSummary> clubs) {
 	  dropDownUserClubs.clear();
 	  jdb.allClubs = clubs;
 	  displayClubListResults();
-	}
-
-	private void displayCoursSearchResults() {
-	  cours.setVisibleItemCount(1);
-	  cours.clear();
-	  for(int i = 0; i < allCours.length(); ++i) {
-	    String cSeqNo = allCours.get(i);
-	    for (Constants.Cours c : Constants.COURS) {
-	      if (c.seqno.equals(cSeqNo))
-		cours.addItem(c.name, c.seqno);
-	    }
-	  }
 	}
 
 	private void displayClubListResults() {
@@ -919,7 +916,7 @@ public class ListWidget extends Composite {
 	      jdb.displayError("pas de réponse; veuillez re-essayer");
 	      return;
 	    }
-	    loadCoursSearchResults((JsArrayString)jso);
+	    loadCoursSearchResults((JsArray<CoursSummary>)jso);
 	  }
 
   	/**
