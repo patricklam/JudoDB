@@ -22,7 +22,9 @@ public class ClientData extends JavaScriptObject {
 	public final native void setDDNString(String ddn) /*-{ this.ddn = ddn; }-*/;
 	public final native String getSexe() /*-{ return this.sexe; }-*/;
 	public final native void setSexe(String sexe) /*-{ this.sexe = sexe; }-*/;
-	
+	public final native String getNumeroClub() /*-{ return this.numeroClub; }-*/;
+	public final native void setNumeroClub(String numeroClub) /*-{ this.numeroClub = numeroClub; }-*/;
+
 	public final native String getAdresse() /*-{ return this.adresse; }-*/;
 	public final native void setAdresse(String adresse) /*-{ this.adresse = adresse; }-*/;
 	public final native String getVille() /*-{ return this.ville; }-*/;
