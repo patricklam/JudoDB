@@ -540,7 +540,12 @@ public class JudoDB implements EntryPoint {
 
 	String getSelectedClubId(){
 	  if (0 != selectedClub) return idxToClub.get(selectedClub).getId();
-	  else return "";
+	  else return null;
+	}
+
+	ClubSummary getSelectedClub(){
+	  if (0 != selectedClub) return idxToClub.get(selectedClub);
+	  else return null;
 	}
 
 	static String getClubText(ClubSummary cs) {
@@ -548,7 +553,8 @@ public class JudoDB implements EntryPoint {
 	}
 
 	ClubSummary getClubSummary(int clubListBoxIndex) {
-	  return idxToClub.get(clubListBoxIndex);
+	  if (0 != clubListBoxIndex) return idxToClub.get(clubListBoxIndex);
+	  else return null;
 	}
 
 	private void displayClubListResults() {

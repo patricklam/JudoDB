@@ -139,8 +139,9 @@ public class ListWidget extends Composite {
 		if (s == -1) s = Constants.currentSession().seqno;
 
 		url += "?session_seqno=" + s;
-		if (jdb.selectedClub != 0 && jdb.selectedClubId != null) {
-			url += "&numero_club=" + jdb.selectedClubId;
+		ClubSummary cs = jdb.getSelectedClub();
+		if (jdb.selectedClub != 0 && cs != null) {
+			url += "&numero_club=" + cs.getNumeroClub();
 		} 
 		url += CALLBACK_URL_SUFFIX_A;
 		jdb.pleaseWait();
