@@ -2,7 +2,7 @@ package ca.patricklam.judodb.client;
 
 import java.util.ArrayList;
 import java.util.Stack;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -110,7 +110,7 @@ public class JudoDB implements EntryPoint {
 	final Anchor returnToMainFromListes = new Anchor("Retour page principale");
 
 	private ListBox dropDownUserClubs = new ListBox();
-	HashMap<Integer, ClubSummary> idxToClub = new HashMap<Integer, ClubSummary>();
+	LinkedHashMap<Integer, ClubSummary> idxToClub = new LinkedHashMap<Integer, ClubSummary>();
 	
 	ArrayList<Widget> allWidgets = new ArrayList<Widget>();
 	
@@ -143,7 +143,6 @@ public class JudoDB implements EntryPoint {
         }
     }
 
-    /* ack gross hack, should fix clubsearchhandler */
     private void refreshSelectedClub() {
         selectedClub = dropDownUserClubs.getSelectedIndex();
     }
@@ -530,12 +529,6 @@ public class JudoDB implements EntryPoint {
 		firstSearchResultToDisplay = 0;
 		this.allClubs = clubs;
 		displayClubListResults();
-	}
-
-	String getNumeroSelectedClub(){
-	  if (0 == selectedClub) return "-1";
-	  ClubSummary cs = idxToClub.get(selectedClub);
-	  return cs.getNumeroClub();
 	}
 
 	String getSelectedClubId(){

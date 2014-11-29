@@ -453,7 +453,8 @@ public class ClientWidget extends Composite {
 		cd.setPrenom(prenom.getText());
 		cd.setDDNString(Constants.stdToDbDate(ddn_display.getText()));
 		cd.setSexe(sexe.getText());
-		cd.setNumeroClub(jdb.getNumeroSelectedClub());
+		ClubSummary cs = jdb.getSelectedClub();
+		if (null != cs) cd.setNumeroClub(cs.getNumeroClub());
 
 		cd.setAdresse(adresse.getText());
 		cd.setVille(ville.getText());
