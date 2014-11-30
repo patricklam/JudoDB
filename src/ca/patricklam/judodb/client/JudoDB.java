@@ -155,7 +155,7 @@ public class JudoDB implements EntryPoint {
 
     void generateClubList() {
         pleaseWait();
-        retrieveClubList(URL.encode(PULL_CLUB_LIST_URL));
+        retrieveClubList();
       }
 
     // Create a handler for the searchButton and nameField
@@ -172,7 +172,7 @@ public class JudoDB implements EntryPoint {
 
         private void refreshClientListAndFilter() {
             pleaseWait();
-            retrieveClientList(URL.encode(PULL_CLIENT_LIST_URL));
+            retrieveClientList();
         }
     }
 
@@ -506,8 +506,9 @@ public class JudoDB implements EntryPoint {
     }
 
     /* --- network functions --- */
-    public void retrieveClientList(String url) {
-        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+    public void retrieveClientList() {
+        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
+                                                    URL.encode(PULL_CLIENT_LIST_URL));
         try {
             Request request = builder.sendRequest(null, new RequestCallback() {
                     public void onError(Request request, Throwable exception) {
@@ -532,8 +533,9 @@ public class JudoDB implements EntryPoint {
         }
     }
 
-    public void retrieveClubList(String url) {
-        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+    public void retrieveClubList() {
+        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
+                                                    URL.encode(PULL_CLUB_LIST_URL));
         try {
             Request request = builder.sendRequest(null, new RequestCallback() {
                     public void onError(Request request, Throwable exception) {
