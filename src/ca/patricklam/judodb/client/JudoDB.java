@@ -171,14 +171,8 @@ public class JudoDB implements EntryPoint {
         }
 
         private void refreshClientListAndFilter() {
-            statusLabel.setText("");
-            //searchButton.setEnabled(false);
-
-            String url = PULL_CLIENT_LIST_URL;
-            url = URL.encode(url) + "?callback=";
-
             pleaseWait();
-            getJsonForSearch(jsonRequestId++, url, JudoDB.this);
+            retrieveClientList(URL.encode(PULL_CLIENT_LIST_URL));
         }
     }
 
@@ -422,7 +416,7 @@ public class JudoDB implements EntryPoint {
 
     /* --- client search UI functions --- */
 
-    private void loadSearchResults(JsArray<ClientSummary> allClients) {
+    private void loadClientListResults(JsArray<ClientSummary> allClients) {
         searchString = removeAccents(searchField.getText());
         searchResults.removeAllRows();
         firstSearchResultToDisplay = 0;
@@ -472,56 +466,6 @@ public class JudoDB implements EntryPoint {
         searchResultsPanel.setVisible(true);
     }
 
-    /* --- client search network functions --- */
-
-    /**
-     * Handle the response to the request for search data.
-     */
-    public void handleJsonSearchResponse(JavaScriptObject jso) {
-        if (jso == null) {
-          displayError("pas de réponse; veuillez re-essayer");
-          return;
-        }
-        clearStatus();
-
-        loadSearchResults(asArrayOfClientSummary (jso));
-      }
-
-    /**
-     * Make call to remote server to get search results.
-     */
-    public native static void getJsonForSearch(int requestId, String url,
-          JudoDB handler) /*-{
-       var callback = "callback" + requestId;
-
-       var script = document.createElement("script");
-       script.setAttribute("src", url+callback);
-       script.setAttribute("type", "text/javascript");
-       window[callback] = function(jsonObj) {
-         handler.@ca.patricklam.judodb.client.JudoDB::handleJsonSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
-         window[callback + "done"] = true;
-       }
-
-       setTimeout(function() {
-         if (!window[callback + "done"]) {
-           handler.@ca.patricklam.judodb.client.JudoDB::handleJsonSearchResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
-         }
-
-         document.body.removeChild(script);
-         delete window[callback];
-         delete window[callback + "done"];
-       }, 10000);
-
-       document.body.appendChild(script);
-      }-*/;
-
-    /**
-     * Convert the string 'json' into a JavaScript object.
-     */
-    private final native JsArray<ClientSummary> asArrayOfClientSummary(JavaScriptObject jso) /*-{
-        return jso;
-    }-*/;
-
     /* --- club list UI functions --- */
     private void displayClubListResults() {
       dropDownUserClubs.clear();
@@ -561,7 +505,33 @@ public class JudoDB implements EntryPoint {
       return idxToClub.get(clubListBoxIndex);
     }
 
-    /* --- club list network functions --- */
+    /* --- network functions --- */
+    public void retrieveClientList(String url) {
+        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
+        try {
+            Request request = builder.sendRequest(null, new RequestCallback() {
+                    public void onError(Request request, Throwable exception) {
+                        displayError("pas de réponse; veuillez re-essayer");
+                    }
+
+                    public void onResponseReceived(Request request,
+                                                   Response response) {
+                        if (200 == response.getStatusCode()) {
+                            clearStatus();
+                            loadClientListResults
+                                (JsonUtils.<JsArray<ClientSummary>>safeEval
+                                 (response.getText()));
+                        } else {
+                            displayError("Couldn't retrieve JSON (" +
+                                         response.getStatusText() + ")");
+                        }
+                    }
+                });
+        } catch (RequestException e) {
+            displayError("Couldn't retrieve JSON");
+        }
+    }
+
     public void retrieveClubList(String url) {
         RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, url);
         try {
@@ -574,7 +544,6 @@ public class JudoDB implements EntryPoint {
                                                    Response response) {
                         if (200 == response.getStatusCode()) {
                             clearStatus();
-                            GWT.log(response.getText());
                             loadClubListResults
                                 (JsonUtils.<JsArray<ClubSummary>>safeEval
                                  (response.getText()));
