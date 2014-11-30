@@ -416,22 +416,7 @@ public class JudoDB implements EntryPoint {
 		modeStack.push(new Mode(Mode.ActualMode.MAIN));
 	}
 
-	private native String removeAccents(String s) /*-{
-	    var r=s.toLowerCase();
-        r = r.replace(new RegExp("\\s", 'g'),"");
-        r = r.replace(new RegExp("[àáâãäå]", 'g'),"a");
-        r = r.replace(new RegExp("æ", 'g'),"ae");
-        r = r.replace(new RegExp("ç", 'g'),"c");
-        r = r.replace(new RegExp("[èéêë]", 'g'),"e");
-        r = r.replace(new RegExp("[ìíîï]", 'g'),"i");
-        r = r.replace(new RegExp("ñ", 'g'),"n");                            
-        r = r.replace(new RegExp("[òóôõö]", 'g'),"o");
-        r = r.replace(new RegExp("œ", 'g'),"oe");
-        r = r.replace(new RegExp("[ùúûü]", 'g'),"u");
-        r = r.replace(new RegExp("[ýÿ]", 'g'),"y");
-        r = r.replace(new RegExp("\\W", 'g'),"");
-        return r;
-    }-*/;
+	/* --- client search UI functions --- */
 	
 	private void loadSearchResults(JsArray<ClientSummary> allClients) {
 		searchString = removeAccents(searchField.getText());
@@ -482,6 +467,8 @@ public class JudoDB implements EntryPoint {
 		}
 		searchResultsPanel.setVisible(true);
 	}
+
+	/* --- client search network functions --- */
 	
 	/**
 	 * Handle the response to the request for search data.
@@ -523,12 +510,33 @@ public class JudoDB implements EntryPoint {
 
 	   document.body.appendChild(script);
 	  }-*/;
-	
-	private void loadClubListResults(JsArray<ClubSummary> clubs) {
-		firstSearchResultToDisplay = 0;
-		this.allClubs = clubs;
-		displayClubListResults();
+
+	/**
+	 * Convert the string 'json' into a JavaScript object.
+	 */
+	private final native JsArray<ClientSummary> asArrayOfClientSummary(JavaScriptObject jso) /*-{
+	    return jso;
+	}-*/;
+
+	/* --- club list UI functions --- */
+	private void displayClubListResults() {
+	  dropDownUserClubs.clear();
+	  dropDownUserClubs.addItem("TOUS");
+	  dropDownUserClubs.setVisibleItemCount(1);
+	  ClubSummary cs = null;
+
+	  for(int i = 0; i < allClubs.length(); ++i) {
+	    cs = allClubs.get(i);
+	    dropDownUserClubs.addItem(getClubText(cs), cs.getNumeroClub());
+	    idxToClub.put(i+1, cs); //We add one because "TOUS" occupies index 0
+	  }
+
+	  dropDownUserClubs.setSelectedIndex(selectedClub);
+
+	  clubListResultsPanel.setVisible(true);
 	}
+
+	/* --- club-list related utility functions --- */
 
 	String getNumeroSelectedClub(){
 	  if (0 == selectedClub) return "-1";
@@ -549,34 +557,7 @@ public class JudoDB implements EntryPoint {
 	  return idxToClub.get(clubListBoxIndex);
 	}
 
-	private void displayClubListResults() {
-	  dropDownUserClubs.clear();
-	  dropDownUserClubs.addItem("TOUS");
-	  dropDownUserClubs.setVisibleItemCount(1);
-	  ClubSummary cs = null;
-
-	  for(int i = 0; i < allClubs.length(); ++i) {
-	    cs = allClubs.get(i);
-	    dropDownUserClubs.addItem(getClubText(cs), cs.getNumeroClub());
-	    idxToClub.put(i+1, cs); //We add one because "TOUS" occupies index 0
-	  }
-
-	  dropDownUserClubs.setSelectedIndex(selectedClub);
-	  
-	  clubListResultsPanel.setVisible(true);
-	}
-
-  	/**
-	 * Handle the response to the request for the user list of club.
-	 */
-	public void handleJsonClubListResponse(JavaScriptObject jso) {
-	    if (jso == null) {
-	      displayError("pas de réponse; veuillez re-essayer");
-	      return;
-	    }
-	    clearStatus();
-	    loadClubListResults(asArrayOfClubSummary (jso));
-	  }
+	/* --- club list network functions --- */
 
   	/**
 	 * Make call to remote server to get the
@@ -606,20 +587,33 @@ public class JudoDB implements EntryPoint {
 
 	   document.body.appendChild(script);
 	  }-*/;
-	
+
 	/**
-	 * Convert the string 'json' into a JavaScript object.
+	 * Handle the response to the request for the user list of club.
 	 */
-	private final native JsArray<ClientSummary> asArrayOfClientSummary(JavaScriptObject jso) /*-{
-	    return jso;
-	}-*/;
-	
+	public void handleJsonClubListResponse(JavaScriptObject jso) {
+	    if (jso == null) {
+	      displayError("pas de réponse; veuillez re-essayer");
+	      return;
+	    }
+	    clearStatus();
+	    loadClubListResults(asArrayOfClubSummary (jso));
+	  }
+
 	/**
 	 * Convert the string 'json' into a JavaScript object.
 	 */
 	private final native JsArray<ClubSummary> asArrayOfClubSummary(JavaScriptObject jso) /*-{
 	    return jso;
 	}-*/;
+
+	private void loadClubListResults(JsArray<ClubSummary> clubs) {
+		firstSearchResultToDisplay = 0;
+		this.allClubs = clubs;
+		displayClubListResults();
+	}
+
+	/* --- helper functions for status bar --- */
 
 	void displayError(String error) {
 		statusLabel.addStyleName("status-error");
@@ -640,4 +634,22 @@ public class JudoDB implements EntryPoint {
 		statusLabel.setText(s);
 		statusLabel.setVisible(true);
 	}
+
+	/* --- miscellaneous utility functions --- */
+	private native String removeAccents(String s) /*-{
+	    var r=s.toLowerCase();
+        r = r.replace(new RegExp("\\s", 'g'),"");
+        r = r.replace(new RegExp("[àáâãäå]", 'g'),"a");
+        r = r.replace(new RegExp("æ", 'g'),"ae");
+        r = r.replace(new RegExp("ç", 'g'),"c");
+        r = r.replace(new RegExp("[èéêë]", 'g'),"e");
+        r = r.replace(new RegExp("[ìíîï]", 'g'),"i");
+        r = r.replace(new RegExp("ñ", 'g'),"n");
+        r = r.replace(new RegExp("[òóôõö]", 'g'),"o");
+        r = r.replace(new RegExp("œ", 'g'),"oe");
+        r = r.replace(new RegExp("[ùúûü]", 'g'),"u");
+        r = r.replace(new RegExp("[ýÿ]", 'g'),"y");
+        r = r.replace(new RegExp("\\W", 'g'),"");
+        return r;
+    }-*/;
 }
