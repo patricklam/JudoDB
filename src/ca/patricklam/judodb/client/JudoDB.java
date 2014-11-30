@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.LinkedHashMap;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
@@ -75,10 +76,8 @@ public class JudoDB implements EntryPoint {
 	
 	public static final int MAX_RESULTS = 10;
 	
-	// testing db:
-	//public static final String BASE_URL = "http://noether-wireless/~plam/anjoudb-backend/";
-	//public static final String BASE_URL = "http://localhost/~plam/anjoudb-backend/";
-	public static final String BASE_URL = "http://www.basejudo.com/backend/";
+	public static final String BACKEND_SUFFIX = "backend/";
+	public static final String BASE_URL = GWT.getHostPageBaseURL() + BACKEND_SUFFIX;
 	
 	private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
 	public static final String PULL_CLUB_LIST_URL = BASE_URL + "pull_club_list.php";
