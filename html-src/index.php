@@ -18,7 +18,7 @@ session_start();
 $client = new OAuth2\Client($GOOGLE_CLIENT_ID, $GOOGLE_CLIENT_SECRET, OAuth2\Client::AUTH_TYPE_FORM);
 if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] != "yes")
 {
-    if (!isset($_SESSION['state'])) {
+    if (!isset($_SESSION['state']) && isset($_GET['state'])) {
         // xxx is this actually safe?!
         $_SESSION['state'] = $_GET['state'];
     }
