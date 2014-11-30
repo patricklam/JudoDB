@@ -11,9 +11,8 @@ public class ConfigWidget extends Composite {
     public static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
 
     private final JudoDB jdb;
-    private static final String PULL_CONFIG_URL = JudoDB.BASE_URL + "pull_config.php";
-    //private static final String PUSH_CONFIG_URL = JudoDB.BASE_URL + "push_config.php";
-    private static final String CALLBACK_URL_SUFFIX_Q = "?callback=";
+    // private static final String PULL_CONFIG_URL = JudoDB.BASE_URL + "pull_config.php";
+    // private static final String PUSH_CONFIG_URL = JudoDB.BASE_URL + "push_config.php";
 
     // useful URLs: http://www.filsa.net/2010/01/23/more-on-tablayoutpanel/
     // http://www.filsa.net/2010/01/21/gwt-notes-tablayoutpanel/
