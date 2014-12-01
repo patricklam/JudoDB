@@ -256,13 +256,12 @@ public class ClientWidget extends Composite {
 
         saveAndReturnClientButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
-                pushClientDataToServer();
-                new Timer() { public void run() { ClientWidget.this.jdb.popMode(); } }.schedule(2000);
+                pushClientDataToServer(true);
             }
         });
         saveClientButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
-                pushClientDataToServer();
+                pushClientDataToServer(false);
             }
         });
         discardClientButton.addClickHandler(new ClickHandler() {
@@ -960,7 +959,7 @@ public class ClientWidget extends Composite {
         frais_encoded.setValue(f.toString());
     }
 
-    private void pushClientDataToServer() {
+    private void pushClientDataToServer(final boolean leaveAfterPush) {
         if (cd.getNom().equals("") || cd.getPrenom().equals("")) {
             jdb.displayError("pas de nom ou prenom");
             return;
@@ -980,7 +979,7 @@ public class ClientWidget extends Composite {
 
         pushTries = 0;
         new Timer() { public void run() {
-            pushOneClient(guid);
+            pushOneClient(guid, leaveAfterPush);
         } }.schedule(500);
     }
 
@@ -996,7 +995,7 @@ public class ClientWidget extends Composite {
 
         pushTries = 0;
         new Timer() { public void run() {
-            pushOneClient(guid);
+            pushOneClient(guid, true);
         } }.schedule(500);
     }
 
@@ -1026,7 +1025,7 @@ public class ClientWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
-    public void pushOneClient(final String guid) {
+    public void pushOneClient(final String guid, final boolean leaveAfterPush) {
         String url = CONFIRM_PUSH_URL + "?guid=" + guid;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
@@ -1041,13 +1040,17 @@ public class ClientWidget extends Composite {
                             }
 
                             new Timer() { public void run() {
-                                pushOneClient(guid);
+                                pushOneClient(guid, leaveAfterPush);
                             } }.schedule(2000);
                             pushTries++;
                         } else {
                             jdb.setStatus("Sauvegardé.");
                             jdb.invalidateListWidget();
-                            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+                            new Timer() { public void run() {
+                                jdb.clearStatus();
+                                if (leaveAfterPush)
+                                    ClientWidget.this.jdb.popMode();
+                            } }.schedule(2000);
                             if (cd.getID() == null || cd.getID().equals("")) {
                                 cd.setID(Integer.toString(cro.getSid()));
                                 loadClientData();
