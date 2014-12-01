@@ -155,7 +155,7 @@ public class JudoDB implements EntryPoint {
 
     void generateClubList() {
         pleaseWait();
-        retrieveClubList();
+        retrieveClubList(dropDownUserClubs);
       }
 
     // Create a handler for the searchButton and nameField
@@ -467,21 +467,26 @@ public class JudoDB implements EntryPoint {
     }
 
     /* --- club list UI functions --- */
-    private void displayClubListResults() {
+    private boolean pendingRetrieveClubList = false;
+    void populateClubList(ListBox dropDownUserClubs) {
+        if (allClubs == null) {
+            if (pendingRetrieveClubList) return;
+            retrieveClubList(dropDownUserClubs);
+            return;
+        }
+
       dropDownUserClubs.clear();
       dropDownUserClubs.addItem("TOUS");
       dropDownUserClubs.setVisibleItemCount(1);
-      ClubSummary cs = null;
+      idxToClub.clear();
 
       for(int i = 0; i < allClubs.length(); ++i) {
-        cs = allClubs.get(i);
-        dropDownUserClubs.addItem(getClubText(cs), cs.getNumeroClub());
-        idxToClub.put(i+1, cs); //We add one because "TOUS" occupies index 0
+          ClubSummary cs = allClubs.get(i);
+          dropDownUserClubs.addItem(getClubText(cs), cs.getNumeroClub());
+          idxToClub.put(i+1, cs); // add one because "TOUS" occupies index 0
       }
 
       dropDownUserClubs.setSelectedIndex(selectedClub);
-
-      clubListResultsPanel.setVisible(true);
     }
 
     /* --- club-list related utility functions --- */
@@ -533,7 +538,8 @@ public class JudoDB implements EntryPoint {
         }
     }
 
-    public void retrieveClubList() {
+    public void retrieveClubList(final ListBox dropDownUserClubs) {
+        pendingRetrieveClubList = true;
         RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
                                                     URL.encode(PULL_CLUB_LIST_URL));
         try {
@@ -547,7 +553,8 @@ public class JudoDB implements EntryPoint {
                         if (200 == response.getStatusCode()) {
                             clearStatus();
                             loadClubListResults
-                                (JsonUtils.<JsArray<ClubSummary>>safeEval
+                                (dropDownUserClubs,
+                                 JsonUtils.<JsArray<ClubSummary>>safeEval
                                  (response.getText()));
                         } else if (403 == response.getStatusCode()) {
                             // NB: this is the first request that JudoDB sends.
@@ -564,10 +571,11 @@ public class JudoDB implements EntryPoint {
         }
     }
 
-    private void loadClubListResults(JsArray<ClubSummary> clubs) {
+    private void loadClubListResults(ListBox dropDownUserClubs, JsArray<ClubSummary> clubs) {
         firstSearchResultToDisplay = 0;
         this.allClubs = clubs;
-        displayClubListResults();
+        populateClubList(dropDownUserClubs);
+        pendingRetrieveClubList = false;
     }
 
     /* --- helper functions for status bar --- */
