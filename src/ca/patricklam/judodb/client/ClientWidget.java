@@ -257,7 +257,8 @@ public class ClientWidget extends Composite {
         saveAndReturnClientButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
                 pushClientDataToServer();
-                ClientWidget.this.jdb.popMode(); }
+                new Timer() { public void run() { ClientWidget.this.jdb.popMode(); } }.schedule(2000);
+            }
         });
         saveClientButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
