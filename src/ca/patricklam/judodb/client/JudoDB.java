@@ -272,10 +272,17 @@ public class JudoDB implements EntryPoint {
         searchButton.setFocus(true);
     }
 
-    /** After changing any data, invalidate the old list. */
+    /** After changing any data, invalidate stored data. */
     public void invalidateListWidget() {
-        this.l.removeFromParent();
-        this.l = null;
+        if (this.l != null) {
+            this.l.removeFromParent();
+            this.l = null;
+        }
+
+        if (searchResults != null) {
+            searchResults.removeAllRows();
+            firstSearchResultToDisplay = 0;
+        }
     }
 
     /**
