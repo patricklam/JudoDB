@@ -35,7 +35,7 @@ public class ClientData extends JavaScriptObject {
     public final native void setCourriel(String courriel) /*-{ this.courriel = courriel; }-*/;
 
     public final native String getJudoQC() /*-{ return this.affiliation; }-*/;
-    public final native void setJudoQC(String judoQC) /*-{ this.judoQC = judoQC; }-*/;
+    public final native void setJudoQC(String judoQC) /*-{ this.affiliation = judoQC; }-*/;
 
     public final native JsArray<GradeData> getGrades() /*-{ return this.grades; }-*/;
     public final native void setGrades(JsArray<GradeData> grades) /*-{ this.grades = grades; }-*/;
