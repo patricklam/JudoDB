@@ -56,7 +56,6 @@ public class ListWidget extends Composite {
     private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
     private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php?guid=";
 
-    private static final String CALLBACK_URL_SUFFIX_Q = "?";
     private static final String CALLBACK_URL_SUFFIX_A = "&";
 
     @UiField(provided=true) FormPanel listForm = new FormPanel(new NamedFrame("_"));
@@ -282,7 +281,7 @@ public class ListWidget extends Composite {
         jdb.populateClubList(dropDownUserClubs);
         coursHandler.generateCoursList();
 
-        getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX_Q, this);
+        retrieveAllClients();
         sorts.add(3); sorts.add(2);
     }
 
@@ -365,7 +364,7 @@ public class ListWidget extends Composite {
     }
 
     private void reset() {
-        getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX_Q, this);
+        retrieveAllClients();
     }
 
     private void recalc() {
@@ -909,46 +908,33 @@ public class ListWidget extends Composite {
         }
     }
 
-    /**
-     * Make call to remote server.
-     */
-    public native static void getJson(int requestId, String url,
-          ListWidget handler) /*-{
-       var callback = "callback" + requestId;
+    public void retrieveAllClients() {
+        String url = PULL_ALL_CLIENTS_URL;
+        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
+                                                    URL.encode(url));
+        try {
+            Request request = builder.sendRequest(null, new RequestCallback() {
+                    public void onError(Request request, Throwable exception) {
+                        jdb.displayError("pas de réponse; veuillez re-essayer");
+                    }
 
-       var script = document.createElement("script");
-       script.setAttribute("src", url+callback);
-       script.setAttribute("type", "text/javascript");
-       window[callback] = function(jsonObj) {
-         handler.@ca.patricklam.judodb.client.ListWidget::handleJsonResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
-         window[callback + "done"] = true;
-       }
-
-       setTimeout(function() {
-         if (!window[callback + "done"]) {
-           handler.@ca.patricklam.judodb.client.ListWidget::handleJsonResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
-         }
-
-         document.body.removeChild(script);
-         delete window[callback];
-         delete window[callback + "done"];
-       }, 5000);
-
-       document.body.appendChild(script);
-      }-*/;
-
-    /**
-     * Handle the response to the request for data from a remote server.
-     */
-    public void handleJsonResponse(JavaScriptObject jso) {
-        if (jso == null) {
-            jdb.displayError("Couldn't retrieve JSON (lists)");
-            return;
+                    public void onResponseReceived(Request request,
+                                                   Response response) {
+                        if (200 == response.getStatusCode()) {
+                            ListWidget.this.allClients =
+                                (JsonUtils.<JsArray<ClientData>>safeEval
+                                 (response.getText()));
+                            showList();
+                            jdb.clearStatus();
+                        } else {
+                            jdb.displayError("Couldn't retrieve JSON lists (" +
+                                         response.getStatusText() + ")");
+                        }
+                    }
+                });
+        } catch (RequestException e) {
+            jdb.displayError("Couldn't retrieve JSON");
         }
-
-        this.allClients = jso.cast();
-        showList();
-        jdb.clearStatus();
     }
 
     /* --- stage 2 push functions --- */
@@ -1009,7 +995,7 @@ public class ListWidget extends Composite {
         else {
             jdb.setStatus("Sauvegardé.");
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
-            getJson(jdb.jsonRequestId++, PULL_ALL_CLIENTS_URL + CALLBACK_URL_SUFFIX_Q, this);
+            reset();
         }
     }
 
