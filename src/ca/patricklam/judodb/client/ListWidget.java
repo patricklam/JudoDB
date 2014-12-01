@@ -879,101 +879,53 @@ public class ListWidget extends Composite {
         String url = PULL_CLUB_COURS_URL;
         url += "?session_seqno="+session_seqno;
         if (numero_club != null) url += "&numero_club="+numero_club;
-
-        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
-                                                    URL.encode(url));
-        try {
-            Request request = builder.sendRequest(null, new RequestCallback() {
-                    public void onError(Request request, Throwable exception) {
-                        jdb.displayError("pas de réponse; veuillez re-essayer");
-                    }
-
-                    public void onResponseReceived(Request request,
-                                                   Response response) {
-                        if (200 == response.getStatusCode()) {
-                            jdb.clearStatus();
-                            loadCoursSearchResults
-                                (JsonUtils.<JsArray<CoursSummary>>safeEval
-                                 (response.getText()));
-                        } else {
-                            jdb.displayError("Couldn't retrieve JSON (" +
-                                         response.getStatusText() + ")");
-                        }
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        loadCoursSearchResults
+                            (JsonUtils.<JsArray<CoursSummary>>safeEval(s));
                     }
                 });
-        } catch (RequestException e) {
-            jdb.displayError("Couldn't retrieve JSON");
-        }
+        jdb.retrieve(url, rc);
     }
 
     public void retrieveAllClients() {
         String url = PULL_ALL_CLIENTS_URL;
-        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
-                                                    URL.encode(url));
-        try {
-            Request request = builder.sendRequest(null, new RequestCallback() {
-                    public void onError(Request request, Throwable exception) {
-                        jdb.displayError("pas de réponse; veuillez re-essayer");
-                    }
-
-                    public void onResponseReceived(Request request,
-                                                   Response response) {
-                        if (200 == response.getStatusCode()) {
-                            ListWidget.this.allClients =
-                                (JsonUtils.<JsArray<ClientData>>safeEval
-                                 (response.getText()));
-                            showList();
-                            jdb.clearStatus();
-                        } else {
-                            jdb.displayError("Couldn't retrieve JSON lists (" +
-                                         response.getStatusText() + ")");
-                        }
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        ListWidget.this.allClients =
+                            (JsonUtils.<JsArray<ClientData>>safeEval(s));
+                        showList();
                     }
                 });
-        } catch (RequestException e) {
-            jdb.displayError("Couldn't retrieve JSON");
-        }
+        jdb.retrieve(url, rc);
     }
 
     public void pushChanges(final String guid) {
         String url = CONFIRM_PUSH_URL + "?guid=" + guid;
-        RequestBuilder builder = new RequestBuilder(RequestBuilder.POST,
-                                                    URL.encode(url));
-        try {
-            Request request = builder.sendRequest(null, new RequestCallback() {
-                    public void onError(Request request, Throwable exception) {
-                        jdb.displayError("pas de réponse; veuillez re-essayer");
-                    }
-
-                    public void onResponseReceived(Request request,
-                                                   Response response) {
-                        if (200 == response.getStatusCode()) {
-                            ConfirmResponseObject cro =
-                                JsonUtils.<ConfirmResponseObject>safeEval(response.getText());
-                            String rs = cro.getResult();
-                            GWT.log(rs);
-                            if (rs.equals("NOT_YET")) {
-                                if (pushTries >= 3) {
-                                    jdb.displayError("le serveur n'a pas accepté les données");
-                                    return;
-                                }
-
-                                new Timer() { public void run() {
-                                    pushChanges(guid);
-                                } }.schedule(2000);
-                                pushTries++;
-                            } else {
-                                jdb.setStatus("Sauvegardé.");
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        ConfirmResponseObject cro =
+                            JsonUtils.<ConfirmResponseObject>safeEval(s);
+                        String rs = cro.getResult();
+                        if (rs.equals("NOT_YET")) {
+                            if (pushTries >= 3) {
+                                jdb.displayError("le serveur n'a pas accepté les données");
+                                return;
                             }
-                            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+
+                            new Timer() { public void run() {
+                                pushChanges(guid);
+                            } }.schedule(2000);
+                            pushTries++;
                         } else {
-                            jdb.displayError("Couldn't retrieve JSON lists (" +
-                                         response.getStatusText() + ")");
+                            jdb.setStatus("Sauvegardé.");
                         }
+                        new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
                     }
                 });
-        } catch (RequestException e) {
-            jdb.displayError("Couldn't retrieve JSON");
-        }
+        jdb.retrieve(url, rc);
     }
 }

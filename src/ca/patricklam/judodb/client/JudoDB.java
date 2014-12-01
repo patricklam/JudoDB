@@ -518,64 +518,66 @@ public class JudoDB implements EntryPoint {
     }
 
     /* --- network functions --- */
-    public void retrieveClientList() {
-        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
-                                                    URL.encode(PULL_CLIENT_LIST_URL));
-        try {
-            Request request = builder.sendRequest(null, new RequestCallback() {
+    interface Function {
+        public void eval(String s);
+    }
+
+    RequestCallback createRequestCallback(final Function f) {
+        return new RequestCallback() {
                     public void onError(Request request, Throwable exception) {
-                        displayError("pas de réponse; veuillez re-essayer");
+                        JudoDB.this.displayError("pas de réponse; veuillez re-essayer");
                     }
 
                     public void onResponseReceived(Request request,
                                                    Response response) {
                         if (200 == response.getStatusCode()) {
-                            clearStatus();
-                            loadClientListResults
-                                (JsonUtils.<JsArray<ClientSummary>>safeEval
-                                 (response.getText()));
+                            JudoDB.this.clearStatus();
+                            f.eval(response.getText());
+                        } else if (403 == response.getStatusCode()) {
+                            // at any point we might blow away the whole app w/a 403.
+                            Window.Location.replace("/forbidden.php");
                         } else {
-                            displayError("Couldn't retrieve JSON (" +
-                                         response.getStatusText() + ")");
+                            JudoDB.this.displayError("Couldn't retrieve JSON (" +
+                                                response.getStatusText() + ")");
                         }
                     }
-                });
+        };
+    }
+
+    public void retrieve(String url, RequestCallback rc) {
+        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
+                                                    url);
+        try {
+            Request request = builder.sendRequest(null, rc);
         } catch (RequestException e) {
             displayError("Couldn't retrieve JSON");
         }
     }
 
-    public void retrieveClubList(final ListBox dropDownUserClubs) {
-        pendingRetrieveClubList = true;
-        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
-                                                    URL.encode(PULL_CLUB_LIST_URL));
-        try {
-            Request request = builder.sendRequest(null, new RequestCallback() {
-                    public void onError(Request request, Throwable exception) {
-                        displayError("pas de réponse; veuillez re-essayer");
-                    }
-
-                    public void onResponseReceived(Request request,
-                                                   Response response) {
-                        if (200 == response.getStatusCode()) {
-                            clearStatus();
-                            loadClubListResults
-                                (dropDownUserClubs,
-                                 JsonUtils.<JsArray<ClubSummary>>safeEval
-                                 (response.getText()));
-                        } else if (403 == response.getStatusCode()) {
-                            // NB: this is the first request that JudoDB sends.
-                            // Explicitly handle 403s here with a redirect.
-                            Window.Location.replace("/forbidden.php");
-                        } else {
-                            displayError("Couldn't retrieve JSON (" +
-                                         response.getStatusText() + ")");
-                        }
+    public void retrieveClientList() {
+        String url = PULL_CLIENT_LIST_URL;
+        RequestCallback rc =
+            createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        loadClientListResults
+                            (JsonUtils.<JsArray<ClientSummary>>safeEval(s));
                     }
                 });
-        } catch (RequestException e) {
-            displayError("Couldn't retrieve JSON");
-        }
+        retrieve(url, rc);
+    }
+
+    public void retrieveClubList(final ListBox dropDownUserClubs) {
+        String url = PULL_CLUB_LIST_URL;
+        pendingRetrieveClubList = true;
+        RequestCallback rc =
+            createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        loadClubListResults
+                            (dropDownUserClubs,
+                             JsonUtils.<JsArray<ClubSummary>>safeEval(s));
+                    }
+                });
+        retrieve(url, rc);
     }
 
     private void loadClubListResults(ListBox dropDownUserClubs, JsArray<ClubSummary> clubs) {

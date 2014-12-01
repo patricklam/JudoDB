@@ -10,6 +10,7 @@ import java.util.Map;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.FormElement;
@@ -38,6 +39,11 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
 
 public class ClientWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ClientWidget> {}
@@ -149,10 +155,9 @@ public class ClientWidget extends Composite {
 
     private final FormElement clientform;
 
-    private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php?id=";
-    private static final String CALLBACK_URL_SUFFIX = "&callback=";
+    private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php";
     private static final String PUSH_ONE_CLIENT_URL = JudoDB.BASE_URL + "push_one_client.php";
-    private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php?guid=";
+    private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
     private int pushTries;
 
     public interface BlurbTemplate extends SafeHtmlTemplates {
@@ -280,7 +285,7 @@ public class ClientWidget extends Composite {
 
         jdb.pleaseWait();
         if (cid != -1)
-            getJsonForPull(jdb.jsonRequestId++, PULL_ONE_CLIENT_URL + cid + CALLBACK_URL_SUFFIX, this);
+            retrieveClient(cid);
         else {
             this.cd = JavaScriptObject.createObject().cast();
             this.cd.setID(null); this.cd.setNom("");
@@ -974,7 +979,7 @@ public class ClientWidget extends Composite {
 
         pushTries = 0;
         new Timer() { public void run() {
-            getJsonForStageTwoPush(jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX, ClientWidget.this);
+            pushOneClient(guid);
         } }.schedule(500);
     }
 
@@ -984,133 +989,64 @@ public class ClientWidget extends Composite {
 
         guid = UUID.uuid();
         sid.setValue(cd.getID());
-
         guid_on_form.setValue(guid);
         deleted.setValue("true");
         clientform.submit();
 
         pushTries = 0;
         new Timer() { public void run() {
-            getJsonForStageTwoPush(jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX, ClientWidget.this);
+            pushOneClient(guid);
         } }.schedule(500);
     }
 
-    /**
-     * Make call to remote server to request client information.
-     */
-    public native static void getJsonForPull(int requestId, String url,
-          ClientWidget handler) /*-{
-       var callback = "callback" + requestId;
+    public void retrieveClient(int cid) {
+        String url = PULL_ONE_CLIENT_URL + "?id=" + cid;
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        ClientWidget.this.cd = JsonUtils.<ClientData>safeEval(s);
+                        currentServiceNumber = cd.getMostRecentServiceNumber();
+                        loadClientData();
+                        jdb.clearStatus();
 
-       var script = document.createElement("script");
-       script.setAttribute("src", url+callback);
-       script.setAttribute("type", "text/javascript");
-       window[callback] = function(jsonObj) {
-         handler.@ca.patricklam.judodb.client.ClientWidget::handleJsonPullResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
-         window[callback + "done"] = true;
-       }
-
-       setTimeout(function() {
-         if (!window[callback + "done"]) {
-           handler.@ca.patricklam.judodb.client.ClientWidget::handleJsonPullResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
-         }
-
-         document.body.removeChild(script);
-         delete window[callback];
-         delete window[callback + "done"];
-       }, 5000);
-
-       document.body.appendChild(script);
-      }-*/;
-
-    /**
-     * Handle the response to the request for data from a remote server.
-     */
-    public void handleJsonPullResponse(JavaScriptObject jso) {
-        if (jso == null) {
-            jdb.displayError("Couldn't retrieve JSON");
-            return;
-        }
-
-        this.cd = jso.cast();
-        currentServiceNumber = cd.getMostRecentServiceNumber();
-        loadClientData();
-        jdb.clearStatus();
-
-        for (ChangeHandler ch : onPopulated) {
-            ch.onChange(null);
-        }
+                        for (ChangeHandler ch : onPopulated) {
+                            ch.onChange(null);
+                        }
+                    }
+                });
+        jdb.retrieve(url, rc);
     }
 
-    /**
-     * Make call to remote server to request client information.
-     */
-    public native static void getJsonForStageTwoPush(int requestId, String url,
-          ClientWidget handler) /*-{
-       var callback = "callback" + requestId;
+    public void pushOneClient(final String guid) {
+        String url = CONFIRM_PUSH_URL + "?guid=" + guid;
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        ConfirmResponseObject cro =
+                            JsonUtils.<ConfirmResponseObject>safeEval(s);
+                        String rs = cro.getResult();
+                        if (rs.equals("NOT_YET")) {
+                            if (pushTries >= 3) {
+                                jdb.displayError("le serveur n'a pas accepté les données");
+                                return;
+                            }
 
-       var script = document.createElement("script");
-       script.setAttribute("src", url+callback);
-       script.setAttribute("type", "text/javascript");
-       window[callback] = function(jsonObj) {
-         handler.@ca.patricklam.judodb.client.ClientWidget::handleJsonStageTwoPushResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
-         window[callback + "done"] = true;
-       }
-
-       setTimeout(function() {
-         if (!window[callback + "done"]) {
-           handler.@ca.patricklam.judodb.client.ClientWidget::handleJsonStageTwoPushResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
-         }
-
-         document.body.removeChild(script);
-         delete window[callback];
-         delete window[callback + "done"];
-       }, 5000);
-
-       document.body.appendChild(script);
-      }-*/;
-
-    /**
-     * Handle the response to the request for data from a remote server.
-     */
-    public void handleJsonStageTwoPushResponse(JavaScriptObject jso) {
-        if (jso == null) {
-            if (pushTries == 3) {
-                jdb.displayError("pas de réponse");
-                new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
-                return;
-            } else {
-                tryConfirmPushAgain();
-            }
-        }
-
-        ConfirmResponseObject cro = jso.cast();
-
-        if (cro.getResult().equals("NOTYET")) {
-            tryConfirmPushAgain();
-            return;
-        }
-
-        if (!cro.getResult().equals("OK")) {
-            jdb.displayError("le serveur n'a pas accepté les données");
-            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
-        }
-        else {
-            jdb.setStatus("Sauvegardé.");
-            jdb.invalidateListWidget();
-            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
-            if (cd.getID() == null || cd.getID().equals("")) {
-                cd.setID(Integer.toString(cro.getSid()));
-                loadClientData();
-            }
-        }
-    }
-
-    private void tryConfirmPushAgain() {
-        pushTries++;
-        new Timer() { public void run() {
-            ClientWidget.getJsonForStageTwoPush
-                (jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX, ClientWidget.this);
-        }}.schedule(1000);
+                            new Timer() { public void run() {
+                                pushOneClient(guid);
+                            } }.schedule(2000);
+                            pushTries++;
+                        } else {
+                            jdb.setStatus("Sauvegardé.");
+                            jdb.invalidateListWidget();
+                            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+                            if (cd.getID() == null || cd.getID().equals("")) {
+                                cd.setID(Integer.toString(cro.getSid()));
+                                loadClientData();
+                            }
+                        }
+                        new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+                    }
+                });
+        jdb.retrieve(url, rc);
     }
 }
