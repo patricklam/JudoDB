@@ -54,9 +54,7 @@ public class ListWidget extends Composite {
     private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
     private static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
     private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
-    private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php?guid=";
-
-    private static final String CALLBACK_URL_SUFFIX_A = "&";
+    private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
 
     @UiField(provided=true) FormPanel listForm = new FormPanel(new NamedFrame("_"));
     @UiField Anchor pdf;
@@ -359,7 +357,7 @@ public class ListWidget extends Composite {
 
         pushTries = 0;
         new Timer() { public void run() {
-            getJsonForStageTwoPush(jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX_A, ListWidget.this);
+            pushChanges(guid);
         } }.schedule(500);
     }
 
@@ -937,74 +935,45 @@ public class ListWidget extends Composite {
         }
     }
 
-    /* --- stage 2 push functions --- */
+    public void pushChanges(final String guid) {
+        String url = CONFIRM_PUSH_URL + "?guid=" + guid;
+        RequestBuilder builder = new RequestBuilder(RequestBuilder.POST,
+                                                    URL.encode(url));
+        try {
+            Request request = builder.sendRequest(null, new RequestCallback() {
+                    public void onError(Request request, Throwable exception) {
+                        jdb.displayError("pas de réponse; veuillez re-essayer");
+                    }
 
-    /**
-     * Make call to remote server to request client information.
-     */
-    public native static void getJsonForStageTwoPush(int requestId, String url,
-          ListWidget handler) /*-{
-       var callback = "callback" + requestId;
+                    public void onResponseReceived(Request request,
+                                                   Response response) {
+                        if (200 == response.getStatusCode()) {
+                            ConfirmResponseObject cro =
+                                JsonUtils.<ConfirmResponseObject>safeEval(response.getText());
+                            String rs = cro.getResult();
+                            GWT.log(rs);
+                            if (rs.equals("NOT_YET")) {
+                                if (pushTries >= 3) {
+                                    jdb.displayError("le serveur n'a pas accepté les données");
+                                    return;
+                                }
 
-       var script = document.createElement("script");
-       script.setAttribute("src", url+callback);
-       script.setAttribute("type", "text/javascript");
-       window[callback] = function(jsonObj) {
-         handler.@ca.patricklam.judodb.client.ListWidget::handleJsonStageTwoPushResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(jsonObj);
-         window[callback + "done"] = true;
-       }
-
-       setTimeout(function() {
-         if (!window[callback + "done"]) {
-           handler.@ca.patricklam.judodb.client.ListWidget::handleJsonStageTwoPushResponse(Lcom/google/gwt/core/client/JavaScriptObject;)(null);
-         }
-
-         document.body.removeChild(script);
-         delete window[callback];
-         delete window[callback + "done"];
-       }, 10000);
-
-       document.body.appendChild(script);
-      }-*/;
-
-    /**
-     * Handle the response to the request for data from a remote server.
-     */
-    public void handleJsonStageTwoPushResponse(JavaScriptObject jso) {
-        if (jso == null) {
-            if (pushTries == 3) {
-                jdb.displayError("pas de réponse");
-                new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
-                return;
-            } else {
-                tryConfirmPushAgain();
-            }
-        }
-
-        ConfirmResponseObject cro = jso.cast();
-
-        if (cro.getResult() != null && cro.getResult().equals("NOTYET")) {
-            tryConfirmPushAgain();
-            return;
-        }
-
-        if (cro.getResult() == null || !cro.getResult().equals("OK")) {
-            jdb.displayError("le serveur n'a pas accepté les données");
-            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
-        }
-        else {
-            jdb.setStatus("Sauvegardé.");
-            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
-            reset();
+                                new Timer() { public void run() {
+                                    pushChanges(guid);
+                                } }.schedule(2000);
+                                pushTries++;
+                            } else {
+                                jdb.setStatus("Sauvegardé.");
+                            }
+                            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+                        } else {
+                            jdb.displayError("Couldn't retrieve JSON lists (" +
+                                         response.getStatusText() + ")");
+                        }
+                    }
+                });
+        } catch (RequestException e) {
+            jdb.displayError("Couldn't retrieve JSON");
         }
     }
-
-    private void tryConfirmPushAgain() {
-        pushTries++;
-        new Timer() { public void run() {
-            ListWidget.getJsonForStageTwoPush
-                (jdb.jsonRequestId++, CONFIRM_PUSH_URL + guid + CALLBACK_URL_SUFFIX_A, ListWidget.this);
-        }}.schedule(1000);
-    }
-
 }
