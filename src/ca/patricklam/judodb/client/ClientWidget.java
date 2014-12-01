@@ -1004,6 +1004,14 @@ public class ClientWidget extends Composite {
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
+                        if (s.equals("")) {
+                            ClientWidget.this.jdb.displayError("ce client n'existe pas");
+                            new Timer() { public void run() {
+                                ClientWidget.this.jdb.popMode();
+                            } }.schedule(2000);
+                            return;
+                        }
+
                         ClientWidget.this.cd = JsonUtils.<ClientData>safeEval(s);
                         currentServiceNumber = cd.getMostRecentServiceNumber();
                         loadClientData();
