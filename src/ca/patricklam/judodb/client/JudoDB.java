@@ -307,7 +307,7 @@ public class JudoDB implements EntryPoint {
         nextResultsButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
                 firstSearchResultToDisplay += MAX_RESULTS;
-                if (firstSearchResultToDisplay + MAX_RESULTS > allClients.length()) firstSearchResultToDisplay -= MAX_RESULTS;
+                if (firstSearchResultToDisplay > allClients.length()) firstSearchResultToDisplay -= MAX_RESULTS;
                 displaySearchResults(); } });
         searchNavPanel.add(prevResultsButton);
         prevResultsButton.setVisible(false);
@@ -438,6 +438,7 @@ public class JudoDB implements EntryPoint {
         if (firstSearchResultToDisplay != 0)
             prevResultsButton.setVisible(true);
 
+        searchResults.removeAllRows();
         for (int i = 0; i < allClients.length(); i++) {
             ClientSummary cs = allClients.get(i);
             String s = "[" + cs.getId() + "] " + cs.getPrenom() + " " + cs.getNom();
