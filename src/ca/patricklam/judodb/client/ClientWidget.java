@@ -283,6 +283,7 @@ public class ClientWidget extends Composite {
             }
         });
 
+        jdb.populateClubList(dropDownUserClubs);
         jdb.pleaseWait();
         if (cid != -1)
             retrieveClient(cid);
