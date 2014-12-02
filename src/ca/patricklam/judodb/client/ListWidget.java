@@ -7,8 +7,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
-import ca.patricklam.judodb.client.Constants.Cours;
 import ca.patricklam.judodb.client.Constants.Division;
 import ca.patricklam.judodb.client.Constants.Grade;
 
@@ -50,6 +51,9 @@ public class ListWidget extends Composite {
 
     private JsArray<ClientData> allClients;
     private HashMap<String, ClientData> cidToCD = new HashMap<String, ClientData>();
+    /** A list of cours as retrieved from the server.
+     * Must stay in synch with the ListBox field cours. */
+    private List<CoursSummary> backingCours = new ArrayList<CoursSummary>();
 
     private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
     private static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
@@ -306,7 +310,7 @@ public class ListWidget extends Composite {
                 ListBox lb = (ListBox) lbw;
                 if (lb.getSelectedIndex() != originalCours.get(lb)) {
                     String cid = results.getText(i, Columns.CID);
-                    dv.append(cid + ",Scours,"+lb.getSelectedIndex()+";");
+                    dv.append(cid + ",Scours,"+backingCours.get(lb.getSelectedIndex()).getId()+";");
                 }
             }
             Widget jqw = results.getWidget(i, Columns.JUDOQC);
@@ -376,38 +380,35 @@ public class ListWidget extends Composite {
 
     private void addMetaData() {
         int c = Integer.parseInt(cours.getValue(cours.getSelectedIndex()));
+        // we've deprecated the full name...
+        title.setValue("");
+        subtitle.setValue("");
         if (c > 0 || isFiltering) {
             multi.setValue("0");
             if (isFiltering) {
+                title.setValue("");
                 if (c != -1) {
-                    title.setValue(Constants.COURS[c].name);
-                    short_title.setValue(Constants.COURS[c].short_desc);
+                    short_title.setValue(backingCours.get(c).getShortDesc());
                 }
                 else {
-                    title.setValue("");
                     short_title.setValue("");
                 }
 
                 String st = "";
-                // add filters to subtitle
+                // TODO: add filters to subtitle
                 subtitle.setValue(st);
             } else {
-                title.setValue(Constants.COURS[c].name);
-                if (!Constants.COURS[c].entraineur.equals(""))
-                    subtitle.setValue("Entraineur: " + Constants.COURS[c].entraineur);
-                else
-                    subtitle.setValue("");
-                short_title.setValue(Constants.COURS[c].short_desc);
+                short_title.setValue(backingCours.get(c).getShortDesc());
             }
         } else {
             // all classes
             String tt = "", subt = "", st = "";
             multi.setValue("1");
 
-            for (Cours cc : Constants.COURS) {
-                tt += cc.name + "|";
-                subt += cc.entraineur + "|";
-                st += cc.short_desc + "|";
+            for (CoursSummary cc : backingCours) {
+                tt += "|";
+                subt += "|";
+                st += cc.getShortDesc() + "|";
             }
             title.setValue(tt);
             subtitle.setValue(subt);
@@ -464,7 +465,7 @@ public class ListWidget extends Composite {
         ServiceData sd = cd.getServiceFor(Constants.currentSession());
         CostCalculator.recompute(cd, sd, prorata.getValue());
         if (sd != null && !sd.getCours().equals("")) {
-            dv += Constants.COURS[Integer.parseInt(sd.getCours())].short_desc;
+            dv += backingCours.get(Integer.parseInt(sd.getCours())).getShortDesc();
         }
         dv += "|";
         if (sd != null) {
@@ -837,8 +838,8 @@ public class ListWidget extends Composite {
                 results.setWidget(curRow, Columns.COURS_DESC, w);
                 results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
                 originalCours.put(w, cours);
-            } else if (cours != -1 && cours < Constants.COURS.length) {
-                results.setText(curRow, Columns.COURS_DESC, Constants.COURS[cours].short_desc);
+            } else if (cours != -1) {
+                results.setText(curRow, Columns.COURS_DESC, getShortDescForCoursId(cours));
                 results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
             }
 
@@ -860,12 +861,13 @@ public class ListWidget extends Composite {
         nb.setText("Nombre inscrit: "+count);
     }
 
-    private ListBox newCoursWidget(int cours) {
+    private ListBox newCoursWidget(int coursIdx) {
         ListBox lb = new ListBox();
-        for (Constants.Cours c : Constants.COURS) {
-            lb.addItem(c.short_desc, c.seqno);
+        for (CoursSummary cs : backingCours) {
+            // more ideally, only add cours appropriate to the person's club
+            lb.addItem(cs.getShortDesc(), cs.getId());
         }
-        lb.setSelectedIndex(cours);
+        lb.setSelectedIndex(coursIdx);
         return lb;
     }
 
@@ -886,13 +888,24 @@ public class ListWidget extends Composite {
     }
 
     private void loadCoursSearchResults(JsArray<CoursSummary> coursArray) {
+        backingCours.clear();
         cours.setVisibleItemCount(1);
         cours.clear();
         cours.addItem("Tous", "-1");
         for (int i = 0; i < coursArray.length(); i++) {
             CoursSummary c = coursArray.get(i);
-            cours.addItem(c.getShortDesc(), c.getSeqno());
+            cours.addItem(c.getShortDesc(), c.getId());
+            backingCours.add(c);
         }
+    }
+
+    private String getShortDescForCoursId(int coursId) {
+        String cidString = Integer.toString(coursId);
+        for (CoursSummary c : backingCours) {
+            if (c.getId().equals(cidString))
+                return c.getShortDesc();
+        }
+        return "inconnu";
     }
 
     /* --- network functions --- */
