@@ -154,6 +154,7 @@ public class ListWidget extends Composite {
       public void onChange(ChangeEvent e) {
         jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
         coursHandler.generateCoursList();
+        showList();
       }
     }
 
@@ -177,7 +178,7 @@ public class ListWidget extends Composite {
     private HashMap<TextBox, String> originalGradeDates = new HashMap<TextBox, String>();
 
     private CoursHandler coursHandler = new CoursHandler();
-    private ClubListHandler csHandler = new ClubListHandler();
+    private ClubListHandler clHandler = new ClubListHandler();
 
     public ListWidget(JudoDB jdb) {
         this.jdb = jdb;
@@ -274,7 +275,7 @@ public class ListWidget extends Composite {
 
         listEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
 
-        dropDownUserClubs.addChangeHandler(csHandler);
+        dropDownUserClubs.addChangeHandler(clHandler);
 
         jdb.populateClubList(dropDownUserClubs);
         coursHandler.generateCoursList();
@@ -562,6 +563,25 @@ public class ListWidget extends Composite {
         showList();
     }
 
+    private boolean clubServiceFilter(ServiceData sd) {
+        if (jdb.getSelectedClubId().equals("-1")) return true;
+        return jdb.getSelectedClubId().equals(sd.getClubID());
+    }
+
+    /* unlike the other filters, this one can't be disabled */
+    private boolean clubFilter(ClientData cd) {
+        Constants.Session rs = requestedSession();
+        if (rs == null) {
+            for (int i = 0; i < cd.getServices().length(); i++) {
+                if (clubServiceFilter(cd.getServices().get(i)))
+                    return true;
+            }
+            return false;
+        }
+        ServiceData sd = cd.getServiceFor(rs);
+        return clubServiceFilter(sd);
+    }
+
     private boolean sessionFilter(ClientData cd) {
         Constants.Session rs = requestedSession();
         if (rs == null) return true;
@@ -669,6 +689,7 @@ public class ListWidget extends Composite {
         for (int i = 0; i < allClients.length(); i++) {
             ClientData cd = allClients.get(i);
             cidToCD.put(cd.getID(), cd);
+            if (!clubFilter(cd)) continue;
             if (!filter(cd)) continue;
 
             filteredClients.add(cd);
