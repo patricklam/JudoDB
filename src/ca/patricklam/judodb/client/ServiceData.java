@@ -13,6 +13,8 @@ public class ServiceData extends JavaScriptObject {
     public final native void setDateInscription(String date_inscription) /*-{ this.date_inscription = date_inscription; }-*/;
     public final native String getSaisons() /*-{ return this.saisons == null ? "" : this.saisons; }-*/;
     public final native void setSaisons(String saisons) /*-{ this.saisons = saisons; }-*/;
+    public final native String getClubID() /*-{ return this.club_id; }-*/;
+    public final native void setClubID(String club_id) /*-{ this.club_id = club_id; }-*/;
     public final native boolean getSansAffiliation() /*-{ return this.sans_affiliation != '0'; }-*/;
     public final native void setSansAffiliation(boolean sans_affiliation) /*-{ this.sans_affiliation = sans_affiliation ? "1" : "0"; }-*/;
     public final native boolean getAffiliationInitiation() /*-{ return this.affiliation_initiation != '0'; }-*/;
@@ -57,6 +59,7 @@ public class ServiceData extends JavaScriptObject {
     public static final native ServiceData newServiceData() /*-{
         return {
             id: null,
+            club_id: "",
             date_inscription: "",
             saisons: "",
             sans_affiliation: "0",
