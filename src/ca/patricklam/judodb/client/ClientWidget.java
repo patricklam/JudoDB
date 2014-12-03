@@ -778,7 +778,8 @@ public class ClientWidget extends Composite {
      * Works directly at the View level, not the Model level. */
     private void regularizeEscompte() {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
-        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd);
+        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd, cs);
 
         if (CostCalculator.isCasSpecial(sd)) {
             NumberFormat nf = NumberFormat.getDecimalFormat();
@@ -865,7 +866,8 @@ public class ClientWidget extends Composite {
     private void updateDynamicFields() {
         saveClientData();
         ServiceData sd = cd.getServices().get(currentServiceNumber);
-        CostCalculator.recompute(cd, sd, true);
+        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+        CostCalculator.recompute(cd, sd, cs, true);
 
         /* view stuff here */
         Display d = Display.NONE;

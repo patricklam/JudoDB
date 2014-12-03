@@ -514,8 +514,16 @@ public class JudoDB implements EntryPoint {
       return "[" + cs.getNumeroClub() + "] " + cs.getNom();
     }
 
-    ClubSummary getClubSummary(int clubListBoxIndex) {
+    ClubSummary getClubSummaryByIndex(int clubListBoxIndex) {
       return idxToClub.get(clubListBoxIndex);
+    }
+
+    ClubSummary getClubSummaryByID(String cid) {
+        for(int i = 0; i < allClubs.length(); ++i) {
+          ClubSummary cs = allClubs.get(i);
+          if (cs.getId().equals(cid)) return cs;
+        }
+        return null;
     }
 
     /* --- network functions --- */

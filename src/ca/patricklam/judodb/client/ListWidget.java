@@ -374,7 +374,8 @@ public class ListWidget extends Composite {
         for (int i = 0; i < results.getRowCount(); i++) {
             ClientData cd = cidToCD.get(results.getText(i, Columns.CID));
             ServiceData sd = cd.getServiceFor(Constants.currentSession());
-            CostCalculator.recompute(cd, sd, true);
+            ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+            CostCalculator.recompute(cd, sd, cs, true);
         }
     }
 
@@ -463,7 +464,8 @@ public class ListWidget extends Composite {
         dv += cd.getMostRecentGrade().getGrade() + "|";
         dv += cd.getMostRecentGrade().getDateGrade() + "|";
         ServiceData sd = cd.getServiceFor(Constants.currentSession());
-        CostCalculator.recompute(cd, sd, prorata.getValue());
+        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+        CostCalculator.recompute(cd, sd, cs, prorata.getValue());
         if (sd != null && !sd.getCours().equals("")) {
             dv += backingCours.get(Integer.parseInt(sd.getCours())).getShortDesc();
         }
@@ -510,7 +512,8 @@ public class ListWidget extends Composite {
        dv += cd.getPrenom() + " " + cd.getNom() + "|";
        dv += cd.getDDNString() + "|";
        ServiceData sd = cd.getServiceFor(Constants.currentSession());
-       CostCalculator.recompute(cd, sd, prorata.getValue());
+       ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+       CostCalculator.recompute(cd, sd, cs, prorata.getValue());
        if (sd != null) {
            dv += Constants.currencyFormat.format(Double.parseDouble(sd.getFrais()));
        }
