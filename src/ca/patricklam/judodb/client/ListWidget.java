@@ -281,7 +281,7 @@ public class ListWidget extends Composite {
 
         dropDownUserClubs.addChangeHandler(clHandler);
 
-        jdb.populateClubList(dropDownUserClubs);
+        jdb.populateClubList(true, dropDownUserClubs);
         coursHandler.generateCoursList();
 
         retrieveAllClients();

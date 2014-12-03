@@ -195,7 +195,6 @@ public class ClientWidget extends Composite {
         deleted.setValue("");
         clubListHandler = new ClubListHandler();
         dropDownUserClubs.addChangeHandler(clubListHandler);
-        displayClubListResults();
 
         for (Constants.Cours c : Constants.COURS) {
             cours.addItem(c.name, c.seqno);
@@ -283,7 +282,7 @@ public class ClientWidget extends Composite {
             }
         });
 
-        jdb.populateClubList(dropDownUserClubs);
+        jdb.populateClubList(false, dropDownUserClubs);
         jdb.pleaseWait();
         if (cid != -1)
             retrieveClient(cid);
@@ -315,24 +314,7 @@ public class ClientWidget extends Composite {
     class ClubListHandler implements ChangeHandler {
       public void onChange(ChangeEvent event) {
         jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
-        displayClubListResults();
       }
-    }
-
-    void displayClubListResults() {
-      jdb.clearStatus();
-      dropDownUserClubs.clear();
-      dropDownUserClubs.addItem("---");
-      dropDownUserClubs.setVisibleItemCount(1);
-      ClubSummary cs = null;
-
-      for (Map.Entry<Integer, ClubSummary> entry : jdb.idxToClub.entrySet()) {
-        Integer k = entry.getKey();
-        String clubStr = JudoDB.getClubText(entry.getValue());
-        dropDownUserClubs.insertItem(clubStr, k);
-      }
-
-      dropDownUserClubs.setSelectedIndex(jdb.selectedClub);
     }
 
     @SuppressWarnings("deprecation")
@@ -450,7 +432,6 @@ public class ClientWidget extends Composite {
         solde.setValue(sd.getSolde());
 
         updateDynamicFields();
-        displayClubListResults();
     }
 
     /** Puts data from the form back onto ClientData. */
