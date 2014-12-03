@@ -195,7 +195,6 @@ public class ClientWidget extends Composite {
         deleted.setValue("");
         clubListHandler = new ClubListHandler();
         dropDownUserClubs.addChangeHandler(clubListHandler);
-        displayClubListResults();
 
         for (Constants.Cours c : Constants.COURS) {
             cours.addItem(c.name, c.seqno);
@@ -283,7 +282,7 @@ public class ClientWidget extends Composite {
             }
         });
 
-        jdb.populateClubList(dropDownUserClubs);
+        jdb.populateClubList(false, dropDownUserClubs);
         jdb.pleaseWait();
         if (cid != -1)
             retrieveClient(cid);
@@ -315,24 +314,7 @@ public class ClientWidget extends Composite {
     class ClubListHandler implements ChangeHandler {
       public void onChange(ChangeEvent event) {
         jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
-        displayClubListResults();
       }
-    }
-
-    void displayClubListResults() {
-      jdb.clearStatus();
-      dropDownUserClubs.clear();
-      dropDownUserClubs.addItem("---");
-      dropDownUserClubs.setVisibleItemCount(1);
-      ClubSummary cs = null;
-
-      for (Map.Entry<Integer, ClubSummary> entry : jdb.idxToClub.entrySet()) {
-        Integer k = entry.getKey();
-        String clubStr = JudoDB.getClubText(entry.getValue());
-        dropDownUserClubs.insertItem(clubStr, k);
-      }
-
-      dropDownUserClubs.setSelectedIndex(jdb.selectedClub);
     }
 
     @SuppressWarnings("deprecation")
@@ -450,7 +432,6 @@ public class ClientWidget extends Composite {
         solde.setValue(sd.getSolde());
 
         updateDynamicFields();
-        displayClubListResults();
     }
 
     /** Puts data from the form back onto ClientData. */
@@ -797,7 +778,8 @@ public class ClientWidget extends Composite {
      * Works directly at the View level, not the Model level. */
     private void regularizeEscompte() {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
-        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd);
+        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd, cs);
 
         if (CostCalculator.isCasSpecial(sd)) {
             NumberFormat nf = NumberFormat.getDecimalFormat();
@@ -884,7 +866,8 @@ public class ClientWidget extends Composite {
     private void updateDynamicFields() {
         saveClientData();
         ServiceData sd = cd.getServices().get(currentServiceNumber);
-        CostCalculator.recompute(cd, sd, true);
+        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+        CostCalculator.recompute(cd, sd, cs, true);
 
         /* view stuff here */
         Display d = Display.NONE;

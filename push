@@ -1,3 +1,0 @@
-FRONTEND="$PWD/war"
-ant && \
-rsync -avz --delete $FRONTEND/* $HOME/public_html/frontend

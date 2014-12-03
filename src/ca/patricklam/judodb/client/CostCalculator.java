@@ -25,10 +25,11 @@ public class CostCalculator {
         return Constants.getFraisCours(sessionId, c, sessionCount);
     }
 
-    static double proratedFraisCours(ClientData cd, ServiceData sd) {
+    static double proratedFraisCours(ClientData cd, ServiceData sd, ClubSummary cs) {
         int sessionId = Constants.currentSessionNo();
         double baseCost = fraisCours(cd, sd);
-        if (!Constants.ENABLE_PRORATA || sd == null || sd.getDateInscription() == null || sd.getDateInscription() == "0000-00-00")
+        boolean enableProrata = cs.getDefaultProrata();
+        if (!enableProrata || sd == null || sd.getDateInscription() == null || sd.getDateInscription() == "0000-00-00")
             return baseCost;
 
         Date dateInscription = null;
@@ -111,9 +112,9 @@ public class CostCalculator {
     }
 
     /** Model-level method to recompute costs. */
-    public static void recompute(ClientData cd, ServiceData sd, boolean prorata) {
-      double dCategorieFrais = proratedFraisCours(cd, sd);
-      if (!prorata) dCategorieFrais = fraisCours(cd, sd);
+    public static void recompute(ClientData cd, ServiceData sd, ClubSummary cs, boolean prorataOverride) {
+      double dCategorieFrais = proratedFraisCours(cd, sd, cs);
+      if (!prorataOverride) dCategorieFrais = fraisCours(cd, sd);
       double dEscompteFrais = escompteFrais(sd, dCategorieFrais);
       double dAffiliationFrais = affiliationFrais(cd, sd);
       double dSuppFrais = suppFrais(sd);

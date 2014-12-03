@@ -155,7 +155,7 @@ public class JudoDB implements EntryPoint {
 
     void generateClubList() {
         pleaseWait();
-        retrieveClubList(dropDownUserClubs);
+        retrieveClubList(true, dropDownUserClubs);
       }
 
     // Create a handler for the searchButton and nameField
@@ -476,15 +476,15 @@ public class JudoDB implements EntryPoint {
 
     /* --- club list UI functions --- */
     private boolean pendingRetrieveClubList = false;
-    void populateClubList(ListBox dropDownUserClubs) {
+    void populateClubList(boolean tousOK, ListBox dropDownUserClubs) {
         if (allClubs == null) {
             if (pendingRetrieveClubList) return;
-            retrieveClubList(dropDownUserClubs);
+            retrieveClubList(tousOK, dropDownUserClubs);
             return;
         }
 
       dropDownUserClubs.clear();
-      dropDownUserClubs.addItem("TOUS");
+      dropDownUserClubs.addItem(tousOK ? "TOUS" : "---");
       dropDownUserClubs.setVisibleItemCount(1);
       idxToClub.clear();
 
@@ -514,8 +514,16 @@ public class JudoDB implements EntryPoint {
       return "[" + cs.getNumeroClub() + "] " + cs.getNom();
     }
 
-    ClubSummary getClubSummary(int clubListBoxIndex) {
+    ClubSummary getClubSummaryByIndex(int clubListBoxIndex) {
       return idxToClub.get(clubListBoxIndex);
+    }
+
+    ClubSummary getClubSummaryByID(String cid) {
+        for(int i = 0; i < allClubs.length(); ++i) {
+          ClubSummary cs = allClubs.get(i);
+          if (cs.getId().equals(cid)) return cs;
+        }
+        return null;
     }
 
     /* --- network functions --- */
@@ -567,24 +575,24 @@ public class JudoDB implements EntryPoint {
         retrieve(url, rc);
     }
 
-    public void retrieveClubList(final ListBox dropDownUserClubs) {
+    public void retrieveClubList(final boolean tousOK, final ListBox dropDownUserClubs) {
         String url = PULL_CLUB_LIST_URL;
         pendingRetrieveClubList = true;
         RequestCallback rc =
             createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
                         loadClubListResults
-                            (dropDownUserClubs,
+                            (tousOK, dropDownUserClubs,
                              JsonUtils.<JsArray<ClubSummary>>safeEval(s));
                     }
                 });
         retrieve(url, rc);
     }
 
-    private void loadClubListResults(ListBox dropDownUserClubs, JsArray<ClubSummary> clubs) {
+    private void loadClubListResults(boolean tousOK, ListBox dropDownUserClubs, JsArray<ClubSummary> clubs) {
         firstSearchResultToDisplay = 0;
         this.allClubs = clubs;
-        populateClubList(dropDownUserClubs);
+        populateClubList(tousOK, dropDownUserClubs);
         pendingRetrieveClubList = false;
     }
 
