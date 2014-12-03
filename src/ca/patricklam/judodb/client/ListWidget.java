@@ -909,6 +909,7 @@ public class ListWidget extends Composite {
     }
 
     /* --- network functions --- */
+    private boolean gotCours = false;
     public void retrieveCours(int session_seqno, String numero_club) {
         String url = PULL_CLUB_COURS_URL;
         url += "?session_seqno="+session_seqno;
@@ -916,6 +917,7 @@ public class ListWidget extends Composite {
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
+                        gotCours = true;
                         loadCoursSearchResults
                             (JsonUtils.<JsArray<CoursSummary>>safeEval(s));
                     }
@@ -930,7 +932,15 @@ public class ListWidget extends Composite {
                     public void eval(String s) {
                         ListWidget.this.allClients =
                             (JsonUtils.<JsArray<ClientData>>safeEval(s));
-                        showList();
+                        new Timer() {
+                            public void run() {
+                                if (gotCours) {
+                                    ListWidget.this.showList();
+                                    cancel();
+                                } else {
+                                    scheduleRepeating(100);
+                                }
+                            } } .scheduleRepeating(10);
                     }
                 });
         jdb.retrieve(url, rc);
