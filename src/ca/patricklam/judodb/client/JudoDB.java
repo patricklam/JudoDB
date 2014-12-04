@@ -3,6 +3,7 @@ package ca.patricklam.judodb.client;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.EntryPoint;
@@ -504,6 +505,10 @@ public class JudoDB implements EntryPoint {
       else return null;
     }
 
+    String getSelectedClubText() {
+      return getClubText(getClubSummaryByIndex(selectedClub));
+    }
+
     static String getClubText(ClubSummary cs) {
       return "[" + cs.getNumeroClub() + "] " + cs.getNom();
     }
@@ -514,6 +519,14 @@ public class JudoDB implements EntryPoint {
           if (cs.getId().equals(cid)) return cs;
         }
         return null;
+    }
+
+    int getClubListBoxIndexByID(String cid) {
+      for (Map.Entry<Integer, ClubSummary> entry : idxToClub.entrySet()) {
+	if (entry.getValue().getId().equalsIgnoreCase(cid))
+	  return entry.getKey();
+      }
+      return -1;
     }
 
     /* --- network functions --- */
