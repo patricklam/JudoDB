@@ -11,6 +11,7 @@
  		<g:Hidden ui:field="sid" name="sid" />
  		<g:Hidden ui:field="deleted" name="deleted" />
  		<g:Hidden ui:field="ddn" name="ddn" />
+		<g:Hidden ui:field="club_id_encoded" name="club_id_encoded" />
  				
 		<fieldset> <legend>Identit&eacute;</legend>
  		 <div class="{style.fourper}" id="identite">

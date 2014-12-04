@@ -135,6 +135,7 @@ public class ClientWidget extends Composite {
 
     @UiField Hidden solde_encoded;
     @UiField Hidden frais_encoded;
+    @UiField Hidden club_id_encoded;
 
     @UiField Hidden guid_on_form;
     @UiField Hidden sid;
@@ -370,6 +371,15 @@ public class ClientWidget extends Composite {
         else
             sd = cd.getServices().get(currentServiceNumber);
 
+        int clubIndex = jdb.getClubListBoxIndexByID(sd.getClubID());
+        if (-1 != clubIndex) {
+            jdb.selectedClub = clubIndex;
+            dropDownUserClubs.setSelectedIndex(clubIndex);
+        }
+        else {
+            jdb.setStatus("Le client n'a pas de club enregistré.");
+        }
+
         loadGradesData();
 
         date_inscription.clear();
@@ -458,6 +468,7 @@ public class ClientWidget extends Composite {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         sd.setDateInscription(removeCommas(Constants.stdToDbDate(date_inscription.getItemText(currentServiceNumber))));
         sd.setSaisons(removeCommas(saisons.getText()));
+        sd.setClubID(jdb.getSelectedClubID());
         sd.setVerification(verification.getValue());
         sd.setCours(Integer.toString(cours.getSelectedIndex()));
         sd.setSessionCount(sessions.getSelectedIndex()+1);
@@ -893,7 +904,7 @@ public class ClientWidget extends Composite {
             csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(), ai = new StringBuffer(), ae = new StringBuffer(),
             af = new StringBuffer(), j = new StringBuffer(), p = new StringBuffer(),
             n = new StringBuffer(), sf = new StringBuffer(), s = new StringBuffer(),
-            f = new StringBuffer();
+            f = new StringBuffer(), clubid = new StringBuffer();
 
         JsArray<ServiceData> services = cd.getServices();
         for (int i = 0; i < services.length(); i++) {
@@ -920,6 +931,7 @@ public class ClientWidget extends Composite {
             sf.append(sd.getSuppFrais()+",");
             s.append(sd.getSolde() ? "1,":"0,");
             f.append(sd.getFrais()+",");
+            clubid.append(sd.getClubID()+",");
         }
 
         date_inscription_encoded.setValue(di.toString());
@@ -941,6 +953,7 @@ public class ClientWidget extends Composite {
         suppFrais_encoded.setValue(sf.toString());
         solde_encoded.setValue(s.toString());
         frais_encoded.setValue(f.toString());
+        club_id_encoded.setValue(clubid.toString());
     }
 
     private void pushClientDataToServer(final boolean leaveAfterPush) {
