@@ -499,23 +499,13 @@ public class JudoDB implements EntryPoint {
 
     /* --- club-list related utility functions --- */
 
-    String getNumeroSelectedClub(){
-      if (0 == selectedClub) return "-1";
-      ClubSummary cs = idxToClub.get(selectedClub);
-      return cs.getNumeroClub();
-    }
-
-    String getSelectedClubId(){
+    String getSelectedClubID(){
       if (0 != selectedClub) return idxToClub.get(selectedClub).getId();
-      else return "-1";
+      else return null;
     }
 
     static String getClubText(ClubSummary cs) {
       return "[" + cs.getNumeroClub() + "] " + cs.getNom();
-    }
-
-    ClubSummary getClubSummaryByIndex(int clubListBoxIndex) {
-      return idxToClub.get(clubListBoxIndex);
     }
 
     ClubSummary getClubSummaryByID(String cid) {

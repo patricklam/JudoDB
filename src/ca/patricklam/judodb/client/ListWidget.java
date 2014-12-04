@@ -146,8 +146,8 @@ public class ListWidget extends Composite {
             session_seqno = Constants.currentSession().seqno;
 
         String numero_club = null;
-        if (jdb.selectedClub != 0 && !jdb.getNumeroSelectedClub().equals("-1"))
-            numero_club = jdb.getNumeroSelectedClub();
+        if (jdb.getSelectedClubID() != null)
+            numero_club = jdb.getClubSummaryByID(jdb.getSelectedClubID()).getNumeroClub();
 
         jdb.pleaseWait();
         retrieveCours(session_seqno, numero_club);
@@ -568,8 +568,8 @@ public class ListWidget extends Composite {
     }
 
     private boolean clubServiceFilter(ServiceData sd) {
-        if (jdb.getSelectedClubId().equals("-1")) return true;
-        return jdb.getSelectedClubId().equals(sd.getClubID());
+        if (jdb.getSelectedClubID().equals("-1")) return true;
+        return jdb.getSelectedClubID().equals(sd.getClubID());
     }
 
     /* unlike the other filters, this one can't be disabled */
