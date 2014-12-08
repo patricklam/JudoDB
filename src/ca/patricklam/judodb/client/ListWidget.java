@@ -568,7 +568,7 @@ public class ListWidget extends Composite {
     }
 
     private boolean clubServiceFilter(ServiceData sd) {
-        if (jdb.getSelectedClubID().equals("-1")) return true;
+        if (jdb.getSelectedClubID() == null) return true;
         return jdb.getSelectedClubID().equals(sd.getClubID());
     }
 
