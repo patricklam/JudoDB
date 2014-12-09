@@ -474,7 +474,11 @@ public class ListWidget extends Composite {
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
         CostCalculator.recompute(cd, sd, cs, prorata.getValue());
         if (sd != null && !sd.getCours().equals("")) {
-            dv += backingCours.get(Integer.parseInt(sd.getCours())).getShortDesc();
+            // XXX this is potentially slow; use a hash map instead.
+            for (CoursSummary cc : backingCours) {
+                if (cc.getId().equals(sd.getCours()))
+                    dv += cc.getShortDesc();
+            }
         }
         dv += "|";
         if (sd != null) {
