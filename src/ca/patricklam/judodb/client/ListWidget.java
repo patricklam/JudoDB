@@ -68,7 +68,6 @@ public class ListWidget extends Composite {
 
     @UiField Hidden multi;
     @UiField Hidden title;
-    @UiField Hidden subtitle;
     @UiField Hidden short_title;
     @UiField Hidden data;
     @UiField Hidden data_full;
@@ -380,40 +379,48 @@ public class ListWidget extends Composite {
     }
 
     private void addMetaData() {
-        int c = Integer.parseInt(cours.getValue(cours.getSelectedIndex()));
-        // we've deprecated the full name...
+        int c = cours.getSelectedIndex();
         title.setValue("");
-        subtitle.setValue("");
         if (c > 0 || isFiltering) {
             multi.setValue("0");
             if (isFiltering) {
                 title.setValue("");
                 if (c != -1) {
-                    short_title.setValue(backingCours.get(c).getShortDesc());
+                    short_title.setValue(backingCours.get(c-1).getShortDesc());
                 }
                 else {
                     short_title.setValue("");
                 }
 
                 String st = "";
-                // TODO: add filters to subtitle
-                subtitle.setValue(st);
+                // TODO: add filters to title
+                title.setValue(st);
             } else {
-                short_title.setValue(backingCours.get(c).getShortDesc());
+                short_title.setValue(backingCours.get(c-1).getShortDesc());
             }
         } else {
             // all classes
-            String tt = "", subt = "", st = "";
+            String tt = "", shortt = "";
             multi.setValue("1");
 
+            // TODO renumber the cours so as to eliminate blank spots
+            int maxId = -1;
             for (CoursSummary cc : backingCours) {
-                tt += "|";
-                subt += "|";
-                st += cc.getShortDesc() + "|";
+                if (Integer.parseInt(cc.getId()) > maxId)
+                    maxId = Integer.parseInt(cc.getId());
+            }
+
+            if (maxId > 0) {
+                String[] shortDescs = new String[maxId];
+                for (CoursSummary cc : backingCours) {
+                    shortDescs[Integer.parseInt(cc.getId())] = cc.getShortDesc();
+                }
+
+                for (int i = 0; i < maxId; i++)
+                    shortt += shortDescs[i] + "|";
             }
             title.setValue(tt);
-            subtitle.setValue(subt);
-            short_title.setValue(st);
+            short_title.setValue(shortt);
         }
     }
 
@@ -864,13 +871,21 @@ public class ListWidget extends Composite {
         nb.setText("Nombre inscrit: "+count);
     }
 
-    private ListBox newCoursWidget(int coursIdx) {
+    private ListBox newCoursWidget(int coursId) {
         ListBox lb = new ListBox();
+        int matching_index = -1;
+        int i = 0;
+        String ciString = Integer.toString(coursId);
+
         for (CoursSummary cs : backingCours) {
             // more ideally, only add cours appropriate to the person's club
             lb.addItem(cs.getShortDesc(), cs.getId());
+            if (cs.getId().equals(ciString))
+                matching_index = i;
+            i++;
         }
-        lb.setSelectedIndex(coursIdx);
+        if (matching_index != -1)
+            lb.setSelectedIndex(matching_index);
         return lb;
     }
 
@@ -914,6 +929,7 @@ public class ListWidget extends Composite {
     /* --- network functions --- */
     private boolean gotCours = false;
     public void retrieveCours(int session_seqno, String numero_club) {
+        backingCours.clear();
         String url = PULL_CLUB_COURS_URL;
         url += "?session_seqno="+session_seqno;
         if (numero_club != null) url += "&numero_club="+numero_club;
