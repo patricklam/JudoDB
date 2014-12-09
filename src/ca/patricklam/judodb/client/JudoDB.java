@@ -358,14 +358,15 @@ public class JudoDB implements EntryPoint {
           }
         }});
         listActions.add(ftListes);
-            listActions.add(new Label(""));
-            impotListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
-          if (JudoDB.this.l != null) {
-              JudoDB.this.l.switchMode(ListWidget.Mode.IMPOT);
+        listActions.add(new Label(""));
+        impotListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
+            if (JudoDB.this.l != null) {
+                JudoDB.this.l.switchMode(ListWidget.Mode.IMPOT);
             }
         }});
-            listActions.add(impotListes);
-        listActions.add(new Label(""));
+        // temporarily disable; issue 50
+        // listActions.add(impotListes);
+        // listActions.add(new Label(""));
         clearXListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             if (JudoDB.this.l != null) JudoDB.this.l.clearX(); }});
         listActions.add(clearXListes);
