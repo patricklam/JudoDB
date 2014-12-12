@@ -89,6 +89,7 @@ public class JudoDB implements EntryPoint {
 
     private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
     public static final String PULL_CLUB_LIST_URL = BASE_URL + "pull_club_list.php";
+    public static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
     int jsonRequestId = 0;
 
     private final Label statusLabel = new Label();

@@ -56,7 +56,6 @@ public class ListWidget extends Composite {
     private List<CoursSummary> backingCours = new ArrayList<CoursSummary>();
 
     private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
-    private static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
     private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
     private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
 
@@ -912,7 +911,7 @@ public class ListWidget extends Composite {
             showList();
     }
 
-    private void loadCoursSearchResults(JsArray<CoursSummary> coursArray) {
+    private void loadCours(JsArray<CoursSummary> coursArray) {
         backingCours.clear();
         cours.setVisibleItemCount(1);
         cours.clear();
@@ -937,15 +936,14 @@ public class ListWidget extends Composite {
     private boolean gotCours = false;
     public void retrieveCours(int session_seqno, String numero_club) {
         backingCours.clear();
-        String url = PULL_CLUB_COURS_URL;
+        String url = JudoDB.PULL_CLUB_COURS_URL;
         url += "?session_seqno="+session_seqno;
         if (numero_club != null) url += "&numero_club="+numero_club;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
                         gotCours = true;
-                        loadCoursSearchResults
-                            (JsonUtils.<JsArray<CoursSummary>>safeEval(s));
+                        loadCours(JsonUtils.<JsArray<CoursSummary>>safeEval(s));
                     }
                 });
         jdb.retrieve(url, rc);
