@@ -165,7 +165,7 @@ public class ClientWidget extends Composite {
     public interface BlurbTemplate extends SafeHtmlTemplates {
         @Template
           ("<p>Je {0} certifie que les informations inscrites sur ce formulaire sont véridiques. "+
-           "En adhèrant au Club Judo "+Constants.CLUB+", j'accepte tous les risques d'accident liés à la pratique du "+
+           "En adhèrant au {3}, j'accepte tous les risques d'accident liés à la pratique du "+
            "judo qui pourraient survenir dans les locaux ou lors d'activités extérieurs organisées par le Club. "+
            "J'accepte de respecter les règlements du Club en tout temps y compris lors des déplacements.</p>"+
            "<h4>Politique de remboursement</h4>"+
@@ -175,7 +175,7 @@ public class ClientWidget extends Composite {
            "pour les frais de cours correspondant à la période restante.</p>"+
            "<p>Signature {1}: <span style='float:right'>Date: _________</span></p>"+
            "<p>Signature résponsable du club:  <span style='float:right'>Date: {2}</span></p>")
-           SafeHtml blurb(String nom, String membreOuParent, String today);
+           SafeHtml blurb(String nom, String membreOuParent, String today, String clubName);
     }
     private static final BlurbTemplate BLURB = GWT.create(BlurbTemplate.class);
 
@@ -341,7 +341,8 @@ public class ClientWidget extends Composite {
             mm = "parent ou tuteur";
         }
 
-        SafeHtml blurbContents = BLURB.blurb(nn, mm, Constants.STD_DATE_FORMAT.format(today));
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+        SafeHtml blurbContents = BLURB.blurb(nn, mm, Constants.STD_DATE_FORMAT.format(today), jdb.getClubSummaryByID(sd.getClubID()).getNom());
 
         blurb.clear();
         blurb.add(new HTMLPanel(blurbContents));
