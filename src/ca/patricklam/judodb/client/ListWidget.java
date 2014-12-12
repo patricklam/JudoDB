@@ -850,7 +850,7 @@ public class ListWidget extends Composite {
             results.setText(curRow, Columns.COURS_NUM, "");
 
             if (mode == Mode.EDIT) {
-                ListBox w = newCoursWidget(cours);
+                ListBox w = newCoursWidget(sd.getClubID(), cours);
                 results.setWidget(curRow, Columns.COURS_DESC, w);
                 results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
                 originalCours.put(w, cours);
@@ -877,18 +877,19 @@ public class ListWidget extends Composite {
         nb.setText("Nombre inscrit: "+count);
     }
 
-    private ListBox newCoursWidget(int coursId) {
+    private ListBox newCoursWidget(String clubId, int coursId) {
         ListBox lb = new ListBox();
         int matching_index = -1;
         int i = 0;
         String ciString = Integer.toString(coursId);
 
         for (CoursSummary cs : backingCours) {
-            // more ideally, only add cours appropriate to the person's club
-            lb.addItem(cs.getShortDesc(), cs.getId());
-            if (cs.getId().equals(ciString))
-                matching_index = i;
-            i++;
+            if (clubId.equals(cs.getClubId())) {
+                lb.addItem(cs.getShortDesc(), cs.getId());
+                if (cs.getId().equals(ciString))
+                    matching_index = i;
+                i++;
+            }
         }
         if (matching_index != -1)
             lb.setSelectedIndex(matching_index);
