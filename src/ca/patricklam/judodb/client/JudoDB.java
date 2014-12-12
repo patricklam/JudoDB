@@ -501,7 +501,11 @@ public class JudoDB implements EntryPoint {
 
     /* --- club-list related utility functions --- */
 
-    String getSelectedClubID(){
+    void clearSelectedClub() {
+        selectedClub = 0;
+    }
+
+    String getSelectedClubID() {
       if (0 != selectedClub) return idxToClub.get(selectedClub).getId();
       else return null;
     }

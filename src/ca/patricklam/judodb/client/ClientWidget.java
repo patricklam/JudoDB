@@ -157,6 +157,7 @@ public class ClientWidget extends Composite {
     private final FormElement clientform;
 
     private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php";
+    private static final String PULL_CLUB_PRIX_URL = JudoDB.BASE_URL + "pull_club_prix.php";
     private static final String PUSH_ONE_CLIENT_URL = JudoDB.BASE_URL + "push_one_client.php";
     private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
     private int pushTries;
@@ -178,6 +179,7 @@ public class ClientWidget extends Composite {
     }
     private static final BlurbTemplate BLURB = GWT.create(BlurbTemplate.class);
 
+    private ClubPrix[] clubPrix;
     private ClientData cd;
     private String guid;
     private int currentServiceNumber;
@@ -310,11 +312,13 @@ public class ClientWidget extends Composite {
             loadClientData();
             jdb.clearStatus();
         }
+        retrieveClubPrix();
     }
 
     class ClubListHandler implements ChangeHandler {
       public void onChange(ChangeEvent event) {
-        jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
+          jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
+          retrieveClubPrix();
       }
     }
 
@@ -344,6 +348,13 @@ public class ClientWidget extends Composite {
 
     /** Takes data from ClientData into the form. */
     private void loadClientData () {
+        if (jdb.allClubs == null) {
+            new Timer() {
+                public void run() { loadClientData(); }
+            }.schedule(100);
+            return;
+        }
+
         cid.setInnerText(cd.getID());
         nom.setText(cd.getNom());
         prenom.setText(cd.getPrenom());
@@ -790,7 +801,7 @@ public class ClientWidget extends Composite {
     private void regularizeEscompte() {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd, cs);
+        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd, cs, clubPrix);
 
         if (CostCalculator.isCasSpecial(sd)) {
             NumberFormat nf = NumberFormat.getDecimalFormat();
@@ -878,7 +889,7 @@ public class ClientWidget extends Composite {
         saveClientData();
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-        CostCalculator.recompute(cd, sd, cs, true);
+        CostCalculator.recompute(cd, sd, cs, true, clubPrix);
 
         /* view stuff here */
         Display d = Display.NONE;
@@ -997,6 +1008,7 @@ public class ClientWidget extends Composite {
     }
 
     public void retrieveClient(int cid) {
+        jdb.clearSelectedClub();
         String url = PULL_ONE_CLIENT_URL + "?id=" + cid;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
@@ -1017,6 +1029,36 @@ public class ClientWidget extends Composite {
                         for (ChangeHandler ch : onPopulated) {
                             ch.onChange(null);
                         }
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    public void retrieveClubPrix() {
+        if (jdb.getSelectedClubID() == null) {
+            new Timer() {
+                public void run() { retrieveClubPrix(); }
+            }.schedule(100);
+            return;
+        }
+
+        clubPrix = null;
+
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        int session_seqno = Constants.currentSessionNo();
+        String url = PULL_CLUB_PRIX_URL + "?numero_club="
+            + cs.getNumeroClub() + "&session_seqno=" + Integer.toString(session_seqno);
+        final String clubid = cs.getId();
+
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        JsArray<ClubPrix> cp = JsonUtils.<JsArray<ClubPrix>>safeEval(s);
+                        clubPrix = new ClubPrix[cp.length()];
+                        for (int i = 0; i < cp.length(); i++)
+                            clubPrix[i] = cp.get(i);
+
+                        updateDynamicFields();
                     }
                 });
         jdb.retrieve(url, rc);

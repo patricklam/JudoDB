@@ -374,7 +374,8 @@ public class ListWidget extends Composite {
             ClientData cd = cidToCD.get(results.getText(i, Columns.CID));
             ServiceData sd = cd.getServiceFor(Constants.currentSession());
             ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-            CostCalculator.recompute(cd, sd, cs, true);
+            // XXX getPrix on ListWidget as well
+            CostCalculator.recompute(cd, sd, cs, true, null);
         }
     }
 
@@ -472,7 +473,8 @@ public class ListWidget extends Composite {
         dv += cd.getMostRecentGrade().getDateGrade() + "|";
         ServiceData sd = cd.getServiceFor(Constants.currentSession());
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-        CostCalculator.recompute(cd, sd, cs, prorata.getValue());
+        // XXX getPrix on ListWidget as well
+        CostCalculator.recompute(cd, sd, cs, prorata.getValue(), null);
         if (sd != null && !sd.getCours().equals("")) {
             // XXX this is potentially slow; use a hash map instead.
             for (CoursSummary cc : backingCours) {
@@ -524,7 +526,8 @@ public class ListWidget extends Composite {
        dv += cd.getDDNString() + "|";
        ServiceData sd = cd.getServiceFor(Constants.currentSession());
        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-       CostCalculator.recompute(cd, sd, cs, prorata.getValue());
+       // XXX clubPrix on ListWidget
+       CostCalculator.recompute(cd, sd, cs, prorata.getValue(), null);
        if (sd != null) {
            dv += Constants.currencyFormat.format(Double.parseDouble(sd.getFrais()));
        }
