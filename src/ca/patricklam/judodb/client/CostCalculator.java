@@ -133,6 +133,8 @@ public class CostCalculator {
 
     /** Model-level method to recompute costs. */
     public static void recompute(ClientData cd, ServiceData sd, ClubSummary cs, boolean prorataOverride, ClubPrix[] cpA) {
+      if (cpA == null) return;
+
       double dCategorieFrais = proratedFraisCours(cd, sd, cs, cpA);
       if (!prorataOverride) dCategorieFrais = fraisCours(cd, sd, cpA);
       double dEscompteFrais = escompteFrais(sd, dCategorieFrais);

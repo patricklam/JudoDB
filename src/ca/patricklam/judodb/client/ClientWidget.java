@@ -294,15 +294,8 @@ public class ClientWidget extends Composite {
             this.cd.setID(null); this.cd.setNom("");
 
             this.cd.makeDefault();
-
-            JsArray<ServiceData> sa = JavaScriptObject.createArray().cast();
-            ServiceData sd = ServiceData.newServiceData();
-            sd.inscrireAujourdhui();
-            sa.set(0, sd);
-            this.cd.setServices(sa);
-            // new client: first service,
-            //   which exists because we called inscrireAujourdhui
-            currentServiceNumber = 0;
+            addNewService();
+            currentServiceNumber = this.cd.getMostRecentServiceNumber();
 
             JsArray<GradeData> ga = JavaScriptObject.createArray().cast();
             GradeData gd = JavaScriptObject.createObject().cast();
@@ -314,6 +307,19 @@ public class ClientWidget extends Composite {
         }
         retrieveClubPrix();
         retrieveCours();
+    }
+
+    private void addNewService() {
+        ServiceData sd = ServiceData.newServiceData();
+        sd.inscrireAujourdhui();
+        sd.setClubID(jdb.getSelectedClubID());
+
+        JsArray<ServiceData> sa = cd.getServices();
+        if (sa == null) {
+            sa = JavaScriptObject.createArray().cast();
+            cd.setServices(sa);
+        }
+        sa.push(sd);
     }
 
     class ClubListHandler implements ChangeHandler {
@@ -379,13 +385,10 @@ public class ClientWidget extends Composite {
 
         tel_contact_urgence.setText(cd.getTelContactUrgence());
 
-        ServiceData sd;
         if (currentServiceNumber == -1) {
-            sd = ServiceData.newServiceData();
-            sd.inscrireAujourdhui();
+            addNewService();
         }
-        else
-            sd = cd.getServices().get(currentServiceNumber);
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
 
         int clubIndex = jdb.getClubListBoxIndexByID(sd.getClubID());
         if (-1 != clubIndex) {
@@ -394,6 +397,7 @@ public class ClientWidget extends Composite {
         }
         else {
             jdb.setStatus("Le client n'a pas de club enregistré.");
+            return;
         }
 
         loadGradesData();
@@ -489,7 +493,8 @@ public class ClientWidget extends Composite {
         sd.setSaisons(removeCommas(saisons.getText()));
         sd.setClubID(jdb.getSelectedClubID());
         sd.setVerification(verification.getValue());
-        sd.setCours(cours.getValue(cours.getSelectedIndex()));
+        if (cours.getSelectedIndex() != -1)
+            sd.setCours(cours.getValue(cours.getSelectedIndex()));
         sd.setSessionCount(sessions.getSelectedIndex()+1);
         sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 
