@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.LinkedList;
@@ -54,6 +56,7 @@ public class ListWidget extends Composite {
     /** A list of cours as retrieved from the server.
      * Must stay in synch with the ListBox field cours. */
     private List<CoursSummary> backingCours = new ArrayList<CoursSummary>();
+    private Set<String> clubsPresent = new HashSet<String>();
 
     private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
     private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
@@ -776,12 +779,14 @@ public class ListWidget extends Composite {
         }
 
         curRow = 1;
+        clubsPresent.clear();
         for (ClientData cd : filteredClients) {
             String grade = cd.getGrade();
             if (grade != null && grade.length() >= 3) grade = grade.substring(0, 3);
 
             ServiceData sd = cd.getServiceFor(rs);
             int cours = sd != null ? Integer.parseInt(sd.getCours()) : -1;
+            clubsPresent.add(sd.getClubID());
 
             Anchor nomAnchor = new Anchor(cd.getNom()), prenomAnchor = new Anchor(cd.getPrenom());
             ClickHandler c = jdb.new EditClientHandler(Integer.parseInt(cd.getID()));
