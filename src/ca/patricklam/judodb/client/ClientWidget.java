@@ -225,7 +225,7 @@ public class ClientWidget extends Composite {
 
         sessions.setItemSelected(1, true);
 
-        if (jdb.getSelectedClubID() == null) {
+        if (cid == -1 && jdb.getSelectedClubID() == null) {
             jdb.setStatus("Veuillez selectionner un club pour le client.");
             new Timer() { public void run() {
                 ClientWidget.this.jdb.popMode();
