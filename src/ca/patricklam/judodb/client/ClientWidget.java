@@ -293,8 +293,9 @@ public class ClientWidget extends Composite {
             this.cd = JavaScriptObject.createObject().cast();
             this.cd.setID(null); this.cd.setNom("");
 
-            this.cd.makeDefault();
             addNewService();
+            ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+            cd.makeDefault(cs);
             currentServiceNumber = this.cd.getMostRecentServiceNumber();
 
             JsArray<GradeData> ga = JavaScriptObject.createArray().cast();
@@ -860,7 +861,9 @@ public class ClientWidget extends Composite {
         // check 1) address fields are empty and 2) there exists a sibling
         // Note that the following check relies on the data being saved
         // to the ClientData, which is true after you enter the birthday.
-        if (!cd.isDefault()) return;
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+        ClubSummary clb = jdb.getClubSummaryByID(sd.getClubID());
+        if (!cd.isDefault(clb)) return;
 
         // oh well, tough luck!
         if (jdb.allClients == null) return;
