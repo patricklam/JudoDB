@@ -93,6 +93,7 @@ public class JudoDB implements EntryPoint {
     int jsonRequestId = 0;
 
     private final Label statusLabel = new Label();
+    private Label versionLabel;
 
     /* search stuff */
     private final VerticalPanel searchResultsPanel = new VerticalPanel();
@@ -263,6 +264,7 @@ public class JudoDB implements EntryPoint {
         RootPanel.get("mainActions").setVisible(true);
         RootPanel.get("search").setVisible(true);
         RootPanel.get("rightbar").setVisible(true);
+        RootPanel.get("version").setVisible(true);
         voirListes.setVisible(true);
         editConfig.setVisible(true);
         logout.setVisible(true);
@@ -292,6 +294,8 @@ public class JudoDB implements EntryPoint {
      */
     public void onModuleLoad() {
         // Add content to the RootPanel
+        versionLabel = new Label(Version.VERSION);
+        RootPanel.get("version").add(versionLabel);
         RootPanel.get("statusContainer").add(statusLabel);
 
         // search buttons
@@ -404,6 +408,7 @@ public class JudoDB implements EntryPoint {
         allWidgets.add(RootPanel.get("mainActions"));
         allWidgets.add(RootPanel.get("listActions"));
         allWidgets.add(RootPanel.get("search"));
+        allWidgets.add(RootPanel.get("version"));
 
         // (anchors)
         allWidgets.add(voirListes);

@@ -1,3 +1,5 @@
+src/ca/patricklam/judodb/client/Version.java
+build-timestamp.properties
 .settings/org.eclipse.core.resources.prefs
 .settings/com.google.appengine.eclipse.core.prefs
 .gwt
