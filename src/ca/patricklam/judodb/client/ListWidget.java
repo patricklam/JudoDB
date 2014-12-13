@@ -950,6 +950,7 @@ public class ListWidget extends Composite {
                     public void eval(String s) {
                         gotCours = true;
                         loadCours(JsonUtils.<JsArray<CoursSummary>>safeEval(s));
+                        ListWidget.this.showList();
                     }
                 });
         jdb.retrieve(url, rc);
