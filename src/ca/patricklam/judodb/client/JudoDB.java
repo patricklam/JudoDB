@@ -497,6 +497,8 @@ public class JudoDB implements EntryPoint {
           idxToClub.put(i+1, cs); // add one because "TOUS" occupies index 0
       }
 
+      // don't select TOUS by default if there is only 1 club
+      if (allClubs.length() == 1) selectedClub = 1;
       dropDownUserClubs.setSelectedIndex(selectedClub);
     }
 
