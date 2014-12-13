@@ -478,7 +478,7 @@ public class JudoDB implements EntryPoint {
     }
 
     /* --- club list UI functions --- */
-    private boolean pendingRetrieveClubList = false;
+    boolean pendingRetrieveClubList = false;
     void populateClubList(boolean tousOK, ListBox dropDownUserClubs) {
         if (allClubs == null) {
             if (pendingRetrieveClubList) return;
@@ -507,8 +507,9 @@ public class JudoDB implements EntryPoint {
     }
 
     String getSelectedClubID() {
-      if (0 != selectedClub) return idxToClub.get(selectedClub).getId();
-      else return null;
+        if (allClubs == null) return null;
+        if (0 != selectedClub) return idxToClub.get(selectedClub).getId();
+        else return null;
     }
 
     static String getClubText(ClubSummary cs) {

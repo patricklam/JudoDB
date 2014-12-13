@@ -348,8 +348,11 @@ public class ClientWidget extends Composite {
         blurb.add(new HTMLPanel(blurbContents));
     }
 
+    /* depends on retrieveClubList having succeeded */
     /** Takes data from ClientData into the form. */
     private void loadClientData () {
+        // cannot just test for getSelectedClubID() == null,
+        // since it sets the selected club ID based on the client's data!
         if (jdb.allClubs == null) {
             new Timer() {
                 public void run() { loadClientData(); }
@@ -1024,6 +1027,7 @@ public class ClientWidget extends Composite {
     }
 
     /* --- network functions --- */
+    /* retrieveClient can run first; no dependencies */
     public void retrieveClient(int cid) {
         jdb.clearSelectedClub();
         String url = PULL_ONE_CLIENT_URL + "?id=" + cid;
@@ -1051,6 +1055,8 @@ public class ClientWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
+    /* depends on retrieveClubList() having succeeded */
+    /* also depends on there being a selected club */
     public void retrieveClubPrix() {
         if (jdb.getSelectedClubID() == null) {
             new Timer() {
@@ -1081,7 +1087,7 @@ public class ClientWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
-    private boolean gotCours = false;
+    /* depends on retrieveClubList() having succeeded */
     public void retrieveCours() {
         if (jdb.getSelectedClubID() == null) {
             new Timer() {
@@ -1098,7 +1104,6 @@ public class ClientWidget extends Composite {
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
-                        gotCours = true;
                         loadCours
                             (JsonUtils.<JsArray<CoursSummary>>safeEval(s));
                         loadClientData();
