@@ -873,7 +873,7 @@ public class ClientWidget extends Composite {
         ClubSummary clb = jdb.getClubSummaryByID(sd.getClubID());
         if (!cd.isDefault(clb)) return;
 
-        // oh well, tough luck!
+        // XXX should do an allClients fetch upon load...
         if (jdb.allClients == null) return;
 
         for (int i = 0; i < jdb.allClients.length(); i++) {
