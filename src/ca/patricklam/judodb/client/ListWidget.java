@@ -561,7 +561,13 @@ public class ListWidget extends Composite {
         }
         data.setValue("");
         data_full.setValue(dv.toString());
-        auxdata.setValue(Constants.CLUB + "|" + Constants.CLUBNO);
+        if (jdb.getSelectedClubID() == null) {
+            jdb.setStatus("Veuillez selectionner un club.");
+            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+            return false;
+        }
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        auxdata.setValue(cs.getNom() + "|" + cs.getNumeroClub());
         return !dv.equals("");
     }
 
