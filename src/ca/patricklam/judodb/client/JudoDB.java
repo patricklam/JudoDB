@@ -175,7 +175,7 @@ public class JudoDB implements EntryPoint {
 
         private void refreshClientListAndFilter() {
             pleaseWait();
-            retrieveClientList();
+            retrieveClientList(true);
         }
     }
 
@@ -427,16 +427,18 @@ public class JudoDB implements EntryPoint {
 
         History.fireCurrentHistoryState();
         modeStack.push(new Mode(Mode.ActualMode.MAIN));
+        retrieveClientList(false);
     }
 
     /* --- client search UI functions --- */
 
-    private void loadClientListResults(JsArray<ClientSummary> allClients) {
+    private void loadClientListResults(JsArray<ClientSummary> allClients, boolean display) {
         searchString = removeAccents(searchField.getText());
         searchResults.removeAllRows();
         firstSearchResultToDisplay = 0;
         this.allClients = allClients;
-        displaySearchResults();
+        if (display)
+            displaySearchResults();
     }
 
     private void displaySearchResults() {
@@ -576,13 +578,13 @@ public class JudoDB implements EntryPoint {
         }
     }
 
-    public void retrieveClientList() {
+    public void retrieveClientList(final boolean display) {
         String url = PULL_CLIENT_LIST_URL;
         RequestCallback rc =
             createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
                         loadClientListResults
-                            (JsonUtils.<JsArray<ClientSummary>>safeEval(s));
+                            (JsonUtils.<JsArray<ClientSummary>>safeEval(s), display);
                     }
                 });
         retrieve(url, rc);
