@@ -567,7 +567,7 @@ public class ListWidget extends Composite {
             return false;
         }
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-        auxdata.setValue(cs.getNom() + "|" + cs.getNumeroClub());
+        auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub());
         return !dv.equals("");
     }
 
