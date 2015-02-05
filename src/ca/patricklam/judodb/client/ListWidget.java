@@ -375,6 +375,7 @@ public class ListWidget extends Composite {
         for (int i = 0; i < results.getRowCount(); i++) {
             ClientData cd = cidToCD.get(results.getText(i, Columns.CID));
             ServiceData sd = cd.getServiceFor(Constants.currentSession());
+	    if (sd == null) continue;
             ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
             // XXX getPrix on ListWidget as well
             CostCalculator.recompute(cd, sd, cs, true, null);
@@ -591,6 +592,7 @@ public class ListWidget extends Composite {
 
     private boolean clubServiceFilter(ServiceData sd) {
         if (jdb.getSelectedClubID() == null) return true;
+	if (sd == null) return false;
         return jdb.getSelectedClubID().equals(sd.getClubID());
     }
 
