@@ -791,8 +791,13 @@ public class ListWidget extends Composite {
             if (grade != null && grade.length() >= 3) grade = grade.substring(0, 3);
 
             ServiceData sd = cd.getServiceFor(rs);
-            int cours = sd != null ? Integer.parseInt(sd.getCours()) : -1;
-            clubsPresent.add(sd.getClubID());
+            int cours;
+            if (sd == null) {
+                cours = -1;
+            } else {
+                cours = Integer.parseInt(sd.getCours());
+                clubsPresent.add(sd.getClubID());
+            }
 
             Anchor nomAnchor = new Anchor(cd.getNom()), prenomAnchor = new Anchor(cd.getPrenom());
             ClickHandler c = jdb.new EditClientHandler(Integer.parseInt(cd.getID()));
