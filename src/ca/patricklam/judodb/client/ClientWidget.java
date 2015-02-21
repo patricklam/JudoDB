@@ -82,6 +82,7 @@ public class ClientWidget extends Composite {
     @UiField Anchor modifier;
     @UiField Anchor desinscrire;
     @UiField TextBox saisons;
+    @UiField CheckBox prorata;
     @UiField CheckBox verification;
 
     @UiField TextBox categorie;
@@ -112,6 +113,7 @@ public class ClientWidget extends Composite {
 
     @UiField Hidden date_inscription_encoded;
     @UiField Hidden saisons_encoded;
+    @UiField Hidden prorata_encoded;
     @UiField Hidden verification_encoded;
 
     @UiField Hidden categorieFrais_encoded;
@@ -212,6 +214,7 @@ public class ClientWidget extends Composite {
         }
 
         gradeHistory.setVisible(false);
+        prorata.setValue(true);
         categorie.setReadOnly(true);
         saisons.setReadOnly(true);
         categorieFrais.setReadOnly(true); categorieFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
@@ -254,6 +257,7 @@ public class ClientWidget extends Composite {
         date_grade.addChangeHandler(directGradeDateChangeHandler);
         grade.addChangeHandler(recomputeHandler);
         date_inscription.addChangeHandler(changeSaisonHandler);
+        prorata.addValueChangeHandler(recomputeValueHandler);
         sessions.addChangeHandler(recomputeHandler);
         escompte.addChangeHandler(changeEscompteHandler);
         cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
@@ -913,7 +917,7 @@ public class ClientWidget extends Composite {
         saveClientData();
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-        CostCalculator.recompute(cd, sd, cs, true, clubPrix);
+        CostCalculator.recompute(cd, sd, cs, prorata.getValue(), clubPrix);
 
         /* view stuff here */
         Display d = Display.NONE;

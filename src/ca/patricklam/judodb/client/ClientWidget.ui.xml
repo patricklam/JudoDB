@@ -61,7 +61,7 @@
  		</fieldset>
 
  		<fieldset> <legend>Inscription</legend>
-  		 <div class="{style.fourper}">
+		 <div class="{style.fiveper}">
    		  <label>Date d'inscription
            <span class="noprint"><g:InlineLabel ui:field="semaines"></g:InlineLabel></span> <g:Anchor ui:field="inscrire"><span class="noprint">(inscrire)</span></g:Anchor> <g:Anchor ui:field="modifier"><span class="noprint">(modifier)</span></g:Anchor> <g:Anchor ui:field="desinscrire"><span id="desinscrire" class="noprint">(désinscrire)</span></g:Anchor><br />
            <g:ListBox ui:field="date_inscription" /> <g:Hidden ui:field="date_inscription_encoded" name="date_inscription_encoded" />
@@ -70,6 +70,8 @@
    		  <label>Saisons<br /><g:TextBox ui:field="saisons" visibleLength="8" /> <g:Hidden ui:field="saisons_encoded" name="saisons_encoded" /></label>
    		  <label style="font-size:80%"><span class="noprint">Affiliation Judo QC envoy&eacute;<br /><g:CheckBox ui:field="verification"/></span> <g:Hidden ui:field="verification_encoded" name="verification_encoded" />
  		  </label>
+		  <label><span class="noprint">Prorata<br /><g:CheckBox ui:field="prorata"/></span> <g:Hidden ui:field="prorata_encoded" name="prorata_encoded" />
+		  </label>
   		 </div>
   		
   		 <div class="{style.fourper}">
@@ -92,7 +94,7 @@
          </div>
          <div class="{style.fourper}" style="border-bottom: 1px grey;">
           <label>Co&ucirc;t judogi<br /><g:ListBox ui:field="judogi"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></label>
-          <label style="font-size:80%">Rabais r&eacute;sident<br /><g:CheckBox ui:field="resident"/><g:Hidden ui:field="resident_encoded" name="resident_encoded" /></label>
+          <label>Rabais r&eacute;sident<br /><g:CheckBox ui:field="resident"/><g:Hidden ui:field="resident_encoded" name="resident_encoded" /></label>
           <span class="{style.fraisOnRight}"><label>Autres frais<br /><g:TextBox ui:field="suppFrais" visibleLength="15" /><g:Hidden ui:field="suppFrais_encoded" name="supp_frais_encoded" /></label></span>
         </div>
         <div class="{style.fourper}">
