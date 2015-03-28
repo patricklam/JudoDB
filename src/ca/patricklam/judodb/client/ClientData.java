@@ -141,22 +141,19 @@ public class ClientData extends JavaScriptObject {
     /* deprecated */
     public final native String getRAMQ() /*-{ return this.RAMQ; }-*/;
 
-    public static final String DEFAULT_VILLE = "Anjou (QC)";
-    public static final String DEFAULT_CP = "H1K ";
-    public static final String DEFAULT_TEL = "514-";
-    public final void makeDefault() {
-        setVille(DEFAULT_VILLE);
-        setCodePostal(DEFAULT_CP);
-        setTel(DEFAULT_TEL);
-        setTelContactUrgence(DEFAULT_TEL);
+    public final void makeDefault(ClubSummary cs) {
+        setVille(cs.getVille());
+        setCodePostal(cs.getPrefixCodepostale());
+        setTel(cs.getIndicatifRegional());
+        setTelContactUrgence(cs.getIndicatifRegional());
     }
 
-    public final boolean isDefault() {
+    public final boolean isDefault(ClubSummary cs) {
         return getAdresse().equals("") &&
-                getVille().equals(DEFAULT_VILLE) &&
-                getCodePostal().equals(DEFAULT_CP) &&
-                getTel().equals(DEFAULT_TEL) &&
-                getTelContactUrgence().equals(DEFAULT_TEL) &&
-                getCourriel().equals("");
+            getVille().equals(cs.getVille()) &&
+            getCodePostal().equals(cs.getPrefixCodepostale()) &&
+            getTel().equals(cs.getIndicatifRegional()) &&
+            getTelContactUrgence().equals(cs.getIndicatifRegional()) &&
+            getCourriel().equals("");
     }
 }

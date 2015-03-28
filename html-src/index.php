@@ -108,5 +108,6 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] != "yes")
       </div>
     </div>
 
+    <div id="version" class="noprint"></div>
   </body>
 </html>

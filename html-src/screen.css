@@ -23,3 +23,8 @@
 .darkBG {
   background-color: #eee;
 }
+
+#version {
+  position:absolute;
+  bottom: 0.5em; right: 1em;
+}

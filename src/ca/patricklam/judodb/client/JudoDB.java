@@ -3,6 +3,7 @@ package ca.patricklam.judodb.client;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.EntryPoint;
@@ -88,9 +89,11 @@ public class JudoDB implements EntryPoint {
 
     private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
     public static final String PULL_CLUB_LIST_URL = BASE_URL + "pull_club_list.php";
+    public static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
     int jsonRequestId = 0;
 
     private final Label statusLabel = new Label();
+    private Label versionLabel;
 
     /* search stuff */
     private final VerticalPanel searchResultsPanel = new VerticalPanel();
@@ -155,7 +158,7 @@ public class JudoDB implements EntryPoint {
 
     void generateClubList() {
         pleaseWait();
-        retrieveClubList(dropDownUserClubs);
+        retrieveClubList(true, dropDownUserClubs);
       }
 
     // Create a handler for the searchButton and nameField
@@ -172,7 +175,7 @@ public class JudoDB implements EntryPoint {
 
         private void refreshClientListAndFilter() {
             pleaseWait();
-            retrieveClientList();
+            retrieveClientList(true);
         }
     }
 
@@ -261,6 +264,7 @@ public class JudoDB implements EntryPoint {
         RootPanel.get("mainActions").setVisible(true);
         RootPanel.get("search").setVisible(true);
         RootPanel.get("rightbar").setVisible(true);
+        RootPanel.get("version").setVisible(true);
         voirListes.setVisible(true);
         editConfig.setVisible(true);
         logout.setVisible(true);
@@ -290,6 +294,8 @@ public class JudoDB implements EntryPoint {
      */
     public void onModuleLoad() {
         // Add content to the RootPanel
+        versionLabel = new Label(Version.VERSION);
+        RootPanel.get("version").add(versionLabel);
         RootPanel.get("statusContainer").add(statusLabel);
 
         // search buttons
@@ -357,14 +363,15 @@ public class JudoDB implements EntryPoint {
           }
         }});
         listActions.add(ftListes);
-            listActions.add(new Label(""));
-            impotListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
-          if (JudoDB.this.l != null) {
-              JudoDB.this.l.switchMode(ListWidget.Mode.IMPOT);
+        listActions.add(new Label(""));
+        impotListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
+            if (JudoDB.this.l != null) {
+                JudoDB.this.l.switchMode(ListWidget.Mode.IMPOT);
             }
         }});
-            listActions.add(impotListes);
-        listActions.add(new Label(""));
+        // temporarily disable; issue 50
+        // listActions.add(impotListes);
+        // listActions.add(new Label(""));
         clearXListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             if (JudoDB.this.l != null) JudoDB.this.l.clearX(); }});
         listActions.add(clearXListes);
@@ -401,6 +408,7 @@ public class JudoDB implements EntryPoint {
         allWidgets.add(RootPanel.get("mainActions"));
         allWidgets.add(RootPanel.get("listActions"));
         allWidgets.add(RootPanel.get("search"));
+        allWidgets.add(RootPanel.get("version"));
 
         // (anchors)
         allWidgets.add(voirListes);
@@ -419,16 +427,18 @@ public class JudoDB implements EntryPoint {
 
         History.fireCurrentHistoryState();
         modeStack.push(new Mode(Mode.ActualMode.MAIN));
+        retrieveClientList(false);
     }
 
     /* --- client search UI functions --- */
 
-    private void loadClientListResults(JsArray<ClientSummary> allClients) {
+    private void loadClientListResults(JsArray<ClientSummary> allClients, boolean display) {
         searchString = removeAccents(searchField.getText());
         searchResults.removeAllRows();
         firstSearchResultToDisplay = 0;
         this.allClients = allClients;
-        displaySearchResults();
+        if (display)
+            displaySearchResults();
     }
 
     private void displaySearchResults() {
@@ -475,16 +485,16 @@ public class JudoDB implements EntryPoint {
     }
 
     /* --- club list UI functions --- */
-    private boolean pendingRetrieveClubList = false;
-    void populateClubList(ListBox dropDownUserClubs) {
+    boolean pendingRetrieveClubList = false;
+    void populateClubList(boolean tousOK, ListBox dropDownUserClubs) {
         if (allClubs == null) {
             if (pendingRetrieveClubList) return;
-            retrieveClubList(dropDownUserClubs);
+            retrieveClubList(tousOK, dropDownUserClubs);
             return;
         }
 
       dropDownUserClubs.clear();
-      dropDownUserClubs.addItem("TOUS");
+      dropDownUserClubs.addItem(tousOK ? "TOUS" : "---");
       dropDownUserClubs.setVisibleItemCount(1);
       idxToClub.clear();
 
@@ -494,28 +504,41 @@ public class JudoDB implements EntryPoint {
           idxToClub.put(i+1, cs); // add one because "TOUS" occupies index 0
       }
 
+      // don't select TOUS by default if there is only 1 club
+      if (allClubs.length() == 1) selectedClub = 1;
       dropDownUserClubs.setSelectedIndex(selectedClub);
     }
 
     /* --- club-list related utility functions --- */
 
-    String getNumeroSelectedClub(){
-      if (0 == selectedClub) return "-1";
-      ClubSummary cs = idxToClub.get(selectedClub);
-      return cs.getNumeroClub();
+    void clearSelectedClub() {
+        selectedClub = 0;
     }
 
-    String getSelectedClubId(){
-      if (0 != selectedClub) return idxToClub.get(selectedClub).getId();
-      else return "-1";
+    String getSelectedClubID() {
+        if (allClubs == null) return null;
+        if (0 != selectedClub) return idxToClub.get(selectedClub).getId();
+        else return null;
     }
 
     static String getClubText(ClubSummary cs) {
       return "[" + cs.getNumeroClub() + "] " + cs.getNom();
     }
 
-    ClubSummary getClubSummary(int clubListBoxIndex) {
-      return idxToClub.get(clubListBoxIndex);
+    ClubSummary getClubSummaryByID(String cid) {
+        for(int i = 0; i < allClubs.length(); ++i) {
+          ClubSummary cs = allClubs.get(i);
+          if (cs.getId().equals(cid)) return cs;
+        }
+        return null;
+    }
+
+    int getClubListBoxIndexByID(String cid) {
+        for (Map.Entry<Integer, ClubSummary> entry : idxToClub.entrySet()) {
+            if (entry.getValue().getId().equalsIgnoreCase(cid))
+                return entry.getKey();
+        }
+        return -1;
     }
 
     /* --- network functions --- */
@@ -555,36 +578,36 @@ public class JudoDB implements EntryPoint {
         }
     }
 
-    public void retrieveClientList() {
+    public void retrieveClientList(final boolean display) {
         String url = PULL_CLIENT_LIST_URL;
         RequestCallback rc =
             createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
                         loadClientListResults
-                            (JsonUtils.<JsArray<ClientSummary>>safeEval(s));
+                            (JsonUtils.<JsArray<ClientSummary>>safeEval(s), display);
                     }
                 });
         retrieve(url, rc);
     }
 
-    public void retrieveClubList(final ListBox dropDownUserClubs) {
+    public void retrieveClubList(final boolean tousOK, final ListBox dropDownUserClubs) {
         String url = PULL_CLUB_LIST_URL;
         pendingRetrieveClubList = true;
         RequestCallback rc =
             createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
                         loadClubListResults
-                            (dropDownUserClubs,
+                            (tousOK, dropDownUserClubs,
                              JsonUtils.<JsArray<ClubSummary>>safeEval(s));
                     }
                 });
         retrieve(url, rc);
     }
 
-    private void loadClubListResults(ListBox dropDownUserClubs, JsArray<ClubSummary> clubs) {
+    private void loadClubListResults(boolean tousOK, ListBox dropDownUserClubs, JsArray<ClubSummary> clubs) {
         firstSearchResultToDisplay = 0;
         this.allClubs = clubs;
-        populateClubList(dropDownUserClubs);
+        populateClubList(tousOK, dropDownUserClubs);
         pendingRetrieveClubList = false;
     }
 

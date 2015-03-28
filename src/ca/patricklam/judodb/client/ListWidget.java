@@ -5,10 +5,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
-import ca.patricklam.judodb.client.Constants.Cours;
 import ca.patricklam.judodb.client.Constants.Division;
 import ca.patricklam.judodb.client.Constants.Grade;
 
@@ -50,9 +53,12 @@ public class ListWidget extends Composite {
 
     private JsArray<ClientData> allClients;
     private HashMap<String, ClientData> cidToCD = new HashMap<String, ClientData>();
+    /** A list of cours as retrieved from the server.
+     * Must stay in synch with the ListBox field cours. */
+    private List<CoursSummary> backingCours = new ArrayList<CoursSummary>();
+    private Set<String> clubsPresent = new HashSet<String>();
 
     private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
-    private static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
     private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
     private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
 
@@ -64,7 +70,6 @@ public class ListWidget extends Composite {
 
     @UiField Hidden multi;
     @UiField Hidden title;
-    @UiField Hidden subtitle;
     @UiField Hidden short_title;
     @UiField Hidden data;
     @UiField Hidden data_full;
@@ -142,8 +147,8 @@ public class ListWidget extends Composite {
             session_seqno = Constants.currentSession().seqno;
 
         String numero_club = null;
-        if (jdb.selectedClub != 0 && !jdb.getNumeroSelectedClub().equals("-1"))
-            numero_club = jdb.getNumeroSelectedClub();
+        if (jdb.getSelectedClubID() != null)
+            numero_club = jdb.getClubSummaryByID(jdb.getSelectedClubID()).getNumeroClub();
 
         jdb.pleaseWait();
         retrieveCours(session_seqno, numero_club);
@@ -154,6 +159,7 @@ public class ListWidget extends Composite {
       public void onChange(ChangeEvent e) {
         jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
         coursHandler.generateCoursList();
+        showList();
       }
     }
 
@@ -177,7 +183,7 @@ public class ListWidget extends Composite {
     private HashMap<TextBox, String> originalGradeDates = new HashMap<TextBox, String>();
 
     private CoursHandler coursHandler = new CoursHandler();
-    private ClubListHandler csHandler = new ClubListHandler();
+    private ClubListHandler clHandler = new ClubListHandler();
 
     public ListWidget(JudoDB jdb) {
         this.jdb = jdb;
@@ -274,9 +280,9 @@ public class ListWidget extends Composite {
 
         listEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
 
-        dropDownUserClubs.addChangeHandler(csHandler);
+        dropDownUserClubs.addChangeHandler(clHandler);
 
-        jdb.populateClubList(dropDownUserClubs);
+        jdb.populateClubList(true, dropDownUserClubs);
         coursHandler.generateCoursList();
 
         retrieveAllClients();
@@ -305,7 +311,7 @@ public class ListWidget extends Composite {
                 ListBox lb = (ListBox) lbw;
                 if (lb.getSelectedIndex() != originalCours.get(lb)) {
                     String cid = results.getText(i, Columns.CID);
-                    dv.append(cid + ",Scours,"+lb.getSelectedIndex()+";");
+                    dv.append(cid + ",Scours,"+backingCours.get(lb.getSelectedIndex()).getId()+";");
                 }
             }
             Widget jqw = results.getWidget(i, Columns.JUDOQC);
@@ -369,48 +375,56 @@ public class ListWidget extends Composite {
         for (int i = 0; i < results.getRowCount(); i++) {
             ClientData cd = cidToCD.get(results.getText(i, Columns.CID));
             ServiceData sd = cd.getServiceFor(Constants.currentSession());
-            CostCalculator.recompute(cd, sd, true);
+	    if (sd == null) continue;
+            ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+            // XXX getPrix on ListWidget as well
+            CostCalculator.recompute(cd, sd, cs, true, null);
         }
     }
 
     private void addMetaData() {
-        int c = Integer.parseInt(cours.getValue(cours.getSelectedIndex()));
+        int c = cours.getSelectedIndex();
+        title.setValue("");
         if (c > 0 || isFiltering) {
             multi.setValue("0");
             if (isFiltering) {
+                title.setValue("");
                 if (c != -1) {
-                    title.setValue(Constants.COURS[c].name);
-                    short_title.setValue(Constants.COURS[c].short_desc);
+                    short_title.setValue(backingCours.get(c-1).getShortDesc());
                 }
                 else {
-                    title.setValue("");
                     short_title.setValue("");
                 }
 
                 String st = "";
-                // add filters to subtitle
-                subtitle.setValue(st);
+                // TODO: add filters to title
+                title.setValue(st);
             } else {
-                title.setValue(Constants.COURS[c].name);
-                if (!Constants.COURS[c].entraineur.equals(""))
-                    subtitle.setValue("Entraineur: " + Constants.COURS[c].entraineur);
-                else
-                    subtitle.setValue("");
-                short_title.setValue(Constants.COURS[c].short_desc);
+                short_title.setValue(backingCours.get(c-1).getShortDesc());
             }
         } else {
             // all classes
-            String tt = "", subt = "", st = "";
+            String tt = "", shortt = "";
             multi.setValue("1");
 
-            for (Cours cc : Constants.COURS) {
-                tt += cc.name + "|";
-                subt += cc.entraineur + "|";
-                st += cc.short_desc + "|";
+            // TODO renumber the cours so as to eliminate blank spots
+            int maxId = -1;
+            for (CoursSummary cc : backingCours) {
+                if (Integer.parseInt(cc.getId()) > maxId)
+                    maxId = Integer.parseInt(cc.getId());
+            }
+
+            if (maxId > 0) {
+                String[] shortDescs = new String[maxId];
+                for (CoursSummary cc : backingCours) {
+                    shortDescs[Integer.parseInt(cc.getId())] = cc.getShortDesc();
+                }
+
+                for (int i = 0; i < maxId; i++)
+                    shortt += shortDescs[i] + "|";
             }
             title.setValue(tt);
-            subtitle.setValue(subt);
-            short_title.setValue(st);
+            short_title.setValue(shortt);
         }
     }
 
@@ -461,9 +475,15 @@ public class ListWidget extends Composite {
         dv += cd.getMostRecentGrade().getGrade() + "|";
         dv += cd.getMostRecentGrade().getDateGrade() + "|";
         ServiceData sd = cd.getServiceFor(Constants.currentSession());
-        CostCalculator.recompute(cd, sd, prorata.getValue());
+        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+        // XXX getPrix on ListWidget as well
+        CostCalculator.recompute(cd, sd, cs, prorata.getValue(), null);
         if (sd != null && !sd.getCours().equals("")) {
-            dv += Constants.COURS[Integer.parseInt(sd.getCours())].short_desc;
+            // XXX this is potentially slow; use a hash map instead.
+            for (CoursSummary cc : backingCours) {
+                if (cc.getId().equals(sd.getCours()))
+                    dv += cc.getShortDesc();
+            }
         }
         dv += "|";
         if (sd != null) {
@@ -508,7 +528,9 @@ public class ListWidget extends Composite {
        dv += cd.getPrenom() + " " + cd.getNom() + "|";
        dv += cd.getDDNString() + "|";
        ServiceData sd = cd.getServiceFor(Constants.currentSession());
-       CostCalculator.recompute(cd, sd, prorata.getValue());
+       ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+       // XXX clubPrix on ListWidget
+       CostCalculator.recompute(cd, sd, cs, prorata.getValue(), null);
        if (sd != null) {
            dv += Constants.currencyFormat.format(Double.parseDouble(sd.getFrais()));
        }
@@ -540,7 +562,13 @@ public class ListWidget extends Composite {
         }
         data.setValue("");
         data_full.setValue(dv.toString());
-        auxdata.setValue(Constants.CLUB + "|" + Constants.CLUBNO);
+        if (jdb.getSelectedClubID() == null) {
+            jdb.setStatus("Veuillez selectionner un club.");
+            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+            return false;
+        }
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub());
         return !dv.equals("");
     }
 
@@ -560,6 +588,26 @@ public class ListWidget extends Composite {
         this.isFiltering = !this.isFiltering;
         filter_controls.setVisible(this.isFiltering);
         showList();
+    }
+
+    private boolean clubServiceFilter(ServiceData sd) {
+        if (jdb.getSelectedClubID() == null) return true;
+	if (sd == null) return false;
+        return jdb.getSelectedClubID().equals(sd.getClubID());
+    }
+
+    /* unlike the other filters, this one can't be disabled */
+    private boolean clubFilter(ClientData cd) {
+        Constants.Session rs = requestedSession();
+        if (rs == null) {
+            for (int i = 0; i < cd.getServices().length(); i++) {
+                if (clubServiceFilter(cd.getServices().get(i)))
+                    return true;
+            }
+            return false;
+        }
+        ServiceData sd = cd.getServiceFor(rs);
+        return clubServiceFilter(sd);
     }
 
     private boolean sessionFilter(ClientData cd) {
@@ -669,6 +717,7 @@ public class ListWidget extends Composite {
         for (int i = 0; i < allClients.length(); i++) {
             ClientData cd = allClients.get(i);
             cidToCD.put(cd.getID(), cd);
+            if (!clubFilter(cd)) continue;
             if (!filter(cd)) continue;
 
             filteredClients.add(cd);
@@ -738,12 +787,19 @@ public class ListWidget extends Composite {
         }
 
         curRow = 1;
+        clubsPresent.clear();
         for (ClientData cd : filteredClients) {
             String grade = cd.getGrade();
             if (grade != null && grade.length() >= 3) grade = grade.substring(0, 3);
 
             ServiceData sd = cd.getServiceFor(rs);
-            int cours = sd != null ? Integer.parseInt(sd.getCours()) : -1;
+            int cours;
+            if (sd == null) {
+                cours = -1;
+            } else {
+                cours = Integer.parseInt(sd.getCours());
+                clubsPresent.add(sd.getClubID());
+            }
 
             Anchor nomAnchor = new Anchor(cd.getNom()), prenomAnchor = new Anchor(cd.getPrenom());
             ClickHandler c = jdb.new EditClientHandler(Integer.parseInt(cd.getID()));
@@ -812,12 +868,12 @@ public class ListWidget extends Composite {
             results.setText(curRow, Columns.COURS_NUM, "");
 
             if (mode == Mode.EDIT) {
-                ListBox w = newCoursWidget(cours);
+                ListBox w = newCoursWidget(sd.getClubID(), cours);
                 results.setWidget(curRow, Columns.COURS_DESC, w);
                 results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
                 originalCours.put(w, cours);
-            } else if (cours != -1 && cours < Constants.COURS.length) {
-                results.setText(curRow, Columns.COURS_DESC, Constants.COURS[cours].short_desc);
+            } else if (cours != -1) {
+                results.setText(curRow, Columns.COURS_DESC, getShortDescForCoursId(cours));
                 results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
             }
 
@@ -839,12 +895,22 @@ public class ListWidget extends Composite {
         nb.setText("Nombre inscrit: "+count);
     }
 
-    private ListBox newCoursWidget(int cours) {
+    private ListBox newCoursWidget(String clubId, int coursId) {
         ListBox lb = new ListBox();
-        for (Constants.Cours c : Constants.COURS) {
-            lb.addItem(c.short_desc, c.seqno);
+        int matching_index = -1;
+        int i = 0;
+        String ciString = Integer.toString(coursId);
+
+        for (CoursSummary cs : backingCours) {
+            if (clubId.equals(cs.getClubId())) {
+                lb.addItem(cs.getShortDesc(), cs.getId());
+                if (cs.getId().equals(ciString))
+                    matching_index = i;
+                i++;
+            }
         }
-        lb.setSelectedIndex(cours);
+        if (matching_index != -1)
+            lb.setSelectedIndex(matching_index);
         return lb;
     }
 
@@ -864,26 +930,40 @@ public class ListWidget extends Composite {
             showList();
     }
 
-    private void loadCoursSearchResults(JsArray<CoursSummary> coursArray) {
+    private void loadCours(JsArray<CoursSummary> coursArray) {
+        backingCours.clear();
         cours.setVisibleItemCount(1);
         cours.clear();
         cours.addItem("Tous", "-1");
         for (int i = 0; i < coursArray.length(); i++) {
             CoursSummary c = coursArray.get(i);
-            cours.addItem(c.getShortDesc(), c.getSeqno());
+            cours.addItem(c.getShortDesc(), c.getId());
+            backingCours.add(c);
         }
     }
 
+    private String getShortDescForCoursId(int coursId) {
+        String cidString = Integer.toString(coursId);
+        for (CoursSummary c : backingCours) {
+            if (c.getId().equals(cidString))
+                return c.getShortDesc();
+        }
+        return "inconnu";
+    }
+
     /* --- network functions --- */
+    private boolean gotCours = false;
     public void retrieveCours(int session_seqno, String numero_club) {
-        String url = PULL_CLUB_COURS_URL;
+        backingCours.clear();
+        String url = JudoDB.PULL_CLUB_COURS_URL;
         url += "?session_seqno="+session_seqno;
         if (numero_club != null) url += "&numero_club="+numero_club;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
-                        loadCoursSearchResults
-                            (JsonUtils.<JsArray<CoursSummary>>safeEval(s));
+                        gotCours = true;
+                        loadCours(JsonUtils.<JsArray<CoursSummary>>safeEval(s));
+                        ListWidget.this.showList();
                     }
                 });
         jdb.retrieve(url, rc);
@@ -896,7 +976,15 @@ public class ListWidget extends Composite {
                     public void eval(String s) {
                         ListWidget.this.allClients =
                             (JsonUtils.<JsArray<ClientData>>safeEval(s));
-                        showList();
+                        new Timer() {
+                            public void run() {
+                                if (gotCours) {
+                                    ListWidget.this.showList();
+                                    cancel();
+                                } else {
+                                    scheduleRepeating(100);
+                                }
+                            } } .scheduleRepeating(10);
                     }
                 });
         jdb.retrieve(url, rc);

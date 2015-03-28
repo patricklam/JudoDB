@@ -28,7 +28,7 @@
   <target name="css" description="Copy CSS to war/judodb/">
   </target>
 
-  <target name="javac" depends="libs" description="Compile java source to bytecode">
+  <target name="javac" depends="libs,version" description="Compile java source to bytecode">
     <mkdir dir="war/WEB-INF/classes"/>
     <javac srcdir="src" includes="**" encoding="utf-8"
         destdir="war/WEB-INF/classes"
@@ -162,5 +162,19 @@ Test targets suppressed because -junit argument was not specified when running w
     <delete dir="war/WEB-INF/classes" failonerror="false" />
     <delete dir="war/judodb" failonerror="false" />
   </target>
+
+  <target name="version" description="Create Version.java">
+    <tstamp>
+      <format property="build.timestamp" pattern="yyyy.MM.dd-HH.mm.ss" locale="en,US"/>
+    </tstamp>
+    <echo message="tstamp=${build.timestamp}" file="build-timestamp.properties"/>
+    <echo file="src/ca/patricklam/judodb/client/Version.java" message="package ca.patricklam.judodb.client;${line.separator}" />
+    <echo file="src/ca/patricklam/judodb/client/Version.java" append="true" message="public final class Version {${line.separator}" />
+    <echo file="src/ca/patricklam/judodb/client/Version.java"
+          append="true"
+          message=" public static String VERSION=&quot;${build.timestamp}&quot;;${line.separator}" />
+    <echo file="src/ca/patricklam/judodb/client/Version.java" append="true" message="}${line.separator}" />
+    <echo message="BUILD ${build.timestamp}" />
+</target>
 
 </project>

@@ -135,6 +135,7 @@ public class ClientWidget extends Composite {
 
     @UiField Hidden solde_encoded;
     @UiField Hidden frais_encoded;
+    @UiField Hidden club_id_encoded;
 
     @UiField Hidden guid_on_form;
     @UiField Hidden sid;
@@ -156,6 +157,7 @@ public class ClientWidget extends Composite {
     private final FormElement clientform;
 
     private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php";
+    private static final String PULL_CLUB_PRIX_URL = JudoDB.BASE_URL + "pull_club_prix.php";
     private static final String PUSH_ONE_CLIENT_URL = JudoDB.BASE_URL + "push_one_client.php";
     private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
     private int pushTries;
@@ -163,7 +165,7 @@ public class ClientWidget extends Composite {
     public interface BlurbTemplate extends SafeHtmlTemplates {
         @Template
           ("<p>Je {0} certifie que les informations inscrites sur ce formulaire sont véridiques. "+
-           "En adhèrant au Club Judo "+Constants.CLUB+", j'accepte tous les risques d'accident liés à la pratique du "+
+           "En adhèrant au {3}, j'accepte tous les risques d'accident liés à la pratique du "+
            "judo qui pourraient survenir dans les locaux ou lors d'activités extérieurs organisées par le Club. "+
            "J'accepte de respecter les règlements du Club en tout temps y compris lors des déplacements.</p>"+
            "<h4>Politique de remboursement</h4>"+
@@ -173,10 +175,14 @@ public class ClientWidget extends Composite {
            "pour les frais de cours correspondant à la période restante.</p>"+
            "<p>Signature {1}: <span style='float:right'>Date: _________</span></p>"+
            "<p>Signature résponsable du club:  <span style='float:right'>Date: {2}</span></p>")
-           SafeHtml blurb(String nom, String membreOuParent, String today);
+           SafeHtml blurb(String nom, String membreOuParent, String today, String clubName);
     }
     private static final BlurbTemplate BLURB = GWT.create(BlurbTemplate.class);
 
+    private ClubPrix[] clubPrix;
+    /** A list of cours as retrieved from the server.
+     * Must stay in synch with the ListBox field cours. */
+    private List<CoursSummary> backingCours = new ArrayList<CoursSummary>();
     private ClientData cd;
     private String guid;
     private int currentServiceNumber;
@@ -195,11 +201,7 @@ public class ClientWidget extends Composite {
         deleted.setValue("");
         clubListHandler = new ClubListHandler();
         dropDownUserClubs.addChangeHandler(clubListHandler);
-        displayClubListResults();
 
-        for (Constants.Cours c : Constants.COURS) {
-            cours.addItem(c.name, c.seqno);
-        }
         sessions.addItem("1");
         sessions.addItem("2");
         for (Constants.Escompte e : Constants.ESCOMPTES) {
@@ -222,6 +224,14 @@ public class ClientWidget extends Composite {
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
 
         sessions.setItemSelected(1, true);
+
+        if (cid == -1 && jdb.getSelectedClubID() == null) {
+            jdb.setStatus("Veuillez selectionner un club pour le client.");
+            new Timer() { public void run() {
+                ClientWidget.this.jdb.popMode();
+            } }.schedule(1000);
+            return;
+        }
 
         inscrire.addClickHandler(inscrireClickHandler);
         modifier.addClickHandler(modifierClickHandler);
@@ -283,6 +293,7 @@ public class ClientWidget extends Composite {
             }
         });
 
+        jdb.populateClubList(false, dropDownUserClubs);
         jdb.pleaseWait();
         if (cid != -1)
             retrieveClient(cid);
@@ -290,16 +301,10 @@ public class ClientWidget extends Composite {
             this.cd = JavaScriptObject.createObject().cast();
             this.cd.setID(null); this.cd.setNom("");
 
-            this.cd.makeDefault();
-
-            JsArray<ServiceData> sa = JavaScriptObject.createArray().cast();
-            ServiceData sd = ServiceData.newServiceData();
-            sd.inscrireAujourdhui();
-            sa.set(0, sd);
-            this.cd.setServices(sa);
-            // new client: first service,
-            //   which exists because we called inscrireAujourdhui
-            currentServiceNumber = 0;
+            addNewService();
+            ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+            cd.makeDefault(cs);
+            currentServiceNumber = this.cd.getMostRecentServiceNumber();
 
             JsArray<GradeData> ga = JavaScriptObject.createArray().cast();
             GradeData gd = JavaScriptObject.createObject().cast();
@@ -309,29 +314,28 @@ public class ClientWidget extends Composite {
             loadClientData();
             jdb.clearStatus();
         }
+        retrieveClubPrix();
+        retrieveCours();
+    }
+
+    private void addNewService() {
+        ServiceData sd = ServiceData.newServiceData();
+        sd.inscrireAujourdhui();
+        sd.setClubID(jdb.getSelectedClubID());
+
+        JsArray<ServiceData> sa = cd.getServices();
+        if (sa == null) {
+            sa = JavaScriptObject.createArray().cast();
+            cd.setServices(sa);
+        }
+        sa.push(sd);
     }
 
     class ClubListHandler implements ChangeHandler {
       public void onChange(ChangeEvent event) {
-        jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
-        displayClubListResults();
+          jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
+          retrieveClubPrix();
       }
-    }
-
-    void displayClubListResults() {
-      jdb.clearStatus();
-      dropDownUserClubs.clear();
-      dropDownUserClubs.addItem("---");
-      dropDownUserClubs.setVisibleItemCount(1);
-      ClubSummary cs = null;
-
-      for (Map.Entry<Integer, ClubSummary> entry : jdb.idxToClub.entrySet()) {
-        Integer k = entry.getKey();
-        String clubStr = JudoDB.getClubText(entry.getValue());
-        dropDownUserClubs.insertItem(clubStr, k);
-      }
-
-      dropDownUserClubs.setSelectedIndex(jdb.selectedClub);
     }
 
     @SuppressWarnings("deprecation")
@@ -352,14 +356,25 @@ public class ClientWidget extends Composite {
             mm = "parent ou tuteur";
         }
 
-        SafeHtml blurbContents = BLURB.blurb(nn, mm, Constants.STD_DATE_FORMAT.format(today));
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+        SafeHtml blurbContents = BLURB.blurb(nn, mm, Constants.STD_DATE_FORMAT.format(today), jdb.getClubSummaryByID(sd.getClubID()).getNom());
 
         blurb.clear();
         blurb.add(new HTMLPanel(blurbContents));
     }
 
+    /* depends on retrieveClubList having succeeded */
     /** Takes data from ClientData into the form. */
     private void loadClientData () {
+        // cannot just test for getSelectedClubID() == null,
+        // since it sets the selected club ID based on the client's data!
+        if (jdb.allClubs == null) {
+            new Timer() {
+                public void run() { loadClientData(); }
+            }.schedule(100);
+            return;
+        }
+
         cid.setInnerText(cd.getID());
         nom.setText(cd.getNom());
         prenom.setText(cd.getPrenom());
@@ -379,13 +394,20 @@ public class ClientWidget extends Composite {
 
         tel_contact_urgence.setText(cd.getTelContactUrgence());
 
-        ServiceData sd;
         if (currentServiceNumber == -1) {
-            sd = ServiceData.newServiceData();
-            sd.inscrireAujourdhui();
+            addNewService();
         }
-        else
-            sd = cd.getServices().get(currentServiceNumber);
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+
+        int clubIndex = jdb.getClubListBoxIndexByID(sd.getClubID());
+        if (-1 != clubIndex) {
+            jdb.selectedClub = clubIndex;
+            dropDownUserClubs.setSelectedIndex(clubIndex);
+        }
+        else {
+            jdb.setStatus("Le client n'a pas de club enregistré.");
+            return;
+        }
 
         loadGradesData();
 
@@ -407,13 +429,16 @@ public class ClientWidget extends Composite {
         modifier.setVisible(!hasToday && hasThisSession);
         desinscrire.setVisible(cd.getServices().length() > 0);
 
-        // categories is set in recompute().
         saisons.setText(sd.getSaisons());
         verification.setValue(sd.getVerification());
-        int cnum = 0;
-        try { Integer.parseInt(sd.getCours()); } catch (NumberFormatException e) {}
-        if (cnum >= 0 && cnum < cours.getItemCount())
-            cours.setItemSelected(cnum, true);
+        int matching_index = 0;
+        for (CoursSummary cs : backingCours) {
+            if (cs.getId().equals(sd.getCours())) {
+                cours.setSelectedIndex(matching_index);
+                break;
+            }
+            matching_index++;
+        }
         sessions.setItemSelected(sd.getSessionCount()-1, true);
         sessions.setEnabled(isToday);
         categorieFrais.setText(sd.getCategorieFrais());
@@ -449,7 +474,6 @@ public class ClientWidget extends Composite {
         solde.setValue(sd.getSolde());
 
         updateDynamicFields();
-        displayClubListResults();
     }
 
     /** Puts data from the form back onto ClientData. */
@@ -476,8 +500,10 @@ public class ClientWidget extends Composite {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         sd.setDateInscription(removeCommas(Constants.stdToDbDate(date_inscription.getItemText(currentServiceNumber))));
         sd.setSaisons(removeCommas(saisons.getText()));
+        sd.setClubID(jdb.getSelectedClubID());
         sd.setVerification(verification.getValue());
-        sd.setCours(Integer.toString(cours.getSelectedIndex()));
+        if (cours.getSelectedIndex() != -1)
+            sd.setCours(cours.getValue(cours.getSelectedIndex()));
         sd.setSessionCount(sessions.getSelectedIndex()+1);
         sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 
@@ -796,7 +822,8 @@ public class ClientWidget extends Composite {
      * Works directly at the View level, not the Model level. */
     private void regularizeEscompte() {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
-        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd);
+        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd, cs, clubPrix);
 
         if (CostCalculator.isCasSpecial(sd)) {
             NumberFormat nf = NumberFormat.getDecimalFormat();
@@ -842,9 +869,11 @@ public class ClientWidget extends Composite {
         // check 1) address fields are empty and 2) there exists a sibling
         // Note that the following check relies on the data being saved
         // to the ClientData, which is true after you enter the birthday.
-        if (!cd.isDefault()) return;
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+        ClubSummary clb = jdb.getClubSummaryByID(sd.getClubID());
+        if (!cd.isDefault(clb)) return;
 
-        // oh well, tough luck!
+        // XXX should do an allClients fetch upon load...
         if (jdb.allClients == null) return;
 
         for (int i = 0; i < jdb.allClients.length(); i++) {
@@ -883,7 +912,8 @@ public class ClientWidget extends Composite {
     private void updateDynamicFields() {
         saveClientData();
         ServiceData sd = cd.getServices().get(currentServiceNumber);
-        CostCalculator.recompute(cd, sd, true);
+        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+        CostCalculator.recompute(cd, sd, cs, true, clubPrix);
 
         /* view stuff here */
         Display d = Display.NONE;
@@ -909,7 +939,7 @@ public class ClientWidget extends Composite {
             csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(), ai = new StringBuffer(), ae = new StringBuffer(),
             af = new StringBuffer(), j = new StringBuffer(), p = new StringBuffer(),
             n = new StringBuffer(), sf = new StringBuffer(), s = new StringBuffer(),
-            f = new StringBuffer();
+            f = new StringBuffer(), clubid = new StringBuffer();
 
         JsArray<ServiceData> services = cd.getServices();
         for (int i = 0; i < services.length(); i++) {
@@ -936,6 +966,7 @@ public class ClientWidget extends Composite {
             sf.append(sd.getSuppFrais()+",");
             s.append(sd.getSolde() ? "1,":"0,");
             f.append(sd.getFrais()+",");
+            clubid.append(sd.getClubID()+",");
         }
 
         date_inscription_encoded.setValue(di.toString());
@@ -957,6 +988,7 @@ public class ClientWidget extends Composite {
         suppFrais_encoded.setValue(sf.toString());
         solde_encoded.setValue(s.toString());
         frais_encoded.setValue(f.toString());
+        club_id_encoded.setValue(clubid.toString());
     }
 
     private void pushClientDataToServer(final boolean leaveAfterPush) {
@@ -999,7 +1031,21 @@ public class ClientWidget extends Composite {
         } }.schedule(500);
     }
 
+    private void loadCours(JsArray<CoursSummary> coursArray) {
+        backingCours.clear();
+        cours.setVisibleItemCount(1);
+        cours.clear();
+        for (int i = 0; i < coursArray.length(); i++) {
+            CoursSummary c = coursArray.get(i);
+            cours.addItem(c.getShortDesc(), c.getId());
+            backingCours.add(c);
+        }
+    }
+
+    /* --- network functions --- */
+    /* retrieveClient can run first; no dependencies */
     public void retrieveClient(int cid) {
+        jdb.clearSelectedClub();
         String url = PULL_ONE_CLIENT_URL + "?id=" + cid;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
@@ -1020,6 +1066,63 @@ public class ClientWidget extends Composite {
                         for (ChangeHandler ch : onPopulated) {
                             ch.onChange(null);
                         }
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    /* depends on retrieveClubList() having succeeded */
+    /* also depends on there being a selected club */
+    public void retrieveClubPrix() {
+        if (jdb.getSelectedClubID() == null) {
+            new Timer() {
+                public void run() { retrieveClubPrix(); }
+            }.schedule(100);
+            return;
+        }
+
+        clubPrix = null;
+
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        String url = PULL_CLUB_PRIX_URL +
+            "?numero_club=" + cs.getNumeroClub() +
+            "&session_seqno=" + Integer.toString(Constants.currentSessionNo());
+        final String clubid = cs.getId();
+
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        JsArray<ClubPrix> cp = JsonUtils.<JsArray<ClubPrix>>safeEval(s);
+                        clubPrix = new ClubPrix[cp.length()];
+                        for (int i = 0; i < cp.length(); i++)
+                            clubPrix[i] = cp.get(i);
+
+                        updateDynamicFields();
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    /* depends on retrieveClubList() having succeeded */
+    public void retrieveCours() {
+        if (jdb.getSelectedClubID() == null) {
+            new Timer() {
+                public void run() { retrieveCours(); }
+            }.schedule(100);
+            return;
+        }
+
+        backingCours.clear();
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        String url = JudoDB.PULL_CLUB_COURS_URL +
+            "?numero_club=" + cs.getNumeroClub() +
+            "&session_seqno=" + Integer.toString(Constants.currentSessionNo());
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        loadCours
+                            (JsonUtils.<JsArray<CoursSummary>>safeEval(s));
+                        loadClientData();
                     }
                 });
         jdb.retrieve(url, rc);
