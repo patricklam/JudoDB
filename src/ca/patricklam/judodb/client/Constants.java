@@ -31,8 +31,6 @@ public class Constants {
 
     public static final double PASSEPORT_JUDO_QC = 5.0;
     public static final double RESIDENT = 5.0;
-    public static final String CLUB = "Anjou";
-    public static final String CLUBNO = "C047";
     public static final int VETERAN = 35;
     public static final int PRORATA_PENALITE = 5;
     public static final int COUT_JUDOQC_INITIATION = 10;
