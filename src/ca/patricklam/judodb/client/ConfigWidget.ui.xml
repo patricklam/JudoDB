@@ -2,24 +2,27 @@
 <!-- ConfigWidget.ui.xml -->
 
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
-	<ui:style src="ConfigWidget.css" />
+    <ui:style src="ConfigWidget.css" />
     <g:HTMLPanel ui:field="configMain">
- 		<form id="configform" class="{style.compactform}" method="POST" target="eatFormSubmitResults">
+	<g:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" styleName="{style.userclub}" />
+        <form id="configform" class="{style.compactform}" method="POST" target="eatFormSubmitResults">
     	</form>
-    	<g:TabLayoutPanel ui:field="configTabPanel" barHeight="2" barUnit="EM">
-    		<g:tab>
-        		<g:header>Club</g:header>
-        		<g:FlowPanel>
-        			<g:Anchor ui:field='nom_club'>Nom du club:</g:Anchor>
-        		</g:FlowPanel>
-    		</g:tab>
-    		<g:tab>
-        		<g:header>Sessions</g:header>
-        		<g:FlowPanel>
-        			<g:Anchor ui:field='nom_session'>Nom du session:</g:Anchor> 
-        	    </g:FlowPanel>                    
-    		</g:tab>                        
-		</g:TabLayoutPanel> 
+        <g:TabLayoutPanel ui:field="configTabPanel" barHeight="2" barUnit="EM">
+                <g:tab>
+                        <g:header>Club</g:header>
+                        <g:FlowPanel>
+                                <g:Anchor ui:field='nom_club'>Nom du club:</g:Anchor>
+                        </g:FlowPanel>
+                </g:tab>
+                <g:tab>
+
+                        <g:header>Sessions</g:header>
+
+                        <g:FlowPanel>
+                                <g:Grid ui:field="sessions"></g:Grid>
+                        </g:FlowPanel>
+                </g:tab>
+        </g:TabLayoutPanel>
     </g:HTMLPanel>
  
 </ui:UiBinder>

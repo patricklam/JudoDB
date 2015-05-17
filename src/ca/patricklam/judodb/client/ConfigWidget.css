@@ -127,3 +127,8 @@ input.text, input.button, textarea, select {
 }
 
 /* end form stuff */
+
+.userclub {
+	position:absolute;
+	top:1.5em; right: 1em;
+}
