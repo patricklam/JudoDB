@@ -3,42 +3,57 @@
   xmlns:ui="urn:ui:com.google.gwt.uibinder"
   xmlns:g="urn:import:com.google.gwt.user.client.ui">
 
+<ui:style>
+ .search { padding-left:1em; }
+ .status {
+   /* XXX this doesn't actually work for some reason */
+   position:absolute;
+   left:35%;
+   top:0%;
+ }
+ .version {
+   position:absolute;
+   bottom: 0.5em; right: 1em;
+ }
+</ui:style>
+
 <g:DockLayoutPanel unit='EM'>
 
-<g:north size='1'>
- <g:HTML>
-   	<p><span id="statusContainer">&nbsp;</span></p>
- </g:HTML>
+<g:north size='2'>
+ <g:Label styleName='{style.status}' ui:field="statusLabel" />
 </g:north>
 
 <g:center>
  <g:HTML>
-  <div id="search">
+  <div id="search" class='{style.search}'>
    <h1>Recherche judoka</h1>
    <label class="standardtitle" for="query">Nom ou Prenom</label><br /><br />
   </div>
  </g:HTML>
 </g:center>
 
-<g:east size='10'>
- <g:HTML>
-  <div id="editClient"></div>
-  <div id="lists"></div>
-  <div id="config"></div>
+<g:east size='15'>
+ <g:FlowPanel>
+  <g:HTML>
+   <div id="editClient"></div>
+   <div id="lists"></div>
+   <div id="config"></div>
 
-  <div id="rightbar" class="noprint">
-   <div id="listActions" style="display:none">
-    <h3>Actions</h3>
-    <p id="actionList"></p>
+   <div id="rightbar" class="noprint">
+    <div id="listActions" style="display:none">
+     <h3>Actions</h3>
+     <p id="actionList"></p>
+    </div>
+    <div id="mainActions">
+     <h3>Actions</h3>
+     <p id="actionList">
+     </p>
+    </div>
    </div>
-   <div id="mainActions">
-    <h3>Actions</h3>
-    <p id="actionList">  
-    </p>
-   </div>
-  </div>
-  <div id="version" class="noprint"></div>
- </g:HTML>
+  </g:HTML>
+  <!-- todo noprint -->
+  <g:Label ui:field="versionLabel" styleName='{style.version}' />
+ </g:FlowPanel>
 </g:east>
 
 </g:DockLayoutPanel>

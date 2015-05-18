@@ -94,8 +94,8 @@ public class JudoDB implements EntryPoint {
     public static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
     int jsonRequestId = 0;
 
-    private final Label statusLabel = new Label();
-    private Label versionLabel;
+    /* main layout */
+    private final MainLayoutPanel mainLayoutPanel = new MainLayoutPanel();
 
     /* search stuff */
     private final VerticalPanel searchResultsPanel = new VerticalPanel();
@@ -295,19 +295,16 @@ public class JudoDB implements EntryPoint {
      * This is the entry point method.
      */
     public void onModuleLoad() {
-	RootLayoutPanel.get().add(new MainLayoutPanel());
-	if (true) return;
+	RootLayoutPanel.get().add(mainLayoutPanel);
 
         // Add content to the RootPanel
-        versionLabel = new Label(Version.VERSION);
-        RootPanel.get("version").add(versionLabel);
-        RootPanel.get("statusContainer").add(statusLabel);
+
+	mainLayoutPanel.versionLabel.setText(Version.VERSION);
 
         // search buttons
         RootPanel.get("search").add(searchField);
         RootPanel.get("search").add(searchButton);
         RootPanel.get("search").add(newClientButton);
-
 
         // edit client buttons
         final Label resultsLabel = new Label("Résultats: ");
@@ -413,7 +410,7 @@ public class JudoDB implements EntryPoint {
         allWidgets.add(RootPanel.get("mainActions"));
         allWidgets.add(RootPanel.get("listActions"));
         allWidgets.add(RootPanel.get("search"));
-        allWidgets.add(RootPanel.get("version"));
+        allWidgets.add(mainLayoutPanel.versionLabel);
 
         // (anchors)
         allWidgets.add(voirListes);
@@ -619,24 +616,23 @@ public class JudoDB implements EntryPoint {
     /* --- helper functions for status bar --- */
 
     void displayError(String error) {
-        statusLabel.addStyleName("status-error");
-        statusLabel.removeStyleName("status-info");
-        statusLabel.setText("Erreur: " + error);
-        statusLabel.setVisible(true);
+        mainLayoutPanel.statusLabel.setStyleName("status");
+        mainLayoutPanel.statusLabel.addStyleName("status-error");
+        mainLayoutPanel.statusLabel.setText("Erreur: " + error);
+        mainLayoutPanel.statusLabel.setVisible(true);
     }
     void clearStatus() {
-        statusLabel.setText("");
-        statusLabel.setVisible(false);
+        mainLayoutPanel.statusLabel.setText("");
+        mainLayoutPanel.statusLabel.setVisible(false);
     }
     void pleaseWait() {
-        statusLabel.setText("");
         setStatus("Veuillez patienter...");
     }
     void setStatus(String s) {
-        statusLabel.removeStyleName("status-error");
-        statusLabel.addStyleName("status-info");
-        statusLabel.setText(s);
-        statusLabel.setVisible(true);
+        mainLayoutPanel.statusLabel.setStyleName("status");
+        mainLayoutPanel.statusLabel.addStyleName("status-info");
+        mainLayoutPanel.statusLabel.setText(s);
+        mainLayoutPanel.statusLabel.setVisible(true);
     }
 
     /* --- miscellaneous utility functions --- */

@@ -25,6 +25,12 @@ body {
   padding:0.5em;
 }
 
+.status {
+  position:absolute;
+  left:35%;
+  top:0%;
+}
+
 /* login */
 #login {
  position:fixed;
@@ -35,12 +41,6 @@ body {
 
 #entrerButton {
   margin: 15px 6px 6px;
-}
-
-#statusContainer {
-  position:absolute;
-  left:35%;
-  top:0%;
 }
 
 .actions a {
