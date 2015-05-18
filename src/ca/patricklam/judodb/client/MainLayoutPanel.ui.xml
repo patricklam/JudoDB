@@ -24,12 +24,12 @@
 </g:north>
 
 <g:center>
- <g:HTML>
-  <div id="search" class='{style.search}'>
-   <h1>Recherche judoka</h1>
-   <label class="standardtitle" for="query">Nom ou Prenom</label><br /><br />
-  </div>
- </g:HTML>
+ <g:FlowPanel ui:field='search' styleName='{style.search}'>
+  <g:HTML>
+    <h1>Recherche judoka</h1>
+    <label class="standardtitle" for="query">Nom ou Prenom</label><br /><br />
+  </g:HTML>
+ </g:FlowPanel>
 </g:center>
 
 <g:east size='15'>
@@ -38,8 +38,10 @@
    <div id="editClient"></div>
    <div id="lists"></div>
    <div id="config"></div>
+  </g:HTML>
 
-   <div id="rightbar" class="noprint">
+  <g:HTML ui:field='rightbar'>
+   <div class="noprint">
     <div id="listActions" style="display:none">
      <h3>Actions</h3>
      <p id="actionList"></p>

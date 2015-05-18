@@ -264,9 +264,9 @@ public class JudoDB implements EntryPoint {
         clearStatus();
 
         RootPanel.get("mainActions").setVisible(true);
-        RootPanel.get("search").setVisible(true);
-        RootPanel.get("rightbar").setVisible(true);
-        RootPanel.get("version").setVisible(true);
+        mainLayoutPanel.search.setVisible(true);
+        mainLayoutPanel.rightbar.setVisible(true);
+        mainLayoutPanel.versionLabel.setVisible(true);
         voirListes.setVisible(true);
         editConfig.setVisible(true);
         logout.setVisible(true);
@@ -297,14 +297,12 @@ public class JudoDB implements EntryPoint {
     public void onModuleLoad() {
 	RootLayoutPanel.get().add(mainLayoutPanel);
 
-        // Add content to the RootPanel
-
 	mainLayoutPanel.versionLabel.setText(Version.VERSION);
 
         // search buttons
-        RootPanel.get("search").add(searchField);
-        RootPanel.get("search").add(searchButton);
-        RootPanel.get("search").add(newClientButton);
+        mainLayoutPanel.search.add(searchField);
+        mainLayoutPanel.search.add(searchButton);
+        mainLayoutPanel.search.add(newClientButton);
 
         // edit client buttons
         final Label resultsLabel = new Label("Résultats: ");
@@ -329,7 +327,7 @@ public class JudoDB implements EntryPoint {
         searchResultsPanel.add(searchResults);
         searchResultsPanel.add(searchNavPanel);
         searchResultsPanel.setVisible(false);
-        RootPanel.get("search").add(searchResultsPanel);
+        mainLayoutPanel.search.add(searchResultsPanel);
 
         // right bar actions: main
         Panel mainActions = RootPanel.get("mainActions");
@@ -342,7 +340,7 @@ public class JudoDB implements EntryPoint {
         mainActions.add(new Label(""));
         mainActions.add(logout);
 
-        RootPanel.get("search").add(dropDownUserClubs);
+        mainLayoutPanel.search.add(dropDownUserClubs);
         dropDownUserClubs.setStyleName("clubBox");
         dropDownUserClubs.addChangeHandler(csHandler);
 
@@ -409,7 +407,7 @@ public class JudoDB implements EntryPoint {
         allWidgets.add(RootPanel.get("config"));
         allWidgets.add(RootPanel.get("mainActions"));
         allWidgets.add(RootPanel.get("listActions"));
-        allWidgets.add(RootPanel.get("search"));
+        allWidgets.add(mainLayoutPanel.search);
         allWidgets.add(mainLayoutPanel.versionLabel);
 
         // (anchors)
