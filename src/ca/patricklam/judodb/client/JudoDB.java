@@ -229,21 +229,21 @@ public class JudoDB implements EntryPoint {
     }
 
     private void _switchMode_editClient (int cid) {
-        RootPanel.get("editClient").clear();
+        mainLayoutPanel.editClient.clear();
         this.c = new ClientWidget(cid, this);
-        RootPanel.get("editClient").add(this.c);
-        RootPanel.get("editClient").setVisible(true);
+        mainLayoutPanel.editClient.add(this.c);
+        mainLayoutPanel.editClient.setVisible(true);
     }
 
     public void _switchMode_viewLists() {
         if (this.l == null) {
             this.l = new ListWidget(this);
-            RootPanel.get("lists").add(this.l);
+            mainLayoutPanel.lists.add(this.l);
         }
-        RootPanel.get("editClient").clear();
+        mainLayoutPanel.editClient.clear();
 
         RootPanel.get("listActions").setVisible(true);
-        RootPanel.get("lists").setVisible(true);
+        mainLayoutPanel.lists.setVisible(true);
 
         this.l.switchMode(ListWidget.Mode.NORMAL);
     }
@@ -251,12 +251,12 @@ public class JudoDB implements EntryPoint {
     public void _switchMode_config() {
         if (this.cf == null) {
             this.cf = new ConfigWidget(this);
-            RootPanel.get("config").add(this.cf);
+            mainLayoutPanel.config.add(this.cf);
         }
-        RootPanel.get("editClient").clear();
+        mainLayoutPanel.editClient.clear();
 
         RootPanel.get("listActions").setVisible(true);
-        RootPanel.get("config").setVisible(true);
+        mainLayoutPanel.config.setVisible(true);
         returnToMainFromListes.setVisible(true);
     }
 
@@ -402,9 +402,9 @@ public class JudoDB implements EntryPoint {
 
 
         // initialize sets of widgets (subpanels)
-        allWidgets.add(RootPanel.get("editClient"));
-        allWidgets.add(RootPanel.get("lists"));
-        allWidgets.add(RootPanel.get("config"));
+        allWidgets.add(mainLayoutPanel.editClient);
+        allWidgets.add(mainLayoutPanel.lists);
+        allWidgets.add(mainLayoutPanel.config);
         allWidgets.add(RootPanel.get("mainActions"));
         allWidgets.add(RootPanel.get("listActions"));
         allWidgets.add(mainLayoutPanel.search);

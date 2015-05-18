@@ -4,7 +4,7 @@
   xmlns:g="urn:import:com.google.gwt.user.client.ui">
 
 <ui:style>
- .search { padding-left:1em; }
+ .padLeft { padding-left:1em; }
  .status {
    /* XXX this doesn't actually work for some reason */
    position:absolute;
@@ -24,22 +24,37 @@
 </g:north>
 
 <g:center>
- <g:FlowPanel ui:field='search' styleName='{style.search}'>
-  <g:HTML>
-    <h1>Recherche judoka</h1>
-    <label class="standardtitle" for="query">Nom ou Prenom</label><br /><br />
-  </g:HTML>
- </g:FlowPanel>
+ <g:AbsolutePanel>
+  <!-- search UI -->
+  <g:at left='0' top='0'>
+   <g:FlowPanel ui:field='search' styleName='{style.padLeft}' width='98%'>
+    <g:HTML>
+     <h1>Recherche judoka</h1>
+     <label class="standardtitle" for="query">Nom ou Prenom</label><br /><br />
+    </g:HTML>
+   </g:FlowPanel>
+  </g:at>
+
+  <!-- edit UI -->
+  <g:at left='0' top='0'>
+   <g:ScrollPanel ui:field='editClient' styleName='{style.padLeft}' width='98%' height='100%'/>
+  </g:at>
+
+  <!-- lists UI -->
+  <g:at left='0' top='0'>
+   <g:ScrollPanel ui:field='lists' styleName='{style.padLeft}' width='98%' height='100%' />
+  </g:at>
+
+  <!-- config UI -->
+  <g:at left='0' top='0'>
+   <g:FlowPanel ui:field='config' styleName='{style.padLeft}' width='98%' height='100%' />
+  </g:at>
+
+ </g:AbsolutePanel>
 </g:center>
 
 <g:east size='15'>
  <g:FlowPanel>
-  <g:HTML>
-   <div id="editClient"></div>
-   <div id="lists"></div>
-   <div id="config"></div>
-  </g:HTML>
-
   <g:HTML ui:field='rightbar'>
    <div class="noprint">
     <div id="listActions" style="display:none">
