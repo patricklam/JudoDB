@@ -181,7 +181,7 @@ public class ConfigWidget extends Composite {
 	@Override public String getName()
 	    { return "debut cours"; }
 	@Override public int getWidth()
-	    { return 5; }
+	    { return 6; }
 	@Override public Unit getWidthUnits()
 	    { return Unit.EM; }
     }
@@ -191,9 +191,9 @@ public class ConfigWidget extends Composite {
 	@Override public void setValue(SessionSummary object, String newValue)
 	    { object.setFirstSignupDate(newValue); }
 	@Override public String getName()
-	    { return "debut inscr"; }
+	    { return "debut inscription"; }
 	@Override public int getWidth()
-	    { return 5; }
+	    { return 6; }
 	@Override public Unit getWidthUnits()
 	    { return Unit.EM; }
     }
@@ -205,7 +205,7 @@ public class ConfigWidget extends Composite {
 	@Override public String getName()
 	    { return "fin cours"; }
 	@Override public int getWidth()
-	    { return 5; }
+	    { return 6; }
 	@Override public Unit getWidthUnits()
 	    { return Unit.EM; }
     }
@@ -215,9 +215,9 @@ public class ConfigWidget extends Composite {
 	@Override public void setValue(SessionSummary object, String newValue)
 	    { object.setLastSignupDate(newValue); }
 	@Override public String getName()
-	    { return "fin inscr"; }
+	    { return "fin inscription"; }
 	@Override public int getWidth()
-	    { return 5; }
+	    { return 6; }
 	@Override public Unit getWidthUnits()
 	    { return Unit.EM; }
     }
