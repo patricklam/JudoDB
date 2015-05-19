@@ -20,11 +20,9 @@
                 <g:tab>
 
                         <g:header>Sessions</g:header>
--->
                         <g:FlowPanel>
-                          <g:Grid ui:field="sessions"></g:Grid>
+                          <g:CellTable ui:field="sessions" />
                         </g:FlowPanel>
-<!--
                 </g:tab>
         </g:TabLayoutPanel>
 -->
