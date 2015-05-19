@@ -1,4 +1,3 @@
-
 package ca.patricklam.judodb.client;
 
 import java.util.ArrayList;

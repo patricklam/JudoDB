@@ -84,30 +84,5 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] != "yes")
       </div>
     </noscript>
 
-   	<p><span id="statusContainer">&nbsp;</span></p>
-
-	<div id="search">
-	  <h1>Recherche judoka</h1>
-	  <label class="standardtitle" for="query">Nom ou Prenom</label><br /><br /></label>      
-	</div>
-
-	<div id="editClient"></div>
-    <div id="lists"></div>
-    <div id="config"></div>
-
-    <div id="rightbar" class="noprint">
-      <div id="listActions" style="display:none">
-        <h3>Actions</h3>
-         <p id="actionList">  
-         </p>
-      </div>
-      <div id="mainActions">
-        <h3>Actions</h3>
-         <p id="actionList">  
-         </p>
-      </div>
-    </div>
-
-    <div id="version" class="noprint"></div>
   </body>
 </html>

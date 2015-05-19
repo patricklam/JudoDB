@@ -17,6 +17,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
@@ -29,11 +30,12 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -92,8 +94,8 @@ public class JudoDB implements EntryPoint {
     public static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
     int jsonRequestId = 0;
 
-    private final Label statusLabel = new Label();
-    private Label versionLabel;
+    /* main layout */
+    private final MainLayoutPanel mainLayoutPanel = new MainLayoutPanel();
 
     /* search stuff */
     private final VerticalPanel searchResultsPanel = new VerticalPanel();
@@ -226,45 +228,57 @@ public class JudoDB implements EntryPoint {
         }
     }
 
+    private void hideRightBar(boolean hidden) {
+	DockLayoutPanel d = mainLayoutPanel.dock;
+
+	for (int i = 0; i < d.getWidgetCount(); i++) {
+	    Widget w = d.getWidget(i);
+	    if (d.getWidgetDirection(w) == DockLayoutPanel.Direction.EAST)
+		d.setWidgetHidden(w, hidden);
+	}
+    }
+
     private void _switchMode_editClient (int cid) {
-        RootPanel.get("editClient").clear();
+        mainLayoutPanel.editClient.clear();
         this.c = new ClientWidget(cid, this);
-        RootPanel.get("editClient").add(this.c);
-        RootPanel.get("editClient").setVisible(true);
+        mainLayoutPanel.editClient.add(this.c);
+        mainLayoutPanel.editClient.setVisible(true);
+	hideRightBar(true);
     }
 
     public void _switchMode_viewLists() {
         if (this.l == null) {
             this.l = new ListWidget(this);
-            RootPanel.get("lists").add(this.l);
+            mainLayoutPanel.lists.add(this.l);
         }
-        RootPanel.get("editClient").clear();
+        mainLayoutPanel.editClient.clear();
 
-        RootPanel.get("listActions").setVisible(true);
-        RootPanel.get("lists").setVisible(true);
+        mainLayoutPanel.listActions.setVisible(true);
+        mainLayoutPanel.lists.setVisible(true);
 
         this.l.switchMode(ListWidget.Mode.NORMAL);
+	hideRightBar(false);
     }
 
     public void _switchMode_config() {
         if (this.cf == null) {
             this.cf = new ConfigWidget(this);
-            RootPanel.get("config").add(this.cf);
+            mainLayoutPanel.config.add(this.cf);
         }
-        RootPanel.get("editClient").clear();
+        mainLayoutPanel.editClient.clear();
 
-        RootPanel.get("listActions").setVisible(true);
-        RootPanel.get("config").setVisible(true);
+        mainLayoutPanel.config.setVisible(true);
         returnToMainFromListes.setVisible(true);
+	hideRightBar(false);
     }
 
     public void _switchMode_main() {
         clearStatus();
 
-        RootPanel.get("mainActions").setVisible(true);
-        RootPanel.get("search").setVisible(true);
-        RootPanel.get("rightbar").setVisible(true);
-        RootPanel.get("version").setVisible(true);
+        mainLayoutPanel.mainActions.setVisible(true);
+        mainLayoutPanel.search.setVisible(true);
+        mainLayoutPanel.rightbar.setVisible(true);
+        mainLayoutPanel.versionLabel.setVisible(true);
         voirListes.setVisible(true);
         editConfig.setVisible(true);
         logout.setVisible(true);
@@ -274,6 +288,7 @@ public class JudoDB implements EntryPoint {
 
         searchButton.setEnabled(true);
         searchButton.setFocus(true);
+	hideRightBar(false);
     }
 
     /** After changing any data, invalidate stored data. */
@@ -293,16 +308,14 @@ public class JudoDB implements EntryPoint {
      * This is the entry point method.
      */
     public void onModuleLoad() {
-        // Add content to the RootPanel
-        versionLabel = new Label(Version.VERSION);
-        RootPanel.get("version").add(versionLabel);
-        RootPanel.get("statusContainer").add(statusLabel);
+	RootLayoutPanel.get().add(mainLayoutPanel);
+
+	mainLayoutPanel.versionLabel.setText(Version.VERSION);
 
         // search buttons
-        RootPanel.get("search").add(searchField);
-        RootPanel.get("search").add(searchButton);
-        RootPanel.get("search").add(newClientButton);
-
+        mainLayoutPanel.search.add(searchField);
+        mainLayoutPanel.search.add(searchButton);
+        mainLayoutPanel.search.add(newClientButton);
 
         // edit client buttons
         final Label resultsLabel = new Label("Résultats: ");
@@ -327,65 +340,64 @@ public class JudoDB implements EntryPoint {
         searchResultsPanel.add(searchResults);
         searchResultsPanel.add(searchNavPanel);
         searchResultsPanel.setVisible(false);
-        RootPanel.get("search").add(searchResultsPanel);
+        mainLayoutPanel.search.add(searchResultsPanel);
 
         // right bar actions: main
-        Panel mainActions = RootPanel.get("mainActions");
         voirListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST)); }});
-        mainActions.add(voirListes);
-        mainActions.add(new Label(""));
-        mainActions.add(new Label(""));
+        mainLayoutPanel.mainActions.add(voirListes);
+        mainLayoutPanel.mainActions.add(new Label(""));
+        mainLayoutPanel.mainActions.add(new Label(""));
         editConfig.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
-        mainActions.add(editConfig);
-        mainActions.add(new Label(""));
-        mainActions.add(logout);
+        mainLayoutPanel.mainActions.add(editConfig);
+        mainLayoutPanel.mainActions.add(new Label(""));
+        mainLayoutPanel.mainActions.add(logout);
 
-        RootPanel.get("search").add(dropDownUserClubs);
+        mainLayoutPanel.search.add(dropDownUserClubs);
         dropDownUserClubs.setStyleName("clubBox");
         dropDownUserClubs.addChangeHandler(csHandler);
 
         // right bar actions: list
-        Panel listActions = RootPanel.get("listActions");
         filtrerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             if (JudoDB.this.l != null) JudoDB.this.l.toggleFiltering(); }});
-        listActions.add(filtrerListes);
-        listActions.add(new Label(""));
+        mainLayoutPanel.listActions.add(filtrerListes);
+        mainLayoutPanel.listActions.add(new Label(""));
         editerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             if (JudoDB.this.l != null) {
               JudoDB.this.l.switchMode(ListWidget.Mode.EDIT);
             }
         }});
-        listActions.add(editerListes);
-        listActions.add(new Label(""));
+        mainLayoutPanel.listActions.add(editerListes);
+        mainLayoutPanel.listActions.add(new Label(""));
         ftListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
           if (JudoDB.this.l != null) {
               JudoDB.this.l.switchMode(ListWidget.Mode.FT);
           }
         }});
-        listActions.add(ftListes);
-        listActions.add(new Label(""));
+        mainLayoutPanel.listActions.add(ftListes);
+        mainLayoutPanel.listActions.add(new Label(""));
         impotListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             if (JudoDB.this.l != null) {
                 JudoDB.this.l.switchMode(ListWidget.Mode.IMPOT);
             }
         }});
+
         // temporarily disable; issue 50
-        // listActions.add(impotListes);
-        // listActions.add(new Label(""));
+        // mainLayout.listActions.add(impotListes);
+        // mainLayout.listActions.add(new Label(""));
         clearXListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             if (JudoDB.this.l != null) JudoDB.this.l.clearX(); }});
-        listActions.add(clearXListes);
-        listActions.add(new Label(""));
+        mainLayoutPanel.listActions.add(clearXListes);
+        mainLayoutPanel.listActions.add(new Label(""));
         normalListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
            if (JudoDB.this.l != null) {
               JudoDB.this.l.switchMode(ListWidget.Mode.NORMAL);
             }
         }});
-        listActions.add(normalListes);
-        listActions.add(new Label(""));
+        mainLayoutPanel.listActions.add(normalListes);
+        mainLayoutPanel.listActions.add(new Label(""));
         returnToMainFromListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.MAIN)); }});
-        listActions.add(returnToMainFromListes);
-        listActions.add(new Label(""));
+        mainLayoutPanel.listActions.add(returnToMainFromListes);
+        mainLayoutPanel.listActions.add(new Label(""));
 
         // Focus the cursor on the name field when the app loads
         searchField.setFocus(true);
@@ -402,13 +414,13 @@ public class JudoDB implements EntryPoint {
 
 
         // initialize sets of widgets (subpanels)
-        allWidgets.add(RootPanel.get("editClient"));
-        allWidgets.add(RootPanel.get("lists"));
-        allWidgets.add(RootPanel.get("config"));
-        allWidgets.add(RootPanel.get("mainActions"));
-        allWidgets.add(RootPanel.get("listActions"));
-        allWidgets.add(RootPanel.get("search"));
-        allWidgets.add(RootPanel.get("version"));
+        allWidgets.add(mainLayoutPanel.editClient);
+        allWidgets.add(mainLayoutPanel.lists);
+        allWidgets.add(mainLayoutPanel.config);
+        allWidgets.add(mainLayoutPanel.mainActions);
+        allWidgets.add(mainLayoutPanel.listActions);
+        allWidgets.add(mainLayoutPanel.search);
+        allWidgets.add(mainLayoutPanel.versionLabel);
 
         // (anchors)
         allWidgets.add(voirListes);
@@ -614,24 +626,23 @@ public class JudoDB implements EntryPoint {
     /* --- helper functions for status bar --- */
 
     void displayError(String error) {
-        statusLabel.addStyleName("status-error");
-        statusLabel.removeStyleName("status-info");
-        statusLabel.setText("Erreur: " + error);
-        statusLabel.setVisible(true);
+        mainLayoutPanel.statusLabel.setStyleName("status");
+        mainLayoutPanel.statusLabel.addStyleName("status-error");
+        mainLayoutPanel.statusLabel.setText("Erreur: " + error);
+        mainLayoutPanel.statusLabel.setVisible(true);
     }
     void clearStatus() {
-        statusLabel.setText("");
-        statusLabel.setVisible(false);
+        mainLayoutPanel.statusLabel.setText("");
+        mainLayoutPanel.statusLabel.setVisible(false);
     }
     void pleaseWait() {
-        statusLabel.setText("");
         setStatus("Veuillez patienter...");
     }
     void setStatus(String s) {
-        statusLabel.removeStyleName("status-error");
-        statusLabel.addStyleName("status-info");
-        statusLabel.setText(s);
-        statusLabel.setVisible(true);
+        mainLayoutPanel.statusLabel.setStyleName("status");
+        mainLayoutPanel.statusLabel.addStyleName("status-info");
+        mainLayoutPanel.statusLabel.setText(s);
+        mainLayoutPanel.statusLabel.setVisible(true);
     }
 
     /* --- miscellaneous utility functions --- */

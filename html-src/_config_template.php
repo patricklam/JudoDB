@@ -1,4 +1,4 @@
-<?
+<?php
 $LOGIN_URL="http://www.basejudo.com/index.php";
 $LOGOUT_URL="http://www.basejudo.com/logout.php";
 $GOOGLE_CLIENT_ID="";
