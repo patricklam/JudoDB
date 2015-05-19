@@ -17,7 +17,7 @@
  }
 </ui:style>
 
-<g:DockLayoutPanel unit='EM'>
+<g:DockLayoutPanel unit='EM' ui:field="dock">
 
 <g:north size='2'>
  <g:Label styleName='{style.status}' ui:field="statusLabel" />
@@ -37,17 +37,17 @@
 
   <!-- edit UI -->
   <g:at left='0' top='0'>
-   <g:ScrollPanel ui:field='editClient' styleName='{style.padLeft}' width='98%' height='100%'/>
+   <g:ScrollPanel ui:field='editClient' styleName='{style.padLeft}' width='99%' height='100%'/>
   </g:at>
 
   <!-- lists UI -->
   <g:at left='0' top='0'>
-   <g:ScrollPanel ui:field='lists' styleName='{style.padLeft}' width='98%' height='100%' />
+   <g:ScrollPanel ui:field='lists' styleName='{style.padLeft}' width='99%' height='100%' />
   </g:at>
 
   <!-- config UI -->
   <g:at left='0' top='0'>
-   <g:FlowPanel ui:field='config' styleName='{style.padLeft}' width='98%' height='100%' />
+   <g:FlowPanel ui:field='config' styleName='{style.padLeft}' width='99%' height='100%' />
   </g:at>
 
  </g:AbsolutePanel>
@@ -55,19 +55,20 @@
 
 <g:east size='15'>
  <g:FlowPanel>
-  <g:HTML ui:field='rightbar'>
-   <div class="noprint">
-    <div id="listActions" style="display:none">
-     <h3>Actions</h3>
-     <p id="actionList"></p>
-    </div>
-    <div id="mainActions">
-     <h3>Actions</h3>
-     <p id="actionList">
-     </p>
-    </div>
-   </div>
-  </g:HTML>
+  <g:FlowPanel ui:field='rightbar'>
+    <g:FlowPanel ui:field="listActions">
+     <g:HTML>
+       <h3>Actions</h3>
+       <p id="actionList" />
+     </g:HTML>
+    </g:FlowPanel>
+    <g:FlowPanel ui:field="mainActions">
+     <g:HTML>
+      <h3>Actions</h3>
+      <p id="actionList" />
+    </g:HTML>
+   </g:FlowPanel>
+  </g:FlowPanel>
   <!-- todo noprint -->
   <g:Label ui:field="versionLabel" styleName='{style.version}' />
  </g:FlowPanel>
