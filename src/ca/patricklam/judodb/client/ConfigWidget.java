@@ -10,13 +10,21 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.ResizeLayoutPanel;
+import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.core.client.EntryPoint;
 
 public class ConfigWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ConfigWidget> {}
     public static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
+
+    @UiField FlowPanel configMain;
 
     private final JudoDB jdb;
     private static final String PULL_SESSIONS_URL = JudoDB.BASE_URL + "pull_sessions.php";
