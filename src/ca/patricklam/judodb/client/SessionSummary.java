@@ -25,4 +25,35 @@ public class SessionSummary extends JavaScriptObject {
     public final native void setLastClassDate(String lastClassDate) /*-{ this.lastClassDate = lastClassDate; }-*/;
     public final native String getLastSignupDate() /*-{ return this.last_signup_date; }-*/;
     public final native void setLastSignupDate(String lastSignupDate) /*-{ this.lastSignupDate = lastSignupDate; }-*/;
+
+    public final String get(String key) {
+	if (key.equals("seqno")) return getSeqno();
+	if (key.equals("linkedSeqno")) return getLinkedSeqno();
+	if (key.equals("name")) return getName();
+	if (key.equals("year")) return getYear();
+	if (key.equals("abbrev")) return getAbbrev();
+	if (key.equals("id")) return getId();
+	if (key.equals("club")) return getClub();
+	if (key.equals("firstClassDate")) return getFirstClassDate();
+	if (key.equals("firstSignupDate")) return getFirstSignupDate();
+	if (key.equals("lastClassDate")) return getLastClassDate();
+	if (key.equals("lastSignupDate")) return getLastSignupDate();
+	throw new RuntimeException("bad key");
+    }
+
+    public final String set(String key, String value) {
+	// seqno, id read-only
+	// if (key.equals("seqno")) setSeqno(value);
+	// if (key.equals("id")) setId(value);
+	if (key.equals("linkedSeqno")) setLinkedSeqno(value);
+	if (key.equals("name")) setName(value);
+	if (key.equals("year")) setYear(value);
+	if (key.equals("abbrev")) setAbbrev(value);
+	if (key.equals("club")) setClub(value);
+	if (key.equals("firstClassDate")) setFirstClassDate(value);
+	if (key.equals("firstSignupDate")) setFirstSignupDate(value);
+	if (key.equals("lastClassDate")) setLastClassDate(value);
+	if (key.equals("lastSignupDate")) setLastSignupDate(value);
+	throw new RuntimeException("bad key");
+    }
 }
