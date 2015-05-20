@@ -146,7 +146,7 @@ public class ConfigWidget extends Composite {
 	LAST_CLASS_COLUMN = new ColumnFields("lastClassDate", "fin cours", 10, Unit.EM),
 	LAST_SIGNUP_COLUMN = new ColumnFields("lastSignupDate", "fin inscription", 10, Unit.EM);
 
-    private void addSessionColumn(final CellTable t, final ColumnFields c, final boolean editable) {
+    private Column<SessionSummary, String> addSessionColumn(final CellTable t, final ColumnFields c, final boolean editable) {
 	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
 	Column<SessionSummary, String> newColumn = new Column<SessionSummary, String>(cell) {
 	    public String getValue(SessionSummary object) {
@@ -163,6 +163,7 @@ public class ConfigWidget extends Composite {
 		}
 	    });
 	sessions.setColumnWidth(newColumn, c.width, c.widthUnits);
+	return newColumn;
     }
 
     void initializeSessionTable() {
@@ -172,11 +173,43 @@ public class ConfigWidget extends Composite {
 	initializeSessionColumns();
     }
 
+    final private static String ADD_SESSION_VALUE = "[ajouter session]";
+    void addAddSessionSession() {
+	int maxSeqno = -1;
+	for (SessionSummary s : sessionData) {
+	    if (Integer.parseInt(s.getSeqno()) > maxSeqno)
+		maxSeqno = Integer.parseInt(s.getSeqno());
+	}
+
+	SessionSummary addNewSession =
+	    JsonUtils.<SessionSummary>safeEval
+	    ("{\"seqno\":\""+(maxSeqno+1)+"\",\"name\":\""+ADD_SESSION_VALUE+"\"}");
+	addNewSession.setAbbrev("");
+	addNewSession.setYear("");
+	addNewSession.setLinkedSeqno("");
+	sessionData.add(addNewSession);
+    }
+
     void initializeSessionColumns() {
 	while (sessions.getColumnCount() > 0)
 	    sessions.removeColumn(0);
 
-	addSessionColumn(sessions, NAME_COLUMN, !jdb.isClubSelected());
+	// name is special: handle inserting a new session
+	final Column<SessionSummary, String> nameColumn =
+	    addSessionColumn(sessions, NAME_COLUMN, !jdb.isClubSelected());
+	nameColumn.setFieldUpdater(new FieldUpdater<SessionSummary, String>() {
+		@Override
+		public void update(int index, SessionSummary object, String value) {
+		    if (object.get(NAME_COLUMN.key).equals(ADD_SESSION_VALUE)) {
+			addAddSessionSession();
+		    }
+		    // XXX push the new name also
+		    object.set(NAME_COLUMN.key, value);
+		    sessions.setRowData(sessionData);
+		    sessions.redraw();
+		}
+	    });
+
 	addSessionColumn(sessions, ABBREV_COLUMN, !jdb.isClubSelected());
 	addSessionColumn(sessions, YEAR_COLUMN, !jdb.isClubSelected());
 	addSessionColumn(sessions, SEQNO_COLUMN, false);
@@ -198,6 +231,11 @@ public class ConfigWidget extends Composite {
         for (int i = 0; i < sessionArray.length(); i++) {
 	    sessionData.add(sessionArray.get(i));
 	}
+
+	if (!jdb.isClubSelected()) {
+	    addAddSessionSession();
+	}
+
 	sessions.setRowData(sessionData);
 	sessions.redraw();
     }
@@ -205,7 +243,6 @@ public class ConfigWidget extends Composite {
     /* --- network functions --- */
     private boolean gotSessions = false;
     public void retrieveSessions(int numero_club) {
-        // backingCours.clear();
         String url = PULL_SESSIONS_URL;
         url += "?club="+numero_club;
         RequestCallback rc =
