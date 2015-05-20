@@ -38,22 +38,22 @@ public class SessionSummary extends JavaScriptObject {
 	if (key.equals("firstSignupDate")) return getFirstSignupDate();
 	if (key.equals("lastClassDate")) return getLastClassDate();
 	if (key.equals("lastSignupDate")) return getLastSignupDate();
-	throw new RuntimeException("bad key");
+	throw new RuntimeException("get: bad key " + key);
     }
 
-    public final String set(String key, String value) {
+    public final void set(String key, String value) {
 	// seqno, id read-only
 	// if (key.equals("seqno")) setSeqno(value);
 	// if (key.equals("id")) setId(value);
 	if (key.equals("linkedSeqno")) setLinkedSeqno(value);
-	if (key.equals("name")) setName(value);
-	if (key.equals("year")) setYear(value);
-	if (key.equals("abbrev")) setAbbrev(value);
-	if (key.equals("club")) setClub(value);
-	if (key.equals("firstClassDate")) setFirstClassDate(value);
-	if (key.equals("firstSignupDate")) setFirstSignupDate(value);
-	if (key.equals("lastClassDate")) setLastClassDate(value);
-	if (key.equals("lastSignupDate")) setLastSignupDate(value);
-	throw new RuntimeException("bad key");
+	else if (key.equals("name")) setName(value);
+	else if (key.equals("year")) setYear(value);
+	else if (key.equals("abbrev")) setAbbrev(value);
+	else if (key.equals("club")) setClub(value);
+	else if (key.equals("firstClassDate")) setFirstClassDate(value);
+	else if (key.equals("firstSignupDate")) setFirstSignupDate(value);
+	else if (key.equals("lastClassDate")) setLastClassDate(value);
+	else if (key.equals("lastSignupDate")) setLastSignupDate(value);
+	else throw new RuntimeException("set: bad key " + key);
     }
 }

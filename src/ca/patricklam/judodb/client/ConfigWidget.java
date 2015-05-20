@@ -17,10 +17,12 @@ import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.dom.client.Style.Unit;
 
 import java.util.List;
@@ -134,18 +136,18 @@ public class ConfigWidget extends Composite {
 	public Unit widthUnits;
     }
 
-    private final ColumnFields NAME_COLUMN = new ColumnFields("name", "Nom", 15, Unit.EM),
+    private final ColumnFields NAME_COLUMN = new ColumnFields("name", "Nom", 10, Unit.EM),
 	ABBREV_COLUMN = new ColumnFields("abbrev", "Abbr", 4, Unit.EM),
 	YEAR_COLUMN = new ColumnFields("year", "Année", 4, Unit.EM),
 	SEQNO_COLUMN = new ColumnFields("seqno", "no seq", 3, Unit.EM),
 	LINKED_SEQNO_COLUMN = new ColumnFields("linkedSeqno", "seq alt", 3, Unit.EM),
-	FIRST_CLASS_COLUMN = new ColumnFields("firstClassDate", "début cours", 6, Unit.EM),
-	FIRST_SIGNUP_COLUMN = new ColumnFields("firstSignupDate", "début inscription", 6, Unit.EM),
-	LAST_CLASS_COLUMN = new ColumnFields("lastClassDate", "fin cours", 6, Unit.EM),
-	LAST_SIGNUP_COLUMN = new ColumnFields("lastSignupDate", "fin inscription", 6, Unit.EM);
+	FIRST_CLASS_COLUMN = new ColumnFields("firstClassDate", "début cours" , 10, Unit.EM),
+	FIRST_SIGNUP_COLUMN = new ColumnFields("firstSignupDate", "début inscription", 10, Unit.EM),
+	LAST_CLASS_COLUMN = new ColumnFields("lastClassDate", "fin cours", 10, Unit.EM),
+	LAST_SIGNUP_COLUMN = new ColumnFields("lastSignupDate", "fin inscription", 10, Unit.EM);
 
-    private void addSessionColumn(final CellTable t, final ColumnFields c) {
-	final EditTextCell cell = new EditTextCell();
+    private void addSessionColumn(final CellTable t, final ColumnFields c, final boolean editable) {
+	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
 	Column<SessionSummary, String> newColumn = new Column<SessionSummary, String>(cell) {
 	    public String getValue(SessionSummary object) {
 		return object.get(c.key);
@@ -167,19 +169,31 @@ public class ConfigWidget extends Composite {
 	sessions = new CellTable<SessionSummary>(KEY_PROVIDER);
 	sessions.setWidth("60em", true);
 
-	addSessionColumn(sessions, NAME_COLUMN);
-	addSessionColumn(sessions, ABBREV_COLUMN);
-	addSessionColumn(sessions, YEAR_COLUMN);
-	addSessionColumn(sessions, SEQNO_COLUMN);
-	addSessionColumn(sessions, LINKED_SEQNO_COLUMN);
-	addSessionColumn(sessions, FIRST_CLASS_COLUMN);
-	addSessionColumn(sessions, FIRST_SIGNUP_COLUMN);
-	addSessionColumn(sessions, LAST_CLASS_COLUMN);
-	addSessionColumn(sessions, LAST_SIGNUP_COLUMN);
+	initializeSessionColumns();
+    }
+
+    void initializeSessionColumns() {
+	while (sessions.getColumnCount() > 0)
+	    sessions.removeColumn(0);
+
+	addSessionColumn(sessions, NAME_COLUMN, !jdb.isClubSelected());
+	addSessionColumn(sessions, ABBREV_COLUMN, !jdb.isClubSelected());
+	addSessionColumn(sessions, YEAR_COLUMN, !jdb.isClubSelected());
+	addSessionColumn(sessions, SEQNO_COLUMN, false);
+	addSessionColumn(sessions, LINKED_SEQNO_COLUMN, !jdb.isClubSelected());
+	if (jdb.isClubSelected()) {
+	    addSessionColumn(sessions, FIRST_CLASS_COLUMN, true);
+	    addSessionColumn(sessions, FIRST_SIGNUP_COLUMN, true);
+	    addSessionColumn(sessions, LAST_CLASS_COLUMN, true);
+	    addSessionColumn(sessions, LAST_SIGNUP_COLUMN, true);
+	}
     }
     /* --- end session table --- */
 
     private void loadSessions(JsArray<SessionSummary> sessionArray) {
+	// reset the editable status of the cells
+	initializeSessionColumns();
+
 	sessionData.clear();
         for (int i = 0; i < sessionArray.length(); i++) {
 	    sessionData.add(sessionArray.get(i));
