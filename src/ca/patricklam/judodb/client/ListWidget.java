@@ -242,7 +242,7 @@ public class ListWidget extends Composite {
         cours.addChangeHandler(coursHandler);
 
         session.addChangeHandler(new ChangeHandler() {
-            public void onChange(ChangeEvent e) { showList(); } });
+            public void onChange(ChangeEvent e) { coursHandler.generateCoursList(); showList(); } });
         pdf.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("pdf"); } });
         presences.addClickHandler(new ClickHandler() {
