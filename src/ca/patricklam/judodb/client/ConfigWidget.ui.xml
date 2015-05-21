@@ -5,9 +5,13 @@
     <ui:style src="ConfigWidget.css" />
       <g:FlowPanel ui:field="configMain">
         <g:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" styleName="{style.userclub}" />
-        <g:HTML>
-         <form id="configform" class="{style.compactform}" method="POST" target="eatFormSubmitResults" />
-        </g:HTML>
+	<g:FormPanel ui:field="configEditForm" method="post">
+	  <g:FlowPanel>
+	    <g:Hidden ui:field="current_session" name="current_session" />
+	    <g:Hidden ui:field="guid_on_form" name="guid" />
+	    <g:Hidden ui:field="dataToSave" name="data_to_save" />
+	  </g:FlowPanel>
+	</g:FormPanel>
 
 <!--
         <g:TabLayoutPanel ui:field="configTabPanel" barHeight="2" barUnit="EM">

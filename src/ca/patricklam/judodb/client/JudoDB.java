@@ -527,6 +527,10 @@ public class JudoDB implements EntryPoint {
         selectedClub = 0;
     }
 
+    boolean isClubSelected() {
+	return selectedClub != 0;
+    }
+
     String getSelectedClubID() {
         if (allClubs == null) return null;
         if (0 != selectedClub) return idxToClub.get(selectedClub).getId();
