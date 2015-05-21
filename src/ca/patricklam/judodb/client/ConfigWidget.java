@@ -227,10 +227,12 @@ public class ConfigWidget extends Composite {
 		@Override
 		public void update(int index, SessionSummary object, String value) {
 		    if (object.get(NAME_COLUMN.key).equals(ADD_SESSION_VALUE)) {
+			pushEdit("-1,E" + NAME_COLUMN.key + "," + value + "," + object.getSeqno() + ";");
 			addAddSessionSession();
+		    } else {
+			pushEdit("-1,e" + NAME_COLUMN.key + "," + value + "," + object.getSeqno() + ";");
 		    }
 		    object.set(NAME_COLUMN.key, value);
-		    pushEdit("-1,e" + NAME_COLUMN.key + "," + value + "," + object.getSeqno() + ";");
 
 		    sessions.setRowData(sessionData);
 		    sessions.redraw();
