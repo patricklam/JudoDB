@@ -28,7 +28,7 @@ public class SessionSummary extends JavaScriptObject {
 
     public final String get(String key) {
 	if (key.equals("seqno")) return getSeqno();
-	if (key.equals("linkedSeqno")) return getLinkedSeqno();
+	if (key.equals("linked_seqno")) return getLinkedSeqno();
 	if (key.equals("name")) return getName();
 	if (key.equals("year")) return getYear();
 	if (key.equals("abbrev")) return getAbbrev();
@@ -45,7 +45,7 @@ public class SessionSummary extends JavaScriptObject {
 	// seqno, id read-only
 	// if (key.equals("seqno")) setSeqno(value);
 	// if (key.equals("id")) setId(value);
-	if (key.equals("linkedSeqno")) setLinkedSeqno(value);
+	if (key.equals("linked_seqno")) setLinkedSeqno(value);
 	else if (key.equals("name")) setName(value);
 	else if (key.equals("year")) setYear(value);
 	else if (key.equals("abbrev")) setAbbrev(value);

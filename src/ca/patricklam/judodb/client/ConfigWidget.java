@@ -8,11 +8,14 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.FormPanel;
+import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.cellview.client.Column;
@@ -33,9 +36,17 @@ public class ConfigWidget extends Composite {
     public static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
 
     @UiField FlowPanel configMain;
+    @UiField FormPanel configEditForm;
+    @UiField Hidden current_session;
+    @UiField Hidden dataToSave;
+    @UiField Hidden guid_on_form;
+    private String guid;
+    private int pushTries;
 
     private final JudoDB jdb;
     private static final String PULL_SESSIONS_URL = JudoDB.BASE_URL + "pull_sessions.php";
+    private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
+    private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
 
     CellTable sessions;
     private static final List<SessionSummary> sessionData = new ArrayList<SessionSummary>();
@@ -107,6 +118,7 @@ public class ConfigWidget extends Composite {
 
 	initializeSessionTable();
 	configMain.add(sessions);
+        configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
     }
 
     /* --- session table --- */
@@ -140,7 +152,7 @@ public class ConfigWidget extends Composite {
 	ABBREV_COLUMN = new ColumnFields("abbrev", "Abbr", 4, Unit.EM),
 	YEAR_COLUMN = new ColumnFields("year", "Année", 4, Unit.EM),
 	SEQNO_COLUMN = new ColumnFields("seqno", "no seq", 3, Unit.EM),
-	LINKED_SEQNO_COLUMN = new ColumnFields("linkedSeqno", "seq alt", 3, Unit.EM),
+	LINKED_SEQNO_COLUMN = new ColumnFields("linked_seqno", "seq alt", 3, Unit.EM),
 	FIRST_CLASS_COLUMN = new ColumnFields("firstClassDate", "début cours" , 10, Unit.EM),
 	FIRST_SIGNUP_COLUMN = new ColumnFields("firstSignupDate", "début inscription", 10, Unit.EM),
 	LAST_CLASS_COLUMN = new ColumnFields("lastClassDate", "fin cours", 10, Unit.EM),
@@ -157,8 +169,8 @@ public class ConfigWidget extends Composite {
 	newColumn.setFieldUpdater(new FieldUpdater<SessionSummary, String>() {
 		@Override
 		public void update(int index, SessionSummary object, String value) {
-		    // XXX push the new name also
 		    object.set(c.key, value);
+		    pushEdit("-1,e" + c.key + "," + value + "," + object.getSeqno() + ";");
 		    t.redraw();
 		}
 	    });
@@ -171,6 +183,20 @@ public class ConfigWidget extends Composite {
 	sessions.setWidth("60em", true);
 
 	initializeSessionColumns();
+    }
+
+    private void pushEdit(String dv) {
+        guid = UUID.uuid();
+        guid_on_form.setValue(guid);
+	current_session.setValue("A00");
+        dataToSave.setValue(dv.toString());
+        configEditForm.submit();
+
+        pushTries = 0;
+        new Timer() { public void run() {
+            pushChanges(guid);
+        } }.schedule(500);
+
     }
 
     final private static String ADD_SESSION_VALUE = "[ajouter session]";
@@ -203,8 +229,9 @@ public class ConfigWidget extends Composite {
 		    if (object.get(NAME_COLUMN.key).equals(ADD_SESSION_VALUE)) {
 			addAddSessionSession();
 		    }
-		    // XXX push the new name also
 		    object.set(NAME_COLUMN.key, value);
+		    pushEdit("-1,e" + NAME_COLUMN.key + "," + value + "," + object.getSeqno() + ";");
+
 		    sessions.setRowData(sessionData);
 		    sessions.redraw();
 		}
@@ -256,5 +283,30 @@ public class ConfigWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
+    public void pushChanges(final String guid) {
+        String url = CONFIRM_PUSH_URL + "?guid=" + guid;
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        ConfirmResponseObject cro =
+                            JsonUtils.<ConfirmResponseObject>safeEval(s);
+                        String rs = cro.getResult();
+                        if (rs.equals("NOT_YET")) {
+                            if (pushTries >= 3) {
+                                jdb.displayError("le serveur n'a pas accepté les données");
+                                return;
+                            }
 
+                            new Timer() { public void run() {
+                                pushChanges(guid);
+                            } }.schedule(2000);
+                            pushTries++;
+                        } else {
+                            jdb.setStatus("Sauvegardé.");
+                        }
+                        new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
 }
