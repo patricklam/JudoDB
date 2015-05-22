@@ -474,10 +474,10 @@ public class ListWidget extends Composite {
         dv += cd.getMostRecentGrade().getGrade() + "|";
         dv += cd.getMostRecentGrade().getDateGrade() + "|";
         ServiceData sd = cd.getServiceFor(Constants.currentSession());
-        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-        // XXX getPrix on ListWidget as well
-        CostCalculator.recompute(cd, sd, cs, prorata.getValue(), null);
         if (sd != null && !sd.getCours().equals("")) {
+	    ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+	    // XXX getPrix on ListWidget as well
+	    CostCalculator.recompute(cd, sd, cs, prorata.getValue(), null);
             // XXX this is potentially slow; use a hash map instead.
             for (CoursSummary cc : backingCours) {
                 if (cc.getId().equals(sd.getCours()))
