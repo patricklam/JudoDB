@@ -175,8 +175,14 @@ public class ConfigWidget extends Composite {
 		public void update(int index, SessionSummary object, String value) {
 		    object.set(c.key, value);
 		    if (perClubColumns.contains(c)) {
-			pushEdit("-1,f" + c.key + "," + value + "," +
-				 object.getClub() + "," + object.getId() + ";");
+			if (object.getId().equals("-1")) {
+			    refreshSessions = true;
+			    pushEdit("-1,F" + c.key + "," + value + "," +
+				     Integer.toString(jdb.selectedClub) + "," + object.getSeqno() + ";");
+			} else {
+			    pushEdit("-1,f" + c.key + "," + value + "," +
+				     object.getClub() + "," + object.getId() + ";");
+			}
 		    } else {
 			pushEdit("-1,e" + c.key + "," + value + "," + object.getSeqno() + ";");
 		    }
@@ -294,6 +300,7 @@ public class ConfigWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
+    private boolean refreshSessions = false;
     public void pushChanges(final String guid) {
         String url = CONFIRM_PUSH_URL + "?guid=" + guid;
         RequestCallback rc =
@@ -314,6 +321,10 @@ public class ConfigWidget extends Composite {
                             pushTries++;
                         } else {
                             jdb.setStatus("Sauvegardé.");
+			    if (refreshSessions) {
+				refreshSessions = false;
+				retrieveSessions(jdb.selectedClub);
+			    }
                         }
                         new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
                     }

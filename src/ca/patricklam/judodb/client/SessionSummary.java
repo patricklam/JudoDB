@@ -17,13 +17,13 @@ public class SessionSummary extends JavaScriptObject {
     public final native String getId() /*-{ return this.id; }-*/;
     public final native String getClub() /*-{ return this.club; }-*/;
     public final native void setClub(String club) /*-{ this.club = club; }-*/;
-    public final native String getFirstClassDate() /*-{ return this.first_class_date; }-*/;
+    public final native String getFirstClassDate() /*-{ return this.first_class_date != null ? this.first_class_date : ""; }-*/;
     public final native void setFirstClassDate(String firstClassDate) /*-{ this.firstClassDate = firstClassDate; }-*/;
-    public final native String getFirstSignupDate() /*-{ return this.first_signup_date; }-*/;
+    public final native String getFirstSignupDate() /*-{ return this.first_signup_date != null ? this.first_signup_date : ""; }-*/;
     public final native void setFirstSignupDate(String firstSignupDate) /*-{ this.firstSignupDate = firstSignupDate; }-*/;
-    public final native String getLastClassDate() /*-{ return this.last_class_date; }-*/;
+    public final native String getLastClassDate() /*-{ return this.last_class_date != null ? this.last_class_date : ""; }-*/;
     public final native void setLastClassDate(String lastClassDate) /*-{ this.lastClassDate = lastClassDate; }-*/;
-    public final native String getLastSignupDate() /*-{ return this.last_signup_date; }-*/;
+    public final native String getLastSignupDate() /*-{ return this.last_signup_date != null ? this.last_signup_date : ""; }-*/;
     public final native void setLastSignupDate(String lastSignupDate) /*-{ this.lastSignupDate = lastSignupDate; }-*/;
 
     public final String get(String key) {
