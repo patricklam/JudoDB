@@ -30,6 +30,8 @@ import com.google.gwt.dom.client.Style.Unit;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class ConfigWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ConfigWidget> {}
@@ -150,13 +152,15 @@ public class ConfigWidget extends Composite {
 
     private final ColumnFields NAME_COLUMN = new ColumnFields("name", "Nom", 10, Unit.EM),
 	ABBREV_COLUMN = new ColumnFields("abbrev", "Abbr", 4, Unit.EM),
-	YEAR_COLUMN = new ColumnFields("year", "Année", 4, Unit.EM),
+	YEAR_COLUMN = new ColumnFields("year", "Année", 5, Unit.EM),
 	SEQNO_COLUMN = new ColumnFields("seqno", "no seq", 3, Unit.EM),
 	LINKED_SEQNO_COLUMN = new ColumnFields("linked_seqno", "seq alt", 3, Unit.EM),
-	FIRST_CLASS_COLUMN = new ColumnFields("firstClassDate", "début cours" , 10, Unit.EM),
-	FIRST_SIGNUP_COLUMN = new ColumnFields("firstSignupDate", "début inscription", 10, Unit.EM),
-	LAST_CLASS_COLUMN = new ColumnFields("lastClassDate", "fin cours", 10, Unit.EM),
-	LAST_SIGNUP_COLUMN = new ColumnFields("lastSignupDate", "fin inscription", 10, Unit.EM);
+	FIRST_CLASS_COLUMN = new ColumnFields("first_class_date", "début cours" , 10, Unit.EM),
+	FIRST_SIGNUP_COLUMN = new ColumnFields("first_signup_date", "début inscription", 10, Unit.EM),
+	LAST_CLASS_COLUMN = new ColumnFields("last_class_date", "fin cours", 10, Unit.EM),
+	LAST_SIGNUP_COLUMN = new ColumnFields("last_signup_date", "fin inscription", 10, Unit.EM);
+
+    private List<ColumnFields> perClubColumns = Collections.unmodifiableList(Arrays.asList(FIRST_CLASS_COLUMN, FIRST_SIGNUP_COLUMN, LAST_CLASS_COLUMN, LAST_SIGNUP_COLUMN));
 
     private Column<SessionSummary, String> addSessionColumn(final CellTable t, final ColumnFields c, final boolean editable) {
 	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
@@ -170,7 +174,18 @@ public class ConfigWidget extends Composite {
 		@Override
 		public void update(int index, SessionSummary object, String value) {
 		    object.set(c.key, value);
-		    pushEdit("-1,e" + c.key + "," + value + "," + object.getSeqno() + ";");
+		    if (perClubColumns.contains(c)) {
+			if (object.getId().equals("-1")) {
+			    refreshSessions = true;
+			    pushEdit("-1,F" + c.key + "," + value + "," +
+				     Integer.toString(jdb.selectedClub) + "," + object.getSeqno() + ";");
+			} else {
+			    pushEdit("-1,f" + c.key + "," + value + "," +
+				     object.getClub() + "," + object.getId() + ";");
+			}
+		    } else {
+			pushEdit("-1,e" + c.key + "," + value + "," + object.getSeqno() + ";");
+		    }
 		    t.redraw();
 		}
 	    });
@@ -285,6 +300,7 @@ public class ConfigWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
+    private boolean refreshSessions = false;
     public void pushChanges(final String guid) {
         String url = CONFIRM_PUSH_URL + "?guid=" + guid;
         RequestCallback rc =
@@ -305,6 +321,10 @@ public class ConfigWidget extends Composite {
                             pushTries++;
                         } else {
                             jdb.setStatus("Sauvegardé.");
+			    if (refreshSessions) {
+				refreshSessions = false;
+				retrieveSessions(jdb.selectedClub);
+			    }
                         }
                         new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
                     }

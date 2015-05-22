@@ -17,13 +17,13 @@ public class SessionSummary extends JavaScriptObject {
     public final native String getId() /*-{ return this.id; }-*/;
     public final native String getClub() /*-{ return this.club; }-*/;
     public final native void setClub(String club) /*-{ this.club = club; }-*/;
-    public final native String getFirstClassDate() /*-{ return this.first_class_date; }-*/;
+    public final native String getFirstClassDate() /*-{ return this.first_class_date != null ? this.first_class_date : ""; }-*/;
     public final native void setFirstClassDate(String firstClassDate) /*-{ this.firstClassDate = firstClassDate; }-*/;
-    public final native String getFirstSignupDate() /*-{ return this.first_signup_date; }-*/;
+    public final native String getFirstSignupDate() /*-{ return this.first_signup_date != null ? this.first_signup_date : ""; }-*/;
     public final native void setFirstSignupDate(String firstSignupDate) /*-{ this.firstSignupDate = firstSignupDate; }-*/;
-    public final native String getLastClassDate() /*-{ return this.last_class_date; }-*/;
+    public final native String getLastClassDate() /*-{ return this.last_class_date != null ? this.last_class_date : ""; }-*/;
     public final native void setLastClassDate(String lastClassDate) /*-{ this.lastClassDate = lastClassDate; }-*/;
-    public final native String getLastSignupDate() /*-{ return this.last_signup_date; }-*/;
+    public final native String getLastSignupDate() /*-{ return this.last_signup_date != null ? this.last_signup_date : ""; }-*/;
     public final native void setLastSignupDate(String lastSignupDate) /*-{ this.lastSignupDate = lastSignupDate; }-*/;
 
     public final String get(String key) {
@@ -34,10 +34,10 @@ public class SessionSummary extends JavaScriptObject {
 	if (key.equals("abbrev")) return getAbbrev();
 	if (key.equals("id")) return getId();
 	if (key.equals("club")) return getClub();
-	if (key.equals("firstClassDate")) return getFirstClassDate();
-	if (key.equals("firstSignupDate")) return getFirstSignupDate();
-	if (key.equals("lastClassDate")) return getLastClassDate();
-	if (key.equals("lastSignupDate")) return getLastSignupDate();
+	if (key.equals("first_class_date")) return getFirstClassDate();
+	if (key.equals("first_signup_date")) return getFirstSignupDate();
+	if (key.equals("last_class_date")) return getLastClassDate();
+	if (key.equals("last_signup_date")) return getLastSignupDate();
 	throw new RuntimeException("get: bad key " + key);
     }
 
@@ -50,10 +50,10 @@ public class SessionSummary extends JavaScriptObject {
 	else if (key.equals("year")) setYear(value);
 	else if (key.equals("abbrev")) setAbbrev(value);
 	else if (key.equals("club")) setClub(value);
-	else if (key.equals("firstClassDate")) setFirstClassDate(value);
-	else if (key.equals("firstSignupDate")) setFirstSignupDate(value);
-	else if (key.equals("lastClassDate")) setLastClassDate(value);
-	else if (key.equals("lastSignupDate")) setLastSignupDate(value);
+	else if (key.equals("first_class_date")) setFirstClassDate(value);
+	else if (key.equals("first_signup_date")) setFirstSignupDate(value);
+	else if (key.equals("last_class_date")) setLastClassDate(value);
+	else if (key.equals("last_signup_date")) setLastSignupDate(value);
 	else throw new RuntimeException("set: bad key " + key);
     }
 }
