@@ -37,7 +37,7 @@ public class ConfigWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ConfigWidget> {}
     public static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
 
-    @UiField FlowPanel configMain;
+    @UiField FlowPanel sessionTab;
     @UiField FormPanel configEditForm;
     @UiField Hidden current_session;
     @UiField Hidden dataToSave;
@@ -119,7 +119,7 @@ public class ConfigWidget extends Composite {
         dropDownUserClubs.addChangeHandler(clHandler);
 
 	initializeSessionTable();
-	configMain.add(sessions);
+	sessionTab.add(sessions);
         configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
     }
 

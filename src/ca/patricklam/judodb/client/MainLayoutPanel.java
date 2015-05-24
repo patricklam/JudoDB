@@ -6,6 +6,7 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
@@ -24,9 +25,10 @@ public class MainLayoutPanel extends Composite {
     @UiField FlowPanel search;
     @UiField ScrollPanel editClient;
     @UiField ScrollPanel lists;
-    @UiField FlowPanel config;
+    @UiField LayoutPanel config;
     @UiField FlowPanel rightbar;
     @UiField FlowPanel listActions;
+    @UiField FlowPanel configActions;
     @UiField FlowPanel mainActions;
 
     public MainLayoutPanel() {

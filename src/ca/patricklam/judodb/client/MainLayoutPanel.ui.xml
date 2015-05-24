@@ -17,64 +17,72 @@
  }
 </ui:style>
 
-<g:DockLayoutPanel unit='EM' ui:field="dock">
+<g:LayoutPanel>
+ <g:layer top='0' left='40%' height='2em' width='20%'>
+  <g:Label styleName='{style.status}' ui:field="statusLabel" visible='false'/>
+ </g:layer>
 
-<g:north size='2'>
- <g:Label styleName='{style.status}' ui:field="statusLabel" />
-</g:north>
+ <g:layer>
+  <g:DockLayoutPanel unit='EM' ui:field="dock">
 
-<g:center>
- <g:AbsolutePanel>
-  <!-- search UI -->
-  <g:at left='0' top='0'>
-   <g:FlowPanel ui:field='search' styleName='{style.padLeft}' width='98%'>
-    <g:HTML>
-     <h1>Recherche judoka</h1>
-     <label class="standardtitle" for="query">Nom ou Prenom</label><br /><br />
-    </g:HTML>
-   </g:FlowPanel>
-  </g:at>
+  <g:center>
+   <g:LayoutPanel>
+    <!-- search UI -->
+    <g:layer left='0' top='0' width='100%' height='100%'>
+     <g:FlowPanel ui:field='search' styleName='{style.padLeft}' width='98%'>
+       <g:HTML>
+        <h1>Recherche judoka</h1>
+        <label class="standardtitle" for="query">Nom ou Prenom</label><br /><br />
+       </g:HTML>
+     </g:FlowPanel>
+    </g:layer>
 
-  <!-- edit UI -->
-  <g:at left='0' top='0'>
-   <g:ScrollPanel ui:field='editClient' styleName='{style.padLeft}' width='99%' height='100%'/>
-  </g:at>
+    <!-- edit UI -->
+    <g:layer left='0' top='0' width='100%' height='100%'>
+     <g:ScrollPanel ui:field='editClient' styleName='{style.padLeft}' width='99%' height='100%'/>
+    </g:layer>
 
-  <!-- lists UI -->
-  <g:at left='0' top='0'>
-   <g:ScrollPanel ui:field='lists' styleName='{style.padLeft}' width='99%' height='100%' />
-  </g:at>
+    <!-- lists UI -->
+    <g:layer left='0' top='0' width='100%' height='100%'>
+     <g:ScrollPanel ui:field='lists' styleName='{style.padLeft}' width='99%' height='100%'/>
+    </g:layer>
 
-  <!-- config UI -->
-  <g:at left='0' top='0'>
-   <g:FlowPanel ui:field='config' styleName='{style.padLeft}' width='99%' height='100%' />
-  </g:at>
+    <!-- config UI -->
+    <g:layer left='0' top='0' width='100%' height='100%'>
+     <g:LayoutPanel ui:field='config' styleName='{style.padLeft}' width='99%' height='100%'/>
+    </g:layer>
+   </g:LayoutPanel>
+  </g:center>
 
- </g:AbsolutePanel>
-</g:center>
-
-<g:east size='15'>
- <g:FlowPanel>
-  <g:FlowPanel ui:field='rightbar'>
-    <g:FlowPanel ui:field="listActions">
-     <g:HTML>
-       <h3>Actions</h3>
-       <p id="actionList" />
-     </g:HTML>
+  <g:east size='15'>
+   <g:FlowPanel>
+    <g:FlowPanel ui:field='rightbar'>
+      <g:FlowPanel ui:field="mainActions">
+       <g:HTML>
+        <h3>Actions</h3>
+        <p id="actionList" />
+      </g:HTML>
+     </g:FlowPanel>
+      <g:FlowPanel ui:field="listActions">
+       <g:HTML>
+         <h3>Actions</h3>
+         <p id="actionList" />
+       </g:HTML>
+      </g:FlowPanel>
+      <g:FlowPanel ui:field="configActions">
+       <g:HTML>
+         <h3>Actions</h3>
+         <p id="actionList" />
+       </g:HTML>
+      </g:FlowPanel>
     </g:FlowPanel>
-    <g:FlowPanel ui:field="mainActions">
-     <g:HTML>
-      <h3>Actions</h3>
-      <p id="actionList" />
-    </g:HTML>
+    <!-- todo noprint -->
+    <g:Label ui:field="versionLabel" styleName='{style.version}' />
    </g:FlowPanel>
-  </g:FlowPanel>
-  <!-- todo noprint -->
-  <g:Label ui:field="versionLabel" styleName='{style.version}' />
- </g:FlowPanel>
-</g:east>
+  </g:east>
 
-</g:DockLayoutPanel>
-
+  </g:DockLayoutPanel>
+ </g:layer>
+</g:LayoutPanel>
 
 </ui:UiBinder> 

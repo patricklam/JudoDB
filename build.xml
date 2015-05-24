@@ -54,6 +54,7 @@
       </classpath>
       <!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
       <jvmarg value="-Xmx256M"/>
+      <jvmarg value="-Xss16M"/>
       <arg line="-war"/>
       <arg value="war"/>
       <arg value="ca.patricklam.judodb"/>

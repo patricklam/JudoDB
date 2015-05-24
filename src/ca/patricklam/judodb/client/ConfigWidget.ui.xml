@@ -2,34 +2,34 @@
 <!-- ConfigWidget.ui.xml -->
 
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
-    <ui:style src="ConfigWidget.css" />
-      <g:FlowPanel ui:field="configMain">
-        <g:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" styleName="{style.userclub}" />
-	<g:FormPanel ui:field="configEditForm" method="post">
-	  <g:FlowPanel>
-	    <g:Hidden ui:field="current_session" name="current_session" />
-	    <g:Hidden ui:field="guid_on_form" name="guid" />
-	    <g:Hidden ui:field="dataToSave" name="data_to_save" />
-	  </g:FlowPanel>
-	</g:FormPanel>
-
-<!--
-        <g:TabLayoutPanel ui:field="configTabPanel" barHeight="2" barUnit="EM">
-                <g:tab>
-                        <g:header>Club</g:header>
-                        <g:FlowPanel>
-                                <g:Anchor ui:field='nom_club'>Nom du club:</g:Anchor>
-                        </g:FlowPanel>
-                </g:tab>
-                <g:tab>
-
-                        <g:header>Sessions</g:header>
-                        <g:FlowPanel>
-                          <g:CellTable ui:field="sessions" />
-                        </g:FlowPanel>
-                </g:tab>
-        </g:TabLayoutPanel>
--->
+   <ui:style src="ConfigWidget.css" />
+    <g:LayoutPanel>
+     <g:layer top="1.5em" right="1em" width="21em" height="2em">
+      <g:FlowPanel>
+       <g:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" />
+       <g:FormPanel ui:field="configEditForm" method="post">
+	<g:FlowPanel>
+	  <g:Hidden ui:field="current_session" name="current_session" />
+	  <g:Hidden ui:field="guid_on_form" name="guid" />
+	  <g:Hidden ui:field="dataToSave" name="data_to_save" />
+	</g:FlowPanel>
+       </g:FormPanel>
       </g:FlowPanel>
- 
+     </g:layer>
+     <g:layer top='5em' left='5em' width='80%' height='80%'>
+      <g:TabLayoutPanel barHeight='2' barUnit='EM'>
+       <g:tab>
+	 <g:header size='4'>Club</g:header>
+	 <g:FlowPanel ui:field="clubTab">
+	   <g:Anchor ui:field='nom_club'>Nom du club:</g:Anchor>
+	 </g:FlowPanel>
+       </g:tab>
+       <g:tab>
+	 <g:header size='8'>Session</g:header>
+	 <g:FlowPanel ui:field="sessionTab">
+	 </g:FlowPanel>
+       </g:tab>
+      </g:TabLayoutPanel>
+     </g:layer>
+    </g:LayoutPanel>
 </ui:UiBinder>
