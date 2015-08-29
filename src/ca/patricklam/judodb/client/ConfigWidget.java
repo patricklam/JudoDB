@@ -18,6 +18,8 @@ import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.cell.client.Cell;
@@ -106,6 +108,7 @@ public class ConfigWidget extends Composite {
       public void onChange(ChangeEvent e) {
         jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
 	retrieveSessions(jdb.selectedClub);
+	populateCurrentClub();
       }
     }
 
@@ -119,14 +122,12 @@ public class ConfigWidget extends Composite {
         dropDownUserClubs.addChangeHandler(clHandler);
 
 	initializeSessionTable();
+	populateCurrentClub();
 	sessionTab.add(sessions);
         configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
     }
 
     /* --- session table --- */
-
-    class SessionSummaryFieldUpdaterExample {
-    }
 
     private static final ProvidesKey<SessionSummary> KEY_PROVIDER =
 	new ProvidesKey<SessionSummary>() {
@@ -283,6 +284,44 @@ public class ConfigWidget extends Composite {
 	sessions.setRowData(sessionData);
 	sessions.redraw();
     }
+
+    /* --- club table --- */
+    @UiField TextBox nom_club;
+    @UiField TextBox nom_short;
+    @UiField TextBox numero_club;
+    @UiField TextBox ville;
+    @UiField TextBox prefix_codepostale;
+    @UiField TextBox indicatif_regional;
+    @UiField CheckBox default_prorata;
+
+    void clearClubFields() {
+	nom_club.setText("");
+	nom_short.setText("");
+	numero_club.setText("");
+	ville.setText("");
+	prefix_codepostale.setText("");
+	indicatif_regional.setText("");
+	default_prorata.setValue(false);
+    }
+
+    void populateCurrentClub() {
+	String selectedClub = jdb.getSelectedClubID();
+	clearClubFields();
+	if (selectedClub == null) {
+	    nom_club.setText("n/d");
+	    return;
+	}
+
+	ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+	nom_club.setText(cs.getNom());
+	nom_short.setText(cs.getNomShort());
+	numero_club.setText(cs.getNumeroClub());
+	ville.setText(cs.getVille());
+	prefix_codepostale.setText(cs.getPrefixCodepostale());
+	indicatif_regional.setText(cs.getIndicatifRegional());
+	default_prorata.setValue(cs.getDefaultProrata());
+    }
+    /* --- end club table --- */
 
     /* --- network functions --- */
     private boolean gotSessions = false;

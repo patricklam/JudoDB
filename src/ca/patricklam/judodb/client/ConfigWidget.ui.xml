@@ -21,7 +21,13 @@
        <g:tab>
 	 <g:header size='4'>Club</g:header>
 	 <g:FlowPanel ui:field="clubTab">
-	   <g:Anchor ui:field='nom_club'>Nom du club:</g:Anchor>
+	   <g:Label>Nom du club:</g:Label><g:TextBox ui:field="nom_club" name="nom_club_tb" width="40em"/>
+	   <g:Label>Nom (abbrevi&eacute;):</g:Label><g:TextBox ui:field="nom_short" name="nom_short_tb"/>
+	   <g:Label>Numero club JQ:</g:Label><g:TextBox ui:field="numero_club" name="numero_club_tb"/>
+	   <g:Label>Ville:</g:Label><g:TextBox ui:field="ville" name="ville_tb"/>
+	   <g:Label>Prefixe code postale:</g:Label><g:TextBox ui:field="prefix_codepostale" name="prefix_codepostale_tb"/>
+	   <g:Label>Indicatif regional:</g:Label><g:TextBox ui:field="indicatif_regional" name="indicatif_regional_tb"/>
+	   <g:Label>Prorata par defaut:</g:Label><g:CheckBox ui:field="default_prorata" name="default_prorata_tb"/>
 	 </g:FlowPanel>
        </g:tab>
        <g:tab>
