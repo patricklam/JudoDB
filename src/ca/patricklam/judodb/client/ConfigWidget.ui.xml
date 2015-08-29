@@ -35,6 +35,11 @@
 	 <g:FlowPanel ui:field="sessionTab">
 	 </g:FlowPanel>
        </g:tab>
+       <g:tab>
+	 <g:header size='5'>Cours</g:header>
+	 <g:FlowPanel ui:field="coursTab">
+	 </g:FlowPanel>
+       </g:tab>
       </g:TabLayoutPanel>
      </g:layer>
     </g:LayoutPanel>

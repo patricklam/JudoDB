@@ -40,6 +40,7 @@ public class ConfigWidget extends Composite {
     public static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
 
     @UiField FlowPanel sessionTab;
+    @UiField FlowPanel coursTab;
     @UiField FormPanel configEditForm;
     @UiField Hidden current_session;
     @UiField Hidden dataToSave;
@@ -54,6 +55,9 @@ public class ConfigWidget extends Composite {
 
     CellTable sessions;
     private static final List<SessionSummary> sessionData = new ArrayList<SessionSummary>();
+
+    CellTable cours;
+    private static final List<CoursSummary> coursData = new ArrayList<CoursSummary>();
 
     // private static final String PULL_CONFIG_URL = JudoDB.BASE_URL + "pull_config.php";
     // private static final String PUSH_CONFIG_URL = JudoDB.BASE_URL + "push_config.php";
@@ -107,8 +111,10 @@ public class ConfigWidget extends Composite {
     class ClubListHandler implements ChangeHandler {
       public void onChange(ChangeEvent e) {
         jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
-	retrieveSessions(jdb.selectedClub);
-	populateCurrentClub();
+        retrieveSessions(jdb.selectedClub);
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        retrieveCours(cs.getNumeroClub());
+        populateCurrentClub();
       }
     }
 
@@ -124,12 +130,14 @@ public class ConfigWidget extends Composite {
 	initializeSessionTable();
 	populateCurrentClub();
 	sessionTab.add(sessions);
+
+	initializeCoursTable();
+	coursTab.add(cours);
+
         configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
     }
 
-    /* --- session table --- */
-
-    private static final ProvidesKey<SessionSummary> KEY_PROVIDER =
+    private static final ProvidesKey<SessionSummary> SESSION_KEY_PROVIDER =
 	new ProvidesKey<SessionSummary>() {
         @Override
         public Object getKey(SessionSummary item) {
@@ -151,6 +159,7 @@ public class ConfigWidget extends Composite {
 	public Unit widthUnits;
     }
 
+    /* --- session table --- */
     private final ColumnFields NAME_COLUMN = new ColumnFields("name", "Nom", 10, Unit.EM),
 	ABBREV_COLUMN = new ColumnFields("abbrev", "Abbr", 4, Unit.EM),
 	YEAR_COLUMN = new ColumnFields("year", "Année", 5, Unit.EM),
@@ -195,7 +204,7 @@ public class ConfigWidget extends Composite {
     }
 
     void initializeSessionTable() {
-	sessions = new CellTable<SessionSummary>(KEY_PROVIDER);
+	sessions = new CellTable<SessionSummary>(SESSION_KEY_PROVIDER);
 	sessions.setWidth("60em", true);
 
 	initializeSessionColumns();
@@ -266,9 +275,8 @@ public class ConfigWidget extends Composite {
 	    addSessionColumn(sessions, LAST_SIGNUP_COLUMN, true);
 	}
     }
-    /* --- end session table --- */
 
-    private void loadSessions(JsArray<SessionSummary> sessionArray) {
+    private void populateSessions(JsArray<SessionSummary> sessionArray) {
 	// reset the editable status of the cells
 	initializeSessionColumns();
 
@@ -284,8 +292,9 @@ public class ConfigWidget extends Composite {
 	sessions.setRowData(sessionData);
 	sessions.redraw();
     }
+    /* --- end session table --- */
 
-    /* --- club table --- */
+    /* --- club tab --- */
     @UiField TextBox nom_club;
     @UiField TextBox nom_short;
     @UiField TextBox numero_club;
@@ -295,13 +304,13 @@ public class ConfigWidget extends Composite {
     @UiField CheckBox default_prorata;
 
     void clearClubFields() {
-	nom_club.setText("");
-	nom_short.setText("");
-	numero_club.setText("");
-	ville.setText("");
-	prefix_codepostale.setText("");
-	indicatif_regional.setText("");
-	default_prorata.setValue(false);
+	nom_club.setText(""); nom_club.setReadOnly(true);
+	nom_short.setText(""); nom_short.setReadOnly(true);
+	numero_club.setText(""); numero_club.setReadOnly(true);
+	ville.setText(""); ville.setReadOnly(true);
+	prefix_codepostale.setText(""); prefix_codepostale.setReadOnly(true);
+	indicatif_regional.setText(""); indicatif_regional.setReadOnly(true);
+	default_prorata.setValue(false); default_prorata.setEnabled(false);
     }
 
     void populateCurrentClub() {
@@ -321,7 +330,70 @@ public class ConfigWidget extends Composite {
 	indicatif_regional.setText(cs.getIndicatifRegional());
 	default_prorata.setValue(cs.getDefaultProrata());
     }
-    /* --- end club table --- */
+    /* --- end club tab --- */
+
+    /* --- cours tab --- */
+    private static final ProvidesKey<CoursSummary> COURS_KEY_PROVIDER =
+	new ProvidesKey<CoursSummary>() {
+        @Override
+        public Object getKey(CoursSummary item) {
+	    return item.getId();
+        }
+    };
+
+    private final ColumnFields SESSION_COLUMN = new ColumnFields("session", "Session", 2, Unit.EM),
+	DESC_COLUMN = new ColumnFields("short_desc", "Description", 4, Unit.EM);
+
+    private List<ColumnFields> perCoursColumns = Collections.unmodifiableList(Arrays.asList(SESSION_COLUMN, DESC_COLUMN));
+
+    void initializeCoursTable() {
+	cours = new CellTable<CoursSummary>(COURS_KEY_PROVIDER);
+	cours.setWidth("60em", true);
+
+	initializeCoursColumns();
+    }
+
+    private Column<CoursSummary, String> addCoursColumn(final CellTable t, final ColumnFields c, final boolean editable) {
+	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
+	Column<CoursSummary, String> newColumn = new Column<CoursSummary, String>(cell) {
+	    public String getValue(CoursSummary object) {
+		return object.get(c.key);
+	    }
+	};
+	cours.addColumn(newColumn, c.name);
+	newColumn.setFieldUpdater(new FieldUpdater<CoursSummary, String>() {
+		@Override
+		public void update(int index, CoursSummary object, String value) {
+		    object.set(c.key, value);
+		    // push stuff
+		    t.redraw();
+		}
+	    });
+	cours.setColumnWidth(newColumn, c.width, c.widthUnits);
+	return newColumn;
+    }
+
+    void initializeCoursColumns() {
+	while (cours.getColumnCount() > 0)
+	    cours.removeColumn(0);
+
+	addCoursColumn(sessions, SESSION_COLUMN, true);
+	addCoursColumn(sessions, DESC_COLUMN, true);
+    }
+
+    private void populateCours(JsArray<CoursSummary> coursArray) {
+	// reset the editable status of the cells
+	initializeCoursColumns();
+
+	coursData.clear();
+        for (int i = 0; i < coursArray.length(); i++) {
+	    coursData.add(coursArray.get(i));
+	}
+
+	cours.setRowData(coursData);
+	cours.redraw();
+    }
+    /* --- end cours tab --- */
 
     /* --- network functions --- */
     private boolean gotSessions = false;
@@ -332,7 +404,7 @@ public class ConfigWidget extends Composite {
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
                         gotSessions = true;
-                        loadSessions(JsonUtils.<JsArray<SessionSummary>>safeEval(s));
+                        populateSessions(JsonUtils.<JsArray<SessionSummary>>safeEval(s));
 			jdb.clearStatus();
                     }
                 });
@@ -366,6 +438,21 @@ public class ConfigWidget extends Composite {
 			    }
                         }
                         new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    private boolean gotCours = false;
+    public void retrieveCours(String numero_club) {
+        String url = JudoDB.PULL_CLUB_COURS_URL;
+        url += "?numero_club="+numero_club;
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        gotCours = true;
+                        populateCours(JsonUtils.<JsArray<CoursSummary>>safeEval(s));
+			jdb.clearStatus();
                     }
                 });
         jdb.retrieve(url, rc);
