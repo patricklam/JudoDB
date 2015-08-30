@@ -134,6 +134,7 @@ public class ConfigWidget extends Composite {
 
 	initializeCoursTable();
 	coursTab.add(cours);
+	populateCours(coursData);
 
         configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
     }
@@ -393,14 +394,13 @@ public class ConfigWidget extends Composite {
 	addCoursColumn(sessions, DESC_COLUMN, true);
     }
 
-    private void populateCours(JsArray<CoursSummary> coursArray) {
+    private void populateCours(List<CoursSummary> coursArray) {
 	initializeCoursColumns();
 
 	// combine cours across sessions
 	HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
 
-        for (int i = 0; i < coursArray.length(); i++) {
-	    CoursSummary cs = coursArray.get(i);
+        for (CoursSummary cs : coursArray) {
 	    if (!l.containsKey(cs.getShortDesc())) {
 		l.put(cs.getShortDesc(), new StringBuffer());
 	    }
@@ -472,13 +472,19 @@ public class ConfigWidget extends Composite {
 
     private boolean gotCours = false;
     public void retrieveCours(String numero_club) {
+	if (numero_club.equals("")) return;
+
         String url = JudoDB.PULL_CLUB_COURS_URL;
         url += "?numero_club="+numero_club;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
-                        gotCours = true;
-                        populateCours(JsonUtils.<JsArray<CoursSummary>>safeEval(s));
+			gotCours = true;
+			List<CoursSummary> lcs = new ArrayList<CoursSummary>();
+			JsArray<CoursSummary> jcs = JsonUtils.<JsArray<CoursSummary>>safeEval(s);
+			for (int i = 0; i < jcs.length(); i++)
+			    lcs.add(jcs.get(i));
+			populateCours(lcs);
 			jdb.clearStatus();
                     }
                 });
