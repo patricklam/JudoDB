@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 
 public class ConfigWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ConfigWidget> {}
@@ -196,6 +197,7 @@ public class ConfigWidget extends Composite {
 		    } else {
 			pushEdit("-1,e" + c.key + "," + value + "," + object.getSeqno() + ";");
 		    }
+		    updateSessionToNameMapping();
 		    t.redraw();
 		}
 	    });
@@ -291,6 +293,16 @@ public class ConfigWidget extends Composite {
 
 	sessions.setRowData(sessionData);
 	sessions.redraw();
+	updateSessionToNameMapping();
+    }
+
+    private HashMap<String, String> sessionToName = new HashMap<String, String>();
+
+    void updateSessionToNameMapping() {
+	sessionToName.clear();
+	for (SessionSummary s : sessionData) {
+	    sessionToName.put(s.getSeqno(), s.getAbbrev());
+	}
     }
     /* --- end session table --- */
 
@@ -382,12 +394,27 @@ public class ConfigWidget extends Composite {
     }
 
     private void populateCours(JsArray<CoursSummary> coursArray) {
-	// reset the editable status of the cells
 	initializeCoursColumns();
 
-	coursData.clear();
+	// combine cours across sessions
+	HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
+
         for (int i = 0; i < coursArray.length(); i++) {
-	    coursData.add(coursArray.get(i));
+	    CoursSummary cs = coursArray.get(i);
+	    if (!l.containsKey(cs.getShortDesc())) {
+		l.put(cs.getShortDesc(), new StringBuffer());
+	    }
+	    StringBuffer b = l.get(cs.getShortDesc());
+	    b.append(" ");
+	    b.append(sessionToName.get(cs.getSession()));
+	}
+
+	coursData.clear();
+	int id = 0;
+	for (String s : l.keySet()) {
+	    CoursSummary cs = (CoursSummary)JavaScriptObject.createObject().cast();
+	    cs.setId(String.valueOf(id)); cs.setShortDesc(s); cs.setSession(l.get(s).toString());
+	    coursData.add(cs);
 	}
 
 	cours.setRowData(coursData);
