@@ -865,8 +865,7 @@ public class ClientWidget extends Composite {
         semaines.setText(CostCalculator.getWeeksSummary(currentSession, dateInscription));
         escompteFrais.setReadOnly(!CostCalculator.isCasSpecial(sd));
 
-        DateTimeFormat f = DateTimeFormat.getFormat("yyyy-mm-dd");
-        saisons.setText(getSessionIds(f.parse(sd.getDateInscription()), sessionCount));
+        saisons.setText(getSessionIds(Constants.DB_DATE_FORMAT.parse(sd.getDateInscription()), sessionCount));
 
         try {
             categorieFrais.setText (cf.format(Double.parseDouble(sd.getCategorieFrais())));
@@ -1074,12 +1073,11 @@ public class ClientWidget extends Composite {
 	}
 
 	currentSession = null;
-	DateTimeFormat f = DateTimeFormat.getFormat("yyyy-mm-dd");
 	Date today = new Date();
 	for (SessionSummary s : sessionSummaries) {
 	    try {
-		Date inscrBegin = f.parse(s.getFirstSignupDate());
-		Date inscrEnd = f.parse(s.getLastSignupDate());
+		Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
+		Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
 		if (today.after(inscrBegin) && today.before(inscrEnd)) {
 		    currentSession = s; continue;
 		}
@@ -1092,11 +1090,10 @@ public class ClientWidget extends Composite {
 	if (sessionSummaries == null) return "";
 
 	SessionSummary m = null;
-	DateTimeFormat f = DateTimeFormat.getFormat("yyyy-mm-dd");
 	for (SessionSummary s : sessionSummaries) {
 	    try {
-		Date inscrBegin = f.parse(s.getFirstSignupDate());
-		Date inscrEnd = f.parse(s.getLastSignupDate());
+		Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
+		Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
 		if (d.after(inscrBegin) && d.before(inscrEnd)) {
 		    m = s; continue;
 		}
@@ -1193,7 +1190,7 @@ public class ClientWidget extends Composite {
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
         String url = PULL_CLUB_PRIX_URL +
             "?numero_club=" + cs.getNumeroClub() +
-            "&session_seqno=" + Integer.toString(Constants.currentSessionNo());
+            "&session_seqno=" + currentSession.getSeqno();
         final String clubid = cs.getId();
 
         RequestCallback rc =
@@ -1208,9 +1205,9 @@ public class ClientWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
-    /* depends on retrieveClubList() having succeeded */
+    /* depends on retrieveClubList() and retrieveSessions() having succeeded */
     public void retrieveCours() {
-        if (jdb.getSelectedClubID() == null) {
+        if (jdb.getSelectedClubID() == null || !gotSessions) {
             new Timer() {
                 public void run() { retrieveCours(); }
             }.schedule(100);
@@ -1221,7 +1218,7 @@ public class ClientWidget extends Composite {
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
         String url = JudoDB.PULL_CLUB_COURS_URL +
             "?numero_club=" + cs.getNumeroClub() +
-            "&session_seqno=" + Integer.toString(Constants.currentSessionNo());
+            "&session_seqno=" + currentSession.getSeqno();
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {

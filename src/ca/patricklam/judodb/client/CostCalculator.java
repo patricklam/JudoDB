@@ -6,10 +6,9 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.datepicker.client.CalendarUtil;
 
 public class CostCalculator {
-    private static DateTimeFormat dtf = DateTimeFormat.getFormat("yyyy-mm-dd");
     static int elapsedWeeks(SessionSummary ss, Date dateInscription) {
         try {
-            Date sessionEnd = dtf.parse(ss.getLastClassDate());
+            Date sessionEnd = Constants.DB_DATE_FORMAT.parse(ss.getLastClassDate());
             double elapsedWeeks = (CalendarUtil.getDaysBetween(dateInscription, sessionEnd) + 6) / 7.0;
             return (int)(elapsedWeeks+0.5);
         }
@@ -20,8 +19,8 @@ public class CostCalculator {
     static int totalWeeks(SessionSummary ss, Date dateInscription) {
         try {
             if (ss == null) return 1;
-            Date sessionStart = dtf.parse(ss.getFirstClassDate());
-            Date sessionEnd = dtf.parse(ss.getLastClassDate());
+            Date sessionStart = Constants.DB_DATE_FORMAT.parse(ss.getFirstClassDate());
+            Date sessionEnd = Constants.DB_DATE_FORMAT.parse(ss.getLastClassDate());
             double totalWeeks = (CalendarUtil.getDaysBetween(sessionStart, sessionEnd) + 6) / 7.0;
             return (int)(totalWeeks+0.5);
         }
@@ -81,7 +80,6 @@ public class CostCalculator {
     static double affiliationFrais(SessionSummary ss, ClientData cd, ServiceData sd, ClubPrix[] cpA) {
         if (sd == null) return 0.0;
 
-        int sessionId = Constants.currentSessionNo();
         boolean sans_affiliation = sd.getSansAffiliation();
         boolean affiliation_initiation = sd.getAffiliationInitiation();
         boolean affiliation_ecole = sd.getAffiliationEcole();

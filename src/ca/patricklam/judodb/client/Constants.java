@@ -8,8 +8,6 @@ import com.google.gwt.i18n.client.NumberFormat;
 public class Constants {
     public static boolean ENABLE_PRORATA = false;
 
-    public static int currentSessionNo() { return 10; }
-
     public static final String STD_DUMMY_DATE = "01/01/0000";
     public static final String DB_DUMMY_DATE = "0000-00-00";
     public static final String STD_DATE_FORMAT_STRING = "dd/MM/yyyy";
@@ -32,20 +30,6 @@ public class Constants {
     public static final int PRORATA_PENALITE = 5;
     public static final int COUT_JUDOQC_INITIATION = 10;
     public static final int COUT_JUDOQC_ECOLE = 5;
-
-    static class Session {
-        final int seqno;
-        final String abbrev;
-        final int effective_year;
-        final Date debut_cours;
-        final Date fin_cours;
-
-        public Session(int seqno, String abbrev, int effective_year, Date debut_cours, Date fin_cours) {
-            this.seqno = seqno; this.abbrev = abbrev;
-            this.effective_year = effective_year;
-            this.debut_cours = debut_cours; this.fin_cours = fin_cours;
-        }
-    }
 
     static class Division {
         final String name;
@@ -105,24 +89,6 @@ public class Constants {
             if (j.seqno.equals(seqno))
                 return j.amount;
         return "0";
-    }
-
-    static class CategorieSession {
-        final int session_seqno_min, session_seqno_max;
-        final String categorie_abbrev;
-        final double frais_1_session, frais_2_session;
-        final double frais_judo_qc;
-
-        public CategorieSession(int session_seqno_min, int session_seqno_max, String categorie_abbrev,
-                double frais_1_session, double frais_2_session,
-                double frais_judo_qc) {
-            this.session_seqno_min = session_seqno_min;
-            this.session_seqno_max = session_seqno_max;
-            this.categorie_abbrev = categorie_abbrev;
-            this.frais_1_session = frais_1_session;
-            this.frais_2_session = frais_2_session;
-            this.frais_judo_qc = frais_judo_qc;
-        }
     }
 
     static class Grade {

@@ -965,14 +965,13 @@ public class ListWidget extends Composite {
 	sessions.clear();
 	session.clear();
 	currentSession = null;
-	DateTimeFormat f = DateTimeFormat.getFormat("yyyy-mm-dd");
 	Date today = new Date();
 	TreeSet<SessionSummary> sss = new TreeSet<SessionSummary>();
 	for (int i = 0; i < ss.length(); i++) {
 	    SessionSummary s = ss.get(i);
 	    try {
-		Date inscrBegin = f.parse(s.getFirstSignupDate());
-		Date inscrEnd = f.parse(s.getLastSignupDate());
+		Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
+		Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
 		if (today.after(inscrBegin) && today.before(inscrEnd)) {
 		    currentSession = s; continue;
 		}
