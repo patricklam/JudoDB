@@ -90,7 +90,7 @@ public class ClientWidget extends Composite {
     @UiField TextBox categorieFrais;
 
     @UiField ListBox cours;
-    @UiField ListBox sessions;
+    @UiField ListBox no_sessions;
 
     @UiField ListBox escompte;
     @UiField TextBox cas_special_note;
@@ -120,7 +120,7 @@ public class ClientWidget extends Composite {
     @UiField Hidden categorieFrais_encoded;
 
     @UiField Hidden cours_encoded;
-    @UiField Hidden sessions_encoded;
+    @UiField Hidden no_sessions_encoded;
 
     @UiField Hidden escompte_encoded;
     @UiField Hidden cas_special_note_encoded;
@@ -205,8 +205,8 @@ public class ClientWidget extends Composite {
         clubListHandler = new ClubListHandler();
         dropDownUserClubs.addChangeHandler(clubListHandler);
 
-        sessions.addItem("1");
-        sessions.addItem("2");
+        no_sessions.addItem("1");
+        no_sessions.addItem("2");
         for (Constants.Escompte e : Constants.ESCOMPTES) {
             escompte.addItem(e.name, Integer.toString(e.amount));
         }
@@ -227,7 +227,7 @@ public class ClientWidget extends Composite {
         ((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
 
-        sessions.setItemSelected(1, true);
+        no_sessions.setItemSelected(1, true);
 
         if (cid == -1 && jdb.getSelectedClubID() == null) {
             jdb.setStatus("Veuillez selectionner un club pour le client.");
@@ -259,7 +259,7 @@ public class ClientWidget extends Composite {
         grade.addChangeHandler(recomputeHandler);
         date_inscription.addChangeHandler(changeSaisonHandler);
         prorata.addValueChangeHandler(recomputeValueHandler);
-        sessions.addChangeHandler(recomputeHandler);
+        no_sessions.addChangeHandler(recomputeHandler);
         escompte.addChangeHandler(changeEscompteHandler);
         cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
         escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
@@ -446,8 +446,8 @@ public class ClientWidget extends Composite {
             }
             matching_index++;
         }
-        sessions.setItemSelected(sd.getSessionCount()-1, true);
-        sessions.setEnabled(isToday);
+        no_sessions.setItemSelected(sd.getSessionCount()-1, true);
+        no_sessions.setEnabled(isToday);
         categorieFrais.setText(sd.getCategorieFrais());
 
         sans_affiliation.setValue(sd.getSansAffiliation());
@@ -512,7 +512,7 @@ public class ClientWidget extends Composite {
         sd.setVerification(verification.getValue());
         if (cours.getSelectedIndex() != -1)
             sd.setCours(cours.getValue(cours.getSelectedIndex()));
-        sd.setSessionCount(sessions.getSelectedIndex()+1);
+        sd.setSessionCount(no_sessions.getSelectedIndex()+1);
         sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 
         sd.setSansAffiliation(sans_affiliation.getValue());
@@ -723,6 +723,7 @@ public class ClientWidget extends Composite {
             ServiceData sd = cd.getServiceFor(currentSession);
             if (sd == null) {
                 sd = ServiceData.newServiceData();
+		sd.setClubID(jdb.getSelectedClubID());
                 cd.getServices().push(sd);
             }  // actually, sd != null should not occur; that should be modify.
             sd.inscrireAujourdhui();
@@ -864,7 +865,9 @@ public class ClientWidget extends Composite {
         semaines.setText(CostCalculator.getWeeksSummary(currentSession, dateInscription));
         escompteFrais.setReadOnly(!CostCalculator.isCasSpecial(sd));
 
-        saisons.setText(getCurrentSessionIds(sessionCount));
+        DateTimeFormat f = DateTimeFormat.getFormat("yyyy-mm-dd");
+        saisons.setText(getSessionIds(f.parse(sd.getDateInscription()), sessionCount));
+
         try {
             categorieFrais.setText (cf.format(Double.parseDouble(sd.getCategorieFrais())));
             affiliationFrais.setText (cf.format(Double.parseDouble(sd.getAffiliationFrais())));
@@ -992,7 +995,7 @@ public class ClientWidget extends Composite {
         verification_encoded.setValue(v.toString());
         categorieFrais_encoded.setValue(cf.toString());
         cours_encoded.setValue(c.toString());
-        sessions_encoded.setValue(sess.toString());
+        no_sessions_encoded.setValue(sess.toString());
         escompte_encoded.setValue(e.toString());
         cas_special_note_encoded.setValue(csn.toString());
         cas_special_pct_encoded.setValue(csp.toString());
@@ -1073,8 +1076,7 @@ public class ClientWidget extends Composite {
 	currentSession = null;
 	DateTimeFormat f = DateTimeFormat.getFormat("yyyy-mm-dd");
 	Date today = new Date();
-	for (int i = 0; i < ss.length(); i++) {
-	    SessionSummary s = ss.get(i);
+	for (SessionSummary s : sessionSummaries) {
 	    try {
 		Date inscrBegin = f.parse(s.getFirstSignupDate());
 		Date inscrEnd = f.parse(s.getLastSignupDate());
@@ -1086,22 +1088,33 @@ public class ClientWidget extends Composite {
     }
 
     // refactor into Util?
-    private String getCurrentSessionIds(int sessionCount) {
-	if (currentSession == null) return "";
+    private String getSessionIds(Date d, int sessionCount) {
+	if (sessionSummaries == null) return "";
 
-	if (sessionCount == 1) return currentSession.getAbbrev();
+	SessionSummary m = null;
+	DateTimeFormat f = DateTimeFormat.getFormat("yyyy-mm-dd");
+	for (SessionSummary s : sessionSummaries) {
+	    try {
+		Date inscrBegin = f.parse(s.getFirstSignupDate());
+		Date inscrEnd = f.parse(s.getLastSignupDate());
+		if (d.after(inscrBegin) && d.before(inscrEnd)) {
+		    m = s; continue;
+		}
+	    } catch (IllegalArgumentException e) {}
+	}
+
+	if (sessionCount == 1) return m.getAbbrev();
 	if (sessionCount == 2) {
-	    String lsn = currentSession.getLinkedSeqno();
+	    String lsn = m.getLinkedSeqno();
 	    SessionSummary next = null;
 	    for (SessionSummary ss : sessionSummaries) {
 		if (ss.getSeqno().equals(lsn))
 		    next = ss;
 	    }
 	    if (next != null)
-		return currentSession.getAbbrev() + " " +
-		    next.getAbbrev();
+		return m.getAbbrev() + " " + next.getAbbrev();
 	    else
-		return currentSession.getAbbrev();
+		return m.getAbbrev();
 	}
 	return "";
     }

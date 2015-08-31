@@ -76,7 +76,7 @@
   		
   		 <div class="{style.fourper}">
    		  <label style="width:46%">Cours<br /><g:ListBox ui:field="cours"/><g:Hidden ui:field="cours_encoded" name="cours_encoded" /></label>
-   		  <label>Sessions<br /><g:ListBox ui:field="sessions"/><g:Hidden ui:field="sessions_encoded" name="sessions_encoded" /></label>
+		  <label># sessions<br /><g:ListBox ui:field="no_sessions"/><g:Hidden ui:field="no_sessions_encoded" name="no_sessions_encoded" /></label>
    		  <span class="{style.fraisOnRight}"><label>Frais cours<br /><g:TextBox ui:field="categorieFrais" visibleLength="15"/> 
    		    <g:Hidden ui:field="categorieFrais_encoded" name="categorie_frais_encoded"/></label></span>
   		 </div>
