@@ -65,13 +65,13 @@ public class ClientData extends JavaScriptObject {
         return r;
     }
 
-    public final ServiceData getServiceFor(Constants.Session saison) {
+    public final ServiceData getServiceFor(SessionSummary s) {
         JsArray<ServiceData> services = getServices();
         if (services == null) return null;
-        if (saison == null) return services.get(getMostRecentServiceNumber());
+        if (s == null) return services.get(getMostRecentServiceNumber());
 
         for (int i = 0; i < services.length(); i++) {
-            if (services.get(i).getSaisons().contains(saison.abbrev))
+            if (services.get(i).getSaisons().contains(s.getAbbrev()))
                 return services.get(i);
         }
         return null;
@@ -123,7 +123,8 @@ public class ClientData extends JavaScriptObject {
         return getGrade() != null && getGrade().endsWith("D");
     }
 
-    public final Division getDivision(int current_year) {
+    public final Division getDivision(String cy) {
+	int current_year = Integer.parseInt(cy);
         Date d = getDDN();
         if (d == null) return Constants.EMPTY_DIVISION;
 

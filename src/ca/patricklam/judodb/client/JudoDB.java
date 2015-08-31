@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.EntryPoint;
@@ -92,6 +95,7 @@ public class JudoDB implements EntryPoint {
     private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
     public static final String PULL_CLUB_LIST_URL = BASE_URL + "pull_club_list.php";
     public static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
+    public static final String PULL_SESSIONS_URL = JudoDB.BASE_URL + "pull_sessions.php";
     int jsonRequestId = 0;
 
     /* main layout */
@@ -127,7 +131,7 @@ public class JudoDB implements EntryPoint {
     ArrayList<Widget> allWidgets = new ArrayList<Widget>();
 
     /* state */
-    JsArray<ClientSummary> allClients;
+    List<ClientSummary> allClients;
     JsArray<ClubSummary> allClubs;
     private String searchString;
     private int firstSearchResultToDisplay = 0;
@@ -155,10 +159,6 @@ public class JudoDB implements EntryPoint {
         }
     }
 
-    private void refreshSelectedClub() {
-        selectedClub = dropDownUserClubs.getSelectedIndex();
-    }
-
     void generateClubList() {
         pleaseWait();
         retrieveClubList(true, dropDownUserClubs);
@@ -183,10 +183,11 @@ public class JudoDB implements EntryPoint {
     }
 
     class EditClientHandler implements ClickHandler {
-        private int cid;
-        public EditClientHandler(int cid) { this.cid = cid; }
+        private int club, cid;
+        public EditClientHandler(int club, int cid) { this.club = club; this.cid = cid; }
 
         public void onClick(ClickEvent event) {
+	    refreshSelectedClub(club);
             switchMode(new Mode (Mode.ActualMode.EDIT_CLIENT, cid));
         }
     }
@@ -354,7 +355,7 @@ public class JudoDB implements EntryPoint {
         nextResultsButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
                 firstSearchResultToDisplay += MAX_RESULTS;
-                if (firstSearchResultToDisplay > allClients.length()) firstSearchResultToDisplay -= MAX_RESULTS;
+                if (firstSearchResultToDisplay > allClients.size()) firstSearchResultToDisplay -= MAX_RESULTS;
                 displaySearchResults(); } });
         searchNavPanel.add(prevResultsButton);
         prevResultsButton.setVisible(false);
@@ -444,7 +445,7 @@ public class JudoDB implements EntryPoint {
         searchField.addKeyUpHandler(shandler);
 
         // Add a handler for "nouveau client"
-        EditClientHandler ehandler = new EditClientHandler(-1);
+        EditClientHandler ehandler = new EditClientHandler(0, -1);
         newClientButton.addClickHandler(ehandler);
 
 
@@ -483,7 +484,18 @@ public class JudoDB implements EntryPoint {
         searchString = removeAccents(searchField.getText());
         searchResults.removeAllRows();
         firstSearchResultToDisplay = 0;
-        this.allClients = allClients;
+        this.allClients = new ArrayList<ClientSummary>();
+	for (int i = 0; i < allClients.length(); i++) {
+	    this.allClients.add(allClients.get(i));
+	}
+	Collections.sort(this.allClients, new Comparator<ClientSummary>() {
+		public final int compare(ClientSummary t, ClientSummary o) {
+		    if (!t.getNom().equals(o.getNom()))
+			return t.getNom().compareTo(o.getNom());
+		    if (!t.getPrenom().equals(o.getNom()))
+			return t.getPrenom().compareTo(o.getPrenom());
+		    return t.getId().compareTo(o.getId());
+		} });
         if (display)
             displaySearchResults();
     }
@@ -496,11 +508,12 @@ public class JudoDB implements EntryPoint {
             prevResultsButton.setVisible(true);
 
         searchResults.removeAllRows();
-        for (int i = 0; i < allClients.length(); i++) {
-            ClientSummary cs = allClients.get(i);
+        for (ClientSummary cs : allClients) {
             String s = "[" + cs.getId() + "] " + cs.getPrenom() + " " + cs.getNom();
+	    int club = 0;
 
             if (selectedClub != 0) {
+		club = selectedClub;
                 boolean found = false;
                 for (int j = 0; j < cs.getClubs().length(); j++) {
                     int cn = Integer.parseInt(cs.getClubs().get(j));
@@ -508,7 +521,10 @@ public class JudoDB implements EntryPoint {
                         found = true;
                 }
                 if (!found) continue;
-            }
+            } else {
+		if (cs.getClubs().length() > 0)
+		    club = Integer.parseInt(cs.getClubs().get(0));
+	    }
 
             String ss = removeAccents(s);
             if (!ss.contains(searchString)) continue;
@@ -518,7 +534,7 @@ public class JudoDB implements EntryPoint {
 
             if (resultCount >= firstSearchResultToDisplay) {
                 Anchor h = new Anchor(s);
-                h.addClickHandler(new EditClientHandler(Integer.parseInt(cs.getId())));
+                h.addClickHandler(new EditClientHandler(club, Integer.parseInt(cs.getId())));
                 searchResults.setWidget(displayedCount++, 0, h);
             }
 
@@ -560,6 +576,14 @@ public class JudoDB implements EntryPoint {
 
     void clearSelectedClub() {
         selectedClub = 0;
+    }
+
+    void refreshSelectedClub() {
+        selectedClub = dropDownUserClubs.getSelectedIndex();
+    }
+
+    void refreshSelectedClub(int idx) {
+        selectedClub = idx;
     }
 
     boolean isClubSelected() {

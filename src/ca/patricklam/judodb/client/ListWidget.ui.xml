@@ -85,7 +85,7 @@ td {
 	<g:FormPanel ui:field="listEditForm" method="post">
           <g:FlowPanel>
             <g:Hidden ui:field="guid_on_form" name="guid" />
-            <g:Hidden ui:field="currentSession" name="current_session" />
+            <g:Hidden ui:field="currentSessionField" name="current_session" />
             <g:Hidden ui:field="dataToSave" name="data_to_save" />
           </g:FlowPanel>
 	</g:FormPanel>

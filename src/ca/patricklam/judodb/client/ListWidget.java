@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeSet;
 
 import ca.patricklam.judodb.client.Constants.Division;
 import ca.patricklam.judodb.client.Constants.Grade;
@@ -22,6 +23,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Timer;
@@ -103,7 +105,7 @@ public class ListWidget extends Composite {
 
     @UiField FormPanel listEditForm;
     @UiField Hidden guid_on_form;
-    @UiField Hidden currentSession;
+    @UiField Hidden currentSessionField;
     @UiField Hidden dataToSave;
     private String guid;
     private int pushTries;
@@ -141,9 +143,9 @@ public class ListWidget extends Composite {
       void generateCoursList() {
         jdb.clearStatus();
 
-        int session_seqno = requestedSessionNo();
-        if (session_seqno == -1)
-            session_seqno = Constants.currentSession().seqno;
+        String session_seqno = requestedSessionNo();
+        if (session_seqno == null)
+            session_seqno = currentSession.getSeqno();
 
         String numero_club = null;
         if (jdb.getSelectedClubID() != null)
@@ -159,6 +161,7 @@ public class ListWidget extends Composite {
         jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
         coursHandler.generateCoursList();
         showList();
+	retrieveSessions(jdb.selectedClub);
       }
     }
 
@@ -212,11 +215,6 @@ public class ListWidget extends Composite {
         switchMode(Mode.NORMAL);
 
         session.addItem("Tous", "-1");
-        for (Constants.Session s : Constants.SESSIONS) {
-            if (s != Constants.currentSession())
-                session.insertItem(s.abbrev, Integer.toString(s.seqno), 1);
-        }
-        session.insertItem(Constants.currentSession().abbrev, Integer.toString(Constants.currentSessionNo()), 0);
         session.setSelectedIndex(0);
 
         division.addItem("Tous", "-1");
@@ -282,6 +280,7 @@ public class ListWidget extends Composite {
         dropDownUserClubs.addChangeHandler(clHandler);
 
         jdb.populateClubList(true, dropDownUserClubs);
+        retrieveSessions(jdb.selectedClub);
         coursHandler.generateCoursList();
 
         retrieveAllClients();
@@ -295,7 +294,7 @@ public class ListWidget extends Composite {
 
         guid = UUID.uuid();
         guid_on_form.setValue(guid);
-        currentSession.setValue(Constants.currentSession().abbrev);
+        currentSessionField.setValue(currentSession.getAbbrev());
 
         StringBuffer dv = new StringBuffer();
         for (int i = 0; i < results.getRowCount(); i++) {
@@ -373,11 +372,11 @@ public class ListWidget extends Composite {
     private void recalc() {
         for (int i = 0; i < results.getRowCount(); i++) {
             ClientData cd = cidToCD.get(results.getText(i, Columns.CID));
-            ServiceData sd = cd.getServiceFor(Constants.currentSession());
+            ServiceData sd = cd.getServiceFor(currentSession);
 	    if (sd == null) continue;
             ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
             // XXX getPrix on ListWidget as well
-            CostCalculator.recompute(cd, sd, cs, true, null);
+            CostCalculator.recompute(currentSession, cd, sd, cs, true, null);
         }
     }
 
@@ -463,7 +462,7 @@ public class ListWidget extends Composite {
         dv += cd.getSexe() + "|";
         dv += cd.getJudoQC() + "|";
         dv += cd.getDDNString() + "|";
-        dv += cd.getDivision(requestedSession().effective_year).abbrev + "|";
+        dv += cd.getDivision(requestedSession().getYear()).abbrev + "|";
         dv += cd.getCourriel() + "|";
         dv += cd.getAdresse() + "|";
         dv += cd.getVille() + "|";
@@ -473,11 +472,11 @@ public class ListWidget extends Composite {
         dv += cd.getTelContactUrgence() + "|";
         dv += cd.getMostRecentGrade().getGrade() + "|";
         dv += cd.getMostRecentGrade().getDateGrade() + "|";
-        ServiceData sd = cd.getServiceFor(Constants.currentSession());
+        ServiceData sd = cd.getServiceFor(currentSession);
         if (sd != null && !sd.getCours().equals("")) {
 	    ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
 	    // XXX getPrix on ListWidget as well
-	    CostCalculator.recompute(cd, sd, cs, prorata.getValue(), null);
+	    CostCalculator.recompute(currentSession, cd, sd, cs, prorata.getValue(), null);
             // XXX this is potentially slow; use a hash map instead.
             for (CoursSummary cc : backingCours) {
                 if (cc.getId().equals(sd.getCours()))
@@ -500,7 +499,7 @@ public class ListWidget extends Composite {
             ClientData cd = allClients.get(i);
             if (!sessionFilter(cd)) continue;
 
-            Division d = cd.getDivision(requestedSession().effective_year);
+            Division d = cd.getDivision(requestedSession().getYear());
             if (d.abbrev.equals("S") || d.aka.equals("S")) continue;
             filteredClients.add(cd);
         }
@@ -526,10 +525,10 @@ public class ListWidget extends Composite {
        dv += cd.getID() + "|";
        dv += cd.getPrenom() + " " + cd.getNom() + "|";
        dv += cd.getDDNString() + "|";
-       ServiceData sd = cd.getServiceFor(Constants.currentSession());
+       ServiceData sd = cd.getServiceFor(currentSession);
        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
        // XXX clubPrix on ListWidget
-       CostCalculator.recompute(cd, sd, cs, prorata.getValue(), null);
+       CostCalculator.recompute(currentSession, cd, sd, cs, prorata.getValue(), null);
        if (sd != null) {
            dv += Constants.currencyFormat.format(Double.parseDouble(sd.getFrais()));
        }
@@ -571,15 +570,19 @@ public class ListWidget extends Composite {
         return !dv.equals("");
     }
 
-    public int requestedSessionNo() {
-        if (session == null || session.getSelectedIndex() == -1) return -1;
-        return Integer.parseInt(session.getValue(session.getSelectedIndex()));
+    public String requestedSessionNo() {
+        if (session == null || session.getSelectedIndex() == -1) return null;
+        return session.getValue(session.getSelectedIndex());
     }
 
-    public Constants.Session requestedSession() {
-        int requestedSessionNo = requestedSessionNo();
-        if (requestedSessionNo == -1) return null;
-        return Constants.SESSIONS[requestedSessionNo];
+    public SessionSummary requestedSession() {
+        String requestedSessionNo = requestedSessionNo();
+        if (requestedSessionNo == null) return null;
+	for (SessionSummary s : sessions) {
+	    if (s.getSeqno().equals(requestedSessionNo))
+		return s;
+	}
+	return null;
     }
 
     public void toggleFiltering()
@@ -597,7 +600,7 @@ public class ListWidget extends Composite {
 
     /* unlike the other filters, this one can't be disabled */
     private boolean clubFilter(ClientData cd) {
-        Constants.Session rs = requestedSession();
+        SessionSummary rs = requestedSession();
         if (rs == null) {
             for (int i = 0; i < cd.getServices().length(); i++) {
                 if (clubServiceFilter(cd.getServices().get(i)))
@@ -610,7 +613,7 @@ public class ListWidget extends Composite {
     }
 
     private boolean sessionFilter(ClientData cd) {
-        Constants.Session rs = requestedSession();
+        SessionSummary rs = requestedSession();
         if (rs == null) return true;
 
         return cd.getServiceFor(rs) != null;
@@ -632,7 +635,7 @@ public class ListWidget extends Composite {
         if (selectedDivision.equals("-1"))
             return true;
 
-        Division c = cd.getDivision((requestedSession()).effective_year);
+        Division c = cd.getDivision(requestedSession().getYear());
         if (selectedDivision.equals(c.abbrev) || selectedDivision.equals(c.aka))
             return true;
         return false;
@@ -685,10 +688,11 @@ public class ListWidget extends Composite {
     @SuppressWarnings("deprecation")
     public void showList() {
         if (cours.getItemCount() == 0) return;
+	if (!gotSessions) return;
 
         boolean all = "-1".equals(cours.getValue(cours.getSelectedIndex()));
-        int requestedSessionNo = requestedSessionNo();
-        final Constants.Session rs = requestedSession();
+        String requestedSessionNo = requestedSessionNo();
+        final SessionSummary rs = requestedSession();
         int count = 0, curRow;
         final ArrayList<ClientData> filteredClients = new ArrayList<ClientData>();
 
@@ -737,8 +741,8 @@ public class ListWidget extends Composite {
                     case 9:
                         return colSign * x.getDDN().compareTo(y.getDDN());
                     case 10:
-                        int xc = x.getDivision(rs.effective_year).years_ago;
-                        int yc = y.getDivision(rs.effective_year).years_ago;
+                        int xc = x.getDivision(rs.getYear()).years_ago;
+                        int yc = y.getDivision(rs.getYear()).years_ago;
                         if (xc == 0) xc = Integer.MAX_VALUE;
                         if (yc == 0) yc = Integer.MAX_VALUE;
                         return colSign * (xc - yc);
@@ -765,7 +769,7 @@ public class ListWidget extends Composite {
         boolean[] visibility = new boolean[] {
                 true, mode==Mode.EDIT || mode==Mode.FT, true, true, mode==Mode.EDIT || mode==Mode.FT,
                 true, true, true, true, true, true, mode==Mode.EDIT || all, false,
-                requestedSessionNo == -1, mode==Mode.FT
+                requestedSessionNo == null, mode==Mode.FT
         };
 
         for (int i = 0; i < heads.length; i++) {
@@ -801,7 +805,7 @@ public class ListWidget extends Composite {
             }
 
             Anchor nomAnchor = new Anchor(cd.getNom()), prenomAnchor = new Anchor(cd.getPrenom());
-            ClickHandler c = jdb.new EditClientHandler(Integer.parseInt(cd.getID()));
+            ClickHandler c = jdb.new EditClientHandler(jdb.selectedClub, Integer.parseInt(cd.getID()));
             nomAnchor.addClickHandler(c);
             prenomAnchor.addClickHandler(c);
 
@@ -842,7 +846,10 @@ public class ListWidget extends Composite {
             }
             Date ddns = cd.getDDN();
             results.setText(curRow, Columns.DDN, ddns == null ? Constants.STD_DUMMY_DATE : Constants.STD_DATE_FORMAT.format(ddns));
-            results.setText(curRow, Columns.DIVISION, cd.getDivision((rs == null ? Constants.currentSession() : rs).effective_year).abbrev);
+	    String div = "";
+	    if (rs != null || currentSession != null)
+		div = cd.getDivision((rs == null ? currentSession : rs).getYear()).abbrev;
+	    results.setText(curRow, Columns.DIVISION, div);
 
             if (visibility[Columns.VERIFICATION]) {
                 CheckBox cb = new CheckBox();
@@ -854,7 +861,7 @@ public class ListWidget extends Composite {
                 }
             }
 
-            if (visibility[Columns.DIVISION_SM] && (Constants.currentSession().effective_year - (cd.getDDN().getYear() + 1900)) > Constants.VETERAN) {
+            if (visibility[Columns.DIVISION_SM] && (Integer.parseInt(currentSession.getYear()) - (cd.getDDN().getYear() + 1900)) > Constants.VETERAN) {
                 ListBox d = new ListBox();
                 d.addItem("Senior", "S");
                 d.addItem("Masters", "M");
@@ -876,7 +883,7 @@ public class ListWidget extends Composite {
                 results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
             }
 
-            if (requestedSessionNo == -1) {
+            if (requestedSessionNo == null) {
                 results.setText(curRow, Columns.SESSION, cd.getAllActiveSaisons());
             } else {
                 results.setText(curRow, Columns.SESSION, "");
@@ -950,9 +957,57 @@ public class ListWidget extends Composite {
         return "inconnu";
     }
 
+    /* --- sessions --- */
+    List<SessionSummary> sessions = new ArrayList<SessionSummary>();
+    SessionSummary currentSession;
+
+    void populateSessions(JsArray<SessionSummary> ss) {
+	sessions.clear();
+	session.clear();
+	currentSession = null;
+	DateTimeFormat f = DateTimeFormat.getFormat("yyyy-mm-dd");
+	Date today = new Date();
+	TreeSet<SessionSummary> sss = new TreeSet<SessionSummary>();
+	for (int i = 0; i < ss.length(); i++) {
+	    SessionSummary s = ss.get(i);
+	    try {
+		Date inscrBegin = f.parse(s.getFirstSignupDate());
+		Date inscrEnd = f.parse(s.getLastSignupDate());
+		if (today.after(inscrBegin) && today.before(inscrEnd)) {
+		    currentSession = s; continue;
+		}
+	    } catch (IllegalArgumentException e) {}
+	    sss.add(s);
+	}
+
+	session.insertItem("Tous", "-1", 0);
+	for (SessionSummary s : sss) {
+	    session.insertItem(s.getAbbrev(), s.getSeqno(), 1);
+        }
+	if (currentSession != null)
+	    session.insertItem(currentSession.getAbbrev(), currentSession.getSeqno(), 0);
+	session.setSelectedIndex(0);
+    }
+    /* --- end sessions --- */
+
     /* --- network functions --- */
+    private boolean gotSessions = false;
+    public void retrieveSessions(int numero_club) {
+        String url = JudoDB.PULL_SESSIONS_URL;
+        url += "?club="+numero_club;
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        gotSessions = true;
+                        populateSessions(JsonUtils.<JsArray<SessionSummary>>safeEval(s));
+			jdb.clearStatus();
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
     private boolean gotCours = false;
-    public void retrieveCours(int session_seqno, String numero_club) {
+    public void retrieveCours(String session_seqno, String numero_club) {
         backingCours.clear();
         String url = JudoDB.PULL_CLUB_COURS_URL;
         url += "?session_seqno="+session_seqno;

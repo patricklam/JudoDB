@@ -9,9 +9,6 @@ public class Constants {
     public static boolean ENABLE_PRORATA = false;
 
     public static int currentSessionNo() { return 10; }
-    public static Session currentSession() {
-        return session(currentSessionNo());
-    }
 
     public static final String STD_DUMMY_DATE = "01/01/0000";
     public static final String DB_DUMMY_DATE = "0000-00-00";
@@ -189,42 +186,6 @@ public class Constants {
     public static Date newDate(String s) {
         long longDate = Long.parseLong(webDateToMilliSec(s));
         return new Date(longDate);
-    }
-
-    public static final Session[] SESSIONS = new Session[] {
-        new Session(0, "A09", 2010, newDate("1/Sep/2009"), newDate("15/May/2010")),
-        new Session(1, "H10", 2010, newDate("1/Sep/2009"), newDate("15/May/2010")),
-        new Session(2, "A10", 2011, newDate("1/Sep/2010"), newDate("15/May/2011")),
-        new Session(3, "H11", 2011, newDate("1/Sep/2010"), newDate("15/May/2011")),
-        new Session(4, "A11", 2012, newDate("3/Sep/2011"), newDate("12/May/2012")),
-        new Session(5, "H12", 2012, newDate("3/Sep/2011"), newDate("12/May/2012")),
-        new Session(6, "A12", 2013, newDate("1/Sep/2012"), newDate("11/May/2013")),
-        new Session(7, "H13", 2013, newDate("1/Sep/2012"), newDate("11/May/2013")),
-        new Session(8, "A13", 2014, newDate("1/Sep/2013"), newDate("11/May/2014")),
-        new Session(9, "H14", 2014, newDate("1/Sep/2013"), newDate("11/May/2014")),
-        new Session(10, "A14", 2015, newDate("1/Sep/2014"), newDate("10/May/2015")),
-        new Session(11, "H15", 2015, newDate("1/Sep/2014"), newDate("10/May/2015"))
-    };
-
-    public static Session session(int seqno) {
-        for (Session s : SESSIONS)
-            if (s.seqno == seqno)
-                return s;
-        return null;
-    }
-
-    public static Session session(String abbrev) {
-        String a = abbrev.split(" ")[0];
-        for (Session s : SESSIONS)
-            if (s.abbrev.equals(a))
-                return s;
-        return null;
-    }
-
-    public static String getCurrentSessionIds(int sessions) {
-        if (sessions == 1) return currentSession().abbrev;
-        if (sessions == 2) return currentSession().abbrev + " " + session(currentSessionNo()+1).abbrev;
-        return "";
     }
 
     public static final Division[] DIVISIONS = new Division[] {

@@ -50,7 +50,6 @@ public class ConfigWidget extends Composite {
     private int pushTries;
 
     private final JudoDB jdb;
-    private static final String PULL_SESSIONS_URL = JudoDB.BASE_URL + "pull_sessions.php";
     private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
     private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
 
@@ -425,7 +424,7 @@ public class ConfigWidget extends Composite {
     /* --- network functions --- */
     private boolean gotSessions = false;
     public void retrieveSessions(int numero_club) {
-        String url = PULL_SESSIONS_URL;
+        String url = JudoDB.PULL_SESSIONS_URL;
         url += "?club="+numero_club;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {

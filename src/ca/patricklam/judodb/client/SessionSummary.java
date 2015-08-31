@@ -2,7 +2,7 @@ package ca.patricklam.judodb.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-public class SessionSummary extends JavaScriptObject {
+public class SessionSummary extends JavaScriptObject implements Comparable<SessionSummary> {
     protected SessionSummary() { }
 
     public final native String getSeqno() /*-{ return this.seqno; }-*/;
@@ -55,5 +55,10 @@ public class SessionSummary extends JavaScriptObject {
 	else if (key.equals("last_class_date")) setLastClassDate(value);
 	else if (key.equals("last_signup_date")) setLastSignupDate(value);
 	else throw new RuntimeException("set: bad key " + key);
+    }
+
+    public final int compareTo(SessionSummary o) {
+	int s = Integer.parseInt(getSeqno()), os = Integer.parseInt(o.getSeqno());
+	return s - os;
     }
 }
