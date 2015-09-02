@@ -110,7 +110,7 @@ public class ListWidget extends Composite {
     private String guid;
     private int pushTries;
 
-    @UiField ListBox session;
+    @UiField ListBox sessionListBox;
     @UiField ListBox dropDownUserClubs;
 
     private class Columns {
@@ -195,27 +195,27 @@ public class ListWidget extends Composite {
         allListModeWidgets = new Widget[] { jdb.filtrerListes, jdb.editerListes, jdb.ftListes,
                                             jdb.clearXListes, jdb.normalListes,
                                             ft303_controls, edit_controls, filter_controls,
-                                            impot_controls, session, save, quit, dropDownUserClubs };
+                                            impot_controls, sessionListBox, save, quit, dropDownUserClubs };
 
         listModeVisibility.put(Mode.EDIT, new Widget[]
                 { jdb.normalListes, jdb.filtrerListes,
-                  jdb.clearXListes, session, jdb.returnToMainFromListes,
+                  jdb.clearXListes, sessionListBox, jdb.returnToMainFromListes,
                   edit_controls, save, quit, dropDownUserClubs });
         listModeVisibility.put(Mode.FT, new Widget[]
                 { jdb.normalListes, jdb.filtrerListes, jdb.clearXListes,
-                  ft303_controls, session, jdb.returnToMainFromListes, dropDownUserClubs } );
+                  ft303_controls, sessionListBox, jdb.returnToMainFromListes, dropDownUserClubs } );
             listModeVisibility.put(Mode.IMPOT, new Widget[]
                         { jdb.normalListes, jdb.filtrerListes, jdb.clearXListes,
-                          impot_controls, session, jdb.returnToMainFromListes, dropDownUserClubs } );
+                          impot_controls, sessionListBox, jdb.returnToMainFromListes, dropDownUserClubs } );
         listModeVisibility.put(Mode.NORMAL, new Widget[]
                 { jdb.filtrerListes, jdb.editerListes,
-                  jdb.ftListes, jdb.impotListes, session, jdb.returnToMainFromListes, dropDownUserClubs } );
+                  jdb.ftListes, jdb.impotListes, sessionListBox, jdb.returnToMainFromListes, dropDownUserClubs } );
 
         jdb.pleaseWait();
         switchMode(Mode.NORMAL);
 
-        session.addItem("Tous", "-1");
-        session.setSelectedIndex(0);
+        sessionListBox.addItem("Tous", "-1");
+        sessionListBox.setSelectedIndex(0);
 
         division.addItem("Tous", "-1");
         for (Division c : Constants.DIVISIONS)
@@ -239,7 +239,7 @@ public class ListWidget extends Composite {
 
         cours.addChangeHandler(coursHandler);
 
-        session.addChangeHandler(new ChangeHandler() {
+        sessionListBox.addChangeHandler(new ChangeHandler() {
             public void onChange(ChangeEvent e) { coursHandler.generateCoursList(); showList(); } });
         pdf.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("pdf"); } });
@@ -571,8 +571,8 @@ public class ListWidget extends Composite {
     }
 
     public String requestedSessionNo() {
-        if (session == null || session.getSelectedIndex() == -1) return null;
-        return session.getValue(session.getSelectedIndex());
+        if (sessionListBox == null || sessionListBox.getSelectedIndex() == -1) return null;
+        return sessionListBox.getValue(sessionListBox.getSelectedIndex());
     }
 
     public SessionSummary requestedSession() {
@@ -963,12 +963,14 @@ public class ListWidget extends Composite {
 
     void populateSessions(JsArray<SessionSummary> ss) {
 	sessions.clear();
-	session.clear();
+	sessionListBox.clear();
 	currentSession = null;
 	Date today = new Date();
 	TreeSet<SessionSummary> sss = new TreeSet<SessionSummary>();
 	for (int i = 0; i < ss.length(); i++) {
 	    SessionSummary s = ss.get(i);
+	    sessions.add(s);
+
 	    try {
 		Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
 		Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
@@ -979,13 +981,13 @@ public class ListWidget extends Composite {
 	    sss.add(s);
 	}
 
-	session.insertItem("Tous", "-1", 0);
+	sessionListBox.insertItem("Tous", "-1", 0);
 	for (SessionSummary s : sss) {
-	    session.insertItem(s.getAbbrev(), s.getSeqno(), 1);
+	    sessionListBox.insertItem(s.getAbbrev(), s.getSeqno(), 1);
         }
 	if (currentSession != null)
-	    session.insertItem(currentSession.getAbbrev(), currentSession.getSeqno(), 0);
-	session.setSelectedIndex(0);
+	    sessionListBox.insertItem(currentSession.getAbbrev(), currentSession.getSeqno(), 0);
+	sessionListBox.setSelectedIndex(0);
     }
     /* --- end sessions --- */
 

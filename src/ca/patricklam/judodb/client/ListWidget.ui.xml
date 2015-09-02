@@ -36,7 +36,7 @@ td {
 </ui:style>
     
 <g:HTMLPanel>
-	<g:ListBox ui:field="session" visibleItemCount="1" styleName="{style.session}" />
+	<g:ListBox ui:field="sessionListBox" visibleItemCount="1" styleName="{style.session}" />
 	<g:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" styleName="{style.userclub}" />
 	<h1 id="stdTitle" class="noprint">Listes des cours</h1>
 
