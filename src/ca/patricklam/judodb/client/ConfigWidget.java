@@ -128,7 +128,7 @@ public class ConfigWidget extends Composite {
         initWidget(uiBinder.createAndBindUi(this));
         jdb.pleaseWait();
         jdb.populateClubList(true, dropDownUserClubs);
-	retrieveSessions(Integer.toString(jdb.selectedClub));
+        retrieveSessions(Integer.toString(jdb.selectedClub));
 
         dropDownUserClubs.addChangeHandler(clHandler);
 
@@ -543,9 +543,11 @@ public class ConfigWidget extends Composite {
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
+                        List<ClubPrix> lcp = new ArrayList<ClubPrix>();
                         JsArray<ClubPrix> cp = JsonUtils.<JsArray<ClubPrix>>safeEval(s);
                         for (int i = 0; i < cp.length(); i++)
-                            prixData.add(cp.get(i));
+                            lcp.add(cp.get(i));
+                        populatePrix(lcp);
                     }
                 });
         jdb.retrieve(url, rc);

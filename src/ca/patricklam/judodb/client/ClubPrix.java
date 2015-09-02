@@ -16,6 +16,7 @@ public class ClubPrix extends JavaScriptObject {
     public final native String setFraisJudoQC(String frais_judo_qc) /*-{ this.frais_judo_qc = frais_judo_qc; }-*/;
 
     public final String get(String key) {
+	if (key.equals("session")) return "13";
 	if (key.equals("id")) return getId();
 	if (key.equals("div")) return getDivisionAbbrev();
 	if (key.equals("frais_1")) return getFrais1Session();
