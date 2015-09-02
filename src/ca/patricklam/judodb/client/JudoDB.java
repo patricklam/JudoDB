@@ -96,6 +96,7 @@ public class JudoDB implements EntryPoint {
     public static final String PULL_CLUB_LIST_URL = BASE_URL + "pull_club_list.php";
     public static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
     public static final String PULL_SESSIONS_URL = JudoDB.BASE_URL + "pull_sessions.php";
+    public static final String PULL_CLUB_PRIX_URL = JudoDB.BASE_URL + "pull_club_prix.php";
     int jsonRequestId = 0;
 
     /* main layout */
@@ -154,7 +155,6 @@ public class JudoDB implements EntryPoint {
     class ClubSearchHandler implements ChangeHandler {
         @Override
         public void onChange(ChangeEvent e) {
-            // doesn't work, why?
             refreshSelectedClub();
         }
     }

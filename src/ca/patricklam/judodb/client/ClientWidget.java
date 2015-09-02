@@ -160,7 +160,6 @@ public class ClientWidget extends Composite {
     private final FormElement clientform;
 
     private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php";
-    private static final String PULL_CLUB_PRIX_URL = JudoDB.BASE_URL + "pull_club_prix.php";
     private static final String PUSH_ONE_CLIENT_URL = JudoDB.BASE_URL + "push_one_client.php";
     private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
     private int pushTries;
@@ -203,6 +202,7 @@ public class ClientWidget extends Composite {
         clientform.setAction(PUSH_ONE_CLIENT_URL);
         deleted.setValue("");
         clubListHandler = new ClubListHandler();
+        dropDownUserClubs.setSelectedIndex(jdb.selectedClub);
         dropDownUserClubs.addChangeHandler(clubListHandler);
 
         no_sessions.addItem("1");
@@ -229,6 +229,8 @@ public class ClientWidget extends Composite {
 
         no_sessions.setItemSelected(1, true);
 
+        // dunno why selectedClub gets zero'd, but un-zero it.
+        jdb.refreshSelectedClub();
         if (cid == -1 && jdb.getSelectedClubID() == null) {
             jdb.setStatus("Veuillez selectionner un club pour le client.");
             new Timer() { public void run() {
@@ -1188,10 +1190,9 @@ public class ClientWidget extends Composite {
         clubPrix = null;
 
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-        String url = PULL_CLUB_PRIX_URL +
+        String url = JudoDB.PULL_CLUB_PRIX_URL +
             "?numero_club=" + cs.getNumeroClub() +
             "&session_seqno=" + currentSession.getSeqno();
-        final String clubid = cs.getId();
 
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {

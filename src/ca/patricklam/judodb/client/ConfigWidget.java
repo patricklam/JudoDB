@@ -42,6 +42,7 @@ public class ConfigWidget extends Composite {
 
     @UiField FlowPanel sessionTab;
     @UiField FlowPanel coursTab;
+    @UiField FlowPanel prixTab;
     @UiField FormPanel configEditForm;
     @UiField Hidden current_session;
     @UiField Hidden dataToSave;
@@ -58,6 +59,9 @@ public class ConfigWidget extends Composite {
 
     CellTable cours;
     private static final List<CoursSummary> coursData = new ArrayList<CoursSummary>();
+
+    CellTable prix;
+    private static final List<ClubPrix> prixData = new ArrayList<ClubPrix>();
 
     // private static final String PULL_CONFIG_URL = JudoDB.BASE_URL + "pull_config.php";
     // private static final String PUSH_CONFIG_URL = JudoDB.BASE_URL + "push_config.php";
@@ -111,9 +115,10 @@ public class ConfigWidget extends Composite {
     class ClubListHandler implements ChangeHandler {
       public void onChange(ChangeEvent e) {
         jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
-        retrieveSessions(jdb.selectedClub);
+        retrieveSessions(Integer.toString(jdb.selectedClub));
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
         retrieveCours(cs.getNumeroClub());
+        retrieveClubPrix(cs.getNumeroClub());
         populateCurrentClub();
       }
     }
@@ -123,7 +128,7 @@ public class ConfigWidget extends Composite {
         initWidget(uiBinder.createAndBindUi(this));
         jdb.pleaseWait();
         jdb.populateClubList(true, dropDownUserClubs);
-	retrieveSessions(jdb.selectedClub);
+	retrieveSessions(Integer.toString(jdb.selectedClub));
 
         dropDownUserClubs.addChangeHandler(clHandler);
 
@@ -134,6 +139,10 @@ public class ConfigWidget extends Composite {
 	initializeCoursTable();
 	coursTab.add(cours);
 	populateCours(coursData);
+
+	initializePrixTable();
+	prixTab.add(prix);
+	populatePrix(prixData);
 
         configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
     }
@@ -353,10 +362,10 @@ public class ConfigWidget extends Composite {
         }
     };
 
-    private final ColumnFields SESSION_COLUMN = new ColumnFields("session", "Session", 2, Unit.EM),
+    private final ColumnFields COURS_SESSION_COLUMN = new ColumnFields("session", "Session", 2, Unit.EM),
 	DESC_COLUMN = new ColumnFields("short_desc", "Description", 4, Unit.EM);
 
-    private List<ColumnFields> perCoursColumns = Collections.unmodifiableList(Arrays.asList(SESSION_COLUMN, DESC_COLUMN));
+    private List<ColumnFields> perCoursColumns = Collections.unmodifiableList(Arrays.asList(COURS_SESSION_COLUMN, DESC_COLUMN));
 
     void initializeCoursTable() {
 	cours = new CellTable<CoursSummary>(COURS_KEY_PROVIDER);
@@ -389,7 +398,7 @@ public class ConfigWidget extends Composite {
 	while (cours.getColumnCount() > 0)
 	    cours.removeColumn(0);
 
-	addCoursColumn(sessions, SESSION_COLUMN, true);
+	addCoursColumn(sessions, COURS_SESSION_COLUMN, true);
 	addCoursColumn(sessions, DESC_COLUMN, true);
     }
 
@@ -421,9 +430,88 @@ public class ConfigWidget extends Composite {
     }
     /* --- end cours tab --- */
 
+    /* --- prix tab --- */
+    private static final ProvidesKey<ClubPrix> CLUB_PRIX_KEY_PROVIDER =
+	new ProvidesKey<ClubPrix>() {
+        @Override
+        public Object getKey(ClubPrix item) {
+	    return item.getId();
+        }
+    };
+
+    private final ColumnFields PRIX_SESSION_COLUMN = new ColumnFields("session", "Session", 2, Unit.EM),
+	DIV_COLUMN = new ColumnFields("div", "Division", 4, Unit.EM),
+	FRAIS_1_COLUMN = new ColumnFields("frais_1", "Frais 1 session", 4, Unit.EM),
+	FRAIS_2_COLUMN = new ColumnFields("frais_2", "Frais 2 sessions", 4, Unit.EM),
+	FRAIS_JUDO_QC_COLUMN = new ColumnFields("frais_judo_qc", "Frais Judo QC", 4, Unit.EM);
+
+    private List<ColumnFields> perPrixColumns = Collections.unmodifiableList(Arrays.asList(PRIX_SESSION_COLUMN, DIV_COLUMN, FRAIS_1_COLUMN, FRAIS_2_COLUMN, FRAIS_JUDO_QC_COLUMN));
+
+    void initializePrixTable() {
+	prix = new CellTable<ClubPrix>(CLUB_PRIX_KEY_PROVIDER);
+	prix.setWidth("60em", true);
+
+	initializePrixColumns();
+    }
+
+    private Column<ClubPrix, String> addPrixColumn(final CellTable t, final ColumnFields c, final boolean editable) {
+	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
+	Column<ClubPrix, String> newColumn = new Column<ClubPrix, String>(cell) {
+	    public String getValue(ClubPrix object) {
+		return object.get(c.key);
+	    }
+	};
+	prix.addColumn(newColumn, c.name);
+	newColumn.setFieldUpdater(new FieldUpdater<ClubPrix, String>() {
+		@Override
+		public void update(int index, ClubPrix object, String value) {
+		    object.set(c.key, value);
+		    // push stuff
+		    t.redraw();
+		}
+	    });
+	cours.setColumnWidth(newColumn, c.width, c.widthUnits);
+	return newColumn;
+    }
+
+    void initializePrixColumns() {
+	while (prix.getColumnCount() > 0)
+	    prix.removeColumn(0);
+
+	addPrixColumn(sessions, PRIX_SESSION_COLUMN, true);
+	addPrixColumn(sessions, DIV_COLUMN, true);
+	addPrixColumn(sessions, FRAIS_1_COLUMN, true);
+	addPrixColumn(sessions, FRAIS_2_COLUMN, true);
+	addPrixColumn(sessions, FRAIS_JUDO_QC_COLUMN, true);
+    }
+
+    private void populatePrix(List<ClubPrix> prixArray) {
+	initializePrixColumns();
+
+        for (ClubPrix p : prixArray) {
+	    prixData.add(p);
+	}
+	/*
+	// combine cours across sessions
+	HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
+
+	    if (!l.containsKey(cs.getShortDesc())) {
+		l.put(cs.getShortDesc(), new StringBuffer());
+	    }
+	    StringBuffer b = l.get(cs.getShortDesc());
+	    b.append(" ");
+	    b.append(sessionToName.get(cs.getSession()));
+	}
+	*/
+
+	prix.setRowData(prixData);
+	prix.redraw();
+    }
+    /* --- end cours tab --- */
+
     /* --- network functions --- */
     private boolean gotSessions = false;
-    public void retrieveSessions(int numero_club) {
+    public void retrieveSessions(String numero_club) {
         String url = JudoDB.PULL_SESSIONS_URL;
         url += "?club="+numero_club;
         RequestCallback rc =
@@ -431,6 +519,53 @@ public class ConfigWidget extends Composite {
                     public void eval(String s) {
                         gotSessions = true;
                         populateSessions(JsonUtils.<JsArray<SessionSummary>>safeEval(s));
+			jdb.clearStatus();
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    public void retrieveClubPrix(final String numero_club) {
+        if (!gotSessions) {
+            new Timer() {
+                public void run() { retrieveClubPrix(numero_club); }
+            }.schedule(100);
+            return;
+        }
+
+        prixData.clear();
+
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        String url = JudoDB.PULL_CLUB_PRIX_URL +
+            "?numero_club=" + numero_club +
+            "&session_seqno=10";
+
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        JsArray<ClubPrix> cp = JsonUtils.<JsArray<ClubPrix>>safeEval(s);
+                        for (int i = 0; i < cp.length(); i++)
+                            prixData.add(cp.get(i));
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    private boolean gotCours = false;
+    public void retrieveCours(String numero_club) {
+	if (numero_club.equals("")) return;
+
+        String url = JudoDB.PULL_CLUB_COURS_URL;
+        url += "?numero_club="+numero_club;
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+			gotCours = true;
+			List<CoursSummary> lcs = new ArrayList<CoursSummary>();
+			JsArray<CoursSummary> jcs = JsonUtils.<JsArray<CoursSummary>>safeEval(s);
+			for (int i = 0; i < jcs.length(); i++)
+			    lcs.add(jcs.get(i));
+			populateCours(lcs);
 			jdb.clearStatus();
                     }
                 });
@@ -460,31 +595,10 @@ public class ConfigWidget extends Composite {
                             jdb.setStatus("Sauvegardé.");
 			    if (refreshSessions) {
 				refreshSessions = false;
-				retrieveSessions(jdb.selectedClub);
+				retrieveSessions(Integer.toString(jdb.selectedClub));
 			    }
                         }
                         new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
-                    }
-                });
-        jdb.retrieve(url, rc);
-    }
-
-    private boolean gotCours = false;
-    public void retrieveCours(String numero_club) {
-	if (numero_club.equals("")) return;
-
-        String url = JudoDB.PULL_CLUB_COURS_URL;
-        url += "?numero_club="+numero_club;
-        RequestCallback rc =
-            jdb.createRequestCallback(new JudoDB.Function() {
-                    public void eval(String s) {
-			gotCours = true;
-			List<CoursSummary> lcs = new ArrayList<CoursSummary>();
-			JsArray<CoursSummary> jcs = JsonUtils.<JsArray<CoursSummary>>safeEval(s);
-			for (int i = 0; i < jcs.length(); i++)
-			    lcs.add(jcs.get(i));
-			populateCours(lcs);
-			jdb.clearStatus();
                     }
                 });
         jdb.retrieve(url, rc);

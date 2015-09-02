@@ -32,8 +32,8 @@ public class CostCalculator {
         for (ClubPrix cp : cpA) {
             if (cp.getDivisionAbbrev().equals(c.abbrev)) {
                 if (sessionCount == 2)
-                    return cp.getFrais2Session();
-                return cp.getFrais1Session();
+                    return Double.parseDouble(cp.getFrais2Session());
+                return Double.parseDouble(cp.getFrais1Session());
             }
         }
         return 0.0;
@@ -42,7 +42,7 @@ public class CostCalculator {
     private static final double getFraisJudoQC(SessionSummary ss, Constants.Division c, ClubPrix[] cpA) {
         for (ClubPrix cp : cpA) {
             if (cp.getDivisionAbbrev().equals(c.abbrev)) {
-                return cp.getFraisJudoQC();
+                return Double.parseDouble(cp.getFraisJudoQC());
             }
         }
         return 0.0;

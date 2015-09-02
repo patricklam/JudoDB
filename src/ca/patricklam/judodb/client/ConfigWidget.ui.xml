@@ -40,6 +40,11 @@
 	 <g:FlowPanel ui:field="coursTab">
 	 </g:FlowPanel>
        </g:tab>
+       <g:tab>
+	 <g:header size='4'>Prix</g:header>
+	 <g:FlowPanel ui:field="prixTab">
+	 </g:FlowPanel>
+       </g:tab>
       </g:TabLayoutPanel>
      </g:layer>
     </g:LayoutPanel>
