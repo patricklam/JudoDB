@@ -73,6 +73,7 @@ public class ConfigWidget extends Composite {
     // nom du club
     // numero (Judo QC) du club
 
+    // not done yet:
     // montants (should theoretically be stored with the session)
     // passeport judo QC [5]
     // frais non-resident [5]
@@ -80,6 +81,8 @@ public class ConfigWidget extends Composite {
 
     // misc:
     // age veteran [35]
+
+    // mostly done:
 
     // for each session:
     // seqno
@@ -89,13 +92,6 @@ public class ConfigWidget extends Composite {
     // liste des prix:
     //  division, 1 session, 2 sessions, judoQC
 
-    // for each division:
-    // name [Junior]
-    // abbrev [U20N]
-    // years_ago [20]
-    // noire [true]
-    // aka [U20]
-
     // for each cours:
     //      new Cours("0", "Adultes (LM2015-2145, V2000-2145)", "LM2015 V2000", ""),
     // seqno [0]
@@ -103,6 +99,14 @@ public class ConfigWidget extends Composite {
     // abbrev [LM2015 V2000]
     // entraineur
     // which sessions does the cours apply to?
+
+    // not needed for now:
+    // for each division:
+    // name [Junior]
+    // abbrev [U20N]
+    // years_ago [20]
+    // noire [true]
+    // aka [U20]
 
     // for each escompte:
     // seqno
@@ -117,8 +121,10 @@ public class ConfigWidget extends Composite {
         jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
         retrieveSessions(Integer.toString(jdb.selectedClub));
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-        retrieveCours(cs.getNumeroClub());
-        retrieveClubPrix(cs.getNumeroClub());
+        if (cs != null) {
+            retrieveCours(cs.getNumeroClub());
+            retrieveClubPrix(cs.getNumeroClub());
+        }
         populateCurrentClub();
       }
     }
@@ -129,6 +135,11 @@ public class ConfigWidget extends Composite {
         jdb.pleaseWait();
         jdb.populateClubList(true, dropDownUserClubs);
         retrieveSessions(Integer.toString(jdb.selectedClub));
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        if (cs != null) {
+            retrieveCours(cs.getNumeroClub());
+            retrieveClubPrix(cs.getNumeroClub());
+        }
 
         dropDownUserClubs.addChangeHandler(clHandler);
 
@@ -536,6 +547,7 @@ public class ConfigWidget extends Composite {
         prixData.clear();
 
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+	// XXX use correct session-seqno!
         String url = JudoDB.PULL_CLUB_PRIX_URL +
             "?numero_club=" + numero_club +
             "&session_seqno=10";
