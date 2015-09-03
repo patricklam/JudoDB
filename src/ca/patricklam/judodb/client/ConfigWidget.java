@@ -525,10 +525,8 @@ public class ConfigWidget extends Composite {
         prixData.clear();
 
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-	// XXX use correct session-seqno!
         String url = JudoDB.PULL_CLUB_PRIX_URL +
-            "?numero_club=" + numero_club +
-            "&session_seqno=10";
+            "?numero_club=" + numero_club;
 
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
