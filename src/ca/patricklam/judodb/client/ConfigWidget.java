@@ -294,12 +294,12 @@ public class ConfigWidget extends Composite {
 	updateSessionToNameMapping();
     }
 
-    private HashMap<String, String> sessionToName = new HashMap<String, String>();
+    private HashMap<String, SessionSummary> sessionNameToSession = new HashMap<String, SessionSummary>();
 
     void updateSessionToNameMapping() {
-	sessionToName.clear();
+	sessionNameToSession.clear();
 	for (SessionSummary s : sessionData) {
-	    sessionToName.put(s.getSeqno(), s.getAbbrev());
+	    sessionNameToSession.put(s.getSeqno(), s);
 	}
     }
     /* --- end session table --- */
@@ -403,7 +403,13 @@ public class ConfigWidget extends Composite {
 	    }
 	    StringBuffer b = l.get(cs.getShortDesc());
 	    b.append(" ");
-	    b.append(sessionToName.get(cs.getSession()));
+	    SessionSummary ss = sessionNameToSession.get(cs.getSession());
+	    b.append(ss.getAbbrev());
+	    String ls = ss.getLinkedSeqno();
+	    if (!ls.equals("")) {
+		b.append(" ");
+		b.append(sessionNameToSession.get(ls).getAbbrev());
+	    }
 	}
 
 	coursData.clear();
