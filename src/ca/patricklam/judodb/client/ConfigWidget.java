@@ -69,36 +69,14 @@ public class ConfigWidget extends Composite {
     // useful URLs: http://www.filsa.net/2010/01/23/more-on-tablayoutpanel/
     // http://www.filsa.net/2010/01/21/gwt-notes-tablayoutpanel/
 
-    // club data:
-    // nom du club
-    // numero (Judo QC) du club
-
-    // not done yet:
-    // montants (should theoretically be stored with the session)
+    // not done yet: for each club,
+    // montants--namely, (should theoretically be stored with the session)
     // passeport judo QC [5]
     // frais non-resident [5]
-    // penalty for prorata (percent of cost) [5]
+    // penalty for prorata (constant factor, in addition to percent of cost) [5]
 
     // misc:
     // age veteran [35]
-
-    // mostly done:
-
-    // for each session:
-    // seqno
-    // abbrev [A12]
-    // effective_year [2013]
-    // debut_cours, fin_cours [newDate("1/Sep/2012"), newDate("11/May/2013"))]
-    // liste des prix:
-    //  division, 1 session, 2 sessions, judoQC
-
-    // for each cours:
-    //      new Cours("0", "Adultes (LM2015-2145, V2000-2145)", "LM2015 V2000", ""),
-    // seqno [0]
-    // name [Adultes (LM2015-2145, V2000-2145)]
-    // abbrev [LM2015 V2000]
-    // entraineur
-    // which sessions does the cours apply to?
 
     // not needed for now:
     // for each division:
