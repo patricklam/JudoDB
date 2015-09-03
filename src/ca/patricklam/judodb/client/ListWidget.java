@@ -159,9 +159,20 @@ public class ListWidget extends Composite {
     class ClubListHandler implements ChangeHandler {
       public void onChange(ChangeEvent e) {
         jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
+        retrieveSessions(jdb.selectedClub);
+        actuallyHandleChange();
+      }
+
+      public void actuallyHandleChange() {
+        if (!gotSessions) {
+            new Timer() {
+                public void run() { actuallyHandleChange(); }
+            }.schedule(100);
+            return;
+        }
+
         coursHandler.generateCoursList();
         showList();
-	retrieveSessions(jdb.selectedClub);
       }
     }
 
@@ -994,6 +1005,7 @@ public class ListWidget extends Composite {
     /* --- network functions --- */
     private boolean gotSessions = false;
     public void retrieveSessions(int numero_club) {
+        gotSessions = false;
         String url = JudoDB.PULL_SESSIONS_URL;
         url += "?club="+numero_club;
         RequestCallback rc =
