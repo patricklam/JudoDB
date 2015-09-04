@@ -26,7 +26,6 @@ public class Constants {
     public static final NumberFormat currencyFormat = NumberFormat.getFormat("0.00");
 
     public static final double PASSEPORT_JUDO_QC = 5.0;
-    public static final double RESIDENT = 5.0;
     public static final int VETERAN = 35;
     public static final int PRORATA_PENALITE = 5;
     public static final int COUT_JUDOQC_INITIATION = 10;

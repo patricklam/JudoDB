@@ -311,6 +311,7 @@ public class ConfigWidget extends Composite {
     @UiField TextBox ville;
     @UiField TextBox prefix_codepostale;
     @UiField TextBox indicatif_regional;
+    @UiField TextBox escompte_resident;
     @UiField CheckBox default_prorata;
 
     void clearClubFields() {
@@ -320,6 +321,7 @@ public class ConfigWidget extends Composite {
 	ville.setText(""); ville.setReadOnly(true);
 	prefix_codepostale.setText(""); prefix_codepostale.setReadOnly(true);
 	indicatif_regional.setText(""); indicatif_regional.setReadOnly(true);
+	escompte_resident.setText(""); escompte_resident.setReadOnly(true);
 	default_prorata.setValue(false); default_prorata.setEnabled(false);
     }
 
@@ -338,6 +340,7 @@ public class ConfigWidget extends Composite {
 	ville.setText(cs.getVille());
 	prefix_codepostale.setText(cs.getPrefixCodepostale());
 	indicatif_regional.setText(cs.getIndicatifRegional());
+	escompte_resident.setText(cs.getEscompteResident());
 	default_prorata.setValue(cs.getDefaultProrata());
     }
     /* --- end club tab --- */

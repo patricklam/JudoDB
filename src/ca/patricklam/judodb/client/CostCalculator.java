@@ -97,7 +97,7 @@ public class CostCalculator {
         return dAffiliationFrais;
     }
 
-    static double suppFrais(ServiceData sd) {
+    static double suppFrais(ServiceData sd, ClubSummary cs) {
         if (sd == null) return 0.0;
 
         double judogiFrais = 0.0;
@@ -109,7 +109,7 @@ public class CostCalculator {
         if (passeport)
             dSuppFrais += Constants.PASSEPORT_JUDO_QC;
         if (resident)
-            dSuppFrais -= Constants.RESIDENT;
+            dSuppFrais -= Double.parseDouble(cs.getEscompteResident());
         return dSuppFrais;
     }
 
@@ -149,7 +149,7 @@ public class CostCalculator {
       if (!prorataOverride) dCategorieFrais = fraisCours(ss, cd, sd, cpA);
       double dEscompteFrais = escompteFrais(sd, dCategorieFrais);
       double dAffiliationFrais = affiliationFrais(ss, cd, sd, cpA);
-      double dSuppFrais = suppFrais(sd);
+      double dSuppFrais = suppFrais(sd, cs);
 
       if (sd != null) {
           sd.setCategorieFrais(Double.toString(dCategorieFrais));

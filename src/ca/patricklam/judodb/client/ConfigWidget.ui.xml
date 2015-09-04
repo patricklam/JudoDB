@@ -27,6 +27,7 @@
 	   <g:Label>Ville:</g:Label><g:TextBox ui:field="ville" name="ville_tb"/>
 	   <g:Label>Prefixe code postale:</g:Label><g:TextBox ui:field="prefix_codepostale" name="prefix_codepostale_tb"/>
 	   <g:Label>Indicatif regional:</g:Label><g:TextBox ui:field="indicatif_regional" name="indicatif_regional_tb"/>
+	   <g:Label>Escompte resident:</g:Label><g:TextBox ui:field="escompte_resident" name="escompte_resident_tb"/>
 	   <g:Label>Prorata par defaut:</g:Label><g:CheckBox ui:field="default_prorata" name="default_prorata_tb"/>
 	 </g:FlowPanel>
        </g:tab>
