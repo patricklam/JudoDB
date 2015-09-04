@@ -1,6 +1,7 @@
 package ca.patricklam.judodb.client;
 
 import java.util.Date;
+import java.util.HashMap;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -46,18 +47,28 @@ public class Constants {
 
     static class Escompte {
         final String seqno;
+        final String clubId;
         final String name;
-        final int amount; // in percent
+        final double amountPct; // in percent
+        final double amountDollars;
 
-        public Escompte(String seqno, String name, int amount) {
-            this.seqno = seqno; this.name = name; this.amount = amount;
+        public Escompte(String seqno, String clubId, String name, double amountPct, double amountDollars) {
+            this.seqno = seqno; this.clubId = clubId; this.name = name;
+            this.amountPct = amountPct; this.amountDollars = amountDollars;
         }
     }
 
-    public static final int escompte(String seqno) {
+    public static final double escomptePct(String seqno) {
         for (Escompte e : ESCOMPTES)
             if (e.seqno.equals(seqno))
-                return e.amount;
+                return e.amountPct;
+        return 0;
+    }
+
+    public static final double escompteDollars(String seqno) {
+        for (Escompte e : ESCOMPTES)
+            if (e.seqno.equals(seqno))
+                return e.amountDollars;
         return 0;
     }
 
@@ -157,14 +168,20 @@ public class Constants {
     public static final Division EMPTY_DIVISION = new Division("", "", 0, false, null);
 
     public static final Escompte[] ESCOMPTES = new Escompte[] {
-        new Escompte("0", "Aucun", 0),
-        new Escompte("1", "2e membre", 10),
-        new Escompte("2", "3e membre", 15),
-        new Escompte("3", "4e membre", 20),
-        new Escompte("4", "5e membre", 25),
-        new Escompte("5", "Nouvel(le) ami(e)", 10),
-        new Escompte("6", "Membre du CA", 50),
-        new Escompte("7", "Cas spécial", -1)
+        new Escompte("0", "0", "Aucun", 0, 0),
+        new Escompte("1", "1", "2e membre", 10, 0),
+        new Escompte("2", "1", "3e membre", 15, 0),
+        new Escompte("3", "1", "4e membre", 20, 0),
+        new Escompte("4", "1", "5e membre", 25, 0),
+        new Escompte("5", "1", "Nouvel(le) ami(e)", 10, 0),
+        new Escompte("6", "1", "Membre du CA", 50, 0),
+        new Escompte("7", "0", "Cas spécial", -1, -1),
+        new Escompte("8", "4", "Famille", 0, 10),
+        new Escompte("8", "4", "1x par semaine - Enfant", 26.1, 0),
+        new Escompte("8", "4", "1x per semaine - Enfant, famille", 34.7, 0),
+        new Escompte("9", "4", "1x par semaine - Adulte", 23.1, 0),
+        new Escompte("10", "4", "Carte punch 10x", 0, 40),
+        new Escompte("11", "4", "Parent, cours parent/enfant", 0, 80),
     };
 
     public static final Judogi[] JUDOGIS = new Judogi[] {

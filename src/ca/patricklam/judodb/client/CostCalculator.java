@@ -114,7 +114,7 @@ public class CostCalculator {
     }
 
     static boolean isCasSpecial(ServiceData sd) {
-        return Constants.escompte(Integer.toString(sd.getEscompteType())) == -1;
+        return Constants.escomptePct(Integer.toString(sd.getEscompteType())) == -1;
     }
 
     static double escompteFrais(ServiceData sd, double dCategorieFrais) {
@@ -124,7 +124,7 @@ public class CostCalculator {
         if (isCasSpecial(sd)) {
             escomptePct = Double.parseDouble(sd.getCasSpecialPct());
         } else {
-            escomptePct = Constants.escompte(Integer.toString(sd.getEscompteType()));
+            escomptePct = Constants.escomptePct(Integer.toString(sd.getEscompteType()));
         }
         return -dCategorieFrais * (escomptePct / 100.0);
     }

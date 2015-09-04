@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -207,9 +208,6 @@ public class ClientWidget extends Composite {
 
         no_sessions.addItem("1");
         no_sessions.addItem("2");
-        for (Constants.Escompte e : Constants.ESCOMPTES) {
-            escompte.addItem(e.name, Integer.toString(e.amount));
-        }
         for (Constants.Judogi j : Constants.JUDOGIS) {
             judogi.addItem(j.name, j.seqno);
         }
@@ -339,11 +337,33 @@ public class ClientWidget extends Composite {
         sa.push(sd);
     }
 
+    private void loadEscomptes() {
+        HashMap<Integer, Integer> escompteMap = new HashMap<Integer, Integer>();
+
+        int idx = 0;
+	escompte.clear();
+        for (Constants.Escompte e : Constants.ESCOMPTES) {
+            if (e.clubId.equals("0") || e.clubId.equals(jdb.getSelectedClubID())) {
+                escompte.addItem(e.name, Double.toString(e.amountPct));
+                escompteMap.put(Integer.parseInt(e.seqno), idx);
+                idx++;
+            }
+        }
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+        int escompteIndex = sd.getEscompteType();
+        if (escompteMap.get(escompteIndex) != null)
+            escompte.setSelectedIndex(escompteMap.get(escompteIndex));
+        else
+            escompte.setSelectedIndex(0);
+    }
+
     class ClubListHandler implements ChangeHandler {
       public void onChange(ChangeEvent event) {
           jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
+          loadEscomptes();
           retrieveSessions();
           retrieveClubPrix();
+	  updateFrais();
       }
     }
 
@@ -460,10 +480,8 @@ public class ClientWidget extends Composite {
         affiliation_ecole.setEnabled(isToday);
         affiliationFrais.setText(sd.getAffiliationFrais());
 
-        int escompteIndex = sd.getEscompteType();
-        if (escompteIndex >= 0 && escompteIndex < escompte.getItemCount())
-            escompte.setSelectedIndex(escompteIndex);
         escompte.setEnabled(isToday);
+
         cas_special_note.setText(sd.getCasSpecialNote());
         cas_special_note.setReadOnly(!isToday);
         cas_special_pct.setValue(sd.getCasSpecialPct());
@@ -522,7 +540,8 @@ public class ClientWidget extends Composite {
         sd.setAffiliationEcole(affiliation_ecole.getValue());
         sd.setAffiliationFrais(stripDollars(affiliationFrais.getText()));
 
-        sd.setEscompteType(escompte.getSelectedIndex());
+        if (escompte.getSelectedIndex() != -1)
+            sd.setEscompteType(escompte.getSelectedIndex());
         sd.setCasSpecialNote(removeCommas(cas_special_note.getText()));
         sd.setCasSpecialPct(stripDollars(cas_special_pct.getText()));
         sd.setEscompteFrais(stripDollars(escompteFrais.getText()));
@@ -1101,6 +1120,7 @@ public class ClientWidget extends Composite {
 		}
 	    } catch (IllegalArgumentException e) {}
 	}
+        if (m == null) return "";
 
 	if (sessionCount == 1) return m.getAbbrev();
 	if (sessionCount == 2) {
@@ -1144,8 +1164,9 @@ public class ClientWidget extends Composite {
 
                         ClientWidget.this.cd = JsonUtils.<ClientData>safeEval(s);
                         currentServiceNumber = cd.getMostRecentServiceNumber();
-                        loadClientData();
+                        loadEscomptes();
                         jdb.clearStatus();
+                        loadClientData();
 
                         for (ChangeHandler ch : onPopulated) {
                             ch.onChange(null);
