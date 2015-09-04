@@ -177,11 +177,11 @@ public class Constants {
         new Escompte("6", "1", "Membre du CA", 50, 0),
         new Escompte("7", "0", "Cas spécial", -1, -1),
         new Escompte("8", "4", "Famille", 0, 10),
-        new Escompte("8", "4", "1x par semaine - Enfant", 26.1, 0),
-        new Escompte("8", "4", "1x per semaine - Enfant, famille", 34.7, 0),
-        new Escompte("9", "4", "1x par semaine - Adulte", 23.1, 0),
-        new Escompte("10", "4", "Carte punch 10x", 0, 40),
-        new Escompte("11", "4", "Parent, cours parent/enfant", 0, 80),
+        new Escompte("9", "4", "1x par semaine - Enfant", 26.1, 0),
+        new Escompte("10", "4", "1x per semaine - Enfant, famille", 34.7, 0),
+        new Escompte("11", "4", "1x par semaine - Adulte", 23.077, 0),
+        new Escompte("12", "4", "Carte punch 10x", 0, 40),
+        new Escompte("13", "4", "Parent, cours parent/enfant", 0, 80),
     };
 
     public static final Judogi[] JUDOGIS = new Judogi[] {
