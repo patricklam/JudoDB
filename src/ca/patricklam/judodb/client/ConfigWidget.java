@@ -395,6 +395,7 @@ public class ConfigWidget extends Composite {
 	initializeCoursColumns();
 
 	// combine cours across sessions
+	// l has key shortdesc, values sessions
 	HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
 
         for (CoursSummary cs : coursArray) {
@@ -418,6 +419,7 @@ public class ConfigWidget extends Composite {
 	    CoursSummary cs = (CoursSummary)JavaScriptObject.createObject().cast();
 	    cs.setId(String.valueOf(id)); cs.setShortDesc(s); cs.setSession(l.get(s).toString());
 	    coursData.add(cs);
+	    id++;
 	}
 
 	cours.setRowData(coursData);
@@ -481,23 +483,44 @@ public class ConfigWidget extends Composite {
     }
 
     private void populatePrix(List<ClubPrix> prixArray) {
-	initializePrixColumns();
+        initializePrixColumns();
+
+        // l has key signature, values are prix
+        HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
 
         for (ClubPrix p : prixArray) {
-	    prixData.add(p);
-	}
-	/*
-	// combine cours across sessions
-	HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
+            String ps = p.getSignature();
+            if (!l.containsKey(ps)) {
+                l.put(ps, new StringBuffer());
+            }
+            StringBuffer b = l.get(ps);
+            b.append(" ");
+            SessionSummary ss = sessionNameToSession.get(p.getSession());
+            b.append(ss.getAbbrev());
+            String ls = ss.getLinkedSeqno();
+            if (!ls.equals("")) {
+                b.append(" ");
+                b.append(sessionNameToSession.get(ls).getAbbrev());
+            }
+        }
 
-	    if (!l.containsKey(cs.getShortDesc())) {
-		l.put(cs.getShortDesc(), new StringBuffer());
-	    }
-	    StringBuffer b = l.get(cs.getShortDesc());
-	    b.append(" ");
-	    b.append(sessionToName.get(cs.getSession()));
-	}
-	*/
+        prixData.clear();
+        int id = 0;
+        for (String s : l.keySet()) {
+            String[] pnArray = s.split("\\|");
+            ClubPrix pn = (ClubPrix)JavaScriptObject.createObject().cast();
+
+            pn.setId(String.valueOf(id));
+            id++;
+
+            // parse the components of ps and put them in pn
+            pn.setSession(l.get(s).toString());
+            pn.setDivisionAbbrev(pnArray[0]);
+            pn.setFrais1Session(pnArray[1]);
+            pn.setFrais2Session(pnArray[2]);
+            pn.setFraisJudoQC(pnArray[3]);
+            prixData.add(pn);
+        }
 
 	prix.setRowData(prixData);
 	prix.redraw();
