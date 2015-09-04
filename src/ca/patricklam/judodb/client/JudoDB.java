@@ -187,7 +187,8 @@ public class JudoDB implements EntryPoint {
         public EditClientHandler(int club, int cid) { this.club = club; this.cid = cid; }
 
         public void onClick(ClickEvent event) {
-	    refreshSelectedClub(club);
+            if (club != -1)
+                refreshSelectedClub(club);
             switchMode(new Mode (Mode.ActualMode.EDIT_CLIENT, cid));
         }
     }
@@ -445,7 +446,7 @@ public class JudoDB implements EntryPoint {
         searchField.addKeyUpHandler(shandler);
 
         // Add a handler for "nouveau client"
-        EditClientHandler ehandler = new EditClientHandler(0, -1);
+        EditClientHandler ehandler = new EditClientHandler(-1, -1);
         newClientButton.addClickHandler(ehandler);
 
 

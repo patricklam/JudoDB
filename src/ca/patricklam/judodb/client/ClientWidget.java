@@ -227,8 +227,6 @@ public class ClientWidget extends Composite {
 
         no_sessions.setItemSelected(1, true);
 
-        // dunno why selectedClub gets zero'd, but un-zero it.
-        jdb.refreshSelectedClub();
         if (cid == -1 && jdb.getSelectedClubID() == null) {
             jdb.setStatus("Veuillez selectionner un club pour le client.");
             new Timer() { public void run() {
@@ -317,6 +315,7 @@ public class ClientWidget extends Composite {
             ga.set(0, gd);
             this.cd.setGrades(ga);
             loadClientData();
+            loadEscomptes();
             jdb.clearStatus();
         }
         retrieveSessions();
