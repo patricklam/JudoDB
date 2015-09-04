@@ -338,21 +338,21 @@ public class ClientWidget extends Composite {
     }
 
     private void loadEscomptes() {
-        HashMap<Integer, Integer> escompteMap = new HashMap<Integer, Integer>();
-
+        HashMap<Integer, Integer> escompteIdxToSeqno = new HashMap<Integer, Integer>();
         int idx = 0;
 	escompte.clear();
+	escompteIdxToSeqno.clear();
         for (Constants.Escompte e : Constants.ESCOMPTES) {
             if (e.clubId.equals("0") || e.clubId.equals(jdb.getSelectedClubID())) {
-                escompte.addItem(e.name, Double.toString(e.amountPct));
-                escompteMap.put(Integer.parseInt(e.seqno), idx);
+                escompte.addItem(e.name, e.seqno);
+                escompteIdxToSeqno.put(Integer.parseInt(e.seqno), idx);
                 idx++;
             }
         }
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         int escompteIndex = sd.getEscompteType();
-        if (escompteMap.get(escompteIndex) != null)
-            escompte.setSelectedIndex(escompteMap.get(escompteIndex));
+        if (escompteIdxToSeqno.get(escompteIndex) != null)
+            escompte.setSelectedIndex(escompteIdxToSeqno.get(escompteIndex));
         else
             escompte.setSelectedIndex(0);
     }
@@ -540,8 +540,9 @@ public class ClientWidget extends Composite {
         sd.setAffiliationEcole(affiliation_ecole.getValue());
         sd.setAffiliationFrais(stripDollars(affiliationFrais.getText()));
 
-        if (escompte.getSelectedIndex() != -1)
-            sd.setEscompteType(escompte.getSelectedIndex());
+        if (escompte.getSelectedIndex() != -1) {
+            sd.setEscompteType(Integer.parseInt(escompte.getValue(escompte.getSelectedIndex())));
+	}
         sd.setCasSpecialNote(removeCommas(cas_special_note.getText()));
         sd.setCasSpecialPct(stripDollars(cas_special_pct.getText()));
         sd.setEscompteFrais(stripDollars(escompteFrais.getText()));
@@ -950,7 +951,8 @@ public class ClientWidget extends Composite {
 
         /* view stuff here */
         Display d = Display.NONE;
-        if (escompte.getValue(escompte.getSelectedIndex()).equals("-1"))
+        int escompteIdx = escompte.getSelectedIndex();
+        if (escompteIdx != -1 && Constants.escomptePct(escompte.getValue(escompte.getSelectedIndex())) == -1)
             d = Display.INLINE;
         ((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(d);
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);

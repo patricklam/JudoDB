@@ -126,6 +126,8 @@ public class CostCalculator {
         } else {
             escomptePct = Constants.escomptePct(Integer.toString(sd.getEscompteType()));
         }
+        if (escomptePct == 0)
+            return -Constants.escompteDollars(Integer.toString(sd.getEscompteType()));
         return -dCategorieFrais * (escomptePct / 100.0);
     }
 
