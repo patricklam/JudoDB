@@ -44,19 +44,6 @@ public class Constants {
         }
     }
 
-    static class Cours {
-        final String seqno;
-        final String name;
-        final String short_desc;
-        final String entraineur;
-
-        public Cours(String seqno, String name, String short_desc, String entraineur) {
-            this.seqno = seqno;
-            this.name = name; this.short_desc = short_desc;
-            this.entraineur = entraineur;
-        }
-    }
-
     static class Escompte {
         final String seqno;
         final String name;
@@ -168,27 +155,6 @@ public class Constants {
         new Division("Senior Noire", "SN", 0, true, "S"),
     };
     public static final Division EMPTY_DIVISION = new Division("", "", 0, false, null);
-
-    public static final Cours[] COURS = new Cours[] {
-        new Cours("0", "Adultes (LM2015-2145, V2000-2145)", "LM2015 V2000", ""),
-        new Cours("1", "Équipe compétition (LM1830-2015, V2000-2145)", "LM1830 V2000", ""),
-        new Cours("2", "Intérmediares 7-12 ans (L1730-1830, V1830-2000)", "L1730 V1830", ""),
-        new Cours("3", "Débutants 7-12 ans (MaJ1730-1830)", "MaJ1730", ""),
-        new Cours("4", "Débutants 5-6 ans (S900-1000)", "S900", ""),
-        new Cours("5", "Anciens 5-6 ans (S1000-1130)", "S1000", ""),
-        new Cours("6", "Anciens 7-8 ans (S1130-1300)", "S1130", ""),
-        new Cours("7", "Anciens 7-9 ans (S1300-1430)", "S1300", ""),
-        new Cours("8", "Anciens 7-10 ans (S1430-1600)", "S1430", ""),
-        new Cours("9", "Débutants (D930-1030)", "D930", ""),
-        new Cours("10", "Anciens (D1030-1130)", "D1030", ""),
-        new Cours("11", "Débutants 7-10 ans (MV1700-1800)", "MV1700", ""),
-        new Cours("12", "Anciens (D1130-1300)", "D1130", ""),
-        new Cours("13", "Débutants 7-10 ans (S1600-1730)", "S1600", ""),
-        new Cours("14", "Débutants (D1300-1400)", "D1300", ""),
-        new Cours("15", "Anciens 7-10 ans (MV1800-1900)", "MV1800", ""),
-        new Cours("16", "Débutants (D1400-1500)", "D1400", ""),
-        new Cours("17", "Autre", "X0000", ""),
-    };
 
     public static final Escompte[] ESCOMPTES = new Escompte[] {
         new Escompte("0", "Aucun", 0),
