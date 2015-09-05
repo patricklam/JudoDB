@@ -29,6 +29,8 @@ public class ServiceData extends JavaScriptObject {
     public final native void setPasseport(boolean passeport) /*-{ this.passeport = passeport ? "1" : "0"; }-*/;
     public final native boolean getResident() /*-{ return this.resident != '0'; }-*/;
     public final native void setResident(boolean resident) /*-{ this.resident = resident ? "1" : "0"; }-*/;
+    public final native boolean getPaypal() /*-{ return this.paypal != '0'; }-*/;
+    public final native void setPaypal(boolean paypal) /*-{ this.paypal = paypal ? "1" : "0"; }-*/;
     public final native int getEscompteType() /*-{ return this.escompte == null ? 0 : parseInt(this.escompte); }-*/;
     public final native void setEscompteType(int escompte) /*-{ this.escompte = escompte.toString(); }-*/;
     public final native String getCasSpecialNote() /*-{ return this.cas_special_note; }-*/;

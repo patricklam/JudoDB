@@ -30,6 +30,7 @@ public class Constants {
     public static final int PRORATA_PENALITE = 5;
     public static final int COUT_JUDOQC_INITIATION = 10;
     public static final int COUT_JUDOQC_ECOLE = 5;
+    public static final int PAYPAL_PCT = 3;
 
     static class Division {
         final String name;

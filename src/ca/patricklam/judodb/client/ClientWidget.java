@@ -105,6 +105,7 @@ public class ClientWidget extends Composite {
 
     @UiField ListBox judogi;
     @UiField CheckBox resident;
+    @UiField CheckBox paypal;
     @UiField TextBox suppFrais;
 
     @UiField CheckBox solde;
@@ -135,6 +136,7 @@ public class ClientWidget extends Composite {
 
     @UiField Hidden judogi_encoded;
     @UiField Hidden resident_encoded;
+    @UiField Hidden paypal_encoded;
     @UiField Hidden suppFrais_encoded;
 
     @UiField Hidden solde_encoded;
@@ -266,6 +268,7 @@ public class ClientWidget extends Composite {
         affiliation_ecole.addValueChangeHandler(recomputeValueHandler);
         judogi.addChangeHandler(recomputeHandler);
         resident.addValueChangeHandler(recomputeValueHandler);
+        paypal.addValueChangeHandler(recomputeValueHandler);
 
         saveAndReturnClientButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
@@ -494,6 +497,8 @@ public class ClientWidget extends Composite {
         judogi.setEnabled(isToday);
         resident.setValue(sd.getResident());
         resident.setEnabled(isToday);
+        paypal.setValue(sd.getPaypal());
+        paypal.setEnabled(isToday);
         suppFrais.setText(sd.getSuppFrais());
 
         frais.setText(sd.getFrais());
@@ -548,6 +553,7 @@ public class ClientWidget extends Composite {
 
         sd.setJudogi(Constants.judogi(judogi.getValue(judogi.getSelectedIndex())));
         sd.setResident(resident.getValue());
+        sd.setPaypal(paypal.getValue());
         sd.setSuppFrais(stripDollars(suppFrais.getText()));
 
         sd.setFrais(stripDollars(frais.getText()));
@@ -980,7 +986,7 @@ public class ClientWidget extends Composite {
             sess = new StringBuffer(), e = new StringBuffer(), csn = new StringBuffer(),
             csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(), ai = new StringBuffer(), ae = new StringBuffer(),
             af = new StringBuffer(), j = new StringBuffer(), p = new StringBuffer(),
-            n = new StringBuffer(), sf = new StringBuffer(), s = new StringBuffer(),
+            n = new StringBuffer(), pp = new StringBuffer(), sf = new StringBuffer(), s = new StringBuffer(),
             f = new StringBuffer(), clubid = new StringBuffer();
 
         JsArray<ServiceData> services = cd.getServices();
@@ -1005,6 +1011,7 @@ public class ClientWidget extends Composite {
             //p.append(sd.getPasseport()+",");
             p.append("0,");
             n.append(sd.getResident()+",");
+            pp.append(sd.getPaypal()+",");
             sf.append(sd.getSuppFrais()+",");
             s.append(sd.getSolde() ? "1,":"0,");
             f.append(sd.getFrais()+",");
@@ -1027,6 +1034,7 @@ public class ClientWidget extends Composite {
         affiliationFrais_encoded.setValue(af.toString());
         judogi_encoded.setValue(j.toString());
         resident_encoded.setValue(n.toString());
+        paypal_encoded.setValue(pp.toString());
         suppFrais_encoded.setValue(sf.toString());
         solde_encoded.setValue(s.toString());
         frais_encoded.setValue(f.toString());

@@ -95,6 +95,7 @@
          <div class="{style.fourper}" style="border-bottom: 1px grey;">
           <label>Co&ucirc;t judogi<br /><g:ListBox ui:field="judogi"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></label>
           <label>Rabais r&eacute;sident<br /><g:CheckBox ui:field="resident"/><g:Hidden ui:field="resident_encoded" name="resident_encoded" /></label>
+          <label>Frais PayPal<br /><g:CheckBox ui:field="paypal"/><g:Hidden ui:field="paypal_encoded" name="paypal_encoded" /></label>
           <span class="{style.fraisOnRight}"><label>Autres frais<br /><g:TextBox ui:field="suppFrais" visibleLength="15" /><g:Hidden ui:field="suppFrais_encoded" name="supp_frais_encoded" /></label></span>
         </div>
         <div class="{style.fourper}">

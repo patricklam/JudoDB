@@ -97,19 +97,23 @@ public class CostCalculator {
         return dAffiliationFrais;
     }
 
-    static double suppFrais(ServiceData sd, ClubSummary cs) {
+    static double suppFrais(ServiceData sd, ClubSummary cs, double fraisSoFar) {
         if (sd == null) return 0.0;
 
         double judogiFrais = 0.0;
         try { judogiFrais = Double.parseDouble(sd.getJudogi()); } catch (Exception e) {}
         boolean passeport = sd.getPasseport();
         boolean resident = sd.getResident();
+        boolean paypal = sd.getPaypal();
 
         double dSuppFrais = judogiFrais;
         if (passeport)
             dSuppFrais += Constants.PASSEPORT_JUDO_QC;
         if (resident)
             dSuppFrais -= Double.parseDouble(cs.getEscompteResident());
+
+        if (paypal)
+            dSuppFrais += Constants.PAYPAL_PCT / 100.0 * (dSuppFrais + fraisSoFar);
         return dSuppFrais;
     }
 
@@ -149,7 +153,7 @@ public class CostCalculator {
       if (!prorataOverride) dCategorieFrais = fraisCours(ss, cd, sd, cpA);
       double dEscompteFrais = escompteFrais(sd, dCategorieFrais);
       double dAffiliationFrais = affiliationFrais(ss, cd, sd, cpA);
-      double dSuppFrais = suppFrais(sd, cs);
+      double dSuppFrais = suppFrais(sd, cs, dCategorieFrais + dEscompteFrais + dAffiliationFrais);
 
       if (sd != null) {
           sd.setCategorieFrais(Double.toString(dCategorieFrais));
