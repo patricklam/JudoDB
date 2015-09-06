@@ -37,6 +37,7 @@ import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.InlineLabel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueBoxBase;
@@ -362,6 +363,8 @@ public class ClientWidget extends Composite {
     class ClubListHandler implements ChangeHandler {
       public void onChange(ChangeEvent event) {
           jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
+          ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+          hideEscompteResidentIfUnneeded(cs);
           loadEscomptes();
           retrieveSessions();
           retrieveClubPrix();
@@ -948,10 +951,22 @@ public class ClientWidget extends Composite {
         d.updateCopySib();
     }
 
+    private void hideEscompteResidentIfUnneeded(ClubSummary cs) {
+        String escompteResident = cs.getEscompteResident();
+        if (escompteResident == null || escompteResident.equals("") || escompteResident.equals("0")) {
+            clientMain.getElementById("rabais_resident_label").getStyle().setProperty("display", "none");
+            resident.setVisible(false);
+        } else {
+            resident.setVisible(true);
+            clientMain.getElementById("rabais_resident_label").getStyle().setProperty("display", "inline");
+        }
+    }
+
     private void updateDynamicFields() {
         saveClientData();
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+        hideEscompteResidentIfUnneeded(cs);
         CostCalculator.recompute(currentSession, cd, sd, cs, prorata.getValue(), clubPrix);
 
         /* view stuff here */
