@@ -400,39 +400,59 @@ public class ConfigWidget extends Composite {
 	addCoursColumn(sessions, DESC_COLUMN, true);
     }
 
-    private void populateCours(List<CoursSummary> coursArray) {
-	initializeCoursColumns();
+    final private static String ADD_COURS_VALUE = "[ajouter cours]";
+    void addAddCoursCours() {
+        int maxId = -1;
+        for (CoursSummary c : coursData) {
+            if (Integer.parseInt(c.getId()) > maxId)
+                maxId = Integer.parseInt(c.getId());
+        }
 
-	// combine cours across sessions
-	// l has key shortdesc, values sessions
-	HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
+        CoursSummary addNewCours =
+            JsonUtils.<CoursSummary>safeEval
+            ("{\"id\":\""+(maxId+1)+"\"}");
+        addNewCours.setSession(ADD_COURS_VALUE);
+        addNewCours.setClubId(jdb.getSelectedClubID());
+        addNewCours.setShortDesc("");
+        com.google.gwt.user.client.Window.alert(addNewCours.get("session"));
+        coursData.add(addNewCours);
+    }
+
+    private void populateCours(List<CoursSummary> coursArray) {
+        initializeCoursColumns();
+
+        // combine cours across sessions
+        // l has key shortdesc, values sessions
+        HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
 
         for (CoursSummary cs : coursArray) {
-	    if (!l.containsKey(cs.getShortDesc())) {
-		l.put(cs.getShortDesc(), new StringBuffer());
-	    }
-	    StringBuffer b = l.get(cs.getShortDesc());
-	    b.append(" ");
-	    SessionSummary ss = sessionNameToSession.get(cs.getSession());
-	    b.append(ss.getAbbrev());
-	    String ls = ss.getLinkedSeqno();
-	    if (!ls.equals("")) {
-		b.append(" ");
-		b.append(sessionNameToSession.get(ls).getAbbrev());
-	    }
-	}
+            if (!l.containsKey(cs.getShortDesc())) {
+                l.put(cs.getShortDesc(), new StringBuffer());
+            }
+            StringBuffer b = l.get(cs.getShortDesc());
+            b.append(" ");
+            SessionSummary ss = sessionNameToSession.get(cs.getSession());
+            b.append(ss.getAbbrev());
+            String ls = ss.getLinkedSeqno();
+            if (!ls.equals("")) {
+                b.append(" ");
+                b.append(sessionNameToSession.get(ls).getAbbrev());
+            }
+        }
 
-	coursData.clear();
-	int id = 0;
-	for (String s : l.keySet()) {
-	    CoursSummary cs = (CoursSummary)JavaScriptObject.createObject().cast();
-	    cs.setId(String.valueOf(id)); cs.setShortDesc(s); cs.setSession(l.get(s).toString());
-	    coursData.add(cs);
-	    id++;
-	}
+        coursData.clear();
+        int id = 0;
+        for (String s : l.keySet()) {
+            CoursSummary cs = (CoursSummary)JavaScriptObject.createObject().cast();
+            cs.setId(String.valueOf(id)); cs.setShortDesc(s); cs.setSession(l.get(s).toString());
+            coursData.add(cs);
+            id++;
+        }
 
-	cours.setRowData(coursData);
-	cours.redraw();
+        if (jdb.isClubSelected())
+            addAddCoursCours();
+        cours.setRowData(coursData);
+        cours.redraw();
     }
     /* --- end cours tab --- */
 
