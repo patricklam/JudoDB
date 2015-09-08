@@ -63,16 +63,12 @@ public class ConfigWidget extends Composite {
     CellTable prix;
     private static final List<ClubPrix> prixData = new ArrayList<ClubPrix>();
 
-    // private static final String PULL_CONFIG_URL = JudoDB.BASE_URL + "pull_config.php";
-    // private static final String PUSH_CONFIG_URL = JudoDB.BASE_URL + "push_config.php";
-
     // useful URLs: http://www.filsa.net/2010/01/23/more-on-tablayoutpanel/
     // http://www.filsa.net/2010/01/21/gwt-notes-tablayoutpanel/
 
     // not done yet: for each club,
     // montants--namely, (should theoretically be stored with the session)
-    // passeport judo QC [5]
-    // frais non-resident [5]
+    // frais passeport judo QC [5]
     // penalty for prorata (constant factor, in addition to percent of cost) [5]
 
     // misc:
