@@ -159,6 +159,8 @@ public class ConfigWidget extends Composite {
     }
 
     /* --- session table --- */
+    private static final String DELETE_SESSION_KEY = "DELETE";
+
     private final ColumnFields NAME_COLUMN = new ColumnFields("name", "Nom", 10, Unit.EM),
 	ABBREV_COLUMN = new ColumnFields("abbrev", "Abbr", 4, Unit.EM),
 	YEAR_COLUMN = new ColumnFields("year", "Année", 5, Unit.EM),
@@ -167,14 +169,20 @@ public class ConfigWidget extends Composite {
 	FIRST_CLASS_COLUMN = new ColumnFields("first_class_date", "début cours" , 10, Unit.EM),
 	FIRST_SIGNUP_COLUMN = new ColumnFields("first_signup_date", "début inscription", 10, Unit.EM),
 	LAST_CLASS_COLUMN = new ColumnFields("last_class_date", "fin cours", 10, Unit.EM),
-	LAST_SIGNUP_COLUMN = new ColumnFields("last_signup_date", "fin inscription", 10, Unit.EM);
+	LAST_SIGNUP_COLUMN = new ColumnFields("last_signup_date", "fin inscription", 10, Unit.EM),
+	DELETE_SESSION_COLUMN = new ColumnFields(DELETE_SESSION_KEY, "", 1, Unit.EM);
 
-    private List<ColumnFields> perClubColumns = Collections.unmodifiableList(Arrays.asList(FIRST_CLASS_COLUMN, FIRST_SIGNUP_COLUMN, LAST_CLASS_COLUMN, LAST_SIGNUP_COLUMN));
+    private List<ColumnFields> perClubColumns = Collections.unmodifiableList(Arrays.asList(FIRST_CLASS_COLUMN, FIRST_SIGNUP_COLUMN, LAST_CLASS_COLUMN, LAST_SIGNUP_COLUMN, DELETE_SESSION_COLUMN));
+
+    private static final String BALLOT_X = "\u2717";
 
     private Column<SessionSummary, String> addSessionColumn(final CellTable t, final ColumnFields c, final boolean editable) {
 	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
 	Column<SessionSummary, String> newColumn = new Column<SessionSummary, String>(cell) {
 	    public String getValue(SessionSummary object) {
+		if (c.key.equals(DELETE_SESSION_KEY)) {
+		    return BALLOT_X;
+		}
 		return object.get(c.key);
 	    }
 	};
@@ -182,6 +190,7 @@ public class ConfigWidget extends Composite {
 	newColumn.setFieldUpdater(new FieldUpdater<SessionSummary, String>() {
 		@Override
 		public void update(int index, SessionSummary object, String value) {
+		    if (c.key == null) return;
 		    object.set(c.key, value);
 		    if (perClubColumns.contains(c)) {
 			if (object.getId().equals("-1")) {
@@ -274,6 +283,7 @@ public class ConfigWidget extends Composite {
 	    addSessionColumn(sessions, LAST_CLASS_COLUMN, true);
 	    addSessionColumn(sessions, LAST_SIGNUP_COLUMN, true);
 	}
+	addSessionColumn(sessions, DELETE_SESSION_COLUMN, false);
     }
 
     private void populateSessions(JsArray<SessionSummary> sessionArray) {
