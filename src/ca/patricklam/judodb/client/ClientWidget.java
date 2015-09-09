@@ -290,7 +290,6 @@ public class ClientWidget extends Composite {
         deleteClientButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
                 pushDeleteToServer();
-                ClientWidget.this.jdb.popMode();
             }
         });
 
