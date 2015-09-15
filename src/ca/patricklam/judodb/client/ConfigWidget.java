@@ -69,7 +69,9 @@ public class ConfigWidget extends Composite {
     private final HashSet<CoursSummary> duplicateCours = new HashSet<CoursSummary>();
 
     CellTable prix;
+    private final List<ClubPrix> rawPrixData = new ArrayList<ClubPrix>();
     private final List<ClubPrix> prixData = new ArrayList<ClubPrix>();
+    private final HashSet<ClubPrix> duplicatePrix = new HashSet<ClubPrix>();
 
     // useful URLs: http://www.filsa.net/2010/01/23/more-on-tablayoutpanel/
     // http://www.filsa.net/2010/01/21/gwt-notes-tablayoutpanel/
@@ -702,9 +704,56 @@ public class ConfigWidget extends Composite {
         sessionColumn.setFieldUpdater(new FieldUpdater<ClubPrix, String>() {
                 @Override
                 public void update(int index, ClubPrix object, String value) {
-                    // object.set(c.key, value);
-		    // push change to sessions XXX
-		    // t.redraw();
+                    List<SessionSummary> newSessions = parseSessionIds(value);
+                    List<SessionSummary> oldSessions = parseSessionIds(object.get(PRIX_SESSION_COLUMN.key));
+                    if (oldSessions.equals(newSessions)) return;
+                    refreshPrix = true;
+
+                    List<SessionSummary> addedSessions = new ArrayList<SessionSummary>(),
+                        removedSessions = new ArrayList<SessionSummary>();
+                    for (SessionSummary s : newSessions)
+                        if (!oldSessions.contains(s)) addedSessions.add(s);
+                    for (SessionSummary s : oldSessions)
+                        if (!newSessions.contains(s)) removedSessions.add(s);
+
+                    StringBuffer sb = new StringBuffer();
+                    if (object.get(DIV_COLUMN.key).equals(ADD_PRIX_VALUE)) {
+                        object.set(DIV_COLUMN.key, "");
+                        assert (removedSessions.isEmpty());
+			StringBuffer edits = new StringBuffer();
+                        for (SessionSummary ss : newSessions) {
+                            edits.append("-1,P," + ss.getSeqno() + "," +
+                                         object.getDivisionAbbrev() + "," +
+					 object.getFrais1Session() + "," +
+					 object.getFrais2Session() + "," +
+                                         object.getFraisJudoQC() + "," + jdb.getSelectedClubID() + ";");
+                        }
+			pushEdit(edits.toString());
+                        addAddPrixPrix();
+                    } else {
+                        // add added prix
+                        StringBuffer edits = new StringBuffer();
+                        for (SessionSummary ss : addedSessions) {
+                            edits.append("-1,P," + ss.getSeqno() + "," +
+                                         object.getDivisionAbbrev() + "," +
+					 object.getFrais1Session() + "," +
+					 object.getFrais2Session() + "," +
+                                         object.getFraisJudoQC() + "," + jdb.getSelectedClubID() + ";");
+                        }
+
+                        // remove deleted prix
+                        for (SessionSummary ss : removedSessions) {
+                            for (ClubPrix cs : rawPrixData) {
+                                if (cs.getDivisionAbbrev().equals(object.getDivisionAbbrev()) &&
+                                    cs.getSession().equals(ss.getSeqno())) {
+                                    edits.append("-1,Q," + cs.getId() + "," +
+                                                 cs.getDivisionAbbrev() + "," + jdb.getSelectedClubID() + ";");
+                                }
+                            }
+                        }
+                        removeDuplicatePrix(edits);
+                        pushEdit(edits.toString());
+                    }
                 }
             });
         addPrixColumn(sessions, DIV_COLUMN, true);
@@ -713,6 +762,13 @@ public class ConfigWidget extends Composite {
         addPrixColumn(sessions, FRAIS_JUDO_QC_COLUMN, true);
     }
 
+    private void removeDuplicatePrix(StringBuffer edits) {
+        for (ClubPrix cs : duplicatePrix) {
+            edits.append("-1,Q," + cs.getId() + "," +
+                         cs.getDivisionAbbrev() + "," + jdb.getSelectedClubID() + ";");
+        }
+        duplicateCours.clear();
+    }
     final private static String ADD_PRIX_VALUE = "[ajouter division]";
     void addAddPrixPrix() {
         int maxId = -1;
@@ -736,22 +792,33 @@ public class ConfigWidget extends Composite {
         // l has keys=signatures, values=session abbrevs
         // m has keys=signatures, values=original ids
         HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
+        HashMap<String, Set<String>> ll = new HashMap<String, Set<String>>();
         HashMap<String, List<String>> m = new HashMap<String, List<String>>();
+        rawPrixData.clear(); rawPrixData.addAll(prixArray);
+        duplicatePrix.clear();
 
         for (ClubPrix p : prixArray) {
             String ps = p.getSignature();
             if (!l.containsKey(ps)) {
                 l.put(ps, new StringBuffer());
+		ll.put(ps, new HashSet<String>());
                 m.put(ps, new ArrayList<String>());
             }
             StringBuffer b = l.get(ps);
-            b.append(" ");
+            if (b.length() > 0) b.append(" ");
             SessionSummary ss = seqnoToSession.get(p.getSession());
+            if (ll.get(ps).contains(ss.getAbbrev())) {
+                duplicatePrix.add(p);
+                continue;
+            }
+
+            ll.get(ps).add(ss.getAbbrev());
             b.append(ss.getAbbrev());
             String ls = ss.getLinkedSeqno();
             if (!ls.equals("")) {
                 b.append(" ");
                 b.append(seqnoToSession.get(ls).getAbbrev());
+                ll.get(ps).add(seqnoToSession.get(ls).getAbbrev());
             }
 
             List<String> ids = m.get(ps);
