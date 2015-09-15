@@ -458,7 +458,7 @@ public class ConfigWidget extends Composite {
                         List<String> cs = new ArrayList();
                         for (SessionSummary ss : sessions) {
                             cs.add(ss.getAbbrev());
-                            pushEdit("-1,O," + ss.getSeqno() + "," +
+                            pushEdit("-1,R," + ss.getSeqno() + "," +
                                      value + "," + jdb.getSelectedClubID() + ";");
                         }
                         coursShortDescToDbIds.put(value, cs);
@@ -469,7 +469,7 @@ public class ConfigWidget extends Composite {
 
                         StringBuffer edits = new StringBuffer();
                         for (String coursId : coursShortDescToDbIds.get(object.getShortDesc())) {
-                            edits.append("-1,o" + c.key + "," + coursId + "," +
+                            edits.append("-1,r" + c.key + "," + coursId + "," +
                                      value + "," + jdb.getSelectedClubID() + ";");
                         }
                         removeDuplicateCours(edits);
@@ -513,7 +513,7 @@ public class ConfigWidget extends Composite {
                         // if there is already a blank desc_column merge it to this one
                         assert (removedSessions.isEmpty());
                         for (SessionSummary ss : newSessions) {
-                            pushEdit("-1,O," + ss.getSeqno() + "," +
+                            pushEdit("-1,R," + ss.getSeqno() + "," +
                                      object.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
                         }
                         addAddCoursCours();
@@ -521,7 +521,7 @@ public class ConfigWidget extends Composite {
                         // add added sessions
                         StringBuffer edits = new StringBuffer();
                         for (SessionSummary ss : addedSessions) {
-                            edits.append("-1,O," + ss.getSeqno() + "," +
+                            edits.append("-1,R," + ss.getSeqno() + "," +
                                      object.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
                         }
 
@@ -531,7 +531,7 @@ public class ConfigWidget extends Composite {
                             for (CoursSummary cs : rawCoursData) {
                                 if (cs.getShortDesc().equals(object.getShortDesc()) &&
                                     cs.getSession().equals(ss.getSeqno())) {
-                                    edits.append("-1,P," + cs.getId() + "," +
+                                    edits.append("-1,O," + cs.getId() + "," +
                                                  object.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
                                 }
                             }
@@ -546,7 +546,7 @@ public class ConfigWidget extends Composite {
 
     private void removeDuplicateCours(StringBuffer edits) {
         for (CoursSummary cs : duplicateCours) {
-            edits.append("-1,P," + cs.getId() + "," +
+            edits.append("-1,O," + cs.getId() + "," +
                          cs.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
         }
         duplicateCours.clear();
