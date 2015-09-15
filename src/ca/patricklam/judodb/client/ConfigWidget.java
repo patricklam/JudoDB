@@ -456,11 +456,13 @@ public class ConfigWidget extends Composite {
                         object.set(COURS_SESSION_COLUMN.key, currentSessions);
                         sessions = parseSessionIds(currentSessions);
                         List<String> cs = new ArrayList();
+                        StringBuffer edits = new StringBuffer();
                         for (SessionSummary ss : sessions) {
                             cs.add(ss.getAbbrev());
-                            pushEdit("-1,R," + ss.getSeqno() + "," +
+                            edits.append("-1,R," + ss.getSeqno() + "," +
                                      value + "," + jdb.getSelectedClubID() + ";");
                         }
+                        pushEdit(edits.toString());
                         coursShortDescToDbIds.put(value, cs);
                         addAddCoursCours();
                     } else {
@@ -510,7 +512,7 @@ public class ConfigWidget extends Composite {
                     StringBuffer sb = new StringBuffer();
                     if (object.get(DESC_COLUMN.key).equals(ADD_COURS_VALUE)) {
                         object.set(DESC_COLUMN.key, "");
-                        // if there is already a blank desc_column merge it to this one
+                        // if there is already a blank desc_column it automatically gets merged
                         assert (removedSessions.isEmpty());
                         for (SessionSummary ss : newSessions) {
                             pushEdit("-1,R," + ss.getSeqno() + "," +
@@ -660,12 +662,30 @@ public class ConfigWidget extends Composite {
 	newColumn.setFieldUpdater(new FieldUpdater<ClubPrix, String>() {
 		@Override
 		public void update(int index, ClubPrix object, String value) {
-		    object.set(c.key, value);
-
-		    for (String dbId : prixInternalIdToDbIds.get(object.getId()))
-                        pushEdit("-1,p" + c.key + "," + dbId + "," + value + "," + jdb.getSelectedClubID() + ";");
-		    t.redraw();
-		}
+                    refreshPrix = true;
+                    if (object.get(DIV_COLUMN.key).equals(ADD_PRIX_VALUE)) {
+                        assert (object.get(PRIX_SESSION_COLUMN.key).equals(""));
+                        String currentSessions = JudoDB.getSessionIds(new Date(), 2, sessionData);
+                        object.set(PRIX_SESSION_COLUMN.key, currentSessions);
+                        List<SessionSummary> currentSessionsList = parseSessionIds(currentSessions);
+                        StringBuffer edits = new StringBuffer();
+                        for (SessionSummary ss : currentSessionsList) {
+                            edits.append("-1,P," + ss.getSeqno() + "," +
+                                         value + "," /* + frais_1 */ + "," /* + frais_2 */ + ","
+                                         /* + frais_judo_qc */ + "," + jdb.getSelectedClubID() + ";");
+                        }
+                        pushEdit(edits.toString());
+                        addAddPrixPrix();
+                    } else {
+                        StringBuffer edits = new StringBuffer();
+                        for (String dbId : prixInternalIdToDbIds.get(object.getId())) {
+                            edits.append("-1,p" + c.key + "," + dbId + "," + value + "," + jdb.getSelectedClubID() + ";");
+                        }
+                        pushEdit(edits.toString());
+                    }
+                    object.set(c.key, value);
+                    t.redraw();
+                }
 	    });
 	cours.setColumnWidth(newColumn, c.width, c.widthUnits);
 	return newColumn;
@@ -749,10 +769,10 @@ public class ConfigWidget extends Composite {
 
             // parse the components of ps and put them in pn
             pn.setSession(l.get(s).toString());
-            pn.setDivisionAbbrev(pnArray[0]);
-            pn.setFrais1Session(pnArray[1]);
-            pn.setFrais2Session(pnArray[2]);
-            pn.setFraisJudoQC(pnArray[3]);
+            pn.setDivisionAbbrev(pnArray.length > 0 ? pnArray[0] : "");
+            pn.setFrais1Session(pnArray.length > 1 ? pnArray[1] : "");
+            pn.setFrais2Session(pnArray.length > 2 ? pnArray[2] : "");
+            pn.setFraisJudoQC(pnArray.length > 3 ? pnArray[3] : "");
             prixData.add(pn);
         }
 
@@ -828,6 +848,7 @@ public class ConfigWidget extends Composite {
 
     private boolean refreshSessions = false;
     private boolean refreshCours = false;
+    private boolean refreshPrix = true;
     public void pushChanges(final String guid) {
         String url = CONFIRM_PUSH_URL + "?guid=" + guid;
         RequestCallback rc =
@@ -857,6 +878,13 @@ public class ConfigWidget extends Composite {
 				ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
 				if (cs != null) {
 				    retrieveCours(cs.getNumeroClub());
+				}
+			    }
+			    if (refreshPrix) {
+				refreshPrix = false;
+				ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+				if (cs != null) {
+				    retrieveClubPrix(cs.getNumeroClub());
 				}
 			    }
                         }
