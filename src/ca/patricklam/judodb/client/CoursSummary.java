@@ -5,6 +5,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 public class CoursSummary extends JavaScriptObject {
     protected CoursSummary() { }
 
+    // as used in ConfigWidget, id is synthetic
     public final native String getId() /*-{ return this.id; }-*/;
     public final native void setId(String id) /*-{ this.id = id; }-*/;
     public final native String getClubId() /*-{ return this.club_id; }-*/;

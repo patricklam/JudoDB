@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.EntryPoint;
@@ -114,7 +115,7 @@ public class JudoDB implements EntryPoint {
 
     /* actions */
     private final Anchor voirListes = new Anchor("Voir listes des cours");
-    private final Anchor editConfig = new Anchor("Éditer configuration");
+    private final Anchor editConfig = new Anchor("Configuration du club (cours, inscriptions)");
     private final Anchor logout = new Anchor("Fermer session", "logout.php");
 
     final Anchor filtrerListes = new Anchor("Filtrer");
@@ -726,4 +727,35 @@ public class JudoDB implements EntryPoint {
         r = r.replace(new RegExp("\\W", 'g'),"");
         return r;
     }-*/;
+
+    static String getSessionIds(Date d, int sessionCount, List<SessionSummary> sessionSummaries) {
+        if (sessionSummaries == null) return "";
+
+        SessionSummary m = null;
+        for (SessionSummary s : sessionSummaries) {
+            try {
+                Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
+                Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
+                if (d.after(inscrBegin) && d.before(inscrEnd)) {
+                    m = s; continue;
+                }
+            } catch (IllegalArgumentException e) {}
+        }
+        if (m == null) return "";
+
+        if (sessionCount == 1) return m.getAbbrev();
+        if (sessionCount == 2) {
+            String lsn = m.getLinkedSeqno();
+            SessionSummary next = null;
+            for (SessionSummary ss : sessionSummaries) {
+                if (ss.getSeqno().equals(lsn))
+                    next = ss;
+            }
+            if (next != null)
+                return m.getAbbrev() + " " + next.getAbbrev();
+            else
+                return m.getAbbrev();
+        }
+        return "";
+    }
 }

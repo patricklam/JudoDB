@@ -894,7 +894,7 @@ public class ClientWidget extends Composite {
         semaines.setText(CostCalculator.getWeeksSummary(currentSession, dateInscription));
         escompteFrais.setReadOnly(!CostCalculator.isCasSpecial(sd));
 
-        saisons.setText(getSessionIds(Constants.DB_DATE_FORMAT.parse(sd.getDateInscription()), sessionCount));
+        saisons.setText(JudoDB.getSessionIds(Constants.DB_DATE_FORMAT.parse(sd.getDateInscription()), sessionCount, sessionSummaries));
 
         try {
             categorieFrais.setText (cf.format(Double.parseDouble(sd.getCategorieFrais())));
@@ -1127,38 +1127,6 @@ public class ClientWidget extends Composite {
 		}
 	    } catch (IllegalArgumentException e) {}
 	}
-    }
-
-    // refactor into Util?
-    private String getSessionIds(Date d, int sessionCount) {
-	if (sessionSummaries == null) return "";
-
-	SessionSummary m = null;
-	for (SessionSummary s : sessionSummaries) {
-	    try {
-		Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
-		Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
-		if (d.after(inscrBegin) && d.before(inscrEnd)) {
-		    m = s; continue;
-		}
-	    } catch (IllegalArgumentException e) {}
-	}
-        if (m == null) return "";
-
-	if (sessionCount == 1) return m.getAbbrev();
-	if (sessionCount == 2) {
-	    String lsn = m.getLinkedSeqno();
-	    SessionSummary next = null;
-	    for (SessionSummary ss : sessionSummaries) {
-		if (ss.getSeqno().equals(lsn))
-		    next = ss;
-	    }
-	    if (next != null)
-		return m.getAbbrev() + " " + next.getAbbrev();
-	    else
-		return m.getAbbrev();
-	}
-	return "";
     }
 
     /* --- end sessions --- */

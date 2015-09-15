@@ -34,7 +34,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 public class ConfigWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ConfigWidget> {}
@@ -55,13 +58,18 @@ public class ConfigWidget extends Composite {
     private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
 
     CellTable sessions;
-    private static final List<SessionSummary> sessionData = new ArrayList<SessionSummary>();
+    private final List<SessionSummary> sessionData = new ArrayList<SessionSummary>();
 
     CellTable cours;
-    private static final List<CoursSummary> coursData = new ArrayList<CoursSummary>();
+    // rawCoursData is unconsolidated, coursData is merged by session
+    private final List<CoursSummary> rawCoursData = new ArrayList<CoursSummary>();
+    private final List<CoursSummary> coursData = new ArrayList<CoursSummary>();
+    private final HashMap<String, List<String>> coursShortDescToDbIds =
+        new HashMap<String, List<String>>();
+    private final HashSet<CoursSummary> duplicateCours = new HashSet<CoursSummary>();
 
     CellTable prix;
-    private static final List<ClubPrix> prixData = new ArrayList<ClubPrix>();
+    private final List<ClubPrix> prixData = new ArrayList<ClubPrix>();
 
     // useful URLs: http://www.filsa.net/2010/01/23/more-on-tablayoutpanel/
     // http://www.filsa.net/2010/01/21/gwt-notes-tablayoutpanel/
@@ -300,13 +308,35 @@ public class ConfigWidget extends Composite {
 	updateSessionToNameMapping();
     }
 
-    private HashMap<String, SessionSummary> sessionNameToSession = new HashMap<String, SessionSummary>();
+    private HashMap<String, SessionSummary> seqnoToSession = new HashMap<String, SessionSummary>();
+    // primary session only, not linked
+    private HashMap<String, SessionSummary> seqAbbrevToSession = new HashMap<String, SessionSummary>();
 
-    void updateSessionToNameMapping() {
-	sessionNameToSession.clear();
-	for (SessionSummary s : sessionData) {
-	    sessionNameToSession.put(s.getSeqno(), s);
-	}
+    private void updateSessionToNameMapping() {
+        seqnoToSession.clear();
+        seqAbbrevToSession.clear();
+        for (SessionSummary s : sessionData)
+            seqnoToSession.put(s.getSeqno(), s);
+
+        for (SessionSummary s : sessionData) {
+            SessionSummary linkedSession = seqnoToSession.get(s.getLinkedSeqno());
+            if (s.isPrimary())
+                seqAbbrevToSession.put(s.getAbbrev(), s);
+        }
+    }
+
+    /* accepts something like A14 H15 A15 H16
+     * returns a list of sessions, ignoring linked_seqnos.
+     */
+    private List<SessionSummary> parseSessionIds(String sessionAbbrevs) {
+        String[] sessionAbbrevArray = sessionAbbrevs.split(" ");
+        List<SessionSummary> retval = new ArrayList<SessionSummary>();
+        for (String s : sessionAbbrevArray) {
+            SessionSummary ts = seqAbbrevToSession.get(s);
+            if (ts != null)
+                retval.add(ts);
+        }
+        return retval;
     }
     /* --- end session table --- */
 
@@ -352,6 +382,37 @@ public class ConfigWidget extends Composite {
     /* --- end club tab --- */
 
     /* --- cours tab --- */
+    /* There are five possible front-end actions on the cours tab:
+     * 0) delete a cours: just delete all of the corresponding cours-ids
+     * 1) edit sessions field of new cours
+     * 2) edit short_desc field of new cours
+     * 3) edit sessions field of existing cours
+     * 4) edit short_desc field of existing cours
+     *
+     * There are also three update types:
+     * a) change short_desc of existing cours
+     * b) create a new CoursSummary (new session, new short_desc)
+     * c) remove a coursSummary (by session and id)
+     *
+     * action (1) involves (b) with blank short_desc; if any existing short_descs are blank, merge them into this
+     * action (2) involves populating the sessions field with the current session and then just doing (b)
+     * action (3) involves (b) on the new sessions and (c) on the deleted sessions
+     * action (4) involves update (a)
+     */
+
+    /* test script:
+     * - create a new cours by entering a description
+     * - add another session to that cours
+     * - edit the short_desc
+     * - delete a session from that cours
+     *
+     * - edit the session of the "add new cours" cours
+     * - change that session to a disjoint session (eg A15 H16 -> A14)
+     * - edit the session of the "add new cours" cours again, should see a merge
+     *
+     * - edit a short_desc so that it is the same as some other existing short_desc
+     */
+
     private static final ProvidesKey<CoursSummary> COURS_KEY_PROVIDER =
 	new ProvidesKey<CoursSummary>() {
         @Override
@@ -373,31 +434,122 @@ public class ConfigWidget extends Composite {
     }
 
     private Column<CoursSummary, String> addCoursColumn(final CellTable t, final ColumnFields c, final boolean editable) {
-	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
-	Column<CoursSummary, String> newColumn = new Column<CoursSummary, String>(cell) {
-	    public String getValue(CoursSummary object) {
-		return object.get(c.key);
-	    }
-	};
-	cours.addColumn(newColumn, c.name);
-	newColumn.setFieldUpdater(new FieldUpdater<CoursSummary, String>() {
-		@Override
-		public void update(int index, CoursSummary object, String value) {
-		    object.set(c.key, value);
-		    // push stuff
-		    t.redraw();
-		}
-	    });
-	cours.setColumnWidth(newColumn, c.width, c.widthUnits);
-	return newColumn;
+        final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
+        Column<CoursSummary, String> newColumn = new Column<CoursSummary, String>(cell) {
+            public String getValue(CoursSummary object) {
+                return object.get(c.key);
+            }
+        };
+        cours.addColumn(newColumn, c.name);
+        // this handles updating the short_desc column
+        newColumn.setFieldUpdater(new FieldUpdater<CoursSummary, String>() {
+                @Override
+                public void update(int index, CoursSummary object, String value) {
+                    List<SessionSummary> sessions = parseSessionIds(value);
+                    StringBuffer sb = new StringBuffer();
+                    refreshCours = true;
+
+                    if (object.get(DESC_COLUMN.key).equals(ADD_COURS_VALUE)) {
+                        // ... of a new cours, case (2)
+                        assert (object.get(COURS_SESSION_COLUMN.key).equals(""));
+                        String currentSessions = JudoDB.getSessionIds(new Date(), 2, sessionData);
+                        object.set(COURS_SESSION_COLUMN.key, currentSessions);
+                        sessions = parseSessionIds(currentSessions);
+                        List<String> cs = new ArrayList();
+                        for (SessionSummary ss : sessions) {
+                            cs.add(ss.getAbbrev());
+                            pushEdit("-1,O," + ss.getSeqno() + "," +
+                                     value + "," + jdb.getSelectedClubID() + ";");
+                        }
+                        coursShortDescToDbIds.put(value, cs);
+                        addAddCoursCours();
+                    } else {
+                        // ... of an existing cours, case (4)
+                        assert coursShortDescToDbIds.containsKey(object.getShortDesc());
+
+                        StringBuffer edits = new StringBuffer();
+                        for (String coursId : coursShortDescToDbIds.get(object.getShortDesc())) {
+                            edits.append("-1,o" + c.key + "," + coursId + "," +
+                                     value + "," + jdb.getSelectedClubID() + ";");
+                        }
+                        removeDuplicateCours(edits);
+                        pushEdit(edits.toString());
+                    }
+                    object.set(c.key, value);
+                    cours.setRowData(coursData);
+                    t.redraw();
+                }
+            });
+        cours.setColumnWidth(newColumn, c.width, c.widthUnits);
+        return newColumn;
     }
 
     void initializeCoursColumns() {
-	while (cours.getColumnCount() > 0)
-	    cours.removeColumn(0);
+        while (cours.getColumnCount() > 0)
+            cours.removeColumn(0);
 
-	addCoursColumn(sessions, COURS_SESSION_COLUMN, true);
-	addCoursColumn(sessions, DESC_COLUMN, true);
+        final Column<CoursSummary, String> sessionColumn =
+            addCoursColumn(sessions, COURS_SESSION_COLUMN, true);
+        // implement changes to the session column
+        // todo: handle deleting sessions as well
+        sessionColumn.setFieldUpdater(new FieldUpdater<CoursSummary, String>() {
+                @Override
+                public void update(int index, CoursSummary object, String value) {
+                    List<SessionSummary> newSessions = parseSessionIds(value);
+                    List<SessionSummary> oldSessions = parseSessionIds(object.get(COURS_SESSION_COLUMN.key));
+                    if (oldSessions.equals(newSessions)) return;
+                    refreshCours = true;
+
+                    List<SessionSummary> addedSessions = new ArrayList<SessionSummary>(),
+                        removedSessions = new ArrayList<SessionSummary>();
+                    for (SessionSummary s : newSessions)
+                        if (!oldSessions.contains(s)) addedSessions.add(s);
+                    for (SessionSummary s : oldSessions)
+                        if (!newSessions.contains(s)) removedSessions.add(s);
+
+                    StringBuffer sb = new StringBuffer();
+                    if (object.get(DESC_COLUMN.key).equals(ADD_COURS_VALUE)) {
+                        object.set(DESC_COLUMN.key, "");
+                        // if there is already a blank desc_column merge it to this one
+                        assert (removedSessions.isEmpty());
+                        for (SessionSummary ss : newSessions) {
+                            pushEdit("-1,O," + ss.getSeqno() + "," +
+                                     object.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
+                        }
+                        addAddCoursCours();
+                    } else {
+                        // add added sessions
+                        StringBuffer edits = new StringBuffer();
+                        for (SessionSummary ss : addedSessions) {
+                            edits.append("-1,O," + ss.getSeqno() + "," +
+                                     object.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
+                        }
+
+                        // remove deleted sessions
+                        assert coursShortDescToDbIds.containsKey(object.getShortDesc());
+                        for (SessionSummary ss : removedSessions) {
+                            for (CoursSummary cs : rawCoursData) {
+                                if (cs.getShortDesc().equals(object.getShortDesc()) &&
+                                    cs.getSession().equals(ss.getSeqno())) {
+                                    edits.append("-1,P," + cs.getId() + "," +
+                                                 object.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
+                                }
+                            }
+                        }
+                        removeDuplicateCours(edits);
+                        pushEdit(edits.toString());
+                    }
+                }
+            });
+        addCoursColumn(sessions, DESC_COLUMN, true);
+    }
+
+    private void removeDuplicateCours(StringBuffer edits) {
+        for (CoursSummary cs : duplicateCours) {
+            edits.append("-1,P," + cs.getId() + "," +
+                         cs.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
+        }
+        duplicateCours.clear();
     }
 
     final private static String ADD_COURS_VALUE = "[ajouter cours]";
@@ -411,10 +563,9 @@ public class ConfigWidget extends Composite {
         CoursSummary addNewCours =
             JsonUtils.<CoursSummary>safeEval
             ("{\"id\":\""+(maxId+1)+"\"}");
-        addNewCours.setSession(ADD_COURS_VALUE);
+        addNewCours.setSession("");
         addNewCours.setClubId(jdb.getSelectedClubID());
-        addNewCours.setShortDesc("");
-        com.google.gwt.user.client.Window.alert(addNewCours.get("session"));
+        addNewCours.setShortDesc(ADD_COURS_VALUE);
         coursData.add(addNewCours);
     }
 
@@ -422,21 +573,38 @@ public class ConfigWidget extends Composite {
         initializeCoursColumns();
 
         // combine cours across sessions
-        // l has key shortdesc, values sessions
+        // l has keys shortdesc, values sessions
+        // m has keys shortdesc, values ids
         HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
+        HashMap<String, Set<String>> ll = new HashMap<String, Set<String>>();
+        HashMap<String, List<String>> m = new HashMap<String, List<String>>();
+        rawCoursData.clear(); rawCoursData.addAll(coursArray);
+        duplicateCours.clear();
 
         for (CoursSummary cs : coursArray) {
             if (!l.containsKey(cs.getShortDesc())) {
                 l.put(cs.getShortDesc(), new StringBuffer());
+                ll.put(cs.getShortDesc(), new HashSet<String>());
+                m.put(cs.getShortDesc(), new ArrayList<String>());
             }
             StringBuffer b = l.get(cs.getShortDesc());
-            b.append(" ");
-            SessionSummary ss = sessionNameToSession.get(cs.getSession());
+            List<String> ids = m.get(cs.getShortDesc());
+            ids.add(cs.getId());
+
+            SessionSummary ss = seqnoToSession.get(cs.getSession());
+            if (ll.get(cs.getShortDesc()).contains(ss.getAbbrev())) {
+                duplicateCours.add(cs);
+                continue;
+            }
+
+            ll.get(cs.getShortDesc()).add(ss.getAbbrev());
+            if (b.length() > 0) b.append(" ");
             b.append(ss.getAbbrev());
             String ls = ss.getLinkedSeqno();
             if (!ls.equals("")) {
                 b.append(" ");
-                b.append(sessionNameToSession.get(ls).getAbbrev());
+                b.append(seqnoToSession.get(ls).getAbbrev());
+                ll.get(cs.getShortDesc()).add(seqnoToSession.get(ls).getAbbrev());
             }
         }
 
@@ -445,6 +613,7 @@ public class ConfigWidget extends Composite {
         for (String s : l.keySet()) {
             CoursSummary cs = (CoursSummary)JavaScriptObject.createObject().cast();
             cs.setId(String.valueOf(id)); cs.setShortDesc(s); cs.setSession(l.get(s).toString());
+            coursShortDescToDbIds.put(cs.getShortDesc(), m.get(s));
             coursData.add(cs);
             id++;
         }
@@ -524,12 +693,12 @@ public class ConfigWidget extends Composite {
             }
             StringBuffer b = l.get(ps);
             b.append(" ");
-            SessionSummary ss = sessionNameToSession.get(p.getSession());
+            SessionSummary ss = seqnoToSession.get(p.getSession());
             b.append(ss.getAbbrev());
             String ls = ss.getLinkedSeqno();
             if (!ls.equals("")) {
                 b.append(" ");
-                b.append(sessionNameToSession.get(ls).getAbbrev());
+                b.append(seqnoToSession.get(ls).getAbbrev());
             }
         }
 
@@ -621,6 +790,7 @@ public class ConfigWidget extends Composite {
     }
 
     private boolean refreshSessions = false;
+    private boolean refreshCours = false;
     public void pushChanges(final String guid) {
         String url = CONFIRM_PUSH_URL + "?guid=" + guid;
         RequestCallback rc =
@@ -644,6 +814,13 @@ public class ConfigWidget extends Composite {
 			    if (refreshSessions) {
 				refreshSessions = false;
 				retrieveSessions(Integer.toString(jdb.selectedClub));
+			    }
+			    if (refreshCours) {
+				refreshCours = false;
+				ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+				if (cs != null) {
+				    retrieveCours(cs.getNumeroClub());
+				}
 			    }
                         }
                         new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
