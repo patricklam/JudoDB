@@ -22,18 +22,18 @@ public class ClubPrix extends JavaScriptObject {
     public final String get(String key) {
 	if (key.equals("session")) return getSession();
 	if (key.equals("id")) return getId();
-	if (key.equals("div")) return getDivisionAbbrev();
-	if (key.equals("frais_1")) return getFrais1Session();
-	if (key.equals("frais_2")) return getFrais2Session();
+	if (key.equals("division_abbrev")) return getDivisionAbbrev();
+	if (key.equals("frais_1_session")) return getFrais1Session();
+	if (key.equals("frais_2_session")) return getFrais2Session();
 	if (key.equals("frais_judo_qc")) return getFraisJudoQC();
 	throw new RuntimeException("get: bad key " + key);
     }
 
     public final void set(String key, String value) {
 	if (key.equals("session")) setSession(value);
-	else if (key.equals("div")) setDivisionAbbrev(value);
-	else if (key.equals("frais_1")) setFrais1Session(value);
-	else if (key.equals("frais_2")) setFrais2Session(value);
+	else if (key.equals("division_abbrev")) setDivisionAbbrev(value);
+	else if (key.equals("frais_1_session")) setFrais1Session(value);
+	else if (key.equals("frais_2_session")) setFrais2Session(value);
 	else if (key.equals("frais_judo_qc")) setFraisJudoQC(value);
 	else throw new RuntimeException("set: bad key " + key);
     }

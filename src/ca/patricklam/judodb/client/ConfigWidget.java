@@ -491,7 +491,7 @@ public class ConfigWidget extends Composite {
         final Column<CoursSummary, String> sessionColumn =
             addCoursColumn(sessions, COURS_SESSION_COLUMN, true);
         // implement changes to the session column
-        // todo: handle deleting sessions as well
+        // todo: have a button for deleting all sessions?
         sessionColumn.setFieldUpdater(new FieldUpdater<CoursSummary, String>() {
                 @Override
                 public void update(int index, CoursSummary object, String value) {
@@ -635,9 +635,9 @@ public class ConfigWidget extends Composite {
     };
 
     private final ColumnFields PRIX_SESSION_COLUMN = new ColumnFields("session", "Session", 2, Unit.EM),
-	DIV_COLUMN = new ColumnFields("div", "Division", 4, Unit.EM),
-	FRAIS_1_COLUMN = new ColumnFields("frais_1", "Frais 1 session", 4, Unit.EM),
-	FRAIS_2_COLUMN = new ColumnFields("frais_2", "Frais 2 sessions", 4, Unit.EM),
+	DIV_COLUMN = new ColumnFields("division_abbrev", "Division", 4, Unit.EM),
+	FRAIS_1_COLUMN = new ColumnFields("frais_1_session", "Frais 1 session", 4, Unit.EM),
+	FRAIS_2_COLUMN = new ColumnFields("frais_2_session", "Frais 2 sessions", 4, Unit.EM),
 	FRAIS_JUDO_QC_COLUMN = new ColumnFields("frais_judo_qc", "Frais Judo QC", 4, Unit.EM);
 
     private List<ColumnFields> perPrixColumns = Collections.unmodifiableList(Arrays.asList(PRIX_SESSION_COLUMN, DIV_COLUMN, FRAIS_1_COLUMN, FRAIS_2_COLUMN, FRAIS_JUDO_QC_COLUMN));
@@ -661,7 +661,9 @@ public class ConfigWidget extends Composite {
 		@Override
 		public void update(int index, ClubPrix object, String value) {
 		    object.set(c.key, value);
-		    // push stuff
+
+		    for (String dbId : prixInternalIdToDbIds.get(object.getId()))
+                        pushEdit("-1,p" + c.key + "," + dbId + "," + value + "," + jdb.getSelectedClubID() + ";");
 		    t.redraw();
 		}
 	    });
@@ -670,26 +672,55 @@ public class ConfigWidget extends Composite {
     }
 
     void initializePrixColumns() {
-	while (prix.getColumnCount() > 0)
-	    prix.removeColumn(0);
+        while (prix.getColumnCount() > 0)
+            prix.removeColumn(0);
 
-	addPrixColumn(sessions, PRIX_SESSION_COLUMN, true);
-	addPrixColumn(sessions, DIV_COLUMN, true);
-	addPrixColumn(sessions, FRAIS_1_COLUMN, true);
-	addPrixColumn(sessions, FRAIS_2_COLUMN, true);
-	addPrixColumn(sessions, FRAIS_JUDO_QC_COLUMN, true);
+        final Column<ClubPrix, String> sessionColumn =
+            addPrixColumn(sessions, PRIX_SESSION_COLUMN, true);
+        sessionColumn.setFieldUpdater(new FieldUpdater<ClubPrix, String>() {
+                @Override
+                public void update(int index, ClubPrix object, String value) {
+                    // object.set(c.key, value);
+		    // push change to sessions XXX
+		    // t.redraw();
+                }
+            });
+        addPrixColumn(sessions, DIV_COLUMN, true);
+        addPrixColumn(sessions, FRAIS_1_COLUMN, true);
+        addPrixColumn(sessions, FRAIS_2_COLUMN, true);
+        addPrixColumn(sessions, FRAIS_JUDO_QC_COLUMN, true);
     }
+
+    final private static String ADD_PRIX_VALUE = "[ajouter division]";
+    void addAddPrixPrix() {
+        int maxId = -1;
+        for (ClubPrix c : prixData) {
+            if (Integer.parseInt(c.getId()) > maxId)
+                maxId = Integer.parseInt(c.getId());
+        }
+
+        ClubPrix addNewPrix =
+            JsonUtils.<ClubPrix>safeEval
+            ("{\"id\":\""+(maxId+1)+"\"}");
+        addNewPrix.setDivisionAbbrev(ADD_PRIX_VALUE);
+        prixData.add(addNewPrix);
+    }
+
+    private final HashMap<String, List<String>> prixInternalIdToDbIds = new HashMap<String, List<String>>();
 
     private void populatePrix(List<ClubPrix> prixArray) {
         initializePrixColumns();
 
-        // l has key signature, values are prix
+        // l has keys=signatures, values=session abbrevs
+        // m has keys=signatures, values=original ids
         HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
+        HashMap<String, List<String>> m = new HashMap<String, List<String>>();
 
         for (ClubPrix p : prixArray) {
             String ps = p.getSignature();
             if (!l.containsKey(ps)) {
                 l.put(ps, new StringBuffer());
+                m.put(ps, new ArrayList<String>());
             }
             StringBuffer b = l.get(ps);
             b.append(" ");
@@ -700,14 +731,19 @@ public class ConfigWidget extends Composite {
                 b.append(" ");
                 b.append(seqnoToSession.get(ls).getAbbrev());
             }
+
+            List<String> ids = m.get(ps);
+            ids.add(p.getId());
         }
 
         prixData.clear();
+        prixInternalIdToDbIds.clear();
         int id = 0;
         for (String s : l.keySet()) {
             String[] pnArray = s.split("\\|");
             ClubPrix pn = (ClubPrix)JavaScriptObject.createObject().cast();
 
+            prixInternalIdToDbIds.put(Integer.toString(id), m.get(s));
             pn.setId(String.valueOf(id));
             id++;
 
@@ -720,10 +756,11 @@ public class ConfigWidget extends Composite {
             prixData.add(pn);
         }
 
-	prix.setRowData(prixData);
-	prix.redraw();
+        addAddPrixPrix();
+        prix.setRowData(prixData);
+        prix.redraw();
     }
-    /* --- end cours tab --- */
+    /* --- end prix tab --- */
 
     /* --- network functions --- */
     private boolean gotSessions = false;
