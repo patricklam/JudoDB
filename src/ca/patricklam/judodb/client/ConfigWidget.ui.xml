@@ -46,6 +46,11 @@
 	 <g:FlowPanel ui:field="prixTab">
 	 </g:FlowPanel>
        </g:tab>
+       <g:tab>
+	 <g:header size='6'>Escompte</g:header>
+	 <g:FlowPanel ui:field="escompteTab">
+	 </g:FlowPanel>
+       </g:tab>
       </g:TabLayoutPanel>
      </g:layer>
     </g:LayoutPanel>

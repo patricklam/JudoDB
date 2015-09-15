@@ -142,6 +142,38 @@ public class ConfigWidget extends Composite {
         configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
     }
 
+    /* accepts something like A14 H15 A15 H16
+     * returns a list of sessions, ignoring linked_seqnos.
+     */
+    private List<SessionSummary> parseSessionIds(String sessionAbbrevs) {
+        String[] sessionAbbrevArray = sessionAbbrevs.split(" ");
+        List<SessionSummary> retval = new ArrayList<SessionSummary>();
+        for (String s : sessionAbbrevArray) {
+            SessionSummary ts = seqAbbrevToSession.get(s);
+            if (ts != null)
+                retval.add(ts);
+        }
+        return retval;
+    }
+
+    private HashMap<String, SessionSummary> seqnoToSession = new HashMap<String, SessionSummary>();
+    // primary session only, not linked
+    private HashMap<String, SessionSummary> seqAbbrevToSession = new HashMap<String, SessionSummary>();
+
+    private void updateSessionToNameMapping() {
+        seqnoToSession.clear();
+        seqAbbrevToSession.clear();
+        for (SessionSummary s : sessionData)
+            seqnoToSession.put(s.getSeqno(), s);
+
+        for (SessionSummary s : sessionData) {
+            SessionSummary linkedSession = seqnoToSession.get(s.getLinkedSeqno());
+            if (s.isPrimary())
+                seqAbbrevToSession.put(s.getAbbrev(), s);
+        }
+    }
+
+    /* --- session tab --- */
     private static final ProvidesKey<SessionSummary> SESSION_KEY_PROVIDER =
 	new ProvidesKey<SessionSummary>() {
         @Override
@@ -164,7 +196,6 @@ public class ConfigWidget extends Composite {
 	public Unit widthUnits;
     }
 
-    /* --- session table --- */
     private static final String DELETE_SESSION_KEY = "DELETE";
 
     private final ColumnFields NAME_COLUMN = new ColumnFields("name", "Nom", 10, Unit.EM),
@@ -223,20 +254,6 @@ public class ConfigWidget extends Composite {
 	sessions.setWidth("60em", true);
 
 	initializeSessionColumns();
-    }
-
-    private void pushEdit(String dv) {
-        guid = UUID.uuid();
-        guid_on_form.setValue(guid);
-	current_session.setValue("A00");
-        dataToSave.setValue(dv.toString());
-        configEditForm.submit();
-
-        pushTries = 0;
-        new Timer() { public void run() {
-            pushChanges(guid);
-        } }.schedule(500);
-
     }
 
     final private static String ADD_SESSION_VALUE = "[ajouter session]";
@@ -309,38 +326,7 @@ public class ConfigWidget extends Composite {
 	sessions.redraw();
 	updateSessionToNameMapping();
     }
-
-    private HashMap<String, SessionSummary> seqnoToSession = new HashMap<String, SessionSummary>();
-    // primary session only, not linked
-    private HashMap<String, SessionSummary> seqAbbrevToSession = new HashMap<String, SessionSummary>();
-
-    private void updateSessionToNameMapping() {
-        seqnoToSession.clear();
-        seqAbbrevToSession.clear();
-        for (SessionSummary s : sessionData)
-            seqnoToSession.put(s.getSeqno(), s);
-
-        for (SessionSummary s : sessionData) {
-            SessionSummary linkedSession = seqnoToSession.get(s.getLinkedSeqno());
-            if (s.isPrimary())
-                seqAbbrevToSession.put(s.getAbbrev(), s);
-        }
-    }
-
-    /* accepts something like A14 H15 A15 H16
-     * returns a list of sessions, ignoring linked_seqnos.
-     */
-    private List<SessionSummary> parseSessionIds(String sessionAbbrevs) {
-        String[] sessionAbbrevArray = sessionAbbrevs.split(" ");
-        List<SessionSummary> retval = new ArrayList<SessionSummary>();
-        for (String s : sessionAbbrevArray) {
-            SessionSummary ts = seqAbbrevToSession.get(s);
-            if (ts != null)
-                retval.add(ts);
-        }
-        return retval;
-    }
-    /* --- end session table --- */
+    /* --- end session tab --- */
 
     /* --- club tab --- */
     @UiField TextBox nom_club;
@@ -961,5 +947,19 @@ public class ConfigWidget extends Composite {
                     }
                 });
         jdb.retrieve(url, rc);
+    }
+
+    private void pushEdit(String dv) {
+        guid = UUID.uuid();
+        guid_on_form.setValue(guid);
+	current_session.setValue("A00");
+        dataToSave.setValue(dv.toString());
+        configEditForm.submit();
+
+        pushTries = 0;
+        new Timer() { public void run() {
+            pushChanges(guid);
+        } }.schedule(500);
+
     }
 }
