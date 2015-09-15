@@ -6,6 +6,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Timer;
@@ -336,24 +340,70 @@ public class ConfigWidget extends Composite {
     @UiField TextBox prefix_codepostale;
     @UiField TextBox indicatif_regional;
     @UiField TextBox escompte_resident;
+    @UiField TextBox prime_prorata;
     @UiField CheckBox default_prorata;
 
-    void clearClubFields() {
-	nom_club.setText(""); nom_club.setReadOnly(true);
-	nom_short.setText(""); nom_short.setReadOnly(true);
-	numero_club.setText(""); numero_club.setReadOnly(true);
-	ville.setText(""); ville.setReadOnly(true);
-	prefix_codepostale.setText(""); prefix_codepostale.setReadOnly(true);
-	indicatif_regional.setText(""); indicatif_regional.setReadOnly(true);
-	escompte_resident.setText(""); escompte_resident.setReadOnly(true);
-	default_prorata.setValue(false); default_prorata.setEnabled(false);
+    ValueChangeHandler newValueChangeHandler(final String key) {
+	return new ValueChangeHandler<String>() {
+	    @Override
+	    public void onValueChange(ValueChangeEvent<String> event) {
+		pushEdit("-1,c" + key + "," + event.getValue() + "," +
+			 jdb.getSelectedClubID() + ";");
+	    }
+	};
+    }
+
+    ClickHandler newClickHandler(final String key) {
+	return new ClickHandler() {
+	    @Override
+	    public void onClick(ClickEvent event) {
+		pushEdit("-1,c" + key + "," +
+			 ((((CheckBox)event.getSource()).getValue()) ? "1" : "0") + "," +
+			 jdb.getSelectedClubID() + ";");
+	    }
+	};
+    }
+
+    private boolean clubHandlersInstalled = false;
+    void initializeClubFields() {
+        nom_club.setText(""); nom_club.setReadOnly(true);
+        numero_club.setText(""); numero_club.setReadOnly(true);
+        nom_short.setText(""); 
+        ville.setText("");
+        prefix_codepostale.setText("");
+        indicatif_regional.setText("");
+        escompte_resident.setText("");
+        prime_prorata.setText("5"); prime_prorata.setReadOnly(true);
+        default_prorata.setValue(false);
+
+        if (!clubHandlersInstalled) {
+            clubHandlersInstalled = true;
+            nom_short.addValueChangeHandler(newValueChangeHandler("nom_short"));
+            ville.addValueChangeHandler(newValueChangeHandler("ville"));
+            prefix_codepostale.addValueChangeHandler(newValueChangeHandler("prefix_codepostale"));
+            indicatif_regional.addValueChangeHandler(newValueChangeHandler("indicatif_regional"));
+            escompte_resident.addValueChangeHandler(newValueChangeHandler("escompte_resident"));
+            default_prorata.addClickHandler(newClickHandler("pro_rata"));
+        }
+
+        boolean setEverythingReadOnly = false;
+        if (jdb.getSelectedClubID() == null) {
+            nom_club.setText("n/d");
+            setEverythingReadOnly = true;
+        }
+
+        nom_short.setReadOnly(setEverythingReadOnly);
+        ville.setReadOnly(setEverythingReadOnly);
+        prefix_codepostale.setReadOnly(setEverythingReadOnly);
+        indicatif_regional.setReadOnly(setEverythingReadOnly);
+        escompte_resident.setReadOnly(setEverythingReadOnly);
+        default_prorata.setEnabled(!setEverythingReadOnly);
     }
 
     void populateCurrentClub() {
 	String selectedClub = jdb.getSelectedClubID();
-	clearClubFields();
+	initializeClubFields();
 	if (selectedClub == null) {
-	    nom_club.setText("n/d");
 	    return;
 	}
 
@@ -365,6 +415,7 @@ public class ConfigWidget extends Composite {
 	prefix_codepostale.setText(cs.getPrefixCodepostale());
 	indicatif_regional.setText(cs.getIndicatifRegional());
 	escompte_resident.setText(cs.getEscompteResident());
+	//prime_prorata.setText(cs.getPrimeProrata());
 	default_prorata.setValue(cs.getDefaultProrata());
     }
     /* --- end club tab --- */
@@ -954,8 +1005,8 @@ public class ConfigWidget extends Composite {
         guid_on_form.setValue(guid);
 	current_session.setValue("A00");
         dataToSave.setValue(dv.toString());
-        configEditForm.submit();
 
+        configEditForm.submit();
         pushTries = 0;
         new Timer() { public void run() {
             pushChanges(guid);
