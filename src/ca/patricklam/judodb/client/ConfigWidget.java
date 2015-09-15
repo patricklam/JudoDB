@@ -514,10 +514,12 @@ public class ConfigWidget extends Composite {
                         object.set(DESC_COLUMN.key, "");
                         // if there is already a blank desc_column it automatically gets merged
                         assert (removedSessions.isEmpty());
+                        StringBuffer edits = new StringBuffer();
                         for (SessionSummary ss : newSessions) {
-                            pushEdit("-1,R," + ss.getSeqno() + "," +
-                                     object.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
+                            edits.append("-1,R," + ss.getSeqno() + "," +
+                                         object.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
                         }
+                        pushEdit(edits.toString());
                         addAddCoursCours();
                     } else {
                         // add added sessions
