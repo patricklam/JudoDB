@@ -58,6 +58,7 @@ public class ListWidget extends Composite {
      * Must stay in synch with the ListBox field cours. */
     private List<CoursSummary> backingCours = new ArrayList<CoursSummary>();
     private List<EscompteSummary> escompteSummaries = new ArrayList<EscompteSummary>();
+    private List<ProduitSummary> produitSummaries = new ArrayList<ProduitSummary>();
     private Set<String> clubsPresent = new HashSet<String>();
 
     private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
@@ -387,8 +388,10 @@ public class ListWidget extends Composite {
             ServiceData sd = cd.getServiceFor(currentSession);
 	    if (sd == null) continue;
             ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+            ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
+
             // XXX getPrix on ListWidget as well
-            CostCalculator.recompute(currentSession, cd, sd, cs, true, null, escompteSummaries);
+            CostCalculator.recompute(currentSession, cd, sd, cs, ps, true, null, escompteSummaries);
         }
     }
 
@@ -486,9 +489,10 @@ public class ListWidget extends Composite {
         dv += cd.getMostRecentGrade().getDateGrade() + "|";
         ServiceData sd = cd.getServiceFor(currentSession);
         if (sd != null && !sd.getCours().equals("")) {
-	    ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-	    // XXX getPrix on ListWidget as well
-	    CostCalculator.recompute(currentSession, cd, sd, cs, prorata.getValue(), null, escompteSummaries);
+            ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+            ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
+            // XXX getPrix on ListWidget as well
+            CostCalculator.recompute(currentSession, cd, sd, cs, ps, prorata.getValue(), null, escompteSummaries);
             // XXX this is potentially slow; use a hash map instead.
             for (CoursSummary cc : backingCours) {
                 if (cc.getId().equals(sd.getCours()))
@@ -539,8 +543,9 @@ public class ListWidget extends Composite {
        dv += cd.getDDNString() + "|";
        ServiceData sd = cd.getServiceFor(currentSession);
        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+       ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
        // XXX clubPrix on ListWidget
-       CostCalculator.recompute(currentSession, cd, sd, cs, prorata.getValue(), null, escompteSummaries);
+       CostCalculator.recompute(currentSession, cd, sd, cs, ps, prorata.getValue(), null, escompteSummaries);
        if (sd != null) {
            dv += Constants.currencyFormat.format(Double.parseDouble(sd.getFrais()));
        }
@@ -971,6 +976,17 @@ public class ListWidget extends Composite {
         }
     }
 
+    private void loadProduits(JsArray<ProduitSummary> produitArray) {
+        produitSummaries.clear();
+        produitSummaries.add(Constants.EMPTY_PRODUIT);
+        for (int i = 0; i < produitArray.length(); i++) {
+            ProduitSummary e = produitArray.get(i);
+            if (e.getClubId().equals(jdb.getSelectedClubID())) {
+                produitSummaries.add(e);
+            }
+        }
+    }
+
     private String getShortDescForCoursId(int coursId) {
         String cidString = Integer.toString(coursId);
         for (CoursSummary c : backingCours) {
@@ -1065,6 +1081,28 @@ public class ListWidget extends Composite {
                     public void eval(String s) {
                         loadEscomptes
                             (JsonUtils.<JsArray<EscompteSummary>>safeEval(s));
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    private boolean gotProduits = false;
+    public void retrieveProduits() {
+        if (jdb.getSelectedClubID() == null || !gotSessions) {
+            new Timer() {
+                public void run() { retrieveProduits(); }
+            }.schedule(100);
+            return;
+        }
+
+        produitSummaries.clear();
+        String url = JudoDB.PULL_PRODUIT_URL +
+            "?club_id=" + jdb.getSelectedClubID();
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        loadProduits
+                            (JsonUtils.<JsArray<ProduitSummary>>safeEval(s));
                     }
                 });
         jdb.retrieve(url, rc);

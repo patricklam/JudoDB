@@ -1017,7 +1017,9 @@ public class ClientWidget extends Composite {
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
         hideEscompteResidentIfUnneeded(cs);
         hidePaypalIfDisabled(cs);
-        CostCalculator.recompute(currentSession, cd, sd, cs, prorata.getValue(), clubPrix, escompteSummaries);
+        ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
+
+        CostCalculator.recompute(currentSession, cd, sd, cs, ps, prorata.getValue(), clubPrix, escompteSummaries);
 
         /* view stuff here */
         Display d = Display.NONE;

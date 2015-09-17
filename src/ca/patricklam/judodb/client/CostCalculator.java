@@ -101,11 +101,11 @@ public class CostCalculator {
         return dAffiliationFrais;
     }
 
-    static double suppFrais(ServiceData sd, ClubSummary cs, double fraisSoFar) {
+    static double suppFrais(ServiceData sd, ClubSummary cs, ProduitSummary ps, double fraisSoFar) {
         if (sd == null) return 0.0;
 
         double judogiFrais = 0.0;
-        try { judogiFrais = Double.parseDouble(sd.getJudogi()); } catch (Exception e) {}
+        try { judogiFrais = Double.parseDouble(ps.getMontant()); } catch (Exception e) {}
         boolean passeport = sd.getPasseport();
         boolean resident = sd.getResident();
         boolean paypal = sd.getPaypal();
@@ -134,6 +134,17 @@ public class CostCalculator {
             }
         }
         return es;
+    }
+
+    static ProduitSummary getApplicableProduit(ServiceData sd,
+						List<ProduitSummary> produitSummaries) {
+        ProduitSummary ps = null;
+        for (ProduitSummary p : produitSummaries) {
+            if (p.getId().equals(sd.getJudogi())) {
+                ps = p; break;
+            }
+        }
+        return ps;
     }
 
     static double escompteFrais(ServiceData sd, double dCategorieFrais,
@@ -168,7 +179,7 @@ public class CostCalculator {
     }
 
     /** Model-level method to recompute costs. */
-    public static void recompute(SessionSummary ss, ClientData cd, ServiceData sd, ClubSummary cs, boolean prorataOverride, ClubPrix[] cpA, List<EscompteSummary> escompteSummaries) {
+    public static void recompute(SessionSummary ss, ClientData cd, ServiceData sd, ClubSummary cs, ProduitSummary ps, boolean prorataOverride, ClubPrix[] cpA, List<EscompteSummary> escompteSummaries) {
       if (cpA == null) return;
       if (ss == null) return;
 
@@ -176,7 +187,7 @@ public class CostCalculator {
       if (!prorataOverride) dCategorieFrais = fraisCours(ss, cd, sd, cpA);
       double dEscompteFrais = escompteFrais(sd, dCategorieFrais, escompteSummaries);
       double dAffiliationFrais = affiliationFrais(ss, cd, sd, cpA);
-      double dSuppFrais = suppFrais(sd, cs, dCategorieFrais + dEscompteFrais + dAffiliationFrais);
+      double dSuppFrais = suppFrais(sd, cs, ps, dCategorieFrais + dEscompteFrais + dAffiliationFrais);
 
       if (sd != null) {
           sd.setCategorieFrais(Double.toString(dCategorieFrais));
