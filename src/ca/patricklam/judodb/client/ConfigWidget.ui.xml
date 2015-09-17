@@ -28,8 +28,9 @@
 	   <g:Label>Prefixe code postale:</g:Label><g:TextBox ui:field="prefix_codepostale" name="prefix_codepostale_tb"/>
 	   <g:Label>Indicatif regional:</g:Label><g:TextBox ui:field="indicatif_regional" name="indicatif_regional_tb"/>
 	   <g:Label>Escompte resident:</g:Label><g:TextBox ui:field="escompte_resident" name="escompte_resident_tb"/>
-	   <g:Label>Prime prorata:</g:Label><g:TextBox ui:field="prime_prorata" name="prime_prorata_tb"/>
+	   <g:Label>Supplement prorata:</g:Label><g:TextBox ui:field="supplement_prorata" name="supplement_prorata_tb"/>
 	   <g:Label>Prorata par defaut:</g:Label><g:CheckBox ui:field="default_prorata" name="default_prorata_tb"/>
+	   <g:Label>Afficher supplement PayPal:</g:Label><g:CheckBox ui:field="afficher_paypal" name="afficher_paypal_tb"/>
 	 </g:FlowPanel>
        </g:tab>
        <g:tab>

@@ -190,8 +190,9 @@ public class ConfigWidget extends Composite {
     @UiField TextBox prefix_codepostale;
     @UiField TextBox indicatif_regional;
     @UiField TextBox escompte_resident;
-    @UiField TextBox prime_prorata;
+    @UiField TextBox supplement_prorata;
     @UiField CheckBox default_prorata;
+    @UiField CheckBox afficher_paypal;
 
     ValueChangeHandler newValueChangeHandler(final String key) {
 	return new ValueChangeHandler<String>() {
@@ -223,7 +224,7 @@ public class ConfigWidget extends Composite {
         prefix_codepostale.setText("");
         indicatif_regional.setText("");
         escompte_resident.setText("");
-        prime_prorata.setText("5"); prime_prorata.setReadOnly(true);
+        supplement_prorata.setText("");
         default_prorata.setValue(false);
 
         if (!clubHandlersInstalled) {
@@ -233,7 +234,9 @@ public class ConfigWidget extends Composite {
             prefix_codepostale.addValueChangeHandler(newValueChangeHandler("prefix_codepostale"));
             indicatif_regional.addValueChangeHandler(newValueChangeHandler("indicatif_regional"));
             escompte_resident.addValueChangeHandler(newValueChangeHandler("escompte_resident"));
+            supplement_prorata.addValueChangeHandler(newValueChangeHandler("supplement_prorata"));
             default_prorata.addClickHandler(newClickHandler("pro_rata"));
+            afficher_paypal.addClickHandler(newClickHandler("afficher_paypal"));
         }
 
         boolean setEverythingReadOnly = false;
@@ -247,7 +250,9 @@ public class ConfigWidget extends Composite {
         prefix_codepostale.setReadOnly(setEverythingReadOnly);
         indicatif_regional.setReadOnly(setEverythingReadOnly);
         escompte_resident.setReadOnly(setEverythingReadOnly);
+        supplement_prorata.setEnabled(!setEverythingReadOnly);
         default_prorata.setEnabled(!setEverythingReadOnly);
+        afficher_paypal.setEnabled(!setEverythingReadOnly);
     }
 
     void populateCurrentClub() {
@@ -265,8 +270,9 @@ public class ConfigWidget extends Composite {
 	prefix_codepostale.setText(cs.getPrefixCodepostale());
 	indicatif_regional.setText(cs.getIndicatifRegional());
 	escompte_resident.setText(cs.getEscompteResident());
-	//prime_prorata.setText(cs.getPrimeProrata());
+	supplement_prorata.setText(cs.getSupplementProrata());
 	default_prorata.setValue(cs.getDefaultProrata());
+        afficher_paypal.setValue(cs.getAfficherPaypal());
     }
     /* --- end club tab --- */
 

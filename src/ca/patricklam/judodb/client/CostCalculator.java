@@ -7,11 +7,12 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.datepicker.client.CalendarUtil;
 
 public class CostCalculator {
-    static int elapsedWeeks(SessionSummary ss, Date dateInscription) {
+    static int remainingWeeks(SessionSummary ss, Date dateInscription) {
         try {
             Date sessionEnd = Constants.DB_DATE_FORMAT.parse(ss.getLastClassDate());
-            double elapsedWeeks = (CalendarUtil.getDaysBetween(dateInscription, sessionEnd) + 6) / 7.0;
-            return (int)(elapsedWeeks+0.5);
+
+            double remainingWeeks = (CalendarUtil.getDaysBetween(dateInscription, sessionEnd) + 6) / 7.0;
+            return (int)(remainingWeeks+0.5);
         }
         catch (NullPointerException e) { return 1; }
         catch (IllegalArgumentException e) { return 1; }
@@ -69,10 +70,12 @@ public class CostCalculator {
         // divide, then add Constants.PRORATA_PENALITE
         // but only use the prorated frais if ew < tw - 4
 
-        int ew = elapsedWeeks(ss, dateInscription);
+        int rw = remainingWeeks(ss, dateInscription);
         int tw = totalWeeks(ss, dateInscription);
-        double prorataCost = baseCost * ((double)ew / (double)tw) + Constants.PRORATA_PENALITE;
-        if (ew < tw - 4)
+        double supplement_prorata = cs.getSupplementProrata().equals("")
+            ? 0 : Double.parseDouble(cs.getSupplementProrata());
+        double prorataCost = baseCost * ((double)rw / (double)tw) + supplement_prorata;
+        if (rw < tw - 4)
             return Math.min(baseCost, prorataCost);
         else
             return baseCost;
@@ -156,10 +159,10 @@ public class CostCalculator {
     }
 
     static String getWeeksSummary(SessionSummary ss, Date dateInscription) {
-        int ew = elapsedWeeks(ss, dateInscription);
+        int rw = remainingWeeks(ss, dateInscription);
         int tw = totalWeeks(ss, dateInscription);
-        if (ew < tw)
-            return " ("+ew+"/"+tw+")";
+        if (rw < tw)
+            return " ("+rw+"/"+tw+")";
         else
             return "";
     }

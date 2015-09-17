@@ -368,6 +368,7 @@ public class ClientWidget extends Composite {
           jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
           ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
           hideEscompteResidentIfUnneeded(cs);
+          hidePaypalIfDisabled(cs);
           retrieveSessions();
           retrieveClubPrix();
           retrieveCours();
@@ -959,6 +960,7 @@ public class ClientWidget extends Composite {
     }
 
     private void hideEscompteResidentIfUnneeded(ClubSummary cs) {
+        if (cs == null) return;
         String escompteResident = cs.getEscompteResident();
         if (escompteResident == null || escompteResident.equals("") || escompteResident.equals("0")) {
             clientMain.getElementById("rabais_resident_label").getStyle().setProperty("display", "none");
@@ -969,11 +971,24 @@ public class ClientWidget extends Composite {
         }
     }
 
+    private void hidePaypalIfDisabled(ClubSummary cs) {
+        if (cs == null) return;
+        boolean showPaypal = cs.getAfficherPaypal();
+        if (!showPaypal) {
+            clientMain.getElementById("frais_paypal_label").getStyle().setProperty("display", "none");
+            paypal.setVisible(false);
+        } else {
+            paypal.setVisible(true);
+            clientMain.getElementById("frais_paypal_label").getStyle().setProperty("display", "inline");
+        }
+    }
+
     private void updateDynamicFields() {
         saveClientData();
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
         hideEscompteResidentIfUnneeded(cs);
+        hidePaypalIfDisabled(cs);
         CostCalculator.recompute(currentSession, cd, sd, cs, prorata.getValue(), clubPrix, escompteSummaries);
 
         /* view stuff here */
