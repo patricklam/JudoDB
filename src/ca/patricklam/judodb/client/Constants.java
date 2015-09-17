@@ -8,8 +8,6 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 
 public class Constants {
-    public static boolean ENABLE_PRORATA = false;
-
     public static final String STD_DUMMY_DATE = "01/01/0000";
     public static final String DB_DUMMY_DATE = "0000-00-00";
     public static final String STD_DATE_FORMAT_STRING = "dd/MM/yyyy";
