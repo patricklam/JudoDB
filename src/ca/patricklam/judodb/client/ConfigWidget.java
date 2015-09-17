@@ -50,6 +50,7 @@ public class ConfigWidget extends Composite {
     @UiField FlowPanel sessionTab;
     @UiField FlowPanel coursTab;
     @UiField FlowPanel prixTab;
+    @UiField FlowPanel escompteTab;
     @UiField FormPanel configEditForm;
     @UiField Hidden current_session;
     @UiField Hidden dataToSave;
@@ -77,6 +78,9 @@ public class ConfigWidget extends Composite {
     private final List<ClubPrix> prixData = new ArrayList<ClubPrix>();
     private final HashSet<ClubPrix> duplicatePrix = new HashSet<ClubPrix>();
 
+    CellTable escomptes;
+    private final List<EscompteSummary> escompteData = new ArrayList<EscompteSummary>();
+
     // useful URLs: http://www.filsa.net/2010/01/23/more-on-tablayoutpanel/
     // http://www.filsa.net/2010/01/21/gwt-notes-tablayoutpanel/
 
@@ -96,11 +100,6 @@ public class ConfigWidget extends Composite {
     // noire [true]
     // aka [U20]
 
-    // for each escompte:
-    // seqno
-    // name [2e membre]
-    // percent [10]
-
     @UiField ListBox dropDownUserClubs;
     private ClubListHandler clHandler = new ClubListHandler();
 
@@ -112,6 +111,7 @@ public class ConfigWidget extends Composite {
         if (cs != null) {
             retrieveCours(cs.getNumeroClub());
             retrieveClubPrix(cs.getNumeroClub());
+            retrieveEscomptes(jdb.getSelectedClubID());
         }
         populateCurrentClub();
       }
@@ -127,6 +127,7 @@ public class ConfigWidget extends Composite {
         if (cs != null) {
             retrieveCours(cs.getNumeroClub());
             retrieveClubPrix(cs.getNumeroClub());
+	    retrieveEscomptes(jdb.getSelectedClubID());
         }
 
         dropDownUserClubs.addChangeHandler(clHandler);
@@ -142,6 +143,10 @@ public class ConfigWidget extends Composite {
 	initializePrixTable();
 	prixTab.add(prix);
 	populatePrix(prixData);
+
+	initializeEscompteTable();
+	escompteTab.add(escomptes);
+	populateEscomptes(escompteData);
 
         configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
     }
@@ -699,7 +704,7 @@ public class ConfigWidget extends Composite {
 		return object.get(c.key);
 	    }
 	};
-	prix.addColumn(newColumn, c.name);
+	t.addColumn(newColumn, c.name);
 	newColumn.setFieldUpdater(new FieldUpdater<ClubPrix, String>() {
 		@Override
 		public void update(int index, ClubPrix object, String value) {
@@ -728,7 +733,7 @@ public class ConfigWidget extends Composite {
                     t.redraw();
                 }
 	    });
-	cours.setColumnWidth(newColumn, c.width, c.widthUnits);
+	t.setColumnWidth(newColumn, c.width, c.widthUnits);
 	return newColumn;
     }
 
@@ -793,10 +798,10 @@ public class ConfigWidget extends Composite {
                     }
                 }
             });
-        addPrixColumn(sessions, DIV_COLUMN, true);
-        addPrixColumn(sessions, FRAIS_1_COLUMN, true);
-        addPrixColumn(sessions, FRAIS_2_COLUMN, true);
-        addPrixColumn(sessions, FRAIS_JUDO_QC_COLUMN, true);
+        addPrixColumn(prix, DIV_COLUMN, true);
+        addPrixColumn(prix, FRAIS_1_COLUMN, true);
+        addPrixColumn(prix, FRAIS_2_COLUMN, true);
+        addPrixColumn(prix, FRAIS_JUDO_QC_COLUMN, true);
     }
 
     private void removeDuplicatePrix(StringBuffer edits) {
@@ -888,6 +893,122 @@ public class ConfigWidget extends Composite {
     }
     /* --- end prix tab --- */
 
+    /* --- escompte tab --- */
+    private static final ProvidesKey<EscompteSummary> ESCOMPTE_KEY_PROVIDER =
+        new ProvidesKey<EscompteSummary>() {
+        @Override
+        public Object getKey(EscompteSummary item) {
+            return item.getId();
+        }
+    };
+
+    private final ColumnFields NOM_COLUMN = new ColumnFields("nom", "Nom", 2, Unit.EM),
+        AMOUNT_PERCENT_COLUMN = new ColumnFields("amount_percent", "%", 1, Unit.EM),
+        AMOUNT_ABSOLUTE_COLUMN = new ColumnFields("amount_absolute", "$", 1, Unit.EM);
+
+    private List<ColumnFields> perEscompteColumns = Collections.unmodifiableList(Arrays.asList(NOM_COLUMN, AMOUNT_PERCENT_COLUMN, AMOUNT_ABSOLUTE_COLUMN));
+
+    void initializeEscompteTable() {
+        escomptes = new CellTable<EscompteSummary>(ESCOMPTE_KEY_PROVIDER);
+        escomptes.setWidth("60em", true);
+
+        initializeEscompteColumns();
+    }
+
+    private Column<EscompteSummary, String> addEscompteColumn(final CellTable t, final ColumnFields c, final boolean editable) {
+        final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
+        Column<EscompteSummary, String> newColumn = new Column<EscompteSummary, String>(cell) {
+            public String getValue(EscompteSummary object) {
+                return object.get(c.key);
+            }
+        };
+        escomptes.addColumn(newColumn, c.name);
+        newColumn.setFieldUpdater(new FieldUpdater<EscompteSummary, String>() {
+                @Override
+                public void update(int index, EscompteSummary object, String value) {
+                    refreshEscomptes = true;
+                    if (object.get(NOM_COLUMN.key).equals(ADD_ESCOMPTE_VALUE)) {
+                        // NB: do the set before the update because we read from object
+                        String nom;
+                        if (c.key.equals(AMOUNT_PERCENT_COLUMN.key) ||
+                            c.key.equals(AMOUNT_ABSOLUTE_COLUMN.key)) {
+                            nom = "Escompte "+object.getId();
+                            object.set(c.key, value);
+                        } else {
+                            nom = value;
+                            object.set(c.key, value);
+                        }
+                        pushEdit("-1,Z," + object.getId() + "," +
+                                 nom + "," +
+                                 object.get(AMOUNT_PERCENT_COLUMN.key) + "," +
+                                 object.get(AMOUNT_ABSOLUTE_COLUMN.key) + "," +
+                                 jdb.getSelectedClubID() + ";");
+                        addAddEscompteEscompte();
+                    } else {
+                        StringBuffer edits = new StringBuffer();
+                        if (c.key.equals(AMOUNT_PERCENT_COLUMN.key)) {
+                            String k = AMOUNT_ABSOLUTE_COLUMN.key;
+                            edits.append("-1,z" + k + "," + object.getId() + "," + "" + "," + jdb.getSelectedClubID() + ";");
+                            object.set(k, "");
+                        }
+                        else if (c.key.equals(AMOUNT_ABSOLUTE_COLUMN.key)) {
+                            String k = AMOUNT_PERCENT_COLUMN.key;
+                            edits.append("-1,z" + k + "," + object.getId() + "," + "" + "," + jdb.getSelectedClubID() + ";");
+                            object.set(k, "");
+                        }
+                        edits.append("-1,z" + c.key + "," + object.getId() + "," + value + "," + jdb.getSelectedClubID() + ";");
+                        pushEdit(edits.toString());
+                        object.set(c.key, value);
+                    }
+                    t.redraw();
+                }
+            });
+        escomptes.setColumnWidth(newColumn, c.width, c.widthUnits);
+        return newColumn;
+    }
+
+    void initializeEscompteColumns() {
+        while (escomptes.getColumnCount() > 0)
+            escomptes.removeColumn(0);
+
+        addEscompteColumn(escomptes, NOM_COLUMN, true);
+        addEscompteColumn(escomptes, AMOUNT_PERCENT_COLUMN, true);
+        addEscompteColumn(escomptes, AMOUNT_ABSOLUTE_COLUMN, true);
+    }
+
+    final private static String ADD_ESCOMPTE_VALUE = "[ajouter escompte]";
+    void addAddEscompteEscompte() {
+        int maxId = 0;
+        for (EscompteSummary c : escompteData) {
+            if (Integer.parseInt(c.getId()) > maxId)
+                maxId = Integer.parseInt(c.getId());
+        }
+
+        EscompteSummary addNewEscompte =
+            JsonUtils.<EscompteSummary>safeEval
+            ("{\"id\":\""+(maxId+1)+"\"}");
+        addNewEscompte.setClubId(jdb.getSelectedClubID());
+        addNewEscompte.setNom(ADD_ESCOMPTE_VALUE);
+        addNewEscompte.setAmountPercent("");
+        addNewEscompte.setAmountAbsolute("");
+        escompteData.add(addNewEscompte);
+    }
+
+    private void populateEscomptes(List<EscompteSummary> escompteArray) {
+        initializeEscompteColumns();
+
+        escompteData.clear();
+        for (EscompteSummary es : escompteArray) {
+            escompteData.add(es);
+        }
+
+        if (jdb.isClubSelected())
+            addAddEscompteEscompte();
+        escomptes.setRowData(escompteData);
+        escomptes.redraw();
+    }
+    /* --- end escompte tab --- */
+
     /* --- network functions --- */
     private boolean gotSessions = false;
     public void retrieveSessions(String numero_club) {
@@ -952,9 +1073,31 @@ public class ConfigWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
+    private boolean gotEscomptes = false;
+    public void retrieveEscomptes(String club_id) {
+	if (club_id.equals("")) return;
+
+        String url = JudoDB.PULL_ESCOMPTE_URL;
+        url += "?club_id="+club_id;
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+			gotEscomptes = true;
+			List<EscompteSummary> les = new ArrayList<EscompteSummary>();
+			JsArray<EscompteSummary> jes = JsonUtils.<JsArray<EscompteSummary>>safeEval(s);
+			for (int i = 0; i < jes.length(); i++)
+			    les.add(jes.get(i));
+			populateEscomptes(les);
+			jdb.clearStatus();
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
     private boolean refreshSessions = false;
     private boolean refreshCours = false;
-    private boolean refreshPrix = true;
+    private boolean refreshPrix = false;
+    private boolean refreshEscomptes = false;
     public void pushChanges(final String guid) {
         String url = CONFIRM_PUSH_URL + "?guid=" + guid;
         RequestCallback rc =
@@ -992,6 +1135,10 @@ public class ConfigWidget extends Composite {
 				if (cs != null) {
 				    retrieveClubPrix(cs.getNumeroClub());
 				}
+			    }
+			    if (refreshEscomptes) {
+				refreshEscomptes = false;
+				retrieveEscomptes(jdb.getSelectedClubID());
 			    }
                         }
                         new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);

@@ -98,6 +98,7 @@ public class JudoDB implements EntryPoint {
     public static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
     public static final String PULL_SESSIONS_URL = JudoDB.BASE_URL + "pull_sessions.php";
     public static final String PULL_CLUB_PRIX_URL = JudoDB.BASE_URL + "pull_club_prix.php";
+    public static final String PULL_ESCOMPTE_URL = JudoDB.BASE_URL + "pull_escompte.php";
     int jsonRequestId = 0;
 
     /* main layout */
