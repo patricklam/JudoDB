@@ -53,13 +53,6 @@ public class Constants {
         }
     }
 
-    public static final String judogi(String seqno) {
-        for (Judogi j : JUDOGIS)
-            if (j.seqno.equals(seqno))
-                return j.amount;
-        return "0";
-    }
-
     static class Grade {
         final String name; final String n3;
         final int order;
@@ -144,12 +137,8 @@ public class Constants {
 	("{\"id\":\"0\", \"club_id\":\"0\", \"nom\":\"Aucun\","+
 	 "\"amount_percent\":\"0\",\"amount_absolute\":\"0\"}");
 
-    public static final Judogi[] JUDOGIS = new Judogi[] {
-        new Judogi("0", "Aucun", "0"),
-        new Judogi("1", "000/00 (55$)", "55"),
-        new Judogi("2", "0/1 (60$)", "60"),
-        new Judogi("3", "2/3 (65$)", "65"),
-        new Judogi("4", "4/5/6 (75$)", "75")
-    };
-
+    public static final ProduitSummary EMPTY_PRODUIT =
+	JsonUtils.<ProduitSummary>safeEval
+	("{\"id\":\"0\", \"club_id\":\"0\", \"nom\":\"Aucun\","+
+	 "\"montant\":\"0\"}");
 }

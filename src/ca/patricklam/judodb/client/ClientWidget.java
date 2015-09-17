@@ -104,7 +104,7 @@ public class ClientWidget extends Composite {
     @UiField CheckBox affiliation_ecole;
     @UiField TextBox affiliationFrais;
 
-    @UiField ListBox judogi;
+    @UiField ListBox produit;
     @UiField CheckBox resident;
     @UiField CheckBox paypal;
     @UiField TextBox suppFrais;
@@ -190,6 +190,7 @@ public class ClientWidget extends Composite {
      * Must stay in synch with the ListBox field cours. */
     private List<CoursSummary> backingCours = new ArrayList<CoursSummary>();
     private List<EscompteSummary> escompteSummaries = new ArrayList<EscompteSummary>();
+    private List<ProduitSummary> produitSummaries = new ArrayList<ProduitSummary>();
     private ClientData cd;
     private String guid;
     private int currentServiceNumber;
@@ -212,9 +213,6 @@ public class ClientWidget extends Composite {
 
         no_sessions.addItem("1");
         no_sessions.addItem("2");
-        for (Constants.Judogi j : Constants.JUDOGIS) {
-            judogi.addItem(j.name, j.seqno);
-        }
 
         gradeHistory.setVisible(false);
         prorata.setValue(true);
@@ -268,7 +266,7 @@ public class ClientWidget extends Composite {
         sans_affiliation.addValueChangeHandler(recomputeValueHandler);
         affiliation_initiation.addValueChangeHandler(recomputeValueHandler);
         affiliation_ecole.addValueChangeHandler(recomputeValueHandler);
-        judogi.addChangeHandler(recomputeHandler);
+        produit.addChangeHandler(recomputeHandler);
         resident.addValueChangeHandler(recomputeValueHandler);
         paypal.addValueChangeHandler(recomputeValueHandler);
 
@@ -325,6 +323,7 @@ public class ClientWidget extends Composite {
         retrieveClubPrix();
         retrieveCours();
         retrieveEscomptes();
+        retrieveProduits();
     }
 
     private void addNewService() {
@@ -363,6 +362,30 @@ public class ClientWidget extends Composite {
             escompte.setSelectedIndex(0);
     }
 
+    private void loadProduits(JsArray<ProduitSummary> produitArray) {
+        HashMap<String, Integer> produitIdxToSeqno = new HashMap<String, Integer>();
+        int idx = 0;
+        produit.clear(); produitSummaries.clear();
+        produit.addItem(Constants.EMPTY_PRODUIT.getNom(), Constants.EMPTY_PRODUIT.getId());
+        produitSummaries.add(Constants.EMPTY_PRODUIT);
+        for (int i = 0; i < produitArray.length(); i++) {
+            ProduitSummary e = produitArray.get(i);
+            if (e.getClubId().equals("0") || e.getClubId().equals(jdb.getSelectedClubID())) {
+                produitSummaries.add(e);
+                produit.addItem(e.getNom(), e.getId());
+                produitIdxToSeqno.put(e.getClubId(), idx);
+                idx++;
+            }
+        }
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+        String produitIndex = sd.getJudogi();
+        if (produitIdxToSeqno.get(produitIndex) != null)
+            produit.setSelectedIndex(produitIdxToSeqno.get(produitIndex));
+        else
+            produit.setSelectedIndex(0);
+    }
+
+
     class ClubListHandler implements ChangeHandler {
       public void onChange(ChangeEvent event) {
           jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
@@ -373,7 +396,8 @@ public class ClientWidget extends Composite {
           retrieveClubPrix();
           retrieveCours();
           retrieveEscomptes();
-	  updateFrais();
+          retrieveProduits();
+          updateFrais();
       }
     }
 
@@ -498,11 +522,13 @@ public class ClientWidget extends Composite {
         cas_special_pct.setReadOnly(!isToday);
         escompteFrais.setText(sd.getEscompteFrais());
 
-        for (Constants.Judogi j : Constants.JUDOGIS) {
-            if (j.amount.equals(sd.getJudogi()))
-                judogi.setSelectedIndex(Integer.parseInt(j.seqno));
+        int idx = 0;
+        for (ProduitSummary p : produitSummaries) {
+	    if (sd.getJudogi().equals(p.getId()))
+                produit.setSelectedIndex(idx);
+	    idx++;
         }
-        judogi.setEnabled(isToday);
+        produit.setEnabled(isToday);
         resident.setValue(sd.getResident());
         resident.setEnabled(isToday);
         paypal.setValue(sd.getPaypal());
@@ -559,7 +585,9 @@ public class ClientWidget extends Composite {
         sd.setCasSpecialPct(stripDollars(cas_special_pct.getText()));
         sd.setEscompteFrais(stripDollars(escompteFrais.getText()));
 
-        sd.setJudogi(Constants.judogi(judogi.getValue(judogi.getSelectedIndex())));
+        if (produit.getSelectedIndex() != -1) {
+            sd.setJudogi(produit.getValue(produit.getSelectedIndex()));
+        }
         sd.setResident(resident.getValue());
         sd.setPaypal(paypal.getValue());
         sd.setSuppFrais(stripDollars(suppFrais.getText()));
@@ -1283,6 +1311,30 @@ public class ClientWidget extends Composite {
                     public void eval(String s) {
                         loadEscomptes
                             (JsonUtils.<JsArray<EscompteSummary>>safeEval(s));
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    /* depends on retrieveClubList() having succeeded */
+    /* technically does not require sessions, but adding it removes a race condition */
+    public void retrieveProduits() {
+        if (jdb.getSelectedClubID() == null || !gotSessions) {
+            new Timer() {
+                public void run() { retrieveProduits(); }
+            }.schedule(100);
+            return;
+        }
+
+        produit.clear();
+        produitSummaries.clear();
+        String url = JudoDB.PULL_PRODUIT_URL +
+            "?club_id=" + jdb.getSelectedClubID();
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        loadProduits
+                            (JsonUtils.<JsArray<ProduitSummary>>safeEval(s));
                     }
                 });
         jdb.retrieve(url, rc);

@@ -53,6 +53,11 @@
 	 <g:FlowPanel ui:field="escompteTab">
 	 </g:FlowPanel>
        </g:tab>
+       <g:tab>
+	 <g:header size='6'>Ventes d&eacute;tail</g:header>
+	 <g:FlowPanel ui:field="produitTab">
+	 </g:FlowPanel>
+       </g:tab>
       </g:TabLayoutPanel>
      </g:layer>
     </g:LayoutPanel>

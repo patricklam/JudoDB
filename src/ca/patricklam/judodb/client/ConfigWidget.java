@@ -51,6 +51,7 @@ public class ConfigWidget extends Composite {
     @UiField FlowPanel coursTab;
     @UiField FlowPanel prixTab;
     @UiField FlowPanel escompteTab;
+    @UiField FlowPanel produitTab;
     @UiField FormPanel configEditForm;
     @UiField Hidden current_session;
     @UiField Hidden dataToSave;
@@ -62,10 +63,10 @@ public class ConfigWidget extends Composite {
     private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
     private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
 
-    CellTable sessions;
+    CellTable<SessionSummary> sessions;
     private final List<SessionSummary> sessionData = new ArrayList<SessionSummary>();
 
-    CellTable cours;
+    CellTable<CoursSummary> cours;
     // rawCoursData is unconsolidated, coursData is merged by session
     private final List<CoursSummary> rawCoursData = new ArrayList<CoursSummary>();
     private final List<CoursSummary> coursData = new ArrayList<CoursSummary>();
@@ -73,13 +74,16 @@ public class ConfigWidget extends Composite {
         new HashMap<String, List<String>>();
     private final HashSet<CoursSummary> duplicateCours = new HashSet<CoursSummary>();
 
-    CellTable prix;
+    CellTable<ClubPrix> prix;
     private final List<ClubPrix> rawPrixData = new ArrayList<ClubPrix>();
     private final List<ClubPrix> prixData = new ArrayList<ClubPrix>();
     private final HashSet<ClubPrix> duplicatePrix = new HashSet<ClubPrix>();
 
-    CellTable escomptes;
+    CellTable<EscompteSummary> escomptes;
     private final List<EscompteSummary> escompteData = new ArrayList<EscompteSummary>();
+
+    CellTable<ProduitSummary> produits;
+    private final List<ProduitSummary> produitData = new ArrayList<ProduitSummary>();
 
     // useful URLs: http://www.filsa.net/2010/01/23/more-on-tablayoutpanel/
     // http://www.filsa.net/2010/01/21/gwt-notes-tablayoutpanel/
@@ -112,6 +116,7 @@ public class ConfigWidget extends Composite {
             retrieveCours(cs.getNumeroClub());
             retrieveClubPrix(cs.getNumeroClub());
             retrieveEscomptes(jdb.getSelectedClubID());
+            retrieveProduits(jdb.getSelectedClubID());
         }
         populateCurrentClub();
       }
@@ -128,6 +133,7 @@ public class ConfigWidget extends Composite {
             retrieveCours(cs.getNumeroClub());
             retrieveClubPrix(cs.getNumeroClub());
 	    retrieveEscomptes(jdb.getSelectedClubID());
+            retrieveProduits(jdb.getSelectedClubID());
         }
 
         dropDownUserClubs.addChangeHandler(clHandler);
@@ -147,6 +153,10 @@ public class ConfigWidget extends Composite {
 	initializeEscompteTable();
 	escompteTab.add(escomptes);
 	populateEscomptes(escompteData);
+
+	initializeProduitTable();
+	produitTab.add(produits);
+	populateProduits(produitData);
 
         configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
     }
@@ -194,7 +204,7 @@ public class ConfigWidget extends Composite {
     @UiField CheckBox default_prorata;
     @UiField CheckBox afficher_paypal;
 
-    ValueChangeHandler newValueChangeHandler(final String key) {
+    ValueChangeHandler<String> newValueChangeHandler(final String key) {
 	return new ValueChangeHandler<String>() {
 	    @Override
 	    public void onValueChange(ValueChangeEvent<String> event) {
@@ -316,7 +326,7 @@ public class ConfigWidget extends Composite {
 
     private static final String BALLOT_X = "\u2717";
 
-    private Column<SessionSummary, String> addSessionColumn(final CellTable t, final ColumnFields c, final boolean editable) {
+    private Column<SessionSummary, String> addSessionColumn(final CellTable<SessionSummary> t, final ColumnFields c, final boolean editable) {
 	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
 	Column<SessionSummary, String> newColumn = new Column<SessionSummary, String>(cell) {
 	    public String getValue(SessionSummary object) {
@@ -505,7 +515,7 @@ public class ConfigWidget extends Composite {
                         String currentSessions = JudoDB.getSessionIds(new Date(), 2, sessionData);
                         object.set(COURS_SESSION_COLUMN.key, currentSessions);
                         sessions = parseSessionIds(currentSessions);
-                        List<String> cs = new ArrayList();
+                        List<String> cs = new ArrayList<String>();
                         StringBuffer edits = new StringBuffer();
                         for (SessionSummary ss : sessions) {
                             cs.add(ss.getAbbrev());
@@ -703,7 +713,7 @@ public class ConfigWidget extends Composite {
 	initializePrixColumns();
     }
 
-    private Column<ClubPrix, String> addPrixColumn(final CellTable t, final ColumnFields c, final boolean editable) {
+    private Column<ClubPrix, String> addPrixColumn(final CellTable<ClubPrix> t, final ColumnFields c, final boolean editable) {
 	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
 	Column<ClubPrix, String> newColumn = new Column<ClubPrix, String>(cell) {
 	    public String getValue(ClubPrix object) {
@@ -748,7 +758,7 @@ public class ConfigWidget extends Composite {
             prix.removeColumn(0);
 
         final Column<ClubPrix, String> sessionColumn =
-            addPrixColumn(sessions, PRIX_SESSION_COLUMN, true);
+            addPrixColumn(prix, PRIX_SESSION_COLUMN, true);
         sessionColumn.setFieldUpdater(new FieldUpdater<ClubPrix, String>() {
                 @Override
                 public void update(int index, ClubPrix object, String value) {
@@ -1015,6 +1025,112 @@ public class ConfigWidget extends Composite {
     }
     /* --- end escompte tab --- */
 
+    /* --- produits detail tab --- */
+    private static final ProvidesKey<ProduitSummary> PRODUIT_KEY_PROVIDER =
+        new ProvidesKey<ProduitSummary>() {
+        @Override
+        public Object getKey(ProduitSummary item) {
+            return item.getId();
+        }
+    };
+
+    private final ColumnFields NOM_PRODUIT_COLUMN = new ColumnFields("nom", "Nom", 2, Unit.EM),
+        MONTANT_COLUMN = new ColumnFields("montant", "Montant", 1, Unit.EM);
+
+	private List<ColumnFields> perProduitColumns = Collections.unmodifiableList(Arrays.asList(NOM_PRODUIT_COLUMN, MONTANT_COLUMN));
+
+    void initializeProduitTable() {
+        produits = new CellTable<ProduitSummary>(PRODUIT_KEY_PROVIDER);
+        produits.setWidth("60em", true);
+
+        initializeProduitColumns();
+    }
+
+    private Column<ProduitSummary, String> addProduitColumn(final CellTable t, final ColumnFields c, final boolean editable) {
+        final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
+        Column<ProduitSummary, String> newColumn = new Column<ProduitSummary, String>(cell) {
+            public String getValue(ProduitSummary object) {
+                return object.get(c.key);
+            }
+        };
+        produits.addColumn(newColumn, c.name);
+        newColumn.setFieldUpdater(new FieldUpdater<ProduitSummary, String>() {
+                @Override
+                public void update(int index, ProduitSummary object, String value) {
+                    refreshProduits = true;
+                    if (object.get(NOM_PRODUIT_COLUMN.key).equals(ADD_PRODUIT_VALUE)) {
+                        // NB: do the set before the update because we read from object
+                        String nom;
+                        if (c.key.equals(MONTANT_COLUMN.key)) {
+                            nom = "Produit "+object.getId();
+                            object.set(c.key, value);
+                        } else {
+                            nom = value;
+                            object.set(c.key, value);
+                        }
+                        pushEdit("-1,J," + object.getId() + "," +
+                                 nom + "," +
+                                 object.get(MONTANT_COLUMN.key) + "," +
+                                 jdb.getSelectedClubID() + ";");
+                        addAddProduitProduit();
+                    } else {
+                        StringBuffer edits = new StringBuffer();
+                        if (c.key.equals(MONTANT_COLUMN.key)) {
+                            String k = MONTANT_COLUMN.key;
+                            edits.append("-1,j" + k + "," + object.getId() + "," + "" + "," + jdb.getSelectedClubID() + ";");
+                            object.set(k, "");
+                        }
+                        edits.append("-1,j" + c.key + "," + object.getId() + "," + value + "," + jdb.getSelectedClubID() + ";");
+                        pushEdit(edits.toString());
+                        object.set(c.key, value);
+                    }
+                    t.redraw();
+                }
+            });
+        produits.setColumnWidth(newColumn, c.width, c.widthUnits);
+        return newColumn;
+    }
+
+    void initializeProduitColumns() {
+        while (produits.getColumnCount() > 0)
+            produits.removeColumn(0);
+
+        addProduitColumn(produits, NOM_PRODUIT_COLUMN, true);
+        addProduitColumn(produits, MONTANT_COLUMN, true);
+    }
+
+    final private static String ADD_PRODUIT_VALUE = "[ajouter produit]";
+    void addAddProduitProduit() {
+        int maxId = 0;
+        for (ProduitSummary c : produitData) {
+            if (Integer.parseInt(c.getId()) > maxId)
+                maxId = Integer.parseInt(c.getId());
+        }
+
+        ProduitSummary addNewProduit =
+            JsonUtils.<ProduitSummary>safeEval
+            ("{\"id\":\""+(maxId+1)+"\"}");
+        addNewProduit.setClubId(jdb.getSelectedClubID());
+        addNewProduit.setNom(ADD_PRODUIT_VALUE);
+        addNewProduit.setMontant("");
+        produitData.add(addNewProduit);
+    }
+
+    private void populateProduits(List<ProduitSummary> produitArray) {
+        initializeProduitColumns();
+
+        produitData.clear();
+        for (ProduitSummary es : produitArray) {
+            produitData.add(es);
+        }
+
+        if (jdb.isClubSelected())
+            addAddProduitProduit();
+        produits.setRowData(produitData);
+        produits.redraw();
+    }
+    /* --- end produits detail tab --- */
+
     /* --- network functions --- */
     private boolean gotSessions = false;
     public void retrieveSessions(String numero_club) {
@@ -1100,10 +1216,32 @@ public class ConfigWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
+    private boolean gotProduits = false;
+    public void retrieveProduits(String club_id) {
+	if (club_id.equals("")) return;
+
+        String url = JudoDB.PULL_PRODUIT_URL;
+        url += "?club_id="+club_id;
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+			gotProduits = true;
+			List<ProduitSummary> les = new ArrayList<ProduitSummary>();
+			JsArray<ProduitSummary> jes = JsonUtils.<JsArray<ProduitSummary>>safeEval(s);
+			for (int i = 0; i < jes.length(); i++)
+			    les.add(jes.get(i));
+			populateProduits(les);
+			jdb.clearStatus();
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
     private boolean refreshSessions = false;
     private boolean refreshCours = false;
     private boolean refreshPrix = false;
     private boolean refreshEscomptes = false;
+    private boolean refreshProduits = false;
     public void pushChanges(final String guid) {
         String url = CONFIRM_PUSH_URL + "?guid=" + guid;
         RequestCallback rc =
@@ -1145,6 +1283,10 @@ public class ConfigWidget extends Composite {
 			    if (refreshEscomptes) {
 				refreshEscomptes = false;
 				retrieveEscomptes(jdb.getSelectedClubID());
+			    }
+			    if (refreshProduits) {
+				refreshProduits = false;
+				retrieveProduits(jdb.getSelectedClubID());
 			    }
                         }
                         new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
