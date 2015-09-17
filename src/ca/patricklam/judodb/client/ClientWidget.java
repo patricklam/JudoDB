@@ -189,6 +189,7 @@ public class ClientWidget extends Composite {
     /** A list of cours as retrieved from the server.
      * Must stay in synch with the ListBox field cours. */
     private List<CoursSummary> backingCours = new ArrayList<CoursSummary>();
+    private List<EscompteSummary> escompteSummaries = new ArrayList<EscompteSummary>();
     private ClientData cd;
     private String guid;
     private int currentServiceNumber;
@@ -318,12 +319,12 @@ public class ClientWidget extends Composite {
             ga.set(0, gd);
             this.cd.setGrades(ga);
             loadClientData();
-            loadEscomptes();
             jdb.clearStatus();
         }
         retrieveSessions();
         retrieveClubPrix();
         retrieveCours();
+        retrieveEscomptes();
     }
 
     private void addNewService() {
@@ -339,20 +340,23 @@ public class ClientWidget extends Composite {
         sa.push(sd);
     }
 
-    private void loadEscomptes() {
-        HashMap<Integer, Integer> escompteIdxToSeqno = new HashMap<Integer, Integer>();
+    private void loadEscomptes(JsArray<EscompteSummary> escompteArray) {
+        HashMap<String, Integer> escompteIdxToSeqno = new HashMap<String, Integer>();
         int idx = 0;
-	escompte.clear();
-	escompteIdxToSeqno.clear();
-        for (Constants.Escompte e : Constants.ESCOMPTES) {
-            if (e.clubId.equals("0") || e.clubId.equals(jdb.getSelectedClubID())) {
-                escompte.addItem(e.name, e.seqno);
-                escompteIdxToSeqno.put(Integer.parseInt(e.seqno), idx);
+        escompte.clear(); escompteSummaries.clear();
+        escompte.addItem(Constants.EMPTY_ESCOMPTE.getNom(), Constants.EMPTY_ESCOMPTE.getId());
+        escompteSummaries.add(Constants.EMPTY_ESCOMPTE);
+        for (int i = 0; i < escompteArray.length(); i++) {
+            EscompteSummary e = escompteArray.get(i);
+            if (e.getClubId().equals("0") || e.getClubId().equals(jdb.getSelectedClubID())) {
+                escompteSummaries.add(e);
+                escompte.addItem(e.getNom(), e.getId());
+                escompteIdxToSeqno.put(e.getClubId(), idx);
                 idx++;
             }
         }
         ServiceData sd = cd.getServices().get(currentServiceNumber);
-        int escompteIndex = sd.getEscompteType();
+        String escompteIndex = sd.getEscompteId();
         if (escompteIdxToSeqno.get(escompteIndex) != null)
             escompte.setSelectedIndex(escompteIdxToSeqno.get(escompteIndex));
         else
@@ -364,9 +368,10 @@ public class ClientWidget extends Composite {
           jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
           ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
           hideEscompteResidentIfUnneeded(cs);
-          loadEscomptes();
           retrieveSessions();
           retrieveClubPrix();
+          retrieveCours();
+          retrieveEscomptes();
 	  updateFrais();
       }
     }
@@ -547,7 +552,7 @@ public class ClientWidget extends Composite {
         sd.setAffiliationFrais(stripDollars(affiliationFrais.getText()));
 
         if (escompte.getSelectedIndex() != -1) {
-            sd.setEscompteType(Integer.parseInt(escompte.getValue(escompte.getSelectedIndex())));
+            sd.setEscompteId(escompte.getValue(escompte.getSelectedIndex()));
 	}
         sd.setCasSpecialNote(removeCommas(cas_special_note.getText()));
         sd.setCasSpecialPct(stripDollars(cas_special_pct.getText()));
@@ -863,7 +868,8 @@ public class ClientWidget extends Composite {
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
         double dCategorieFrais = CostCalculator.proratedFraisCours(currentSession, cd, sd, cs, clubPrix);
 
-        if (CostCalculator.isCasSpecial(sd)) {
+        if (CostCalculator.isCasSpecial(sd,
+					CostCalculator.getApplicableEscompte(sd, escompteSummaries))) {
             NumberFormat nf = NumberFormat.getDecimalFormat();
             if (cas_special_pct.getValue().equals("-1")) {
                 float actualEscompteFrais = parseFloat(stripDollars(escompteFrais.getValue()));
@@ -892,7 +898,9 @@ public class ClientWidget extends Composite {
         int sessionCount = sd.getSessionCount();
 
         semaines.setText(CostCalculator.getWeeksSummary(currentSession, dateInscription));
-        escompteFrais.setReadOnly(!CostCalculator.isCasSpecial(sd));
+        escompteFrais.setReadOnly
+	    (!CostCalculator.isCasSpecial(sd,
+					  CostCalculator.getApplicableEscompte(sd, escompteSummaries)));
 
         saisons.setText(JudoDB.getSessionIds(Constants.DB_DATE_FORMAT.parse(sd.getDateInscription()), sessionCount, sessionSummaries));
 
@@ -966,12 +974,13 @@ public class ClientWidget extends Composite {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
         hideEscompteResidentIfUnneeded(cs);
-        CostCalculator.recompute(currentSession, cd, sd, cs, prorata.getValue(), clubPrix);
+        CostCalculator.recompute(currentSession, cd, sd, cs, prorata.getValue(), clubPrix, escompteSummaries);
 
         /* view stuff here */
         Display d = Display.NONE;
         int escompteIdx = escompte.getSelectedIndex();
-        if (escompteIdx != -1 && Constants.escomptePct(escompte.getValue(escompte.getSelectedIndex())) == -1)
+        if (escompteIdx != -1 &&
+	    CostCalculator.isCasSpecial(sd, CostCalculator.getApplicableEscompte(sd, escompteSummaries)))
             d = Display.INLINE;
         ((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(d);
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);
@@ -1012,7 +1021,7 @@ public class ClientWidget extends Composite {
             cf.append(sd.getCategorieFrais()+",");
             c.append(sd.getCours()+",");
             sess.append(Integer.toString(sd.getSessionCount())+",");
-            e.append(Integer.toString(sd.getEscompteType())+",");
+            e.append(sd.getEscompteId()+",");
             csn.append(sd.getCasSpecialNote()+",");
             csp.append(sd.getCasSpecialPct()+",");
             ef.append(sd.getEscompteFrais()+",");
@@ -1155,7 +1164,6 @@ public class ClientWidget extends Composite {
 
                         ClientWidget.this.cd = JsonUtils.<ClientData>safeEval(s);
                         currentServiceNumber = cd.getMostRecentServiceNumber();
-                        loadEscomptes();
                         jdb.clearStatus();
                         loadClientData();
 
@@ -1237,6 +1245,29 @@ public class ClientWidget extends Composite {
                     public void eval(String s) {
                         loadCours
                             (JsonUtils.<JsArray<CoursSummary>>safeEval(s));
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    /* depends on retrieveClubList() and retrieveSessions() having succeeded */
+    public void retrieveEscomptes() {
+        if (jdb.getSelectedClubID() == null || !gotSessions) {
+            new Timer() {
+                public void run() { retrieveEscomptes(); }
+            }.schedule(100);
+            return;
+        }
+
+        escompte.clear();
+        escompteSummaries.clear();
+        String url = JudoDB.PULL_ESCOMPTE_URL +
+            "?club_id=" + jdb.getSelectedClubID();
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        loadEscomptes
+                            (JsonUtils.<JsArray<EscompteSummary>>safeEval(s));
                     }
                 });
         jdb.retrieve(url, rc);

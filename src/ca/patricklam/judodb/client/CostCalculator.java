@@ -1,5 +1,6 @@
 package ca.patricklam.judodb.client;
 
+import java.util.List;
 import java.util.Date;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -117,21 +118,40 @@ public class CostCalculator {
         return dSuppFrais;
     }
 
-    static boolean isCasSpecial(ServiceData sd) {
-        return Constants.escomptePct(Integer.toString(sd.getEscompteType())) == -1;
+    static boolean isCasSpecial(ServiceData sd, EscompteSummary es) {
+        return es != null && es.getAmountPercent().equals("-1");
     }
 
-    static double escompteFrais(ServiceData sd, double dCategorieFrais) {
+    static EscompteSummary getApplicableEscompte(ServiceData sd,
+                                                 List<EscompteSummary> escompteSummaries) {
+        EscompteSummary es = null;
+        for (EscompteSummary e : escompteSummaries) {
+            if (e.getId().equals(sd.getEscompteId())) {
+                es = e; break;
+            }
+        }
+        return es;
+    }
+
+    static double escompteFrais(ServiceData sd, double dCategorieFrais,
+                                List<EscompteSummary> escompteSummaries) {
         if (sd == null) return 0.0;
 
-        double escomptePct;
-        if (isCasSpecial(sd)) {
+        EscompteSummary es = getApplicableEscompte(sd, escompteSummaries);
+        if (es == null) return 0.0;
+
+        double escomptePct = 0.0;
+        boolean emptyPct = false;
+        if (isCasSpecial(sd, es)) {
             escomptePct = Double.parseDouble(sd.getCasSpecialPct());
         } else {
-            escomptePct = Constants.escomptePct(Integer.toString(sd.getEscompteType()));
+            if (es.getAmountPercent().equals(""))
+                emptyPct = true;
+            else
+                escomptePct = Double.parseDouble(es.getAmountPercent());
         }
-        if (escomptePct == 0)
-            return -Constants.escompteDollars(Integer.toString(sd.getEscompteType()));
+        if (emptyPct)
+            return es.getAmountAbsolute().equals("") ? 0.0 : -Double.parseDouble(es.getAmountAbsolute());
         return -dCategorieFrais * (escomptePct / 100.0);
     }
 
@@ -145,13 +165,13 @@ public class CostCalculator {
     }
 
     /** Model-level method to recompute costs. */
-    public static void recompute(SessionSummary ss, ClientData cd, ServiceData sd, ClubSummary cs, boolean prorataOverride, ClubPrix[] cpA) {
+    public static void recompute(SessionSummary ss, ClientData cd, ServiceData sd, ClubSummary cs, boolean prorataOverride, ClubPrix[] cpA, List<EscompteSummary> escompteSummaries) {
       if (cpA == null) return;
       if (ss == null) return;
 
       double dCategorieFrais = proratedFraisCours(ss, cd, sd, cs, cpA);
       if (!prorataOverride) dCategorieFrais = fraisCours(ss, cd, sd, cpA);
-      double dEscompteFrais = escompteFrais(sd, dCategorieFrais);
+      double dEscompteFrais = escompteFrais(sd, dCategorieFrais, escompteSummaries);
       double dAffiliationFrais = affiliationFrais(ss, cd, sd, cpA);
       double dSuppFrais = suppFrais(sd, cs, dCategorieFrais + dEscompteFrais + dAffiliationFrais);
 

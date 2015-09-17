@@ -3,6 +3,7 @@ package ca.patricklam.judodb.client;
 import java.util.Date;
 import java.util.HashMap;
 
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
 
@@ -45,33 +46,6 @@ public class Constants {
         }
     }
 
-    static class Escompte {
-        final String seqno;
-        final String clubId;
-        final String name;
-        final double amountPct; // in percent
-        final double amountDollars;
-
-        public Escompte(String seqno, String clubId, String name, double amountPct, double amountDollars) {
-            this.seqno = seqno; this.clubId = clubId; this.name = name;
-            this.amountPct = amountPct; this.amountDollars = amountDollars;
-        }
-    }
-
-    public static final double escomptePct(String seqno) {
-        for (Escompte e : ESCOMPTES)
-            if (e.seqno.equals(seqno))
-                return e.amountPct;
-        return 0;
-    }
-
-    public static final double escompteDollars(String seqno) {
-        for (Escompte e : ESCOMPTES)
-            if (e.seqno.equals(seqno))
-                return e.amountDollars;
-        return 0;
-    }
-
     static class Judogi {
         final String seqno;
         final String name;
@@ -99,25 +73,6 @@ public class Constants {
             this.name = name; this.n3 = name; this.order = order;
         }
     }
-
-    public static final Grade[] GRADES = new Grade[] {
-        new Grade("Blanche", "Bla", -60),
-        new Grade("B/J", -55),
-        new Grade("Jaune", "Jau", -50),
-        new Grade("J/O", -45),
-        new Grade("Orange", "Ora", -40),
-        new Grade("O/V", -35),
-        new Grade("Verte", "Ver", -30),
-        new Grade("V/B", -25),
-        new Grade("Bleue", "Ble", -20),
-        new Grade("B/M", -15),
-        new Grade("Marron", "Mar", -10),
-        new Grade("1D", 10),
-        new Grade("2D", 20),
-        new Grade("3D", 30),
-        new Grade("4D", 40),
-        new Grade("5D", 50)
-    };
 
     /** Case-insensitively assigns grade to one of GRADES.
      * Truncate input to 3 letters.
@@ -152,6 +107,26 @@ public class Constants {
         return new Date(longDate);
     }
 
+    /* constant data */
+    public static final Grade[] GRADES = new Grade[] {
+        new Grade("Blanche", "Bla", -60),
+        new Grade("B/J", -55),
+        new Grade("Jaune", "Jau", -50),
+        new Grade("J/O", -45),
+        new Grade("Orange", "Ora", -40),
+        new Grade("O/V", -35),
+        new Grade("Verte", "Ver", -30),
+        new Grade("V/B", -25),
+        new Grade("Bleue", "Ble", -20),
+        new Grade("B/M", -15),
+        new Grade("Marron", "Mar", -10),
+        new Grade("1D", 10),
+        new Grade("2D", 20),
+        new Grade("3D", 30),
+        new Grade("4D", 40),
+        new Grade("5D", 50)
+    };
+
     public static final Division[] DIVISIONS = new Division[] {
         new Division("Mini-Poussin", "U8", 8, false, null),
         new Division("Poussin", "U10", 10, false, null),
@@ -167,22 +142,10 @@ public class Constants {
     };
     public static final Division EMPTY_DIVISION = new Division("", "", 0, false, null);
 
-    public static final Escompte[] ESCOMPTES = new Escompte[] {
-        new Escompte("0", "0", "Aucun", 0, 0),
-        new Escompte("1", "1", "2e membre", 10, 0),
-        new Escompte("2", "1", "3e membre", 15, 0),
-        new Escompte("3", "1", "4e membre", 20, 0),
-        new Escompte("4", "1", "5e membre", 25, 0),
-        new Escompte("5", "1", "Nouvel(le) ami(e)", 10, 0),
-        new Escompte("6", "1", "Membre du CA", 50, 0),
-        new Escompte("7", "0", "Cas spécial", -1, -1),
-        new Escompte("8", "4", "Famille", 0, 10),
-        new Escompte("9", "4", "1x par semaine - Enfant", 26.1, 0),
-        new Escompte("10", "4", "1x per semaine - Enfant, famille", 34.7, 0),
-        new Escompte("11", "4", "1x par semaine - Adulte", 23.077, 0),
-        new Escompte("12", "4", "Carte punch 10x", 0, 40),
-        new Escompte("13", "4", "Parent, cours parent/enfant", 0, 80),
-    };
+    public static final EscompteSummary EMPTY_ESCOMPTE =
+	JsonUtils.<EscompteSummary>safeEval
+	("{\"id\":\"0\", \"club_id\":\"0\", \"nom\":\"Aucun\","+
+	 "\"amount_percent\":\"0\",\"amount_absolute\":\"0\"}");
 
     public static final Judogi[] JUDOGIS = new Judogi[] {
         new Judogi("0", "Aucun", "0"),
