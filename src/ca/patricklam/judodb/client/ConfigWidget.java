@@ -182,6 +182,94 @@ public class ConfigWidget extends Composite {
         }
     }
 
+    /* --- club tab --- */
+    @UiField TextBox nom_club;
+    @UiField TextBox nom_short;
+    @UiField TextBox numero_club;
+    @UiField TextBox ville;
+    @UiField TextBox prefix_codepostale;
+    @UiField TextBox indicatif_regional;
+    @UiField TextBox escompte_resident;
+    @UiField TextBox prime_prorata;
+    @UiField CheckBox default_prorata;
+
+    ValueChangeHandler newValueChangeHandler(final String key) {
+	return new ValueChangeHandler<String>() {
+	    @Override
+	    public void onValueChange(ValueChangeEvent<String> event) {
+		pushEdit("-1,c" + key + "," + event.getValue() + "," +
+			 jdb.getSelectedClubID() + ";");
+	    }
+	};
+    }
+
+    ClickHandler newClickHandler(final String key) {
+	return new ClickHandler() {
+	    @Override
+	    public void onClick(ClickEvent event) {
+		pushEdit("-1,c" + key + "," +
+			 ((((CheckBox)event.getSource()).getValue()) ? "1" : "0") + "," +
+			 jdb.getSelectedClubID() + ";");
+	    }
+	};
+    }
+
+    private boolean clubHandlersInstalled = false;
+    void initializeClubFields() {
+        nom_club.setText(""); nom_club.setReadOnly(true);
+        numero_club.setText(""); numero_club.setReadOnly(true);
+        nom_short.setText(""); 
+        ville.setText("");
+        prefix_codepostale.setText("");
+        indicatif_regional.setText("");
+        escompte_resident.setText("");
+        prime_prorata.setText("5"); prime_prorata.setReadOnly(true);
+        default_prorata.setValue(false);
+
+        if (!clubHandlersInstalled) {
+            clubHandlersInstalled = true;
+            nom_short.addValueChangeHandler(newValueChangeHandler("nom_short"));
+            ville.addValueChangeHandler(newValueChangeHandler("ville"));
+            prefix_codepostale.addValueChangeHandler(newValueChangeHandler("prefix_codepostale"));
+            indicatif_regional.addValueChangeHandler(newValueChangeHandler("indicatif_regional"));
+            escompte_resident.addValueChangeHandler(newValueChangeHandler("escompte_resident"));
+            default_prorata.addClickHandler(newClickHandler("pro_rata"));
+        }
+
+        boolean setEverythingReadOnly = false;
+        if (jdb.getSelectedClubID() == null) {
+            nom_club.setText("n/d");
+            setEverythingReadOnly = true;
+        }
+
+        nom_short.setReadOnly(setEverythingReadOnly);
+        ville.setReadOnly(setEverythingReadOnly);
+        prefix_codepostale.setReadOnly(setEverythingReadOnly);
+        indicatif_regional.setReadOnly(setEverythingReadOnly);
+        escompte_resident.setReadOnly(setEverythingReadOnly);
+        default_prorata.setEnabled(!setEverythingReadOnly);
+    }
+
+    void populateCurrentClub() {
+	String selectedClub = jdb.getSelectedClubID();
+	initializeClubFields();
+	if (selectedClub == null) {
+	    return;
+	}
+
+	ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+	nom_club.setText(cs.getNom());
+	nom_short.setText(cs.getNomShort());
+	numero_club.setText(cs.getNumeroClub());
+	ville.setText(cs.getVille());
+	prefix_codepostale.setText(cs.getPrefixCodepostale());
+	indicatif_regional.setText(cs.getIndicatifRegional());
+	escompte_resident.setText(cs.getEscompteResident());
+	//prime_prorata.setText(cs.getPrimeProrata());
+	default_prorata.setValue(cs.getDefaultProrata());
+    }
+    /* --- end club tab --- */
+
     /* --- session tab --- */
     private static final ProvidesKey<SessionSummary> SESSION_KEY_PROVIDER =
 	new ProvidesKey<SessionSummary>() {
@@ -336,94 +424,6 @@ public class ConfigWidget extends Composite {
 	updateSessionToNameMapping();
     }
     /* --- end session tab --- */
-
-    /* --- club tab --- */
-    @UiField TextBox nom_club;
-    @UiField TextBox nom_short;
-    @UiField TextBox numero_club;
-    @UiField TextBox ville;
-    @UiField TextBox prefix_codepostale;
-    @UiField TextBox indicatif_regional;
-    @UiField TextBox escompte_resident;
-    @UiField TextBox prime_prorata;
-    @UiField CheckBox default_prorata;
-
-    ValueChangeHandler newValueChangeHandler(final String key) {
-	return new ValueChangeHandler<String>() {
-	    @Override
-	    public void onValueChange(ValueChangeEvent<String> event) {
-		pushEdit("-1,c" + key + "," + event.getValue() + "," +
-			 jdb.getSelectedClubID() + ";");
-	    }
-	};
-    }
-
-    ClickHandler newClickHandler(final String key) {
-	return new ClickHandler() {
-	    @Override
-	    public void onClick(ClickEvent event) {
-		pushEdit("-1,c" + key + "," +
-			 ((((CheckBox)event.getSource()).getValue()) ? "1" : "0") + "," +
-			 jdb.getSelectedClubID() + ";");
-	    }
-	};
-    }
-
-    private boolean clubHandlersInstalled = false;
-    void initializeClubFields() {
-        nom_club.setText(""); nom_club.setReadOnly(true);
-        numero_club.setText(""); numero_club.setReadOnly(true);
-        nom_short.setText(""); 
-        ville.setText("");
-        prefix_codepostale.setText("");
-        indicatif_regional.setText("");
-        escompte_resident.setText("");
-        prime_prorata.setText("5"); prime_prorata.setReadOnly(true);
-        default_prorata.setValue(false);
-
-        if (!clubHandlersInstalled) {
-            clubHandlersInstalled = true;
-            nom_short.addValueChangeHandler(newValueChangeHandler("nom_short"));
-            ville.addValueChangeHandler(newValueChangeHandler("ville"));
-            prefix_codepostale.addValueChangeHandler(newValueChangeHandler("prefix_codepostale"));
-            indicatif_regional.addValueChangeHandler(newValueChangeHandler("indicatif_regional"));
-            escompte_resident.addValueChangeHandler(newValueChangeHandler("escompte_resident"));
-            default_prorata.addClickHandler(newClickHandler("pro_rata"));
-        }
-
-        boolean setEverythingReadOnly = false;
-        if (jdb.getSelectedClubID() == null) {
-            nom_club.setText("n/d");
-            setEverythingReadOnly = true;
-        }
-
-        nom_short.setReadOnly(setEverythingReadOnly);
-        ville.setReadOnly(setEverythingReadOnly);
-        prefix_codepostale.setReadOnly(setEverythingReadOnly);
-        indicatif_regional.setReadOnly(setEverythingReadOnly);
-        escompte_resident.setReadOnly(setEverythingReadOnly);
-        default_prorata.setEnabled(!setEverythingReadOnly);
-    }
-
-    void populateCurrentClub() {
-	String selectedClub = jdb.getSelectedClubID();
-	initializeClubFields();
-	if (selectedClub == null) {
-	    return;
-	}
-
-	ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-	nom_club.setText(cs.getNom());
-	nom_short.setText(cs.getNomShort());
-	numero_club.setText(cs.getNumeroClub());
-	ville.setText(cs.getVille());
-	prefix_codepostale.setText(cs.getPrefixCodepostale());
-	indicatif_regional.setText(cs.getIndicatifRegional());
-	escompte_resident.setText(cs.getEscompteResident());
-	//prime_prorata.setText(cs.getPrimeProrata());
-	default_prorata.setValue(cs.getDefaultProrata());
-    }
-    /* --- end club tab --- */
 
     /* --- cours tab --- */
     /* There are five possible front-end actions on the cours tab:
