@@ -493,7 +493,7 @@ public class ListWidget extends Composite {
             ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
             // XXX getPrix on ListWidget as well
             CostCalculator.recompute(currentSession, cd, sd, cs, ps, prorata.getValue(), null, escompteSummaries);
-            // XXX this is potentially slow; use a hash map instead.
+            // this is potentially slow; use a hash map instead.
             for (CoursSummary cc : backingCours) {
                 if (cc.getId().equals(sd.getCours()))
                     dv += cc.getShortDesc();
