@@ -355,6 +355,7 @@ public class ClientWidget extends Composite {
             }
         }
         ServiceData sd = cd.getServices().get(currentServiceNumber);
+        if (sd == null) return;
         String escompteIndex = sd.getEscompteId();
         if (escompteIdxToSeqno.get(escompteIndex) != null)
             escompte.setSelectedIndex(escompteIdxToSeqno.get(escompteIndex));
