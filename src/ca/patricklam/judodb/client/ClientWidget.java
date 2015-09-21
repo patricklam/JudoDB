@@ -426,6 +426,39 @@ public class ClientWidget extends Composite {
         blurb.add(new HTMLPanel(blurbContents));
     }
 
+    private void disableAllSessionEditingInfo() {
+        saisons.setText("");
+        verification.setValue(false);
+        no_sessions.setEnabled(false);
+        categorieFrais.setText("");
+
+        sans_affiliation.setValue(false);
+        sans_affiliation.setEnabled(false);
+        affiliation_initiation.setValue(false);
+        affiliation_initiation.setEnabled(false);
+        affiliation_ecole.setValue(false);
+        affiliation_ecole.setEnabled(false);
+        affiliationFrais.setText("");
+
+        escompte.setEnabled(false);
+
+        cas_special_note.setText("");
+        cas_special_note.setReadOnly(true);
+        cas_special_pct.setValue("");
+        cas_special_pct.setReadOnly(true);
+        escompteFrais.setText("");
+
+        produit.setEnabled(false);
+        resident.setValue(false);
+        resident.setEnabled(false);
+        paypal.setValue(false);
+        paypal.setEnabled(false);
+        suppFrais.setText("");
+
+        frais.setText("");
+        solde.setValue(false);
+    }
+
     /* depends on retrieveClubList having succeeded */
     /** Takes data from ClientData into the form. */
     private void loadClientData () {
@@ -460,17 +493,6 @@ public class ClientWidget extends Composite {
         if (currentServiceNumber == -1) {
             addNewService();
         }
-        ServiceData sd = cd.getServices().get(currentServiceNumber);
-
-        int clubIndex = jdb.getClubListBoxIndexByID(sd.getClubID());
-        if (-1 != clubIndex) {
-            jdb.refreshSelectedClub(clubIndex);
-            dropDownUserClubs.setSelectedIndex(clubIndex);
-        }
-        else {
-            jdb.setStatus("Le client n'a pas de club enregistré.");
-            return;
-        }
 
         loadGradesData();
 
@@ -490,7 +512,23 @@ public class ClientWidget extends Composite {
         date_inscription.setSelectedIndex(currentServiceNumber);
         inscrire.setVisible(!hasToday && !hasThisSession);
         modifier.setVisible(!hasToday && hasThisSession);
-        desinscrire.setVisible(cd.getServices().length() > 0);
+        desinscrire.setVisible(hasThisSession);
+
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+        if (sd == null) {
+            disableAllSessionEditingInfo();
+            return;
+        }
+
+        int clubIndex = jdb.getClubListBoxIndexByID(sd.getClubID());
+        if (-1 != clubIndex) {
+            jdb.refreshSelectedClub(clubIndex);
+            dropDownUserClubs.setSelectedIndex(clubIndex);
+        }
+        else {
+            jdb.setStatus("Le client n'a pas de club enregistré.");
+            return;
+        }
 
         saisons.setText(sd.getSaisons());
         verification.setValue(sd.getVerification());
@@ -561,6 +599,7 @@ public class ClientWidget extends Composite {
         cd.setTelContactUrgence(tel_contact_urgence.getText());
 
         if (currentServiceNumber == -1) return;
+        if (cd.getServices() == null) return;
 
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         if (currentServiceNumber < date_inscription.getItemCount())
@@ -815,6 +854,9 @@ public class ClientWidget extends Composite {
 
     private final ClickHandler desinscrireClickHandler = new ClickHandler() {
         public void onClick(ClickEvent e) {
+            ServiceData sd = cd.getServiceFor(currentSession);
+            if (sd == null)
+                return;
             saveClientData();
 
             JsArray<ServiceData> newServices = JavaScriptObject.createArray().cast();
@@ -1014,9 +1056,12 @@ public class ClientWidget extends Composite {
     private void updateDynamicFields() {
         saveClientData();
         ServiceData sd = cd.getServices().get(currentServiceNumber);
+        if (sd == null) return;
+
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
         hideEscompteResidentIfUnneeded(cs);
         hidePaypalIfDisabled(cs);
+
         ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
 
         CostCalculator.recompute(currentSession, cd, sd, cs, ps, prorata.getValue(), clubPrix, escompteSummaries);

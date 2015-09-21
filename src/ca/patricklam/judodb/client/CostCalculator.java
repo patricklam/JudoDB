@@ -72,8 +72,9 @@ public class CostCalculator {
 
         int rw = remainingWeeks(ss, dateInscription);
         int tw = totalWeeks(ss, dateInscription);
-        double supplement_prorata = cs.getSupplementProrata().equals("")
-            ? 0 : Double.parseDouble(cs.getSupplementProrata());
+        double supplement_prorata = 0;
+        if (cs.getSupplementProrata() != null && !cs.getSupplementProrata().equals(""))
+            supplement_prorata = Double.parseDouble(cs.getSupplementProrata());
         double prorataCost = baseCost * ((double)rw / (double)tw) + supplement_prorata;
         if (rw < tw - 4)
             return Math.min(baseCost, prorataCost);

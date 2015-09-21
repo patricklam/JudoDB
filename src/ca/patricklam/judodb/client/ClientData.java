@@ -57,9 +57,9 @@ public class ClientData extends JavaScriptObject {
         JsArray<ServiceData> services = getServices();
         if (services == null || services.length() == 0) return -1;
 
-        int r = 0;
+        int r = -1;
         for (int i = 0; i < services.length(); i++) {
-            if (services.get(i).getDateInscription().compareTo(services.get(r).getDateInscription()) > 0)
+            if (r == -1 || services.get(i).getDateInscription().compareTo(services.get(r).getDateInscription()) > 0)
                 r = i;
         }
         return r;
