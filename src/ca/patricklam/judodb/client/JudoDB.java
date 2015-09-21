@@ -341,6 +341,31 @@ public class JudoDB implements EntryPoint {
      * This is the entry point method.
      */
     public void onModuleLoad() {
+        // handle exceptions
+        GWT.setUncaughtExceptionHandler(new
+                                        GWT.UncaughtExceptionHandler() {
+                public void onUncaughtException(Throwable e) {
+                    Throwable unwrapped = unwrap(e);
+                    // do exception handling stuff
+                    StringBuffer sb = new StringBuffer();
+                    for (StackTraceElement element : unwrapped.getStackTrace()) {
+                        sb.append(element + "\n");
+                    }
+                    com.google.gwt.user.client.Window.alert("got stack trace "+sb.toString());
+                }
+
+                public Throwable unwrap(Throwable e) {
+                    if(e instanceof com.google.gwt.event.shared.UmbrellaException) {
+                        com.google.gwt.event.shared.UmbrellaException ue =
+                            (com.google.gwt.event.shared.UmbrellaException) e;
+                        if(ue.getCauses().size() == 1) {
+                            return unwrap(ue.getCauses().iterator().next());
+                        }
+                    }
+                    return e;
+                }
+            });
+
 	RootLayoutPanel.get().add(mainLayoutPanel);
 
 	mainLayoutPanel.versionLabel.setText(Version.VERSION);
