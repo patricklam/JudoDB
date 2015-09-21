@@ -350,7 +350,7 @@ public class ClientWidget extends Composite {
             if (e.getClubId().equals("0") || e.getClubId().equals(jdb.getSelectedClubID())) {
                 escompteSummaries.add(e);
                 escompte.addItem(e.getNom(), e.getId());
-                escompteIdxToSeqno.put(e.getClubId(), idx);
+                escompteIdxToSeqno.put(e.getId(), idx);
                 idx++;
             }
         }
