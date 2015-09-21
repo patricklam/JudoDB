@@ -14,12 +14,15 @@ public class CoursSummary extends JavaScriptObject {
     public final native void setSession(String session_seqno) /*-{ this.session_seqno = session_seqno; }-*/;
     public final native String getShortDesc() /*-{ return this.short_desc; }-*/;
     public final native void setShortDesc(String short_desc) /*-{ this.short_desc = short_desc; }-*/;
+    public final native String getSupplement() /*-{ return this.supplement_cours; }-*/;
+    public final native void setSupplement(String supplement_cours) /*-{ this.supplement_cours = supplement_cours; }-*/;
 
     public final String get(String key) {
 	if (key.equals("id")) return getId();
 	if (key.equals("club_id")) return getClubId();
 	if (key.equals("session")) return getSession();
 	if (key.equals("short_desc")) return getShortDesc();
+	if (key.equals("supplement_cours")) return getSupplement();
 	throw new RuntimeException("get: bad key " + key);
     }
 
@@ -31,6 +34,7 @@ public class CoursSummary extends JavaScriptObject {
 	if (key.equals("club_id")) setClubId(value);
 	else if (key.equals("short_desc")) setShortDesc(value);
 	else if (key.equals("session")) setSession(value);
+	else if (key.equals("supplement_cours")) setSupplement(value);
 	else throw new RuntimeException("set: bad key " + key);
     }
 }

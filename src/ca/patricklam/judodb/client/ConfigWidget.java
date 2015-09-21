@@ -482,9 +482,10 @@ public class ConfigWidget extends Composite {
     };
 
     private final ColumnFields COURS_SESSION_COLUMN = new ColumnFields("session", "Session", 2, Unit.EM),
-	DESC_COLUMN = new ColumnFields("short_desc", "Description", 4, Unit.EM);
+        DESC_COLUMN = new ColumnFields("short_desc", "Description", 4, Unit.EM),
+        SUPPLEMENT_COURS_COLUMN = new ColumnFields("supplement_cours", "Supplement", 4, Unit.EM);
 
-    private List<ColumnFields> perCoursColumns = Collections.unmodifiableList(Arrays.asList(COURS_SESSION_COLUMN, DESC_COLUMN));
+    private List<ColumnFields> perCoursColumns = Collections.unmodifiableList(Arrays.asList(COURS_SESSION_COLUMN, DESC_COLUMN, SUPPLEMENT_COURS_COLUMN));
 
     void initializeCoursTable() {
 	cours = new CellTable<CoursSummary>(COURS_KEY_PROVIDER);
@@ -501,7 +502,7 @@ public class ConfigWidget extends Composite {
             }
         };
         cours.addColumn(newColumn, c.name);
-        // this handles updating the short_desc column
+        // this handles updating the short_desc column and the supplement_cours column
         newColumn.setFieldUpdater(new FieldUpdater<CoursSummary, String>() {
                 @Override
                 public void update(int index, CoursSummary object, String value) {
@@ -520,7 +521,9 @@ public class ConfigWidget extends Composite {
                         for (SessionSummary ss : sessions) {
                             cs.add(ss.getAbbrev());
                             edits.append("-1,R," + ss.getSeqno() + "," +
-                                     value + "," + jdb.getSelectedClubID() + ";");
+                                         value + "," +
+                                         /* supplement */ "," +
+                                         jdb.getSelectedClubID() + ";");
                         }
                         pushEdit(edits.toString());
                         coursShortDescToDbIds.put(value, cs);
@@ -577,7 +580,9 @@ public class ConfigWidget extends Composite {
                         StringBuffer edits = new StringBuffer();
                         for (SessionSummary ss : newSessions) {
                             edits.append("-1,R," + ss.getSeqno() + "," +
-                                         object.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
+                                         object.getShortDesc() + "," +
+                                         object.getSupplement() + "," +
+                                         jdb.getSelectedClubID() + ";");
                         }
                         pushEdit(edits.toString());
                         addAddCoursCours();
@@ -586,7 +591,9 @@ public class ConfigWidget extends Composite {
                         StringBuffer edits = new StringBuffer();
                         for (SessionSummary ss : addedSessions) {
                             edits.append("-1,R," + ss.getSeqno() + "," +
-                                     object.getShortDesc() + "," + jdb.getSelectedClubID() + ";");
+                                         object.getShortDesc() + "," +
+                                         object.getSupplement() + "," +
+                                         jdb.getSelectedClubID() + ";");
                         }
 
                         // remove deleted sessions
@@ -606,6 +613,7 @@ public class ConfigWidget extends Composite {
                 }
             });
         addCoursColumn(sessions, DESC_COLUMN, true);
+        addCoursColumn(sessions, SUPPLEMENT_COURS_COLUMN, true);
     }
 
     private void removeDuplicateCours(StringBuffer edits) {
@@ -630,6 +638,7 @@ public class ConfigWidget extends Composite {
         addNewCours.setSession("");
         addNewCours.setClubId(jdb.getSelectedClubID());
         addNewCours.setShortDesc(ADD_COURS_VALUE);
+        addNewCours.setSupplement("");
         coursData.add(addNewCours);
     }
 
@@ -642,6 +651,7 @@ public class ConfigWidget extends Composite {
         HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
         HashMap<String, Set<String>> ll = new HashMap<String, Set<String>>();
         HashMap<String, List<String>> m = new HashMap<String, List<String>>();
+        HashMap<String, String> supp = new HashMap<String, String>();
         rawCoursData.clear(); rawCoursData.addAll(coursArray);
         duplicateCours.clear();
 
@@ -651,6 +661,13 @@ public class ConfigWidget extends Composite {
                 ll.put(cs.getShortDesc(), new HashSet<String>());
                 m.put(cs.getShortDesc(), new ArrayList<String>());
             }
+            // in the future, should support different cours for different sessions
+            // with different supplements
+            if (supp.containsKey(cs.getShortDesc()))
+                assert supp.get(cs.getShortDesc()).equals(cs.getSupplement());
+            String newSupp = cs.getSupplement();
+            if (newSupp == null) newSupp = "";
+            supp.put(cs.getShortDesc(), newSupp);
             StringBuffer b = l.get(cs.getShortDesc());
             List<String> ids = m.get(cs.getShortDesc());
             ids.add(cs.getId());
@@ -676,7 +693,8 @@ public class ConfigWidget extends Composite {
         int id = 0;
         for (String s : l.keySet()) {
             CoursSummary cs = (CoursSummary)JavaScriptObject.createObject().cast();
-            cs.setId(String.valueOf(id)); cs.setShortDesc(s); cs.setSession(l.get(s).toString());
+            cs.setId(String.valueOf(id)); cs.setShortDesc(s);
+            cs.setSession(l.get(s).toString()); cs.setSupplement(supp.get(s));
             coursShortDescToDbIds.put(cs.getShortDesc(), m.get(s));
             coursData.add(cs);
             id++;
