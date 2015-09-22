@@ -16,7 +16,7 @@ public class ClubSummary extends JavaScriptObject {
     public final native void setVille(String ville) /*-{ this.ville = ville; }-*/;
     public final native String getPrefixCodepostale() /*-{ return this.prefix_codepostale; }-*/;
     public final native void setPrefixCodepostale(String prefix_codepostale) /*-{ this.prefix_codepostale = prefix_codepostale; }-*/;
-    public final native String getEscompteResident() /*-{ return this.escompte_resident; }-*/;
+    public final native String getEscompteResident() /*-{ return this.escompte_resident == null ? '0' : this.escompte_resident; }-*/;
     public final native void setEscompteResident(String escompte_resident) /*-{ this.escompte_resident = escompte_resident; }-*/;
     public final native String getIndicatifRegional() /*-{ return this.indicatif_regional; }-*/;
     public final native void setIndicatifRegional(String indicatif_regional) /*-{ this.indicatif_regional = indicatif_regional; }-*/;
