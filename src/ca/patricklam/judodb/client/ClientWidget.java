@@ -354,7 +354,9 @@ public class ClientWidget extends Composite {
                 idx++;
             }
         }
-        if (cd.getServices().length() == 0) return;
+        // XXX should move out the setSelectedIndex to when we definitely have services;
+        // XXX is currently a race condition.
+        if (cd.getServices() == null || cd.getServices().length() == 0) return;
         ServiceData sd = cd.getServices().get(cd.getMostRecentServiceNumber());
         String escompteIndex = sd.getEscompteId();
         if (escompteIdxToSeqno.get(escompteIndex) != null)
@@ -381,7 +383,7 @@ public class ClientWidget extends Composite {
                 idx++;
             }
         }
-        if (cd.getServices().length() == 0) return;
+        if (cd.getServices() == null || cd.getServices().length() == 0) return;
         ServiceData sd = cd.getServices().get(cd.getMostRecentServiceNumber());
         String produitIndex = sd.getJudogi();
         if (produitIdxToSeqno.get(produitIndex) != null)
