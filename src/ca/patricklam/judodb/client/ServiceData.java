@@ -35,6 +35,7 @@ public class ServiceData extends JavaScriptObject {
     public final native void setEscompteId(String id) /*-{ this.escompte = id; }-*/;
     public final native String getCasSpecialNote() /*-{ return this.cas_special_note; }-*/;
     public final native void setCasSpecialNote(String cas_special_note) /*-{ this.cas_special_note = cas_special_note; }-*/;
+    /* note: cas_special_pct is not in-db; escompte_special is the source of truth from db */
     public final native String getCasSpecialPct() /*-{ return this.cas_special_pct == null ? "-1" : this.cas_special_pct; }-*/;
     public final native void setCasSpecialPct(String cas_special_pct) /*-{ this.cas_special_pct = cas_special_pct; }-*/;
     public final native String getEscompteFrais() /*-{ return (this.escompte_special == null || this.escompte_special == "") ? "0" : this.escompte_special; }-*/;

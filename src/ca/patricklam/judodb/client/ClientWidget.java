@@ -354,8 +354,8 @@ public class ClientWidget extends Composite {
                 idx++;
             }
         }
-        ServiceData sd = cd.getServices().get(currentServiceNumber);
-        if (sd == null) return;
+        if (cd.getServices().length() == 0) return;
+        ServiceData sd = cd.getServices().get(cd.getMostRecentServiceNumber());
         String escompteIndex = sd.getEscompteId();
         if (escompteIdxToSeqno.get(escompteIndex) != null)
             escompte.setSelectedIndex(escompteIdxToSeqno.get(escompteIndex));
@@ -381,8 +381,8 @@ public class ClientWidget extends Composite {
                 idx++;
             }
         }
-        ServiceData sd = cd.getServices().get(currentServiceNumber);
-        if (sd == null) return;
+        if (cd.getServices().length() == 0) return;
+        ServiceData sd = cd.getServices().get(cd.getMostRecentServiceNumber());
         String produitIndex = sd.getJudogi();
         if (produitIdxToSeqno.get(produitIndex) != null)
             produit.setSelectedIndex(produitIdxToSeqno.get(produitIndex));
@@ -469,7 +469,7 @@ public class ClientWidget extends Composite {
     private void loadClientData () {
         // cannot just test for getSelectedClubID() == null,
         // since it sets the selected club ID based on the client's data!
-        if (jdb.allClubs == null || currentSession == null) {
+        if (jdb.allClubs == null || currentSession == null || !gotEscomptes || !gotProduits) {
             new Timer() {
                 public void run() { loadClientData(); }
             }.schedule(100);
@@ -784,7 +784,13 @@ public class ClientWidget extends Composite {
 
     private final ChangeHandler changeEscompteHandler = new ChangeHandler() {
         public void onChange(ChangeEvent e) {
-            if (escompte.getValue(escompte.getSelectedIndex()).equals("-1") && cas_special_pct.getValue().equals("-1"))
+            EscompteSummary es = null;
+            for (EscompteSummary ee : escompteSummaries) {
+                if (ee.getId().equals(escompte.getValue(escompte.getSelectedIndex())))
+                    es = ee;
+            }
+            if (es != null && es.getAmountPercent().equals("-1") &&
+                cas_special_pct.getValue().equals("-1"))
                 cas_special_pct.setValue("0");
             updateDynamicFields();
         }
@@ -1074,11 +1080,11 @@ public class ClientWidget extends Composite {
         /* view stuff here */
         Display d = Display.NONE;
         int escompteIdx = escompte.getSelectedIndex();
-        if (escompteIdx != -1 &&
-	    CostCalculator.isCasSpecial(sd, CostCalculator.getApplicableEscompte(sd, escompteSummaries)))
+        if (CostCalculator.isCasSpecial(sd, CostCalculator.getApplicableEscompte(sd, escompteSummaries)))
             d = Display.INLINE;
         ((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(d);
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);
+        regularizeEscompte();
 
         if (sd != null && !sd.getSaisons().equals("")) {
             String a = sd.getSaisons().split(" ")[0];
@@ -1118,7 +1124,6 @@ public class ClientWidget extends Composite {
             sess.append(Integer.toString(sd.getSessionCount())+",");
             e.append(sd.getEscompteId()+",");
             csn.append(sd.getCasSpecialNote()+",");
-            csp.append(sd.getCasSpecialPct()+",");
             ef.append(sd.getEscompteFrais()+",");
             sa.append(sd.getSansAffiliation() ? "1," : "0,");
             ai.append(sd.getAffiliationInitiation() ? "1," : "0,");
@@ -1346,6 +1351,7 @@ public class ClientWidget extends Composite {
     }
 
     /* depends on retrieveClubList() and retrieveSessions() having succeeded */
+    private boolean gotEscomptes = false;
     public void retrieveEscomptes() {
         if (jdb.getSelectedClubID() == null || !gotSessions) {
             new Timer() {
@@ -1361,6 +1367,7 @@ public class ClientWidget extends Composite {
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
+			gotEscomptes = true;
                         loadEscomptes
                             (JsonUtils.<JsArray<EscompteSummary>>safeEval(s));
                     }
@@ -1370,6 +1377,7 @@ public class ClientWidget extends Composite {
 
     /* depends on retrieveClubList() having succeeded */
     /* technically does not require sessions, but adding it removes a race condition */
+    private boolean gotProduits = false;
     public void retrieveProduits() {
         if (jdb.getSelectedClubID() == null || !gotSessions) {
             new Timer() {
@@ -1385,6 +1393,7 @@ public class ClientWidget extends Composite {
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
+			gotProduits = true;
                         loadProduits
                             (JsonUtils.<JsArray<ProduitSummary>>safeEval(s));
                     }
