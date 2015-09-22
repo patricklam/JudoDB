@@ -143,6 +143,13 @@ public class ListWidget extends Composite {
       }
 
       void generateCoursList() {
+        if (jdb.getSelectedClubID() == null || !gotSessions) {
+            new Timer() {
+                public void run() { generateCoursList(); }
+            }.schedule(100);
+            return;
+        }
+
         jdb.clearStatus();
 
         String session_seqno = requestedSessionNo();
@@ -1048,7 +1055,14 @@ public class ListWidget extends Composite {
     }
 
     private boolean gotCours = false;
-    public void retrieveCours(String session_seqno, String numero_club) {
+    public void retrieveCours(final String session_seqno, final String numero_club) {
+        if (jdb.getSelectedClubID() == null || !gotSessions) {
+            new Timer() {
+                public void run() { retrieveCours(session_seqno, numero_club); }
+            }.schedule(100);
+            return;
+        }
+
         backingCours.clear();
         String url = JudoDB.PULL_CLUB_COURS_URL;
         url += "?session_seqno="+session_seqno;
