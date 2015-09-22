@@ -24,12 +24,6 @@ public class Constants {
     }
     public static final NumberFormat currencyFormat = NumberFormat.getFormat("0.00");
 
-    public static final double PASSEPORT_JUDO_QC = 5.0;
-    public static final int VETERAN = 35;
-    public static final int COUT_JUDOQC_INITIATION = 10;
-    public static final int COUT_JUDOQC_ECOLE = 5;
-    public static final int PAYPAL_PCT = 3;
-
     static class Division {
         final String name;
         final String abbrev;
@@ -40,16 +34,6 @@ public class Constants {
             this.name = name; this.abbrev = abbrev;
             this.years_ago = years_ago; this.noire = noire;
             this.aka = aka;
-        }
-    }
-
-    static class Judogi {
-        final String seqno;
-        final String name;
-        final String amount;
-
-        public Judogi(String seqno, String name, String amount) {
-            this.seqno = seqno; this.name = name; this.amount = amount;
         }
     }
 
@@ -96,6 +80,13 @@ public class Constants {
         long longDate = Long.parseLong(webDateToMilliSec(s));
         return new Date(longDate);
     }
+
+    /* constant data which should be refactored */
+    public static final double PASSEPORT_JUDO_QC = 5.0;
+    public static final int VETERAN = 35;
+    public static final int COUT_JUDOQC_INITIATION = 10;
+    public static final int COUT_JUDOQC_ECOLE = 5;
+    public static final int PAYPAL_PCT = 3;
 
     /* constant data */
     public static final Grade[] GRADES = new Grade[] {
