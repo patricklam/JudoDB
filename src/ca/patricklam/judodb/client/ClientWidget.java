@@ -341,10 +341,10 @@ public class ClientWidget extends Composite {
 
     private void loadEscomptes(JsArray<EscompteSummary> escompteArray) {
         HashMap<String, Integer> escompteIdxToSeqno = new HashMap<String, Integer>();
-        int idx = 0;
         escompte.clear(); escompteSummaries.clear();
         escompte.addItem(Constants.EMPTY_ESCOMPTE.getNom(), Constants.EMPTY_ESCOMPTE.getId());
         escompteSummaries.add(Constants.EMPTY_ESCOMPTE);
+        int idx = 1;
         for (int i = 0; i < escompteArray.length(); i++) {
             EscompteSummary e = escompteArray.get(i);
             if (e.getClubId().equals("0") || e.getClubId().equals(jdb.getSelectedClubID())) {
@@ -365,10 +365,13 @@ public class ClientWidget extends Composite {
 
     private void loadProduits(JsArray<ProduitSummary> produitArray) {
         HashMap<String, Integer> produitIdxToSeqno = new HashMap<String, Integer>();
-        int idx = 0;
         produit.clear(); produitSummaries.clear();
         produit.addItem(Constants.EMPTY_PRODUIT.getNom(), Constants.EMPTY_PRODUIT.getId());
         produitSummaries.add(Constants.EMPTY_PRODUIT);
+        int idx = 1;
+	if (produitArray == null)
+	    com.google.gwt.user.client.Window.alert("produitArray is null");
+
         for (int i = 0; i < produitArray.length(); i++) {
             ProduitSummary e = produitArray.get(i);
             if (e.getClubId().equals("0") || e.getClubId().equals(jdb.getSelectedClubID())) {
@@ -379,6 +382,7 @@ public class ClientWidget extends Composite {
             }
         }
         ServiceData sd = cd.getServices().get(currentServiceNumber);
+        if (sd == null) return;
         String produitIndex = sd.getJudogi();
         if (produitIdxToSeqno.get(produitIndex) != null)
             produit.setSelectedIndex(produitIdxToSeqno.get(produitIndex));
