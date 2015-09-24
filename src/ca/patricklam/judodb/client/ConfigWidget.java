@@ -981,17 +981,24 @@ public class ConfigWidget extends Composite {
                         addAddEscompteEscompte();
                     } else {
                         StringBuffer edits = new StringBuffer();
+                        String otherValue = "";
+                        if (value.equals("-1")) otherValue = "-1";
                         if (c.key.equals(AMOUNT_PERCENT_COLUMN.key)) {
                             String k = AMOUNT_ABSOLUTE_COLUMN.key;
-                            edits.append("-1,z" + k + "," + object.getId() + "," + "" + "," + jdb.getSelectedClubID() + ";");
-                            object.set(k, "");
+                            edits.append("-1,z" + k + "," +
+                                         object.getId() + "," + otherValue + "," +
+                                         jdb.getSelectedClubID() + ";");
+                            object.set(k, otherValue);
                         }
                         else if (c.key.equals(AMOUNT_ABSOLUTE_COLUMN.key)) {
                             String k = AMOUNT_PERCENT_COLUMN.key;
-                            edits.append("-1,z" + k + "," + object.getId() + "," + "" + "," + jdb.getSelectedClubID() + ";");
-                            object.set(k, "");
+                            edits.append("-1,z" + k + "," +
+                                         object.getId() + "," + otherValue + "," +
+                                         jdb.getSelectedClubID() + ";");
+                            object.set(k, otherValue);
                         }
-                        edits.append("-1,z" + c.key + "," + object.getId() + "," + value + "," + jdb.getSelectedClubID() + ";");
+                        edits.append("-1,z" + c.key + "," + object.getId() + "," +
+                                     value + "," + jdb.getSelectedClubID() + ";");
                         pushEdit(edits.toString());
                         object.set(c.key, value);
                     }
