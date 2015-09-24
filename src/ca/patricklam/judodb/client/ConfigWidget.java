@@ -1,3 +1,4 @@
+// -*-  indent-tabs-mode:nil; c-basic-offset:4; -*-
 package ca.patricklam.judodb.client;
 
 import com.google.gwt.core.client.GWT;
