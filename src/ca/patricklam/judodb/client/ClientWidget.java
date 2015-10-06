@@ -1,3 +1,4 @@
+// -*-  indent-tabs-mode:nil; c-basic-offset:4; -*-
 package ca.patricklam.judodb.client;
 
 import java.util.ArrayList;
@@ -354,8 +355,10 @@ public class ClientWidget extends Composite {
                 idx++;
             }
         }
-        ServiceData sd = cd.getServices().get(currentServiceNumber);
-        if (sd == null) return;
+        // XXX should move out the setSelectedIndex to when we definitely have services;
+        // XXX is currently a race condition.
+        if (cd == null || cd.getServices() == null || cd.getServices().length() == 0) return;
+        ServiceData sd = cd.getServices().get(cd.getMostRecentServiceNumber());
         String escompteIndex = sd.getEscompteId();
         if (escompteIdxToSeqno.get(escompteIndex) != null)
             escompte.setSelectedIndex(escompteIdxToSeqno.get(escompteIndex));
@@ -381,8 +384,8 @@ public class ClientWidget extends Composite {
                 idx++;
             }
         }
-        ServiceData sd = cd.getServices().get(currentServiceNumber);
-        if (sd == null) return;
+        if (cd == null || cd.getServices() == null || cd.getServices().length() == 0) return;
+        ServiceData sd = cd.getServices().get(cd.getMostRecentServiceNumber());
         String produitIndex = sd.getJudogi();
         if (produitIdxToSeqno.get(produitIndex) != null)
             produit.setSelectedIndex(produitIdxToSeqno.get(produitIndex));
@@ -469,7 +472,7 @@ public class ClientWidget extends Composite {
     private void loadClientData () {
         // cannot just test for getSelectedClubID() == null,
         // since it sets the selected club ID based on the client's data!
-        if (jdb.allClubs == null || currentSession == null) {
+        if (jdb.allClubs == null || currentSession == null || !gotEscomptes || !gotProduits) {
             new Timer() {
                 public void run() { loadClientData(); }
             }.schedule(100);
@@ -1083,6 +1086,7 @@ public class ClientWidget extends Composite {
             d = Display.INLINE;
         ((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(d);
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);
+        regularizeEscompte();
 
         if (sd != null && !sd.getSaisons().equals("")) {
             String a = sd.getSaisons().split(" ")[0];
@@ -1349,6 +1353,7 @@ public class ClientWidget extends Composite {
     }
 
     /* depends on retrieveClubList() and retrieveSessions() having succeeded */
+    private boolean gotEscomptes = false;
     public void retrieveEscomptes() {
         if (jdb.getSelectedClubID() == null || !gotSessions) {
             new Timer() {
@@ -1364,6 +1369,7 @@ public class ClientWidget extends Composite {
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
+			gotEscomptes = true;
                         loadEscomptes
                             (JsonUtils.<JsArray<EscompteSummary>>safeEval(s));
                     }
@@ -1373,6 +1379,7 @@ public class ClientWidget extends Composite {
 
     /* depends on retrieveClubList() having succeeded */
     /* technically does not require sessions, but adding it removes a race condition */
+    private boolean gotProduits = false;
     public void retrieveProduits() {
         if (jdb.getSelectedClubID() == null || !gotSessions) {
             new Timer() {
@@ -1388,6 +1395,7 @@ public class ClientWidget extends Composite {
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
+			gotProduits = true;
                         loadProduits
                             (JsonUtils.<JsArray<ProduitSummary>>safeEval(s));
                     }
