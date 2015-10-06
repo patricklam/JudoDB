@@ -160,10 +160,7 @@ public class CostCalculator {
         boolean emptyPct = false;
         if (isCasSpecial(sd, es)) {
 	    // cas special, use amount stored in sd
-	    if (sd.getCasSpecialPct().equals("-1"))
-		return Double.parseDouble(sd.getEscompteFrais());
-
-            escomptePct = Double.parseDouble(sd.getCasSpecialPct());
+            return Double.parseDouble(sd.getEscompteFrais());
         } else {
             if (es.getAmountPercent().equals(""))
                 emptyPct = true;
