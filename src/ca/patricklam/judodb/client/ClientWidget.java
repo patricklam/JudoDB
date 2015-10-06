@@ -561,7 +561,7 @@ public class ClientWidget extends Composite {
 
         cas_special_note.setText(sd.getCasSpecialNote());
         cas_special_note.setReadOnly(!isToday);
-        cas_special_pct.setValue(sd.getCasSpecialPct());
+        regularizeEscompte();
         cas_special_pct.setReadOnly(!isToday);
         escompteFrais.setText(sd.getEscompteFrais());
 
@@ -626,7 +626,6 @@ public class ClientWidget extends Composite {
             sd.setEscompteId(escompte.getValue(escompte.getSelectedIndex()));
 	}
         sd.setCasSpecialNote(removeCommas(cas_special_note.getText()));
-        sd.setCasSpecialPct(stripDollars(cas_special_pct.getText()));
         sd.setEscompteFrais(stripDollars(escompteFrais.getText()));
 
         if (produit.getSelectedIndex() != -1) {
@@ -784,7 +783,13 @@ public class ClientWidget extends Composite {
 
     private final ChangeHandler changeEscompteHandler = new ChangeHandler() {
         public void onChange(ChangeEvent e) {
-            if (escompte.getValue(escompte.getSelectedIndex()).equals("-1") && cas_special_pct.getValue().equals("-1"))
+            EscompteSummary es = null;
+            for (EscompteSummary ee : escompteSummaries) {
+                if (ee.getId().equals(escompte.getValue(escompte.getSelectedIndex())))
+                    es = ee;
+            }
+            if (es != null && es.getAmountPercent().equals("-1") &&
+                cas_special_pct.getValue().equals("-1"))
                 cas_special_pct.setValue("0");
             updateDynamicFields();
         }
@@ -1074,8 +1079,7 @@ public class ClientWidget extends Composite {
         /* view stuff here */
         Display d = Display.NONE;
         int escompteIdx = escompte.getSelectedIndex();
-        if (escompteIdx != -1 &&
-	    CostCalculator.isCasSpecial(sd, CostCalculator.getApplicableEscompte(sd, escompteSummaries)))
+        if (CostCalculator.isCasSpecial(sd, CostCalculator.getApplicableEscompte(sd, escompteSummaries)))
             d = Display.INLINE;
         ((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(d);
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);
@@ -1118,7 +1122,6 @@ public class ClientWidget extends Composite {
             sess.append(Integer.toString(sd.getSessionCount())+",");
             e.append(sd.getEscompteId()+",");
             csn.append(sd.getCasSpecialNote()+",");
-            csp.append(sd.getCasSpecialPct()+",");
             ef.append(sd.getEscompteFrais()+",");
             sa.append(sd.getSansAffiliation() ? "1," : "0,");
             ai.append(sd.getAffiliationInitiation() ? "1," : "0,");
