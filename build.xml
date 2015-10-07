@@ -9,10 +9,12 @@
 
   <!-- Configure path to GWT SDK -->
   <property name="gwt.sdk" location="${lib.gwt}" />
+  <property name="gwt-bootstrap.sdk" location="${lib.gwt-bootstrap}" />
 
   <path id="project.class.path">
     <pathelement location="war/WEB-INF/classes"/>
     <pathelement location="${gwt.sdk}/gwt-user.jar"/>
+    <pathelement location="${gwt-bootstrap.sdk}/gwt-bootstrap-2.3.2.1-SNAPSHOT.jar"/>
     <fileset dir="${gwt.sdk}" includes="gwt-dev*.jar"/>
     <!-- Add any additional non-server libs (such as JUnit) -->
     <fileset dir="war/WEB-INF/lib" includes="**/*.jar"/>

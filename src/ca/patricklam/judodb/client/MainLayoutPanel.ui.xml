@@ -1,5 +1,6 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder
+  xmlns:b="urn:import:com.github.gwtbootstrap.client.ui"
   xmlns:ui="urn:ui:com.google.gwt.uibinder"
   xmlns:g="urn:import:com.google.gwt.user.client.ui">
 
@@ -85,4 +86,4 @@
  </g:layer>
 </g:LayoutPanel>
 
-</ui:UiBinder> 
+</ui:UiBinder>

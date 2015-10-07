@@ -1,7 +1,10 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <!-- ListWidget.ui.xml -->
 
-<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+<ui:UiBinder
+  xmlns:b="urn:import:com.github.gwtbootstrap.client.ui"
+  xmlns:ui='urn:ui:com.google.gwt.uibinder'
+  xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
 <ui:style>
 .session {
@@ -36,14 +39,14 @@ td {
 </ui:style>
     
 <g:HTMLPanel>
-	<g:ListBox ui:field="sessionListBox" visibleItemCount="1" styleName="{style.session}" />
-	<g:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" styleName="{style.userclub}" />
+	<b:ListBox ui:field="sessionListBox" visibleItemCount="1" styleName="{style.session}" />
+	<b:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" styleName="{style.userclub}" />
 	<h1 id="stdTitle" class="noprint">Listes des cours</h1>
 
 	<g:FormPanel ui:field="listForm" method="post">
 	  <g:HTMLPanel>
 	    <g:HorizontalPanel>
-		<g:InlineLabel>Cours&nbsp;</g:InlineLabel><g:ListBox ui:field="cours" visibleItemCount="1" />
+		<g:InlineLabel>Cours&nbsp;</g:InlineLabel><b:ListBox ui:field="cours" visibleItemCount="1" />
 		<g:InlineLabel>&nbsp;sortir: </g:InlineLabel><g:Anchor ui:field="pdf">(PDF)</g:Anchor>
 		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="presences">(présences)</g:Anchor>
 		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="xls">(XLS)</g:Anchor>
@@ -59,8 +62,8 @@ td {
 		<g:Hidden ui:field="club_id" name="club_id"/>
 	    </g:HorizontalPanel>
 		<g:HTMLPanel ui:field="ft303_controls" styleName="{style.ft303}">
- 		  &Eacute;v&eacute;nement: <g:TextBox ui:field="evt" name="evt" />&nbsp; &nbsp; 
- 		  Date: <g:TextBox ui:field="date" visibleLength="10" name="date" />&nbsp;&nbsp;
+		  &Eacute;v&eacute;nement: <b:TextBox ui:field="evt" name="evt" />&nbsp; &nbsp; 
+		  Date: <b:TextBox ui:field="date" visibleLength="10" name="date" />&nbsp;&nbsp;
  		  <g:Anchor ui:field="createFT">(créer FT)</g:Anchor>
  		</g:HTMLPanel>
 		<g:HTMLPanel ui:field="impot_controls" styleName="{style.impot}">
@@ -69,18 +72,18 @@ td {
 		  <g:Anchor ui:field="mailmerge">Créer reçus</g:Anchor>
  		</g:HTMLPanel>
 		<g:HTMLPanel ui:field="edit_controls" styleName="{style.edit}">
- 		  Date passage: <g:TextBox ui:field="edit_date" visibleLength="10" name="edit_date" />&nbsp;&nbsp;
+		  Date passage: <b:TextBox ui:field="edit_date" visibleLength="10" name="edit_date" />&nbsp;&nbsp;
  		</g:HTMLPanel>
 	    <g:HTMLPanel ui:field="filter_controls" styleName="{style.filter}">
-	      Division: <g:ListBox ui:field="division"/>&nbsp; &nbsp;
-	      Grade: entre <g:ListBox ui:field="grade_lower"/> et <g:ListBox ui:field="grade_upper"/>&nbsp; &nbsp;
+	      Division: <b:ListBox ui:field="division"/>&nbsp; &nbsp;
+	      Grade: entre <b:ListBox ui:field="grade_lower"/> et <b:ListBox ui:field="grade_upper"/>&nbsp; &nbsp;
 	    </g:HTMLPanel>
 	  </g:HTMLPanel>
 	</g:FormPanel>
 
 	<g:Grid ui:field="results"></g:Grid>
 
-	<g:Label ui:field="nb" />
+	<b:Label ui:field="nb" />
 	
 	<g:FormPanel ui:field="listEditForm" method="post">
           <g:FlowPanel>
@@ -91,10 +94,10 @@ td {
 	</g:FormPanel>
 	<div id="saveorquit" class="actions noprint" style="padding-bottom: 1em">
      <div style="float:left; text-align:right;">
-      <g:Button ui:field="save">Sauvegarder</g:Button>
+      <b:Button ui:field="save">Sauvegarder</b:Button>
      </div>
      <div style="float:right; text-align:right;">
-      <g:Button ui:field="quit">Annuler</g:Button>
+      <b:Button ui:field="quit">Annuler</b:Button>
      </div>
     </div>
 	

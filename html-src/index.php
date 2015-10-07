@@ -63,6 +63,14 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] != "yes")
 
 <html>
   <head>
+    <!-- before your module(*.nocache.js) loading  -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if IE 7]>
+      <link rel="stylesheet" href="{your module name}/css/font-awesome-ie7.css">
+    <![endif]-->
+    <!-- your module(*.nocache.js) loading  -->
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta name="gwt:property" content="locale=fr_CA">
 

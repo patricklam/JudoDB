@@ -1,12 +1,15 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <!-- ConfigWidget.ui.xml -->
 
-<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder' xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+<ui:UiBinder
+  xmlns:b="urn:import:com.github.gwtbootstrap.client.ui"
+  xmlns:ui='urn:ui:com.google.gwt.uibinder'
+  xmlns:g='urn:import:com.google.gwt.user.client.ui'>
    <ui:style src="ConfigWidget.css" />
     <g:LayoutPanel>
      <g:layer top="1.5em" right="1em" width="21em" height="2em">
       <g:FlowPanel>
-       <g:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" />
+       <b:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" />
        <g:FormPanel ui:field="configEditForm" method="post">
 	<g:FlowPanel>
 	  <g:Hidden ui:field="current_session" name="current_session" />
@@ -21,14 +24,14 @@
        <g:tab>
 	 <g:header size='4'>Club</g:header>
 	 <g:FlowPanel ui:field="clubTab">
-	   <g:Label>Nom du club:</g:Label><g:TextBox ui:field="nom_club" name="nom_club_tb" width="40em"/>
-	   <g:Label>Numero club JQ:</g:Label><g:TextBox ui:field="numero_club" name="numero_club_tb"/>
-	   <g:Label>Nom (abbrevi&eacute;):</g:Label><g:TextBox ui:field="nom_short" name="nom_short_tb"/>
-	   <g:Label>Ville:</g:Label><g:TextBox ui:field="ville" name="ville_tb"/>
-	   <g:Label>Prefixe code postale:</g:Label><g:TextBox ui:field="prefix_codepostale" name="prefix_codepostale_tb"/>
-	   <g:Label>Indicatif regional:</g:Label><g:TextBox ui:field="indicatif_regional" name="indicatif_regional_tb"/>
-	   <g:Label>Escompte resident:</g:Label><g:TextBox ui:field="escompte_resident" name="escompte_resident_tb"/>
-	   <g:Label>Supplement prorata:</g:Label><g:TextBox ui:field="supplement_prorata" name="supplement_prorata_tb"/>
+	   <g:Label>Nom du club:</g:Label><b:TextBox ui:field="nom_club" name="nom_club_tb" width="40em"/>
+	   <g:Label>Numero club JQ:</g:Label><b:TextBox ui:field="numero_club" name="numero_club_tb"/>
+	   <g:Label>Nom (abbrevi&eacute;):</g:Label><b:TextBox ui:field="nom_short" name="nom_short_tb"/>
+	   <g:Label>Ville:</g:Label><b:TextBox ui:field="ville" name="ville_tb"/>
+	   <g:Label>Prefixe code postale:</g:Label><b:TextBox ui:field="prefix_codepostale" name="prefix_codepostale_tb"/>
+	   <g:Label>Indicatif regional:</g:Label><b:TextBox ui:field="indicatif_regional" name="indicatif_regional_tb"/>
+	   <g:Label>Escompte resident:</g:Label><b:TextBox ui:field="escompte_resident" name="escompte_resident_tb"/>
+	   <g:Label>Supplement prorata:</g:Label><b:TextBox ui:field="supplement_prorata" name="supplement_prorata_tb"/>
 	   <g:Label>Prorata par defaut:</g:Label><g:CheckBox ui:field="default_prorata" name="default_prorata_tb"/>
 	   <g:Label>Afficher supplement PayPal:</g:Label><g:CheckBox ui:field="afficher_paypal" name="afficher_paypal_tb"/>
 	 </g:FlowPanel>
