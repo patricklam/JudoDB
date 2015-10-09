@@ -11,8 +11,14 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
+
+import org.gwtbootstrap3.client.ui.Button;
+import org.gwtbootstrap3.client.ui.TextBox;
 
 public class MainLayoutPanel extends Composite {
     interface MyUiBinder extends UiBinder<Widget, MainLayoutPanel> {}
@@ -20,17 +26,33 @@ public class MainLayoutPanel extends Composite {
 
     @UiField DockLayoutPanel dock;
 
+    // main column
+    @UiField TextBox searchTextBox;
+    @UiField Button nouveauButton;
+    @UiField Button searchButton;
+    @UiField Button listeButton;
+    @UiField Button configButton;
+    @UiField Button logoutButton; // logout.php
+
+    // results column
+    @UiField VerticalPanel searchResultsPanel = new VerticalPanel();
+    @UiField FlexTable searchResults = new FlexTable();
+
+    @UiField HorizontalPanel searchNavPanel;
+    @UiField Button nextResultsButton;
+    @UiField Button prevResultsButton;
+
+    // misc
     @UiField Label statusLabel;
     @UiField Label versionLabel;
 
-    @UiField FlowPanel search;
+    @UiField FlowPanel mainPanel;
     @UiField ScrollPanel editClient;
     @UiField ScrollPanel lists;
     @UiField LayoutPanel config;
     @UiField FlowPanel rightbar;
     @UiField FlowPanel listActions;
     @UiField FlowPanel configActions;
-    @UiField FlowPanel mainActions;
 
     public MainLayoutPanel() {
         initWidget(uiBinder.createAndBindUi(this));

@@ -33,8 +33,8 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.dom.client.Style.Unit;
 
-import com.github.gwtbootstrap.client.ui.TextBox;
-import com.github.gwtbootstrap.client.ui.ListBox;
+import org.gwtbootstrap3.client.ui.TextBox;
+import org.gwtbootstrap3.client.ui.ListBox;
 
 import java.util.List;
 import java.util.ArrayList;

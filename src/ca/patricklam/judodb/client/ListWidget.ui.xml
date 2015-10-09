@@ -2,7 +2,7 @@
 <!-- ListWidget.ui.xml -->
 
 <ui:UiBinder
-  xmlns:b="urn:import:com.github.gwtbootstrap.client.ui"
+  xmlns:b="urn:import:org.gwtbootstrap3.client.ui"
   xmlns:ui='urn:ui:com.google.gwt.uibinder'
   xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
@@ -63,7 +63,7 @@ td {
 	    </g:HorizontalPanel>
 		<g:HTMLPanel ui:field="ft303_controls" styleName="{style.ft303}">
 		  &Eacute;v&eacute;nement: <b:TextBox ui:field="evt" name="evt" />&nbsp; &nbsp; 
-		  Date: <b:TextBox ui:field="date" visibleLength="10" name="date" />&nbsp;&nbsp;
+		  Date: <b:TextBox ui:field="date" name="date" />&nbsp;&nbsp;
  		  <g:Anchor ui:field="createFT">(créer FT)</g:Anchor>
  		</g:HTMLPanel>
 		<g:HTMLPanel ui:field="impot_controls" styleName="{style.impot}">
@@ -72,7 +72,7 @@ td {
 		  <g:Anchor ui:field="mailmerge">Créer reçus</g:Anchor>
  		</g:HTMLPanel>
 		<g:HTMLPanel ui:field="edit_controls" styleName="{style.edit}">
-		  Date passage: <b:TextBox ui:field="edit_date" visibleLength="10" name="edit_date" />&nbsp;&nbsp;
+		  Date passage: <b:TextBox ui:field="edit_date" name="edit_date" />&nbsp;&nbsp;
  		</g:HTMLPanel>
 	    <g:HTMLPanel ui:field="filter_controls" styleName="{style.filter}">
 	      Division: <b:ListBox ui:field="division"/>&nbsp; &nbsp;

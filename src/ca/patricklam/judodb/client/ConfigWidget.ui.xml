@@ -2,7 +2,7 @@
 <!-- ConfigWidget.ui.xml -->
 
 <ui:UiBinder
-  xmlns:b="urn:import:com.github.gwtbootstrap.client.ui"
+  xmlns:b="urn:import:org.gwtbootstrap3.client.ui"
   xmlns:ui='urn:ui:com.google.gwt.uibinder'
   xmlns:g='urn:import:com.google.gwt.user.client.ui'>
    <ui:style src="ConfigWidget.css" />
