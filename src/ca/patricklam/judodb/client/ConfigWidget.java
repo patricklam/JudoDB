@@ -35,6 +35,7 @@ import com.google.gwt.dom.client.Style.Unit;
 
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
+import org.gwtbootstrap3.client.ui.DropDownMenu;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -106,22 +107,24 @@ public class ConfigWidget extends Composite {
     // noire [true]
     // aka [U20]
 
-    @UiField ListBox dropDownUserClubs;
-    private ClubListHandler clHandler = new ClubListHandler();
+    @UiField DropDownMenu dropDownUserClubs;
+    class ClubListHandler implements ClickHandler {
+        final ClubSummary club;
 
-    class ClubListHandler implements ChangeHandler {
-      public void onChange(ChangeEvent e) {
-        jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
-        retrieveSessions(Integer.toString(jdb.selectedClub));
-        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-        if (cs != null) {
-            retrieveCours(cs.getNumeroClub());
-            retrieveClubPrix(cs.getNumeroClub());
-            retrieveEscomptes(jdb.getSelectedClubID());
-            retrieveProduits(jdb.getSelectedClubID());
+        ClubListHandler(ClubSummary club) { this.club = club; }
+
+        @Override public void onClick(ClickEvent e) {
+            jdb.selectedClub = club;
+            retrieveSessions(jdb.selectedClub.getNumeroClub());
+            ClubSummary cs = jdb.selectedClub;
+            if (cs != null) {
+                retrieveCours(cs.getNumeroClub());
+                retrieveClubPrix(cs.getNumeroClub());
+                retrieveEscomptes(jdb.getSelectedClubID());
+                retrieveProduits(jdb.getSelectedClubID());
+            }
+            populateCurrentClub();
         }
-        populateCurrentClub();
-      }
     }
 
     public ConfigWidget(JudoDB jdb) {
@@ -129,16 +132,16 @@ public class ConfigWidget extends Composite {
         initWidget(uiBinder.createAndBindUi(this));
         jdb.pleaseWait();
         jdb.populateClubList(true, dropDownUserClubs);
-        retrieveSessions(Integer.toString(jdb.selectedClub));
-        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-        if (cs != null) {
+        if (jdb.selectedClub != null) {
+            ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+            retrieveSessions(cs.getNumeroClub());
             retrieveCours(cs.getNumeroClub());
             retrieveClubPrix(cs.getNumeroClub());
 	    retrieveEscomptes(jdb.getSelectedClubID());
             retrieveProduits(jdb.getSelectedClubID());
+        } else {
+            jdb.clearStatus();
         }
-
-        dropDownUserClubs.addChangeHandler(clHandler);
 
 	initializeSessionTable();
 	populateCurrentClub();
@@ -348,7 +351,7 @@ public class ConfigWidget extends Composite {
 			if (object.getId().equals("-1")) {
 			    refreshSessions = true;
 			    pushEdit("-1,F" + c.key + "," + value + "," +
-				     Integer.toString(jdb.selectedClub) + "," + object.getSeqno() + ";");
+				     jdb.selectedClub.getNumeroClub() + "," + object.getSeqno() + ";");
 			} else {
 			    pushEdit("-1,f" + c.key + "," + value + "," +
 				     object.getClub() + "," + object.getId() + ";");
@@ -1291,7 +1294,7 @@ public class ConfigWidget extends Composite {
                             jdb.setStatus("Sauvegardé.");
 			    if (refreshSessions) {
 				refreshSessions = false;
-				retrieveSessions(Integer.toString(jdb.selectedClub));
+				retrieveSessions(jdb.selectedClub.getNumeroClub());
 			    }
 			    if (refreshCours) {
 				refreshCours = false;

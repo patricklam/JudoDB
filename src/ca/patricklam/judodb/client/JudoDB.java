@@ -47,6 +47,8 @@ import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.Label;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
+import org.gwtbootstrap3.client.ui.DropDownMenu;
+import org.gwtbootstrap3.client.ui.AnchorListItem;
 
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -119,9 +121,6 @@ public class JudoDB implements EntryPoint {
     final Anchor returnToMainFromListes = new Anchor("Retour page principale");
     final Anchor returnToMainFromConfig = new Anchor("Retour page principale");
 
-    private ListBox dropDownUserClubs = new ListBox();
-    LinkedHashMap<Integer, ClubSummary> idxToClub = new LinkedHashMap<Integer, ClubSummary>();
-
     ArrayList<Widget> allWidgets = new ArrayList<Widget>();
 
     /* state */
@@ -132,8 +131,6 @@ public class JudoDB implements EntryPoint {
     private Stack<Mode> modeStack = new Stack<Mode>();
     private Mode currentMode = null;
 
-    ClubSearchHandler csHandler = new ClubSearchHandler();
-
     /* edit client stuff */
     private ClientWidget c;
 
@@ -143,18 +140,24 @@ public class JudoDB implements EntryPoint {
     /* config management stuff */
     private ConfigWidget cf;
 
-    int selectedClub = 0;
+    ClubSummary selectedClub;
+    public static final String TOUS = "TOUS";
+    class ClubListHandler implements ClickHandler {
+        final ClubSummary club;
 
-    class ClubSearchHandler implements ChangeHandler {
+        ClubListHandler(ClubSummary club) {
+            this.club = club;
+        }
+
         @Override
-        public void onChange(ChangeEvent e) {
-            refreshSelectedClub();
+        public void onClick(ClickEvent e) {
+            selectClub(club);
         }
     }
 
     void generateClubList() {
         pleaseWait();
-        retrieveClubList(true, dropDownUserClubs);
+        retrieveClubList(true, mainLayoutPanel.dropDownUserClubs);
       }
 
     // Create a handler for the searchButton and nameField
@@ -176,12 +179,13 @@ public class JudoDB implements EntryPoint {
     }
 
     class EditClientHandler implements ClickHandler {
-        private int club, cid;
-        public EditClientHandler(int club, int cid) { this.club = club; this.cid = cid; }
+        private ClubSummary club;
+        private int cid;
+        public EditClientHandler(ClubSummary club, int cid) { this.club = club; this.cid = cid; }
 
         public void onClick(ClickEvent event) {
-            if (club != -1)
-                refreshSelectedClub(club);
+            if (club != null)
+                selectClub(club);
             switchMode(new Mode (Mode.ActualMode.EDIT_CLIENT, cid));
         }
     }
@@ -274,6 +278,7 @@ public class JudoDB implements EntryPoint {
             this.cf = new ConfigWidget(this);
             mainLayoutPanel.config.add(this.cf);
         }
+
         mainLayoutPanel.editClient.clear();
 
         mainLayoutPanel.dock.remove(mainLayoutPanel.mainPanel);
@@ -303,7 +308,7 @@ public class JudoDB implements EntryPoint {
         mainLayoutPanel.versionLabel.setVisible(true);
 
         generateClubList();
-        dropDownUserClubs.setVisible(true);
+        mainLayoutPanel.dropDownUserClubs.setVisible(true);
 
         mainLayoutPanel.searchButton.setEnabled(true);
         mainLayoutPanel.searchTextBox.setFocus(true);
@@ -375,9 +380,9 @@ public class JudoDB implements EntryPoint {
         mainLayoutPanel.configButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
         mainLayoutPanel.logoutButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent event) { Window.Location.assign("/logout.php"); }});
 
-        mainLayoutPanel.mainPanel.add(dropDownUserClubs);
-        dropDownUserClubs.setStyleName("clubBox");
-        dropDownUserClubs.addChangeHandler(csHandler);
+        //mainLayoutPanel.mainPanel.add(mainLayoutPanel.dropDownUserClubs);
+        // set programmatically as we want different styles for screen vs print
+        mainLayoutPanel.dropDownUserClubsButtonGroup.setStyleName("clubBox");
 
         // right bar actions: list
         filtrerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
@@ -438,7 +443,7 @@ public class JudoDB implements EntryPoint {
         mainLayoutPanel.searchButton.addClickHandler(shandler);
 
         // Add a handler for "nouveau client"
-        EditClientHandler ehandler = new EditClientHandler(-1, -1);
+        EditClientHandler ehandler = new EditClientHandler(null, -1);
         mainLayoutPanel.nouveauButton.addClickHandler(ehandler);
 
 
@@ -450,7 +455,7 @@ public class JudoDB implements EntryPoint {
         allWidgets.add(mainLayoutPanel.versionLabel);
 
         // (anchors)
-        allWidgets.add(dropDownUserClubs);
+        allWidgets.add(mainLayoutPanel.dropDownUserClubs);
 
         // history handlers
         History.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -490,7 +495,6 @@ public class JudoDB implements EntryPoint {
 
     private void displaySearchResults() {
         int resultCount = 0, displayedCount = 0;
-        refreshSelectedClub();
 
         mainLayoutPanel.nextResultsButton.setVisible(false);
         mainLayoutPanel.prevResultsButton.setVisible(false);
@@ -507,20 +511,20 @@ public class JudoDB implements EntryPoint {
             }
 
             String s = "[" + cs.getId() + "] " + cs.getPrenom() + " " + cs.getNom();
-	    int club = 0;
+	    ClubSummary club = null;
 
-            if (selectedClub != 0) {
+            if (selectedClub != null) {
 		club = selectedClub;
                 boolean found = false;
                 for (int j = 0; j < cs.getClubs().length(); j++) {
-                    int cn = Integer.parseInt(cs.getClubs().get(j));
-                    if (selectedClub == cn)
+                    String cn = cs.getClubs().get(j);
+                    if (selectedClub.getId().equals(cn))
                         found = true;
                 }
                 if (!found) continue;
             } else {
 		if (cs.getClubs().length() > 0)
-		    club = Integer.parseInt(cs.getClubs().get(0));
+		    club = getClubSummaryByID(cs.getClubs().get(0));
 	    }
 
             String ss = removeAccents(s);
@@ -545,7 +549,9 @@ public class JudoDB implements EntryPoint {
 
     /* --- club list UI functions --- */
     boolean pendingRetrieveClubList = false;
-    void populateClubList(boolean tousOK, ListBox dropDownUserClubs) {
+    void populateClubList(boolean tousOK, DropDownMenu dropDownUserClubs) {
+        // note: tousOK is false when called from e.g. ClientWidget
+
         if (allClubs == null) {
             if (pendingRetrieveClubList) return;
             retrieveClubList(tousOK, dropDownUserClubs);
@@ -553,47 +559,48 @@ public class JudoDB implements EntryPoint {
         }
 
       dropDownUserClubs.clear();
-      dropDownUserClubs.addItem(tousOK ? "TOUS" : "---");
-      dropDownUserClubs.setVisibleItemCount(1);
-      idxToClub.clear();
+      selectedClub = null;
+      if (tousOK) {
+          AnchorListItem tous = new AnchorListItem(TOUS);
+          tous.addClickHandler(new ClubListHandler(null));
+          dropDownUserClubs.add(tous);
+      }
 
       for(int i = 0; i < allClubs.length(); ++i) {
           ClubSummary cs = allClubs.get(i);
-          dropDownUserClubs.addItem(getClubText(cs), cs.getNumeroClub());
-          idxToClub.put(i+1, cs); // add one because "TOUS" occupies index 0
+          AnchorListItem it = new AnchorListItem(cs.getClubText());
+          it.addClickHandler(new ClubListHandler(cs));
+          dropDownUserClubs.add(it);
       }
 
       // don't select TOUS by default if there is only 1 club
-      if (allClubs.length() == 1) selectedClub = 1;
-      dropDownUserClubs.setSelectedIndex(selectedClub);
+      if (allClubs.length() == 1) 
+          selectedClub = allClubs.get(0);
+      selectClub(selectedClub);
     }
 
     /* --- club-list related utility functions --- */
 
     void clearSelectedClub() {
-        selectedClub = 0;
+        selectedClub = null;
     }
 
-    void refreshSelectedClub() {
-        selectedClub = dropDownUserClubs.getSelectedIndex();
-    }
-
-    void refreshSelectedClub(int idx) {
-        selectedClub = idx;
+    void selectClub(ClubSummary club) {
+        mainLayoutPanel.nouveauButton.setEnabled(club != null);
+        if (club == null)
+            mainLayoutPanel.dropDownUserClubsButton.setText(TOUS);
+        else
+            mainLayoutPanel.dropDownUserClubsButton.setText(club.getClubText());
+        selectedClub = club;
     }
 
     boolean isClubSelected() {
-	return selectedClub != 0;
+	return selectedClub != null;
     }
 
     String getSelectedClubID() {
-        if (allClubs == null) return null;
-        if (0 != selectedClub) return idxToClub.get(selectedClub).getId();
-        else return null;
-    }
-
-    static String getClubText(ClubSummary cs) {
-      return "[" + cs.getNumeroClub() + "] " + cs.getNom();
+        if (selectedClub == null) return null;
+        return selectedClub.getId();
     }
 
     ClubSummary getClubSummaryByID(String cid) {
@@ -602,14 +609,6 @@ public class JudoDB implements EntryPoint {
           if (cs.getId().equals(cid)) return cs;
         }
         return null;
-    }
-
-    int getClubListBoxIndexByID(String cid) {
-        for (Map.Entry<Integer, ClubSummary> entry : idxToClub.entrySet()) {
-            if (entry.getValue().getId().equalsIgnoreCase(cid))
-                return entry.getKey();
-        }
-        return -1;
     }
 
     /* --- network functions --- */
@@ -661,7 +660,7 @@ public class JudoDB implements EntryPoint {
         retrieve(url, rc);
     }
 
-    public void retrieveClubList(final boolean tousOK, final ListBox dropDownUserClubs) {
+    public void retrieveClubList(final boolean tousOK, final DropDownMenu dropDownUserClubs) {
         String url = PULL_CLUB_LIST_URL;
         pendingRetrieveClubList = true;
         RequestCallback rc =
@@ -675,7 +674,7 @@ public class JudoDB implements EntryPoint {
         retrieve(url, rc);
     }
 
-    private void loadClubListResults(boolean tousOK, ListBox dropDownUserClubs, JsArray<ClubSummary> clubs) {
+    private void loadClubListResults(boolean tousOK, DropDownMenu dropDownUserClubs, JsArray<ClubSummary> clubs) {
         firstSearchResultToDisplay = 0;
         this.allClubs = clubs;
         populateClubList(tousOK, dropDownUserClubs);

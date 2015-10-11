@@ -75,7 +75,7 @@
 
        <b:Column size="MD_5">
         <g:VerticalPanel ui:field='searchResultsPanel'>
-         <b:Label text='Résultats' />
+         <b:Heading size="H3"><b:Label text='Résultats' /></b:Heading>
          <g:FlexTable ui:field='searchResults' />
          <g:HorizontalPanel ui:field='searchNavPanel'>
           <b:Button ui:field='nextResultsButton' text='Résultats suivants'/>
@@ -84,6 +84,12 @@
         </g:VerticalPanel>
        </b:Column></b:Row>
       </b:Container>
+
+      <b:ButtonGroup  ui:field='dropDownUserClubsButtonGroup'>
+       <b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
+       <b:DropDownMenu ui:field='dropDownUserClubs'>
+       </b:DropDownMenu>
+      </b:ButtonGroup>
      </g:FlowPanel>
     </g:layer>
 

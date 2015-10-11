@@ -40,7 +40,7 @@ td {
     
 <g:HTMLPanel>
 	<b:ListBox ui:field="sessionListBox" visibleItemCount="1" styleName="{style.session}" />
-	<b:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" styleName="{style.userclub}" />
+	<b:DropDownMenu ui:field="dropDownUserClubs" styleName="{style.userclub}" />
 	<h1 id="stdTitle" class="noprint">Listes des cours</h1>
 
 	<g:FormPanel ui:field="listForm" method="post">

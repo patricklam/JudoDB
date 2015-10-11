@@ -9,7 +9,7 @@
     <g:LayoutPanel>
      <g:layer top="1.5em" right="1em" width="21em" height="2em">
       <g:FlowPanel>
-       <b:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" />
+       <b:DropDownMenu ui:field="dropDownUserClubs" />
        <g:FormPanel ui:field="configEditForm" method="post">
 	<g:FlowPanel>
 	  <g:Hidden ui:field="current_session" name="current_session" />

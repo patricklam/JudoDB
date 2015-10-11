@@ -27,4 +27,8 @@ public class ClubSummary extends JavaScriptObject {
     public final native void setDefaultProrata(boolean pro_rata) /*-{ this.pro_rata = pro_rata ? '1' : '0'; }-*/;
     public final native boolean getAfficherPaypal() /*-{ return this.afficher_paypal != '0'; }-*/;
     public final native void setAfficherPaypal(boolean afficher_paypal) /*-{ this.afficher_paypal = afficher_paypal ? '1' : '0'; }-*/;
+
+    public final String getClubText() {
+        return "[" + getNumeroClub() + "] " + getNom();
+    }
 }

@@ -7,7 +7,7 @@
   xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 	<ui:style src="ClientWidget.css" />
 	<g:HTMLPanel ui:field="clientMain">
-	  <b:ListBox ui:field="dropDownUserClubs" visibleItemCount="1" styleName="{style.userclub}" />
+	  <b:DropDownMenu ui:field="dropDownUserClubs" styleName="{style.userclub}" />
  		<div ui:field="cid" class="cid" />
  		<form id="clientform" class="{style.compactform}" method="POST" target="eatFormSubmitResults">
  		<g:Hidden ui:field="guid_on_form" name="guid" />

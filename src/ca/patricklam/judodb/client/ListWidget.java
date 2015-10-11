@@ -48,6 +48,7 @@ import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.Label;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
+import org.gwtbootstrap3.client.ui.DropDownMenu;
 
 public class ListWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ListWidget> {}
@@ -115,7 +116,7 @@ public class ListWidget extends Composite {
     private int pushTries;
 
     @UiField ListBox sessionListBox;
-    @UiField ListBox dropDownUserClubs;
+    @UiField DropDownMenu dropDownUserClubs;
 
     private class Columns {
         final static int CID = 0;
@@ -167,24 +168,28 @@ public class ListWidget extends Composite {
       }
     }
 
-    class ClubListHandler implements ChangeHandler {
-      public void onChange(ChangeEvent e) {
-        jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
-        retrieveSessions(jdb.selectedClub);
-        actuallyHandleChange();
-      }
+    class ClubListHandler implements ClickHandler {
+        final ClubSummary club;
 
-      public void actuallyHandleChange() {
-        if (!gotSessions) {
-            new Timer() {
-                public void run() { actuallyHandleChange(); }
-            }.schedule(100);
-            return;
+        ClubListHandler(ClubSummary club) { this.club = club; }
+
+        public void onClick(ClickEvent e) {
+            jdb.selectedClub = club;
+            retrieveSessions(jdb.selectedClub);
+            actuallyHandleChange();
         }
 
-        coursHandler.generateCoursList();
-        showList();
-      }
+        public void actuallyHandleChange() {
+            if (!gotSessions) {
+                new Timer() {
+                    public void run() { actuallyHandleChange(); }
+                }.schedule(100);
+                return;
+            }
+
+            coursHandler.generateCoursList();
+            showList();
+        }
     }
 
     final Widget[] allListModeWidgets;
@@ -207,7 +212,6 @@ public class ListWidget extends Composite {
     private HashMap<TextBox, String> originalGradeDates = new HashMap<TextBox, String>();
 
     private CoursHandler coursHandler = new CoursHandler();
-    private ClubListHandler clHandler = new ClubListHandler();
 
     public ListWidget(JudoDB jdb) {
         this.jdb = jdb;
@@ -298,8 +302,6 @@ public class ListWidget extends Composite {
         });
 
         listEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
-
-        dropDownUserClubs.addChangeHandler(clHandler);
 
         jdb.populateClubList(true, dropDownUserClubs);
         retrieveSessions(jdb.selectedClub);
@@ -1041,10 +1043,10 @@ public class ListWidget extends Composite {
 
     /* --- network functions --- */
     private boolean gotSessions = false;
-    public void retrieveSessions(int numero_club) {
+    public void retrieveSessions(ClubSummary cs) {
         gotSessions = false;
         String url = JudoDB.PULL_SESSIONS_URL;
-        url += "?club="+numero_club;
+        url += "?club="+cs.getNumeroClub();
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {

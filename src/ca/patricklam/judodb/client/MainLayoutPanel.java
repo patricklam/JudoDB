@@ -18,7 +18,9 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import org.gwtbootstrap3.client.ui.Button;
+import org.gwtbootstrap3.client.ui.ButtonGroup;
 import org.gwtbootstrap3.client.ui.TextBox;
+import org.gwtbootstrap3.client.ui.DropDownMenu;
 
 public class MainLayoutPanel extends Composite {
     interface MyUiBinder extends UiBinder<Widget, MainLayoutPanel> {}
@@ -45,6 +47,9 @@ public class MainLayoutPanel extends Composite {
     // misc
     @UiField Label statusLabel;
     @UiField Label versionLabel;
+    @UiField ButtonGroup dropDownUserClubsButtonGroup;
+    @UiField Button dropDownUserClubsButton;
+    @UiField DropDownMenu dropDownUserClubs;
 
     @UiField FlowPanel mainPanel;
     @UiField ScrollPanel editClient;

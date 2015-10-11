@@ -49,6 +49,7 @@ import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.Label;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
+import org.gwtbootstrap3.client.ui.DropDownMenu;
 
 public class ClientWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ClientWidget> {}
@@ -161,7 +162,7 @@ public class ClientWidget extends Composite {
     @UiField Anchor saveGrades;
     @UiField Anchor annulerGrades;
 
-    @UiField ListBox dropDownUserClubs;
+    @UiField DropDownMenu dropDownUserClubs;
 
     private final FormElement clientform;
 
@@ -209,9 +210,7 @@ public class ClientWidget extends Composite {
         clientform = FormElement.as(clientMain.getElementById("clientform"));
         clientform.setAction(PUSH_ONE_CLIENT_URL);
         deleted.setValue("");
-        clubListHandler = new ClubListHandler();
-        dropDownUserClubs.setSelectedIndex(jdb.selectedClub);
-        dropDownUserClubs.addChangeHandler(clubListHandler);
+        // XXX set clublist to right entry
 
         no_sessions.addItem("1");
         no_sessions.addItem("2");
@@ -395,19 +394,22 @@ public class ClientWidget extends Composite {
     }
 
 
-    class ClubListHandler implements ChangeHandler {
-      public void onChange(ChangeEvent event) {
-          jdb.selectedClub = dropDownUserClubs.getSelectedIndex();
-          ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-          hideEscompteResidentIfUnneeded(cs);
-          hidePaypalIfDisabled(cs);
-          retrieveSessions();
-          retrieveClubPrix();
-          retrieveCours();
-          retrieveEscomptes();
-          retrieveProduits();
-          updateFrais();
-      }
+    class ClubListHandler implements ClickHandler {
+        final ClubSummary club;
+
+        ClubListHandler(ClubSummary club) { this.club = club; }
+
+        public void onClick(ClickEvent e) {
+            jdb.selectedClub = club;
+            hideEscompteResidentIfUnneeded(club);
+            hidePaypalIfDisabled(club);
+            retrieveSessions();
+            retrieveClubPrix();
+            retrieveCours();
+            retrieveEscomptes();
+            retrieveProduits();
+            updateFrais();
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -468,7 +470,7 @@ public class ClientWidget extends Composite {
         solde.setValue(false);
     }
 
-    /* depends on retrieveClubList having succeeded */
+    /* depends on jdb.retrieveClubList having succeeded */
     /** Takes data from ClientData into the form. */
     private void loadClientData () {
         // cannot just test for getSelectedClubID() == null,
@@ -529,12 +531,10 @@ public class ClientWidget extends Composite {
             return;
         }
 
-        int clubIndex = jdb.getClubListBoxIndexByID(sd.getClubID());
-        if (-1 != clubIndex) {
-            jdb.refreshSelectedClub(clubIndex);
-            dropDownUserClubs.setSelectedIndex(clubIndex);
-        }
-        else {
+        ClubSummary club = jdb.getClubSummaryByID(sd.getClubID());
+        if (club != null) {
+            jdb.selectClub(club);
+        } else {
             jdb.setStatus("Le client n'a pas de club enregistré.");
             return;
         }
@@ -1300,7 +1300,7 @@ public class ClientWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
-    /* depends on retrieveClubList() and retrieveSessions() having succeeded */
+    /* depends on jdb.retrieveClubList() and retrieveSessions() having succeeded */
     /* also depends on there being a selected club */
     public void retrieveClubPrix() {
         if (jdb.getSelectedClubID() == null || !gotSessions) {
@@ -1329,7 +1329,7 @@ public class ClientWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
-    /* depends on retrieveClubList() and retrieveSessions() having succeeded */
+    /* depends on jdb.retrieveClubList() and retrieveSessions() having succeeded */
     public void retrieveCours() {
         if (jdb.getSelectedClubID() == null || !gotSessions) {
             new Timer() {
@@ -1353,7 +1353,7 @@ public class ClientWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
-    /* depends on retrieveClubList() and retrieveSessions() having succeeded */
+    /* depends on jdb.retrieveClubList() and retrieveSessions() having succeeded */
     private boolean gotEscomptes = false;
     public void retrieveEscomptes() {
         if (jdb.getSelectedClubID() == null || !gotSessions) {
@@ -1378,7 +1378,7 @@ public class ClientWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
-    /* depends on retrieveClubList() having succeeded */
+    /* depends on jdb.retrieveClubList() having succeeded */
     /* technically does not require sessions, but adding it removes a race condition */
     private boolean gotProduits = false;
     public void retrieveProduits() {
