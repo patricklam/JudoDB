@@ -349,7 +349,7 @@ public class ConfigWidget extends Composite {
 
     private List<ColumnFields> perClubColumns = Collections.unmodifiableList(Arrays.asList(FIRST_CLASS_COLUMN, FIRST_SIGNUP_COLUMN, LAST_CLASS_COLUMN, LAST_SIGNUP_COLUMN, DELETE_SESSION_COLUMN));
 
-    private static final String BALLOT_X = "\u2717";
+    private static final String BALLOT_X = "x";
 
     private Column<SessionSummary, String> addSessionColumn(final CellTable<SessionSummary> t, final ColumnFields c, final boolean editable) {
 	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
