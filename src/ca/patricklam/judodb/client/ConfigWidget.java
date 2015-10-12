@@ -33,6 +33,9 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.dom.client.Style.Unit;
 
+import org.gwtbootstrap3.client.ui.TabListItem;
+import org.gwtbootstrap3.client.ui.Button;
+import org.gwtbootstrap3.client.ui.ButtonGroup;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
 import org.gwtbootstrap3.client.ui.DropDownMenu;
@@ -55,10 +58,13 @@ public class ConfigWidget extends Composite {
     @UiField FlowPanel prixTab;
     @UiField FlowPanel escompteTab;
     @UiField FlowPanel produitTab;
+    @UiField Button retour;
+
     @UiField FormPanel configEditForm;
     @UiField Hidden current_session;
     @UiField Hidden dataToSave;
     @UiField Hidden guid_on_form;
+
     private String guid;
     private int pushTries;
 
@@ -107,63 +113,77 @@ public class ConfigWidget extends Composite {
     // noire [true]
     // aka [U20]
 
+    @UiField ButtonGroup dropDownUserClubsButtonGroup;
+    @UiField Button dropDownUserClubsButton;
     @UiField DropDownMenu dropDownUserClubs;
+
+    void selectClub(ClubSummary club) {
+        jdb.selectedClub = club;
+
+        if (club == null)
+            dropDownUserClubsButton.setText(JudoDB.TOUS);
+        else
+            dropDownUserClubsButton.setText(club.getClubText());
+
+        if (club != null) {
+            retrieveSessions(club.getId());
+            retrieveCours(club.getNumeroClub());
+            retrieveClubPrix(club.getNumeroClub());
+            retrieveEscomptes(club.getId());
+            retrieveProduits(club.getId());
+        } else {
+            retrieveSessions("0");
+        }
+        populateCurrentClub();
+    }
+
+    class ConfigClubListHandlerFactory implements JudoDB.ClubListHandlerFactory {
+        public ClickHandler instantiate(ClubSummary s) {
+            return new ClubListHandler(s);
+        }
+    }
+
     class ClubListHandler implements ClickHandler {
         final ClubSummary club;
 
         ClubListHandler(ClubSummary club) { this.club = club; }
 
         @Override public void onClick(ClickEvent e) {
-            jdb.selectedClub = club;
-            retrieveSessions(jdb.selectedClub.getNumeroClub());
-            ClubSummary cs = jdb.selectedClub;
-            if (cs != null) {
-                retrieveCours(cs.getNumeroClub());
-                retrieveClubPrix(cs.getNumeroClub());
-                retrieveEscomptes(jdb.getSelectedClubID());
-                retrieveProduits(jdb.getSelectedClubID());
-            }
-            populateCurrentClub();
+            selectClub(club);
         }
     }
 
     public ConfigWidget(JudoDB jdb) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
+
+        retour.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { ConfigWidget.this.jdb.switchMode(new JudoDB.Mode(JudoDB.Mode.ActualMode.MAIN)); }});
+
         jdb.pleaseWait();
-        jdb.populateClubList(true, dropDownUserClubs);
-        if (jdb.selectedClub != null) {
-            ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-            retrieveSessions(cs.getNumeroClub());
-            retrieveCours(cs.getNumeroClub());
-            retrieveClubPrix(cs.getNumeroClub());
-	    retrieveEscomptes(jdb.getSelectedClubID());
-            retrieveProduits(jdb.getSelectedClubID());
-        } else {
-            jdb.clearStatus();
-        }
+        jdb.populateClubList(true, dropDownUserClubs, new ConfigClubListHandlerFactory());
+        selectClub(jdb.selectedClub);
 
 	initializeSessionTable();
-	populateCurrentClub();
-	sessionTab.add(sessions);
+        sessionTab.add(sessions);
 
-	initializeCoursTable();
-	coursTab.add(cours);
-	populateCours(coursData);
+        initializeCoursTable();
+        coursTab.add(cours);
+        populateCours(coursData);
 
-	initializePrixTable();
-	prixTab.add(prix);
-	populatePrix(prixData);
+        initializePrixTable();
+        prixTab.add(prix);
+        populatePrix(prixData);
 
-	initializeEscompteTable();
-	escompteTab.add(escomptes);
-	populateEscomptes(escompteData);
+        initializeEscompteTable();
+        escompteTab.add(escomptes);
+        populateEscomptes(escompteData);
 
-	initializeProduitTable();
-	produitTab.add(produits);
-	populateProduits(produitData);
+        initializeProduitTable();
+        produitTab.add(produits);
+        populateProduits(produitData);
 
         configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
+        jdb.clearStatus();
     }
 
     /* accepts something like A14 H15 A15 H16
@@ -1163,9 +1183,9 @@ public class ConfigWidget extends Composite {
 
     /* --- network functions --- */
     private boolean gotSessions = false;
-    public void retrieveSessions(String numero_club) {
+    public void retrieveSessions(String club_id) {
         String url = JudoDB.PULL_SESSIONS_URL;
-        url += "?club="+numero_club;
+        url += "?club_id=" + club_id;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {

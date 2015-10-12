@@ -303,7 +303,8 @@ public class ListWidget extends Composite {
 
         listEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
 
-        jdb.populateClubList(true, dropDownUserClubs);
+        // XXX
+        jdb.populateClubList(true, dropDownUserClubs, null);
         retrieveSessions(jdb.selectedClub);
         coursHandler.generateCoursList();
 
@@ -1046,7 +1047,7 @@ public class ListWidget extends Composite {
     public void retrieveSessions(ClubSummary cs) {
         gotSessions = false;
         String url = JudoDB.PULL_SESSIONS_URL;
-        url += "?club="+cs.getNumeroClub();
+        url += "?club_id="+cs.getId();
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {

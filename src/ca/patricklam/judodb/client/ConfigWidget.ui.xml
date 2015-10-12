@@ -7,9 +7,13 @@
   xmlns:g='urn:import:com.google.gwt.user.client.ui'>
    <ui:style src="ConfigWidget.css" />
     <g:LayoutPanel>
-     <g:layer top="1.5em" right="1em" width="21em" height="2em">
+    <g:layer left='5%' top='0' width='90%' height='100%'>
       <g:FlowPanel>
-       <b:DropDownMenu ui:field="dropDownUserClubs" />
+       <b:Heading size="H1" text="Configuration club" />
+       <b:ButtonGroup  ui:field='dropDownUserClubsButtonGroup' styleName='{style.clubBox}'>
+        <b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
+        <b:DropDownMenu ui:field='dropDownUserClubs' />
+       </b:ButtonGroup>
        <g:FormPanel ui:field="configEditForm" method="post">
 	<g:FlowPanel>
 	  <g:Hidden ui:field="current_session" name="current_session" />
@@ -17,51 +21,55 @@
 	  <g:Hidden ui:field="dataToSave" name="data_to_save" />
 	</g:FlowPanel>
        </g:FormPanel>
+       <b:NavTabs>
+        <b:TabListItem dataTarget="#club" active="true">Club</b:TabListItem>
+        <b:TabListItem dataTarget="#session">Session</b:TabListItem>
+        <b:TabListItem dataTarget="#cours">Cours</b:TabListItem>
+        <b:TabListItem dataTarget="#prix">Prix</b:TabListItem>
+        <b:TabListItem dataTarget="#escompte">Escompte</b:TabListItem>
+        <b:TabListItem dataTarget="#produit">Ventes d&eacute;tail</b:TabListItem>
+        <b:NavbarForm pull="RIGHT">
+         <b:Button ui:field="retour" text="Retour page principale" />
+	</b:NavbarForm>
+       </b:NavTabs>
+         <g:ScrollPanel>
+          <g:HTMLPanel>
+       <b:TabContent>
+        <b:TabPane active="true" b:id="club">
+           <g:Label>Nom du club:</g:Label><b:TextBox ui:field="nom_club" name="nom_club_tb" width="40em"/>
+           <g:Label>Numero club JQ:</g:Label><b:TextBox ui:field="numero_club" name="numero_club_tb"/>
+           <g:Label>Nom (abbrevi&eacute;):</g:Label><b:TextBox ui:field="nom_short" name="nom_short_tb"/>
+           <g:Label>Ville:</g:Label><b:TextBox ui:field="ville" name="ville_tb"/>
+           <g:Label>Prefixe code postale:</g:Label><b:TextBox ui:field="prefix_codepostale" name="prefix_codepostale_tb"/>
+           <g:Label>Indicatif regional:</g:Label><b:TextBox ui:field="indicatif_regional" name="indicatif_regional_tb"/>
+           <g:Label>Escompte resident:</g:Label><b:TextBox ui:field="escompte_resident" name="escompte_resident_tb"/>
+           <g:Label>Supplement prorata:</g:Label><b:TextBox ui:field="supplement_prorata" name="supplement_prorata_tb"/>
+           <g:Label>Prorata par defaut:</g:Label><g:CheckBox ui:field="default_prorata" name="default_prorata_tb"/>
+           <g:Label>Afficher supplement PayPal:</g:Label><g:CheckBox ui:field="afficher_paypal" name="afficher_paypal_tb"/>
+        </b:TabPane>
+        <b:TabPane b:id="session">
+	 <g:FlowPanel ui:field="sessionTab" />
+        </b:TabPane>
+        <b:TabPane b:id="cours">
+	 <g:FlowPanel ui:field="coursTab" />
+        </b:TabPane>
+        <b:TabPane b:id="prix">
+	 <g:FlowPanel ui:field="prixTab" />
+        </b:TabPane>
+        <b:TabPane b:id="escompte">
+	 <g:FlowPanel ui:field="escompteTab" />
+        </b:TabPane>
+        <b:TabPane b:id="produit">
+	 <g:FlowPanel ui:field="produitTab" />
+        </b:TabPane>
+       </b:TabContent>
+          </g:HTMLPanel>
+         </g:ScrollPanel>
       </g:FlowPanel>
      </g:layer>
-     <g:layer top='5em' left='5em' width='80%' height='80%'>
-      <g:TabLayoutPanel barHeight='2' barUnit='EM'>
-       <g:tab>
-	 <g:header size='4'>Club</g:header>
-	 <g:FlowPanel ui:field="clubTab">
-	   <g:Label>Nom du club:</g:Label><b:TextBox ui:field="nom_club" name="nom_club_tb" width="40em"/>
-	   <g:Label>Numero club JQ:</g:Label><b:TextBox ui:field="numero_club" name="numero_club_tb"/>
-	   <g:Label>Nom (abbrevi&eacute;):</g:Label><b:TextBox ui:field="nom_short" name="nom_short_tb"/>
-	   <g:Label>Ville:</g:Label><b:TextBox ui:field="ville" name="ville_tb"/>
-	   <g:Label>Prefixe code postale:</g:Label><b:TextBox ui:field="prefix_codepostale" name="prefix_codepostale_tb"/>
-	   <g:Label>Indicatif regional:</g:Label><b:TextBox ui:field="indicatif_regional" name="indicatif_regional_tb"/>
-	   <g:Label>Escompte resident:</g:Label><b:TextBox ui:field="escompte_resident" name="escompte_resident_tb"/>
-	   <g:Label>Supplement prorata:</g:Label><b:TextBox ui:field="supplement_prorata" name="supplement_prorata_tb"/>
-	   <g:Label>Prorata par defaut:</g:Label><g:CheckBox ui:field="default_prorata" name="default_prorata_tb"/>
-	   <g:Label>Afficher supplement PayPal:</g:Label><g:CheckBox ui:field="afficher_paypal" name="afficher_paypal_tb"/>
-	 </g:FlowPanel>
-       </g:tab>
-       <g:tab>
-	 <g:header size='8'>Session</g:header>
-	 <g:FlowPanel ui:field="sessionTab">
-	 </g:FlowPanel>
-       </g:tab>
-       <g:tab>
-	 <g:header size='5'>Cours</g:header>
-	 <g:FlowPanel ui:field="coursTab">
-	 </g:FlowPanel>
-       </g:tab>
-       <g:tab>
-	 <g:header size='4'>Prix</g:header>
-	 <g:FlowPanel ui:field="prixTab">
-	 </g:FlowPanel>
-       </g:tab>
-       <g:tab>
-	 <g:header size='6'>Escompte</g:header>
-	 <g:FlowPanel ui:field="escompteTab">
-	 </g:FlowPanel>
-       </g:tab>
-       <g:tab>
-	 <g:header size='6'>Ventes d&eacute;tail</g:header>
-	 <g:FlowPanel ui:field="produitTab">
-	 </g:FlowPanel>
-       </g:tab>
-      </g:TabLayoutPanel>
-     </g:layer>
     </g:LayoutPanel>
+
 </ui:UiBinder>
+
+<!--
+-->

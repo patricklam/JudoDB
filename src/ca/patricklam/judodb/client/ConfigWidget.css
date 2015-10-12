@@ -1,16 +1,12 @@
-.gwt-TabLayoutPanel
-{
-    height: 10em;
-}
-
 .lwp {
  text-align:left;
  padding-right:1em;
 }
 
-.actions a {
-	/* i.e. don't show 'visited' colour */
- color: blue;
+.clubBox {
+ position:absolute;
+ top:1.5em; right: 2em;
+ width: 20em;
 }
 
 /* Inspired by http://2tbsp.com/content/flexible_and_efficient_htmlcss_form_layout */
@@ -127,8 +123,3 @@ input.text, input.button, textarea, select {
 }
 
 /* end form stuff */
-
-.userclub {
-	position:absolute;
-	top:1.5em; right: 1em;
-}

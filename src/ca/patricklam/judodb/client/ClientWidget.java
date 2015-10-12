@@ -299,7 +299,8 @@ public class ClientWidget extends Composite {
             }
         });
 
-        jdb.populateClubList(false, dropDownUserClubs);
+        // XXX
+        jdb.populateClubList(false, dropDownUserClubs, null);
         jdb.pleaseWait();
         if (cid != -1)
             retrieveClient(cid);
@@ -1289,7 +1290,7 @@ public class ClientWidget extends Composite {
         }
 
         String url = JudoDB.PULL_SESSIONS_URL;
-        url += "?club="+jdb.getSelectedClubID();
+        url += "?club_id="+jdb.selectedClub.getId();
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {

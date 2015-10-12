@@ -23,7 +23,7 @@
 		  <label><span class="noprint">Date de naissance (jj/mm/aaaa)<br /></span><b:TextBox ui:field="ddn_display" name="ddn_display"/></label>
 	      <label><span class="noprint">Sexe<br /></span><b:TextBox ui:field="sexe" name="sexe" /></label>
 		 </div>
-        </fieldset>
+                </fieldset>
 
 		<fieldset> 
 		 <legend>Adresse<span id="copySib" class="noprint"><g:Anchor ui:field="copysib">&nbsp;(copier)</g:Anchor></span></legend>

@@ -57,7 +57,6 @@ public class MainLayoutPanel extends Composite {
     @UiField LayoutPanel config;
     @UiField FlowPanel rightbar;
     @UiField FlowPanel listActions;
-    @UiField FlowPanel configActions;
 
     public MainLayoutPanel() {
         initWidget(uiBinder.createAndBindUi(this));

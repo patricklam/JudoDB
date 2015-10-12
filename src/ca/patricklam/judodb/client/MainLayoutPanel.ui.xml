@@ -87,8 +87,7 @@
 
       <b:ButtonGroup  ui:field='dropDownUserClubsButtonGroup'>
        <b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
-       <b:DropDownMenu ui:field='dropDownUserClubs'>
-       </b:DropDownMenu>
+       <b:DropDownMenu ui:field='dropDownUserClubs' />
       </b:ButtonGroup>
      </g:FlowPanel>
     </g:layer>
@@ -120,12 +119,6 @@
       </g:HTML>
      </g:FlowPanel>
       <g:FlowPanel ui:field="listActions">
-       <g:HTML>
-         <h3>Actions</h3>
-         <p id="actionList" />
-       </g:HTML>
-      </g:FlowPanel>
-      <g:FlowPanel ui:field="configActions">
        <g:HTML>
          <h3>Actions</h3>
          <p id="actionList" />
