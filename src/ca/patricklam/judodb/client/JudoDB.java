@@ -37,9 +37,9 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.RootPanel;
 
 import com.google.gwt.user.client.ui.Anchor;
 import org.gwtbootstrap3.client.ui.Button;
@@ -309,7 +309,7 @@ public class JudoDB implements EntryPoint {
                 }
             });
 
-	RootLayoutPanel.get().add(mainLayoutPanel);
+	RootPanel.get().add(mainLayoutPanel);
 	mainLayoutPanel.versionLabel.setText(Version.VERSION);
 
         mainLayoutPanel.nextResultsButton.setVisible(false);

@@ -1,16 +1,6 @@
-.heading {
- padding-left: 2em;
-}
-
 .lwp {
  text-align:left;
  padding-right:1em;
-}
-
-.clubBox {
- position:absolute;
- top:1.5em; right: 2em;
- width: 20em;
 }
 
 /* Inspired by http://2tbsp.com/content/flexible_and_efficient_htmlcss_form_layout */

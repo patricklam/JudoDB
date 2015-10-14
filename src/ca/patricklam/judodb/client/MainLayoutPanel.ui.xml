@@ -21,20 +21,17 @@
  .statusAlert {
    padding: 10px;
  }
-
- .heading {
-   padding-left: 2em;
- }
 </ui:style>
 
 <g:FlowPanel>
-    <g:FlowPanel ui:field='mainPanel' width='99%' height='100%'>
+    <g:ScrollPanel ui:field='mainPanel' width='99%' height='100%'>
+     <g:FlowPanel>
       <b:Container styleName="{style.status}">
        <b:Alert ui:field="statusAlert" type="WARNING" styleName="{style.statusAlert}"> 
          <b.html:Text ui:field="statusText" />
        </b:Alert>
       </b:Container>
-      <b:Heading size="H1" text="Base des donn&eacute;es Judo Qu&eacute;bec" styleName="{style.heading}"/>
+      <b:Heading size="H1" text="Base des donn&eacute;es Judo Qu&eacute;bec"/>
       <b:Container>
        <b:Row><b:Column size="MD_7">
         <b:Container ui:field="main">
@@ -94,7 +91,8 @@
       </b:ButtonGroup>
 
       <b:Label ui:field="versionLabel" styleName='{style.version}' />
-    </g:FlowPanel>
+     </g:FlowPanel>
+    </g:ScrollPanel>
 
     <g:ScrollPanel ui:field='editClient' width='99%' height='100%'/>
     <g:ScrollPanel ui:field='lists' width='99%' height='100%'/>

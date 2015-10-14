@@ -51,7 +51,7 @@ public class MainLayoutPanel extends Composite {
     @UiField Button dropDownUserClubsButton;
     @UiField DropDownMenu dropDownUserClubs;
 
-    @UiField FlowPanel mainPanel;
+    @UiField ScrollPanel mainPanel;
     @UiField ScrollPanel editClient;
     @UiField ScrollPanel lists;
     @UiField ScrollPanel config;

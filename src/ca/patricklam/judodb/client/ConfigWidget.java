@@ -157,6 +157,7 @@ public class ConfigWidget extends Composite {
     public ConfigWidget(JudoDB jdb, ClubSummary selectedClub) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
+        dropDownUserClubsButtonGroup.setStyleName("clubBox");
 
         retour.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { ConfigWidget.this.jdb.switchMode(new JudoDB.Mode(JudoDB.Mode.ActualMode.MAIN)); }});
 

@@ -7,8 +7,8 @@
   xmlns:g='urn:import:com.google.gwt.user.client.ui'>
    <ui:style src="ConfigWidget.css" />
       <g:FlowPanel>
-       <b:Heading size="H1" text="Configuration club" styleName="{style.heading}"/>
-       <b:ButtonGroup  ui:field='dropDownUserClubsButtonGroup' styleName='{style.clubBox}'>
+       <b:Heading size="H1" text="Configuration club"/>
+       <b:ButtonGroup  ui:field='dropDownUserClubsButtonGroup'>
         <b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
         <b:DropDownMenu ui:field='dropDownUserClubs' />
        </b:ButtonGroup>
