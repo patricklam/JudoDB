@@ -74,26 +74,25 @@ public class ConfigWidget extends Composite {
     private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
 
     CellTable<SessionSummary> sessions;
-    private final List<SessionSummary> sessionData = new ArrayList<SessionSummary>();
+    private final List<SessionSummary> sessionData = new ArrayList<>();
 
     CellTable<CoursSummary> cours;
     // rawCoursData is unconsolidated, coursData is merged by session
-    private final List<CoursSummary> rawCoursData = new ArrayList<CoursSummary>();
-    private final List<CoursSummary> coursData = new ArrayList<CoursSummary>();
-    private final HashMap<String, List<String>> coursShortDescToDbIds =
-        new HashMap<String, List<String>>();
-    private final HashSet<CoursSummary> duplicateCours = new HashSet<CoursSummary>();
+    private final List<CoursSummary> rawCoursData = new ArrayList<>();
+    private final List<CoursSummary> coursData = new ArrayList<>();
+    private final HashMap<String, List<String>> coursShortDescToDbIds = new HashMap<>();
+    private final HashSet<CoursSummary> duplicateCours = new HashSet<>();
 
     CellTable<ClubPrix> prix;
-    private final List<ClubPrix> rawPrixData = new ArrayList<ClubPrix>();
-    private final List<ClubPrix> prixData = new ArrayList<ClubPrix>();
-    private final HashSet<ClubPrix> duplicatePrix = new HashSet<ClubPrix>();
+    private final List<ClubPrix> rawPrixData = new ArrayList<>();
+    private final List<ClubPrix> prixData = new ArrayList<>();
+    private final HashSet<ClubPrix> duplicatePrix = new HashSet<>();
 
     CellTable<EscompteSummary> escomptes;
-    private final List<EscompteSummary> escompteData = new ArrayList<EscompteSummary>();
+    private final List<EscompteSummary> escompteData = new ArrayList<>();
 
     CellTable<ProduitSummary> produits;
-    private final List<ProduitSummary> produitData = new ArrayList<ProduitSummary>();
+    private final List<ProduitSummary> produitData = new ArrayList<>();
 
     // useful URLs: http://www.filsa.net/2010/01/23/more-on-tablayoutpanel/
     // http://www.filsa.net/2010/01/21/gwt-notes-tablayoutpanel/
@@ -181,7 +180,7 @@ public class ConfigWidget extends Composite {
      */
     private List<SessionSummary> parseSessionIds(String sessionAbbrevs) {
         String[] sessionAbbrevArray = sessionAbbrevs.split(" ");
-        List<SessionSummary> retval = new ArrayList<SessionSummary>();
+        List<SessionSummary> retval = new ArrayList<>();
         for (String s : sessionAbbrevArray) {
             SessionSummary ts = seqAbbrevToSession.get(s);
             if (ts != null)
@@ -190,9 +189,9 @@ public class ConfigWidget extends Composite {
         return retval;
     }
 
-    private HashMap<String, SessionSummary> seqnoToSession = new HashMap<String, SessionSummary>();
+    private HashMap<String, SessionSummary> seqnoToSession = new HashMap<>();
     // primary session only, not linked
-    private HashMap<String, SessionSummary> seqAbbrevToSession = new HashMap<String, SessionSummary>();
+    private HashMap<String, SessionSummary> seqAbbrevToSession = new HashMap<>();
 
     private void updateSessionToNameMapping() {
         seqnoToSession.clear();
@@ -378,7 +377,7 @@ public class ConfigWidget extends Composite {
     }
 
     void initializeSessionTable() {
-	sessions = new CellTable<SessionSummary>(SESSION_KEY_PROVIDER);
+	sessions = new CellTable<>(SESSION_KEY_PROVIDER);
 	sessions.setWidth("60em", true);
 
 	initializeSessionColumns();
@@ -503,7 +502,7 @@ public class ConfigWidget extends Composite {
     private List<ColumnFields> perCoursColumns = Collections.unmodifiableList(Arrays.asList(COURS_SESSION_COLUMN, DESC_COLUMN, SUPPLEMENT_COURS_COLUMN));
 
     void initializeCoursTable() {
-	cours = new CellTable<CoursSummary>(COURS_KEY_PROVIDER);
+	cours = new CellTable<>(COURS_KEY_PROVIDER);
 	cours.setWidth("60em", true);
 
 	initializeCoursColumns();
@@ -531,7 +530,7 @@ public class ConfigWidget extends Composite {
                         String currentSessions = JudoDB.getSessionIds(new Date(), 2, sessionData);
                         object.set(COURS_SESSION_COLUMN.key, currentSessions);
                         sessions = parseSessionIds(currentSessions);
-                        List<String> cs = new ArrayList<String>();
+                        List<String> cs = new ArrayList<>();
                         StringBuffer edits = new StringBuffer();
                         for (SessionSummary ss : sessions) {
                             cs.add(ss.getAbbrev());
@@ -580,8 +579,8 @@ public class ConfigWidget extends Composite {
                     if (oldSessions.equals(newSessions)) return;
                     refreshCours = true;
 
-                    List<SessionSummary> addedSessions = new ArrayList<SessionSummary>(),
-                        removedSessions = new ArrayList<SessionSummary>();
+                    List<SessionSummary> addedSessions = new ArrayList<>(),
+                        removedSessions = new ArrayList<>();
                     for (SessionSummary s : newSessions)
                         if (!oldSessions.contains(s)) addedSessions.add(s);
                     for (SessionSummary s : oldSessions)
@@ -662,10 +661,10 @@ public class ConfigWidget extends Composite {
         // combine cours across sessions
         // l has keys shortdesc, values sessions
         // m has keys shortdesc, values ids
-        HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
-        HashMap<String, Set<String>> ll = new HashMap<String, Set<String>>();
-        HashMap<String, List<String>> m = new HashMap<String, List<String>>();
-        HashMap<String, String> supp = new HashMap<String, String>();
+        HashMap<String, StringBuffer> l = new HashMap<>();
+        HashMap<String, Set<String>> ll = new HashMap<>();
+        HashMap<String, List<String>> m = new HashMap<>();
+        HashMap<String, String> supp = new HashMap<>();
         rawCoursData.clear(); rawCoursData.addAll(coursArray);
         duplicateCours.clear();
 
@@ -740,7 +739,7 @@ public class ConfigWidget extends Composite {
     private List<ColumnFields> perPrixColumns = Collections.unmodifiableList(Arrays.asList(PRIX_SESSION_COLUMN, DIV_COLUMN, FRAIS_1_COLUMN, FRAIS_2_COLUMN, FRAIS_JUDO_QC_COLUMN));
 
     void initializePrixTable() {
-	prix = new CellTable<ClubPrix>(CLUB_PRIX_KEY_PROVIDER);
+	prix = new CellTable<>(CLUB_PRIX_KEY_PROVIDER);
 	prix.setWidth("60em", true);
 
 	initializePrixColumns();
@@ -800,8 +799,8 @@ public class ConfigWidget extends Composite {
                     if (oldSessions.equals(newSessions)) return;
                     refreshPrix = true;
 
-                    List<SessionSummary> addedSessions = new ArrayList<SessionSummary>(),
-                        removedSessions = new ArrayList<SessionSummary>();
+                    List<SessionSummary> addedSessions = new ArrayList<>(),
+                        removedSessions = new ArrayList<>();
                     for (SessionSummary s : newSessions)
                         if (!oldSessions.contains(s)) addedSessions.add(s);
                     for (SessionSummary s : oldSessions)
@@ -875,16 +874,16 @@ public class ConfigWidget extends Composite {
         prixData.add(addNewPrix);
     }
 
-    private final HashMap<String, List<String>> prixInternalIdToDbIds = new HashMap<String, List<String>>();
+    private final HashMap<String, List<String>> prixInternalIdToDbIds = new HashMap<>();
 
     private void populatePrix(List<ClubPrix> prixArray) {
         initializePrixColumns();
 
         // l has keys=signatures, values=session abbrevs
         // m has keys=signatures, values=original ids
-        HashMap<String, StringBuffer> l = new HashMap<String, StringBuffer>();
-        HashMap<String, Set<String>> ll = new HashMap<String, Set<String>>();
-        HashMap<String, List<String>> m = new HashMap<String, List<String>>();
+        HashMap<String, StringBuffer> l = new HashMap<>();
+        HashMap<String, Set<String>> ll = new HashMap<>();
+        HashMap<String, List<String>> m = new HashMap<>();
         rawPrixData.clear(); rawPrixData.addAll(prixArray);
         duplicatePrix.clear();
 
@@ -958,7 +957,7 @@ public class ConfigWidget extends Composite {
     private List<ColumnFields> perEscompteColumns = Collections.unmodifiableList(Arrays.asList(NOM_COLUMN, AMOUNT_PERCENT_COLUMN, AMOUNT_ABSOLUTE_COLUMN));
 
     void initializeEscompteTable() {
-        escomptes = new CellTable<EscompteSummary>(ESCOMPTE_KEY_PROVIDER);
+        escomptes = new CellTable<>(ESCOMPTE_KEY_PROVIDER);
         escomptes.setWidth("60em", true);
 
         initializeEscompteColumns();
@@ -1080,7 +1079,7 @@ public class ConfigWidget extends Composite {
 	private List<ColumnFields> perProduitColumns = Collections.unmodifiableList(Arrays.asList(NOM_PRODUIT_COLUMN, MONTANT_COLUMN));
 
     void initializeProduitTable() {
-        produits = new CellTable<ProduitSummary>(PRODUIT_KEY_PROVIDER);
+        produits = new CellTable<>(PRODUIT_KEY_PROVIDER);
         produits.setWidth("60em", true);
 
         initializeProduitColumns();
@@ -1232,7 +1231,7 @@ public class ConfigWidget extends Composite {
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
 			gotCours = true;
-			List<CoursSummary> lcs = new ArrayList<CoursSummary>();
+			List<CoursSummary> lcs = new ArrayList<>();
 			JsArray<CoursSummary> jcs = JsonUtils.<JsArray<CoursSummary>>safeEval(s);
 			for (int i = 0; i < jcs.length(); i++)
 			    lcs.add(jcs.get(i));
@@ -1253,7 +1252,7 @@ public class ConfigWidget extends Composite {
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
 			gotEscomptes = true;
-			List<EscompteSummary> les = new ArrayList<EscompteSummary>();
+			List<EscompteSummary> les = new ArrayList<>();
 			JsArray<EscompteSummary> jes = JsonUtils.<JsArray<EscompteSummary>>safeEval(s);
 			for (int i = 0; i < jes.length(); i++)
 			    les.add(jes.get(i));
@@ -1274,7 +1273,7 @@ public class ConfigWidget extends Composite {
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
 			gotProduits = true;
-			List<ProduitSummary> les = new ArrayList<ProduitSummary>();
+			List<ProduitSummary> les = new ArrayList<>();
 			JsArray<ProduitSummary> jes = JsonUtils.<JsArray<ProduitSummary>>safeEval(s);
 			for (int i = 0; i < jes.length(); i++)
 			    les.add(jes.get(i));
