@@ -498,7 +498,7 @@ public class ConfigWidget extends Composite {
 
     private final ColumnFields COURS_SESSION_COLUMN = new ColumnFields("session", "Session", 2, Unit.EM),
         DESC_COLUMN = new ColumnFields("short_desc", "Description", 4, Unit.EM),
-        SUPPLEMENT_COURS_COLUMN = new ColumnFields("supplement_cours", "Supplement", 4, Unit.EM);
+        SUPPLEMENT_COURS_COLUMN = new ColumnFields("supplement_cours", "Supplement frais", 4, Unit.EM);
 
     private List<ColumnFields> perCoursColumns = Collections.unmodifiableList(Arrays.asList(COURS_SESSION_COLUMN, DESC_COLUMN, SUPPLEMENT_COURS_COLUMN));
 
