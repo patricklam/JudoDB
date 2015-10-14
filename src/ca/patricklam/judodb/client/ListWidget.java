@@ -174,8 +174,8 @@ public class ListWidget extends Composite {
         ClubListHandler(ClubSummary club) { this.club = club; }
 
         public void onClick(ClickEvent e) {
-            jdb.selectedClub = club;
-            retrieveSessions(jdb.selectedClub);
+            jdb.selectClub(club);
+            retrieveSessions(jdb.getSelectedClub());
             actuallyHandleChange();
         }
 
@@ -305,7 +305,7 @@ public class ListWidget extends Composite {
 
         // XXX
         jdb.populateClubList(true, dropDownUserClubs, null);
-        retrieveSessions(jdb.selectedClub);
+        retrieveSessions(jdb.getSelectedClub());
         coursHandler.generateCoursList();
 
         retrieveAllClients();
@@ -834,7 +834,7 @@ public class ListWidget extends Composite {
             }
 
             Anchor nomAnchor = new Anchor(cd.getNom()), prenomAnchor = new Anchor(cd.getPrenom());
-            ClickHandler c = jdb.new EditClientHandler(jdb.selectedClub, Integer.parseInt(cd.getID()));
+            ClickHandler c = jdb.new EditClientHandler(jdb.getSelectedClub(), Integer.parseInt(cd.getID()));
             nomAnchor.addClickHandler(c);
             prenomAnchor.addClickHandler(c);
 

@@ -22,7 +22,6 @@ import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.cell.client.Cell;
@@ -36,6 +35,8 @@ import com.google.gwt.dom.client.Style.Unit;
 import org.gwtbootstrap3.client.ui.TabListItem;
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
+import org.gwtbootstrap3.client.ui.CheckBox;
+import org.gwtbootstrap3.client.ui.Container;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
 import org.gwtbootstrap3.client.ui.DropDownMenu;
@@ -118,7 +119,7 @@ public class ConfigWidget extends Composite {
     @UiField DropDownMenu dropDownUserClubs;
 
     void selectClub(ClubSummary club) {
-        jdb.selectedClub = club;
+        jdb.selectClub(club);
 
         if (club == null)
             dropDownUserClubsButton.setText(JudoDB.TOUS);
@@ -153,7 +154,7 @@ public class ConfigWidget extends Composite {
         }
     }
 
-    public ConfigWidget(JudoDB jdb) {
+    public ConfigWidget(JudoDB jdb, ClubSummary selectedClub) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
 
@@ -161,29 +162,17 @@ public class ConfigWidget extends Composite {
 
         jdb.pleaseWait();
         jdb.populateClubList(true, dropDownUserClubs, new ConfigClubListHandlerFactory());
-        selectClub(jdb.selectedClub);
 
-	initializeSessionTable();
-        sessionTab.add(sessions);
-
-        initializeCoursTable();
-        coursTab.add(cours);
-        populateCours(coursData);
-
-        initializePrixTable();
-        prixTab.add(prix);
-        populatePrix(prixData);
-
-        initializeEscompteTable();
-        escompteTab.add(escomptes);
-        populateEscomptes(escompteData);
-
-        initializeProduitTable();
-        produitTab.add(produits);
-        populateProduits(produitData);
+        initializeSessionTable(); sessionTab.add(sessions);
+        initializeCoursTable(); coursTab.add(cours);
+        initializePrixTable(); prixTab.add(prix);
+        initializeEscompteTable(); escompteTab.add(escomptes);
+        initializeProduitTable(); produitTab.add(produits);
 
         configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
         jdb.clearStatus();
+
+        selectClub(selectedClub);
     }
 
     /* accepts something like A14 H15 A15 H16
@@ -371,7 +360,7 @@ public class ConfigWidget extends Composite {
 			if (object.getId().equals("-1")) {
 			    refreshSessions = true;
 			    pushEdit("-1,F" + c.key + "," + value + "," +
-				     jdb.selectedClub.getNumeroClub() + "," + object.getSeqno() + ";");
+				     jdb.getSelectedClub().getNumeroClub() + "," + object.getSeqno() + ";");
 			} else {
 			    pushEdit("-1,f" + c.key + "," + value + "," +
 				     object.getClub() + "," + object.getId() + ";");
@@ -667,9 +656,8 @@ public class ConfigWidget extends Composite {
         coursData.add(addNewCours);
     }
 
+    // requires sessions to be populated first
     private void populateCours(List<CoursSummary> coursArray) {
-        initializeCoursColumns();
-
         // combine cours across sessions
         // l has keys shortdesc, values sessions
         // m has keys shortdesc, values ids
@@ -688,8 +676,10 @@ public class ConfigWidget extends Composite {
             }
             // in the future, should support different cours for different sessions
             // with different supplements
-            if (supp.containsKey(cs.getShortDesc()))
-                assert supp.get(cs.getShortDesc()).equals(cs.getSupplement());
+            if (supp.containsKey(cs.getShortDesc())) {
+                String csSupp = cs.getSupplement(); if (csSupp == null) csSupp = "";
+                assert supp.get(cs.getShortDesc()).equals(csSupp);
+            }
             String newSupp = cs.getSupplement();
             if (newSupp == null) newSupp = "";
             supp.put(cs.getShortDesc(), newSupp);
@@ -725,8 +715,7 @@ public class ConfigWidget extends Composite {
             id++;
         }
 
-        if (jdb.isClubSelected())
-            addAddCoursCours();
+        addAddCoursCours();
         cours.setRowData(coursData);
         cours.redraw();
     }
@@ -1225,8 +1214,16 @@ public class ConfigWidget extends Composite {
     }
 
     private boolean gotCours = false;
-    public void retrieveCours(String numero_club) {
+    // requires sessions
+    public void retrieveCours(final String numero_club) {
 	if (numero_club.equals("")) return;
+
+        if (!gotSessions) {
+            new Timer() {
+                public void run() { retrieveCours(numero_club); }
+            }.schedule(100);
+            return;
+        }
 
         String url = JudoDB.PULL_CLUB_COURS_URL;
         url += "?numero_club="+numero_club;
@@ -1314,7 +1311,7 @@ public class ConfigWidget extends Composite {
                             jdb.setStatus("Sauvegardé.");
 			    if (refreshSessions) {
 				refreshSessions = false;
-				retrieveSessions(jdb.selectedClub.getNumeroClub());
+				retrieveSessions(jdb.getSelectedClub().getNumeroClub());
 			    }
 			    if (refreshCours) {
 				refreshCours = false;

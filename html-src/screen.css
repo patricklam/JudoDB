@@ -7,7 +7,7 @@
 
 .clubBox {
  position:absolute;
- top:1.5em; right: 2em;
+ top: 2em; right: 2em;
  width: 20em;
 }
 
@@ -25,3 +25,6 @@
   background-color: #eee;
 }
 
+.h1 {
+  margin-left: 1em;
+}

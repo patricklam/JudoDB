@@ -401,7 +401,7 @@ public class ClientWidget extends Composite {
         ClubListHandler(ClubSummary club) { this.club = club; }
 
         public void onClick(ClickEvent e) {
-            jdb.selectedClub = club;
+            jdb.selectClub(club);
             hideEscompteResidentIfUnneeded(club);
             hidePaypalIfDisabled(club);
             retrieveSessions();
@@ -1290,7 +1290,7 @@ public class ClientWidget extends Composite {
         }
 
         String url = JudoDB.PULL_SESSIONS_URL;
-        url += "?club_id="+jdb.selectedClub.getId();
+        url += "?club_id="+jdb.getSelectedClub().getId();
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
