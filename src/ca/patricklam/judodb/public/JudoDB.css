@@ -1,14 +1,10 @@
 body {
   font-family: arial, sans-serif;
   background: white;
-  margin: 1.5em;
+  margin-left: 1.5em;
 }
 
 /** Most GWT widgets already have a style name defined */
-.gwt-Anchor {
-  cursor: pointer;
-}
-
 .list-th {
  font-weight: bold;
 }
