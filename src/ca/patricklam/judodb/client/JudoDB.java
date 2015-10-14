@@ -131,7 +131,7 @@ public class JudoDB implements EntryPoint {
     private Mode currentMode = null;
 
     /* edit client stuff */
-    private ClientWidget c;
+    private ClientWidget clientWidget;
 
     /* view lists stuff */
     private ListWidget l;
@@ -209,14 +209,13 @@ public class JudoDB implements EntryPoint {
 
     private void _switchMode_editClient (int cid) {
         mainLayoutPanel.editClient.clear();
-        this.c = new ClientWidget(cid, this);
-        mainLayoutPanel.editClient.add(this.c);
-        mainLayoutPanel.editClient.setVisible(true);
+        this.clientWidget = new ClientWidget(cid, this);
+        mainLayoutPanel.editClient.add(this.clientWidget);
 
-        // mainLayoutPanel.dock.remove(mainLayoutPanel.mainPanel);
-        // mainLayoutPanel.dock.remove(mainLayoutPanel.editClient);
-        // mainLayoutPanel.dock.remove(mainLayoutPanel.config);
-        // mainLayoutPanel.dock.add(mainLayoutPanel.editClient);
+        mainLayoutPanel.editClient.setVisible(true);
+        mainLayoutPanel.lists.setVisible(false);
+        mainLayoutPanel.config.setVisible(false);
+        mainLayoutPanel.mainPanel.setVisible(false);
     }
 
     public void _switchMode_viewLists() {
@@ -224,7 +223,6 @@ public class JudoDB implements EntryPoint {
             this.l = new ListWidget(this);
             mainLayoutPanel.lists.add(this.l);
         }
-        mainLayoutPanel.editClient.clear();
 
         // mainLayoutPanel.dock.remove(mainLayoutPanel.mainPanel);
         // mainLayoutPanel.dock.remove(mainLayoutPanel.editClient);
@@ -245,7 +243,6 @@ public class JudoDB implements EntryPoint {
         }
 
         clearStatus();
-        mainLayoutPanel.editClient.clear();
 
         mainLayoutPanel.editClient.setVisible(false);
         mainLayoutPanel.lists.setVisible(false);
@@ -255,7 +252,6 @@ public class JudoDB implements EntryPoint {
 
     public void _switchMode_main() {
         clearStatus();
-        mainLayoutPanel.editClient.clear();
 
         mainLayoutPanel.editClient.setVisible(false);
         mainLayoutPanel.lists.setVisible(false);
@@ -265,6 +261,7 @@ public class JudoDB implements EntryPoint {
         mainLayoutPanel.dropDownUserClubs.setVisible(true);
         mainLayoutPanel.searchButton.setEnabled(true);
         mainLayoutPanel.searchTextBox.setFocus(true);
+        mainLayoutPanel.searchResultsPanel.setVisible(false);
     }
 
     /** After changing any data, invalidate stored data. */
@@ -285,6 +282,7 @@ public class JudoDB implements EntryPoint {
      */
     public void onModuleLoad() {
         // handle exceptions
+        //        if(false)
         GWT.setUncaughtExceptionHandler(new
                                         GWT.UncaughtExceptionHandler() {
                 public void onUncaughtException(Throwable e) {
@@ -534,7 +532,6 @@ public class JudoDB implements EntryPoint {
         }
 
       dropDownUserClubs.clear();
-      selectedClub = null;
       if (tousOK) {
           AnchorListItem tous = new AnchorListItem(TOUS);
           tous.addClickHandler(clhf.instantiate(null));

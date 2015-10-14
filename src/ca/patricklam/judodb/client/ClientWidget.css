@@ -14,17 +14,6 @@
  padding-right:1em;
 }
 
-.userclub {
-  position:absolute;
-  top:1.5em; right: 1em;
-}
-
-
-.actions a {
-	/* i.e. don't show 'visited' colour */
- color: blue;
-}
-
 /* Inspired by http://2tbsp.com/content/flexible_and_efficient_htmlcss_form_layout */
 
 /* Zero out padding and margin, adjust where needed later */
@@ -42,6 +31,9 @@ fieldset {
 legend {
   font-weight: bold;
   margin: 0 2% 0 0;
+  width:inherit; /* Or auto */
+  padding:0 10px; /* To give a bit of padding on the left and right */
+  border-bottom:none;
 }
 
 option {

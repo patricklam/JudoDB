@@ -7,7 +7,10 @@
   xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 	<ui:style src="ClientWidget.css" />
 	<g:HTMLPanel ui:field="clientMain">
-	  <b:DropDownMenu ui:field="dropDownUserClubs" styleName="{style.userclub}" />
+		<b:ButtonGroup ui:field='dropDownUserClubsButtonGroup'>
+			<b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
+			<b:DropDownMenu ui:field='dropDownUserClubs' />
+		</b:ButtonGroup>
  		<div ui:field="cid" class="cid" />
  		<form id="clientform" class="{style.compactform}" method="POST" target="eatFormSubmitResults">
  		<g:Hidden ui:field="guid_on_form" name="guid" />
@@ -18,17 +21,17 @@
  				
 		<fieldset> <legend>Identit&eacute;</legend>
  		 <div class="{style.fourper}" id="identite">
-		  <label><span class="noprint">Nom<br /></span><b:TextBox ui:field="nom" name="nom"/></label>
-		  <label><span class="noprint">Prénom<br /></span><b:TextBox ui:field="prenom" name="prenom"/></label>
-		  <label><span class="noprint">Date de naissance (jj/mm/aaaa)<br /></span><b:TextBox ui:field="ddn_display" name="ddn_display"/></label>
-	      <label><span class="noprint">Sexe<br /></span><b:TextBox ui:field="sexe" name="sexe" /></label>
+		  <g:HTMLPanel addStyleNames="col-md-3"><label><span class="noprint">Nom<br /></span><b:TextBox ui:field="nom" name="nom"/></label></g:HTMLPanel>
+		  <g:HTMLPanel addStyleNames="col-md-3"><label><span class="noprint">Prénom<br /></span><b:TextBox ui:field="prenom" name="prenom"/></label></g:HTMLPanel>
+		  <g:HTMLPanel addStyleNames="col-md-3"><label><span class="noprint">Date de naissance (jj/mm/aaaa)<br /></span><b:TextBox ui:field="ddn_display" name="ddn_display"/></label></g:HTMLPanel>
+		  <g:HTMLPanel addStyleNames="col-xs-1"><label><span class="noprint">Sexe<br /></span><b:TextBox ui:field="sexe" name="sexe"/></label></g:HTMLPanel>
 		 </div>
                 </fieldset>
 
 		<fieldset> 
 		 <legend>Adresse<span id="copySib" class="noprint"><g:Anchor ui:field="copysib">&nbsp;(copier)</g:Anchor></span></legend>
  		 <div class="{style.oneper}">
-		  <label><span class="noprint">Adresse<br /></span><b:TextBox ui:field="adresse" name="adresse" /></label>
+		  <g:HTMLPanel addStyleNames="col-md-10"><label><span class="noprint">Adresse<br /></span><b:TextBox ui:field="adresse" name="adresse" /></label></g:HTMLPanel>
          </div>
 		 <div class="casMedical" style="width: 20em">
 			<p>L'état médical du judoka inscrit requiert de remplir une fiche médicale plus approfondie.</p>
@@ -39,9 +42,9 @@
 			<p>Initiales ______</p>
 		 </div>
  		 <div class="{style.fourper}">
-		  <label><span class="noprint">Ville<br /></span><b:TextBox ui:field="ville" name="ville"/></label>
-		  <label><span class="noprint">Code postal<br /></span><b:TextBox ui:field="codePostal" name="code_postal"/></label>
-		  <label><span class="noprint">T&eacute;l&eacute;phone(s)<br /></span><b:TextBox ui:field="tel" name="tel"/></label>
+		  <g:HTMLPanel addStyleNames="col-md-2"><label><span class="noprint">Ville<br /></span><b:TextBox ui:field="ville" name="ville"/></label></g:HTMLPanel>
+		  <g:HTMLPanel addStyleNames="col-md-2"><label><span class="noprint">Code postal<br /></span><b:TextBox ui:field="codePostal" name="code_postal"/></label></g:HTMLPanel>
+		  <g:HTMLPanel addStyleNames="col-md-2"><label><span class="noprint">T&eacute;l&eacute;phone(s)<br /></span><b:TextBox ui:field="tel" name="tel"/></label></g:HTMLPanel>
   		 </div>
  		 <div class="{style.threeper}">
 		  <label>T&eacute;l&eacute;phone urgence<br /><b:TextBox ui:field="tel_contact_urgence" name="tel_contact_urgence"/></label>
@@ -120,10 +123,10 @@
        <div class="noprint">
         <h4 id="gradeHeader">Histoire grades</h4>
         <g:Grid ui:field="gradeTable" />
-        <div class="{style.actions}" style="float:left; text-align:left">
+        <div style="float:left; text-align:left">
          <g:Anchor ui:field="saveGrades">Sauvegarder</g:Anchor>
         </div>
-        <div class="{style.actions}" style="float:right; text-align:right">
+        <div style="float:right; text-align:right">
          <g:Anchor ui:field="annulerGrades">Annuler</g:Anchor>
         </div>
        </div>
