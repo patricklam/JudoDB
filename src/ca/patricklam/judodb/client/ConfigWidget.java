@@ -128,11 +128,15 @@ public class ConfigWidget extends Composite {
         if (club != null) {
             retrieveSessions(club.getId());
             retrieveCours(club.getNumeroClub());
-            retrieveClubPrix(club.getNumeroClub());
+            retrievePrix(club.getNumeroClub());
             retrieveEscomptes(club.getId());
             retrieveProduits(club.getId());
         } else {
             retrieveSessions("0");
+            clearCours();
+            clearPrix();
+            clearEscomptes();
+            clearProduits();
         }
         populateCurrentClub();
     }
@@ -720,6 +724,12 @@ public class ConfigWidget extends Composite {
         cours.setRowData(coursData);
         cours.redraw();
     }
+
+    private void clearCours() {
+        coursData.clear();
+        cours.setRowData(coursData);
+        cours.redraw();
+    }
     /* --- end cours tab --- */
 
     /* --- prix tab --- */
@@ -940,6 +950,12 @@ public class ConfigWidget extends Composite {
         prix.setRowData(prixData);
         prix.redraw();
     }
+
+    private void clearPrix() {
+        prixData.clear();
+        prix.setRowData(prixData);
+        prix.redraw();
+    }
     /* --- end prix tab --- */
 
     /* --- escompte tab --- */
@@ -1063,6 +1079,12 @@ public class ConfigWidget extends Composite {
         escomptes.setRowData(escompteData);
         escomptes.redraw();
     }
+
+    private void clearEscomptes() {
+        escompteData.clear();
+        escomptes.setRowData(escompteData);
+        escomptes.redraw();
+    }
     /* --- end escompte tab --- */
 
     /* --- produits detail tab --- */
@@ -1169,6 +1191,12 @@ public class ConfigWidget extends Composite {
         produits.setRowData(produitData);
         produits.redraw();
     }
+
+    private void clearProduits() {
+        produitData.clear();
+        produits.setRowData(produitData);
+        produits.redraw();
+    }
     /* --- end produits detail tab --- */
 
     /* --- network functions --- */
@@ -1187,10 +1215,10 @@ public class ConfigWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
-    public void retrieveClubPrix(final String numero_club) {
+    public void retrievePrix(final String numero_club) {
         if (!gotSessions) {
             new Timer() {
-                public void run() { retrieveClubPrix(numero_club); }
+                public void run() { retrievePrix(numero_club); }
             }.schedule(100);
             return;
         }
@@ -1330,7 +1358,7 @@ public class ConfigWidget extends Composite {
 				refreshPrix = false;
 				ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
 				if (cs != null) {
-				    retrieveClubPrix(cs.getNumeroClub());
+				    retrievePrix(cs.getNumeroClub());
 				}
 			    }
 			    if (refreshEscomptes) {
