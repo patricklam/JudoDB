@@ -3,6 +3,12 @@
  padding-right:1em;
 }
 
+.clubBox {
+ position:absolute;
+ top: 0em; right: 2em;
+ width: 20em;
+}
+
 /* Inspired by http://2tbsp.com/content/flexible_and_efficient_htmlcss_form_layout */
 
 /* Zero out padding and margin, adjust where needed later */

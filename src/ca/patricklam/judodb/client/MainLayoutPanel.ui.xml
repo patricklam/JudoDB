@@ -21,6 +21,12 @@
  .statusAlert {
    padding: 10px;
  }
+
+ .clubBox {
+   position:absolute;
+   top: 0em; right: 2em;
+   width: 20em;
+ }
 </ui:style>
 
 <g:FlowPanel>
@@ -85,7 +91,7 @@
        </b:Column></b:Row>
       </b:Container>
 
-      <b:ButtonGroup  ui:field='dropDownUserClubsButtonGroup'>
+      <b:ButtonGroup  ui:field='dropDownUserClubsButtonGroup' addStyleNames="{style.clubBox} hidden-print">
        <b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
        <b:DropDownMenu ui:field='dropDownUserClubs' />
       </b:ButtonGroup>

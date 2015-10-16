@@ -8,7 +8,7 @@
    <ui:style src="ConfigWidget.css" />
       <g:FlowPanel>
        <b:Heading size="H1" text="Configuration club"/>
-       <b:ButtonGroup  ui:field='dropDownUserClubsButtonGroup'>
+       <b:ButtonGroup ui:field='dropDownUserClubsButtonGroup' addStyleNames="{style.clubBox}">
         <b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
         <b:DropDownMenu ui:field='dropDownUserClubs' />
        </b:ButtonGroup>

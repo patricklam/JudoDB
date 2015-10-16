@@ -156,7 +156,6 @@ public class ConfigWidget extends Composite {
     public ConfigWidget(JudoDB jdb, ClubSummary selectedClub) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
-        dropDownUserClubsButtonGroup.setStyleName("clubBox");
 
         retour.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { ConfigWidget.this.jdb.switchMode(new JudoDB.Mode(JudoDB.Mode.ActualMode.MAIN)); }});
 
@@ -222,8 +221,9 @@ public class ConfigWidget extends Composite {
 	return new ValueChangeHandler<String>() {
 	    @Override
 	    public void onValueChange(ValueChangeEvent<String> event) {
-		pushEdit("-1,c" + key + "," + event.getValue() + "," +
-			 jdb.getSelectedClubID() + ";");
+                refreshClub = true;
+                pushEdit("-1,c" + key + "," + event.getValue() + "," +
+                         jdb.getSelectedClubID() + ";");
 	    }
 	};
     }
@@ -232,9 +232,10 @@ public class ConfigWidget extends Composite {
 	return new ClickHandler() {
 	    @Override
 	    public void onClick(ClickEvent event) {
-		pushEdit("-1,c" + key + "," +
-			 ((((CheckBox)event.getSource()).getValue()) ? "1" : "0") + "," +
-			 jdb.getSelectedClubID() + ";");
+                refreshClub = true;
+                pushEdit("-1,c" + key + "," +
+                         ((((CheckBox)event.getSource()).getValue()) ? "1" : "0") + "," +
+                         jdb.getSelectedClubID() + ";");
 	    }
 	};
     }
@@ -1284,6 +1285,7 @@ public class ConfigWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
+    private boolean refreshClub = false;
     private boolean refreshSessions = false;
     private boolean refreshCours = false;
     private boolean refreshPrix = false;
@@ -1309,6 +1311,10 @@ public class ConfigWidget extends Composite {
                             pushTries++;
                         } else {
                             jdb.setStatus("Sauvegardé.");
+                            if (refreshClub) {
+                                refreshClub = false;
+                                jdb.retrieveClubList(true);
+                            }
 			    if (refreshSessions) {
 				refreshSessions = false;
 				retrieveSessions(jdb.getSelectedClub().getNumeroClub());
