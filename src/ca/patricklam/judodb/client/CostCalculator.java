@@ -60,7 +60,7 @@ public class CostCalculator {
     static double proratedFraisCours(SessionSummary ss, ClientData cd, ServiceData sd, ClubSummary cs, ClubPrix[] cpA) {
         double baseCost = fraisCours(ss, cd, sd, cpA);
         boolean enableProrata = cs.getDefaultProrata();
-        if (!enableProrata || sd == null || sd.getDateInscription() == null || sd.getDateInscription() == "0000-00-00")
+        if (!enableProrata || sd == null || sd.getDateInscription() == null || sd.getDateInscription() == Constants.DB_DUMMY_DATE)
             return baseCost;
 
         Date dateInscription = null;
