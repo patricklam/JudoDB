@@ -216,7 +216,7 @@ public class ListWidget extends Composite {
     public ListWidget(JudoDB jdb) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
-        listForm.addStyleName("noprint");
+        listForm.addStyleName("hidden-print");
 
         allListModeWidgets = new Widget[] { jdb.filtrerListes, jdb.editerListes, jdb.ftListes,
                                             jdb.clearXListes, jdb.normalListes,
@@ -882,7 +882,7 @@ public class ListWidget extends Composite {
 
             if (visibility[Columns.VERIFICATION]) {
                 CheckBox cb = new CheckBox();
-                cb.addStyleName("noprint");
+                cb.addStyleName("hidden-print");
                 results.setWidget(curRow, Columns.VERIFICATION, cb);
                 if (mode==Mode.EDIT) {
                     cb.setValue(sd.getVerification());

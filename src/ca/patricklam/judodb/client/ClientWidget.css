@@ -148,3 +148,32 @@ option {
 }
 
 /* end form stuff */
+
+@media print {
+    input, textarea {
+        border: 0 !important;
+        border-style: none !important;
+	transition: none;
+        text-size: 83%;
+	padding: 0.1em;
+    }
+
+    .casMedical {
+	position: absolute;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	padding-top: 0.1em; padding-bottom: 0.1em;
+	margin-top: -2em;
+	width: 20em;
+	display: block;
+	border: solid;
+	right: 3em;
+	font-size: 70%;
+    }
+}
+
+@media screen {
+    .casMedical {
+	display:none;
+    }
+}

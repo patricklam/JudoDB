@@ -41,7 +41,7 @@ td {
 <g:HTMLPanel>
 	<b:ListBox ui:field="sessionListBox" visibleItemCount="1" styleName="{style.session}" />
 	<b:DropDownMenu ui:field="dropDownUserClubs" styleName="{style.userclub}" />
-	<h1 id="stdTitle" class="noprint">Listes des cours</h1>
+	<h1 id="stdTitle" class="hidden-print">Listes des cours</h1>
 
 	<g:FormPanel ui:field="listForm" method="post">
 	  <g:HTMLPanel>
@@ -92,7 +92,7 @@ td {
             <g:Hidden ui:field="dataToSave" name="data_to_save" />
           </g:FlowPanel>
 	</g:FormPanel>
-	<div id="saveorquit" class="actions noprint" style="padding-bottom: 1em">
+	<div id="saveorquit" class="actions hidden-print" style="padding-bottom: 1em">
      <div style="float:left; text-align:right;">
       <b:Button ui:field="save">Sauvegarder</b:Button>
      </div>

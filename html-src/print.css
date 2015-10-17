@@ -19,10 +19,6 @@ label {
   color: #888;
 }
 
-.noprint { 
-  display: none; 
-}
-
 .cid {
  position:absolute;
  top:0.5em; right: 1em;
@@ -164,19 +160,6 @@ input.text, input.button, textarea, select {
   overflow: hidden;
   border: none;
   border-collapse: collapse;
-}
-
-.casMedical {
-  position: absolute;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-  padding-top: 0.1em; padding-bottom: 0.1em;
-  margin-top: 3.5em;
-  width: 20em;
-  display: block;
-  border: solid;
-  right: 3em;
-  font-size: 70%;
 }
 
 .blurb {
