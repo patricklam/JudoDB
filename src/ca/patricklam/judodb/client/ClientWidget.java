@@ -31,7 +31,6 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Anchor;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTMLPanel;
@@ -47,10 +46,13 @@ import com.google.gwt.http.client.Response;
 
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
+import org.gwtbootstrap3.client.ui.Column;
 import org.gwtbootstrap3.client.ui.Label;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
 import org.gwtbootstrap3.client.ui.DropDownMenu;
+
+import org.gwtbootstrap3.extras.toggleswitch.client.ui.ToggleSwitch;
 
 public class ClientWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ClientWidget> {}
@@ -67,7 +69,7 @@ public class ClientWidget extends Composite {
     @UiField Hidden ddn;
     @UiField TextBox sexe;
 
-    @UiField Anchor copysib;
+    @UiField Button copysib;
     @UiField TextBox adresse;
     @UiField TextBox ville;
     @UiField TextBox codePostal;
@@ -89,8 +91,8 @@ public class ClientWidget extends Composite {
     @UiField Anchor modifier;
     @UiField Anchor desinscrire;
     @UiField TextBox saisons;
-    @UiField CheckBox prorata;
-    @UiField CheckBox verification;
+    @UiField ToggleSwitch prorata;
+    @UiField ToggleSwitch verification;
 
     @UiField TextBox categorie;
     @UiField TextBox categorieFrais;
@@ -103,17 +105,19 @@ public class ClientWidget extends Composite {
     @UiField TextBox cas_special_pct;
     @UiField TextBox escompteFrais;
 
-    @UiField CheckBox sans_affiliation;
-    @UiField CheckBox affiliation_initiation;
-    @UiField CheckBox affiliation_ecole;
+    @UiField ToggleSwitch sans_affiliation;
+    @UiField ToggleSwitch affiliation_initiation;
+    @UiField ToggleSwitch affiliation_ecole;
     @UiField TextBox affiliationFrais;
 
     @UiField ListBox produit;
-    @UiField CheckBox resident;
-    @UiField CheckBox paypal;
+    @UiField Column rabais_resident_label;
+    @UiField ToggleSwitch resident;
+    @UiField Column frais_paypal_label;
+    @UiField ToggleSwitch paypal;
     @UiField TextBox suppFrais;
 
-    @UiField CheckBox solde;
+    @UiField ToggleSwitch solde;
     @UiField TextBox frais;
 
     @UiField Hidden grades_encoded;
@@ -241,9 +245,10 @@ public class ClientWidget extends Composite {
     public ClientWidget(int cid, JudoDB jdb) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
-        dropDownUserClubsButtonGroup.setStyleName("clubBox");
+
         clientform = FormElement.as(clientMain.getElementById("clientform"));
-        clientform.setAction(PUSH_ONE_CLIENT_URL);
+        // xxx: set action, form targe (eatFormSubmitResults)
+        //clientform.setAction(PUSH_ONE_CLIENT_URL);
         deleted.setValue("");
 
         no_sessions.addItem("1");
@@ -334,7 +339,6 @@ public class ClientWidget extends Composite {
         });
 
         ClubSummary currentClub = jdb.getSelectedClub();
-        jdb.populateClubList(false, dropDownUserClubs, new ClientClubListHandlerFactory());
         selectClub(currentClub);
         if (cid != -1)
             retrieveClient(cid);
@@ -355,6 +359,11 @@ public class ClientWidget extends Composite {
             loadClientData();
             jdb.clearStatus();
         }
+    }
+
+    @Override
+    protected void onLoad() {
+        jdb.refreshClubListResults();
     }
 
     private void addNewService() {
@@ -451,6 +460,8 @@ public class ClientWidget extends Composite {
     private void disableAllSessionEditingInfo() {
         saisons.setText("");
         verification.setValue(false);
+        prorata.setValue(false);
+        prorata.setEnabled(false);
         no_sessions.setEnabled(false);
         categorieFrais.setText("");
 
@@ -497,7 +508,8 @@ public class ClientWidget extends Composite {
         nom.setText(cd.getNom());
         prenom.setText(cd.getPrenom());
         Date ddns = cd.getDDN();
-        ddn_display.setText(ddns == null ? Constants.STD_DUMMY_DATE : Constants.STD_DATE_FORMAT.format(ddns));
+        if (ddns != null)
+            ddn_display.setText(Constants.STD_DATE_FORMAT.format(ddns));
         ddn.setValue(ddns == null ? Constants.DB_DUMMY_DATE : Constants.DB_DATE_FORMAT.format(ddns));
         sexe.setText(cd.getSexe());
         adresse.setText(cd.getAdresse());
@@ -562,6 +574,7 @@ public class ClientWidget extends Composite {
         }
         no_sessions.setItemSelected(sd.getSessionCount()-1, true);
         no_sessions.setEnabled(isToday);
+        prorata.setEnabled(isToday);
         categorieFrais.setText(sd.getCategorieFrais());
 
         sans_affiliation.setValue(sd.getSansAffiliation());
@@ -1058,11 +1071,11 @@ public class ClientWidget extends Composite {
         if (cs == null) return;
         String escompteResident = cs.getEscompteResident();
         if (escompteResident == null || escompteResident.equals("") || escompteResident.equals("0")) {
-            clientMain.getElementById("rabais_resident_label").getStyle().setProperty("display", "none");
+            rabais_resident_label.setVisible(false);
             resident.setVisible(false);
         } else {
             resident.setVisible(true);
-            clientMain.getElementById("rabais_resident_label").getStyle().setProperty("display", "inline");
+            rabais_resident_label.setVisible(true);
         }
     }
 
@@ -1070,11 +1083,11 @@ public class ClientWidget extends Composite {
         if (cs == null) return;
         boolean showPaypal = cs.getAfficherPaypal();
         if (!showPaypal) {
-            clientMain.getElementById("frais_paypal_label").getStyle().setProperty("display", "none");
+            frais_paypal_label.setVisible(false);
             paypal.setVisible(false);
         } else {
             paypal.setVisible(true);
-            clientMain.getElementById("frais_paypal_label").getStyle().setProperty("display", "inline");
+            frais_paypal_label.setVisible(true);
         }
     }
 

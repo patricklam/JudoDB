@@ -3,6 +3,7 @@
 
 <ui:UiBinder
   xmlns:b="urn:import:org.gwtbootstrap3.client.ui"
+  xmlns:b3="urn:import:org.gwtbootstrap3.extras.toggleswitch.client.ui"
   xmlns:ui='urn:ui:com.google.gwt.uibinder'
   xmlns:g='urn:import:com.google.gwt.user.client.ui'>
    <ui:style src="ConfigWidget.css" />
@@ -42,8 +43,8 @@
               <b:FormGroup><b:FormLabel for="indicatif_regional_tb" addStyleNames="col-md-2">Indicatif r&eacute;gional:</b:FormLabel><g:FlowPanel addStyleNames="col-md-2"><b:TextBox ui:field="indicatif_regional" name="indicatif_regional_tb"/></g:FlowPanel></b:FormGroup>
               <b:FormGroup><b:FormLabel for="escompte_resident_tb" addStyleNames="col-md-2">Escompte r&eacute;sident:</b:FormLabel><g:FlowPanel addStyleNames="col-md-2"><b:TextBox ui:field="escompte_resident" name="escompte_resident_tb"/></g:FlowPanel></b:FormGroup>
               <b:FormGroup><b:FormLabel for="supplement_prorata_tb" addStyleNames="col-md-2">Supplement prorata:</b:FormLabel><g:FlowPanel addStyleNames="col-md-2"><b:TextBox ui:field="supplement_prorata" name="supplement_prorata_tb"/></g:FlowPanel></b:FormGroup>
-              <b:FormGroup><b:FormLabel for="default_prorata_tb" addStyleNames="col-md-2">Prorata par defaut:</b:FormLabel><g:FlowPanel addStyleNames="col-md-1"><b:CheckBox ui:field="default_prorata" name="default_prorata_tb"/></g:FlowPanel></b:FormGroup>
-              <b:FormGroup><b:FormLabel for="afficher_paypal_tb" addStyleNames="col-md-2">Afficher supplement PayPal:</b:FormLabel><g:FlowPanel addStyleNames="col-md-1"><b:CheckBox ui:field="afficher_paypal" name="afficher_paypal_tb"/></g:FlowPanel></b:FormGroup>
+              <b:FormGroup><b:FormLabel for="default_prorata_ts" addStyleNames="col-md-2">Prorata par defaut:</b:FormLabel><g:FlowPanel addStyleNames="col-md-1"><b3:ToggleSwitch ui:field="default_prorata" onIcon="CHECK" offIcon="TIMES" name="default_prorata_ts"/></g:FlowPanel></b:FormGroup>
+              <b:FormGroup><b:FormLabel for="afficher_paypal_ts" addStyleNames="col-md-2">Afficher supplement PayPal:</b:FormLabel><g:FlowPanel addStyleNames="col-md-1"><b3:ToggleSwitch ui:field="afficher_paypal" name="afficher_paypal_ts" onIcon="CHECK" offIcon="TIMES"/></g:FlowPanel></b:FormGroup>
              </b:Form>
           </b:TabPane>
           <b:TabPane b:id="session"><g:FlowPanel ui:field="sessionTab"/></b:TabPane>

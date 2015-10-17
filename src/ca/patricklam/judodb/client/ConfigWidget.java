@@ -35,11 +35,12 @@ import com.google.gwt.dom.client.Style.Unit;
 import org.gwtbootstrap3.client.ui.TabListItem;
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
-import org.gwtbootstrap3.client.ui.CheckBox;
 import org.gwtbootstrap3.client.ui.Container;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
 import org.gwtbootstrap3.client.ui.DropDownMenu;
+
+import org.gwtbootstrap3.extras.toggleswitch.client.ui.ToggleSwitch;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -218,8 +219,8 @@ public class ConfigWidget extends Composite {
     @UiField TextBox indicatif_regional;
     @UiField TextBox escompte_resident;
     @UiField TextBox supplement_prorata;
-    @UiField CheckBox default_prorata;
-    @UiField CheckBox afficher_paypal;
+    @UiField ToggleSwitch default_prorata;
+    @UiField ToggleSwitch afficher_paypal;
 
     ValueChangeHandler<String> newValueChangeHandler(final String key) {
 	return new ValueChangeHandler<String>() {
@@ -232,13 +233,12 @@ public class ConfigWidget extends Composite {
 	};
     }
 
-    ClickHandler newClickHandler(final String key) {
-	return new ClickHandler() {
+    ValueChangeHandler<Boolean> newValueChangeHandlerBoolean(final String key) {
+	return new ValueChangeHandler<Boolean>() {
 	    @Override
-	    public void onClick(ClickEvent event) {
+	    public void onValueChange(ValueChangeEvent<Boolean> event) {
                 refreshClub = true;
-                pushEdit("-1,c" + key + "," +
-                         ((((CheckBox)event.getSource()).getValue()) ? "1" : "0") + "," +
+                pushEdit("-1,c" + key + "," + (event.getValue() ? "1" : "0") + "," +
                          jdb.getSelectedClubID() + ";");
 	    }
 	};
@@ -264,8 +264,8 @@ public class ConfigWidget extends Composite {
             indicatif_regional.addValueChangeHandler(newValueChangeHandler("indicatif_regional"));
             escompte_resident.addValueChangeHandler(newValueChangeHandler("escompte_resident"));
             supplement_prorata.addValueChangeHandler(newValueChangeHandler("supplement_prorata"));
-            default_prorata.addClickHandler(newClickHandler("pro_rata"));
-            afficher_paypal.addClickHandler(newClickHandler("afficher_paypal"));
+            default_prorata.addValueChangeHandler(newValueChangeHandlerBoolean("pro_rata"));
+            afficher_paypal.addValueChangeHandler(newValueChangeHandlerBoolean("afficher_paypal"));
         }
 
         boolean setEverythingReadOnly = false;

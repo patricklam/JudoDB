@@ -3,6 +3,7 @@
   xmlns:b="urn:import:org.gwtbootstrap3.client.ui"
   xmlns:b.html="urn:import:org.gwtbootstrap3.client.ui.html"
   xmlns:ui="urn:ui:com.google.gwt.uibinder"
+  xmlns:c="urn:import:ca.patricklam.judodb.client"
   xmlns:g="urn:import:com.google.gwt.user.client.ui">
 
 <ui:style>
@@ -100,7 +101,7 @@
      </g:FlowPanel>
     </g:ScrollPanel>
 
-    <g:ScrollPanel ui:field='editClient' width='99%' height='100%'/>
+    <c:OnlyYScrollPanel ui:field='editClient' width='99%' height='100%'/>
     <g:ScrollPanel ui:field='lists' width='99%' height='100%'/>
     <g:ScrollPanel ui:field='config' width='99%' height='100%'/>
 </g:FlowPanel>

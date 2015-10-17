@@ -3,119 +3,125 @@
 
 <ui:UiBinder
   xmlns:b="urn:import:org.gwtbootstrap3.client.ui"
+  xmlns:b3="urn:import:org.gwtbootstrap3.extras.toggleswitch.client.ui"
   xmlns:ui='urn:ui:com.google.gwt.uibinder'
   xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 	<ui:style src="ClientWidget.css" />
 	<g:HTMLPanel ui:field="clientMain">
-		<b:ButtonGroup ui:field='dropDownUserClubsButtonGroup'>
+		<b:ButtonGroup ui:field='dropDownUserClubsButtonGroup' addStyleNames="{style.clubBox}">
 			<b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
 			<b:DropDownMenu ui:field='dropDownUserClubs' />
 		</b:ButtonGroup>
  		<div ui:field="cid" class="cid" />
- 		<form id="clientform" class="{style.compactform}" method="POST" target="eatFormSubmitResults">
+		<b:Form ui:field="clientform" type="HORIZONTAL" method="POST"> <g:HTMLPanel>
  		<g:Hidden ui:field="guid_on_form" name="guid" />
  		<g:Hidden ui:field="sid" name="sid" />
  		<g:Hidden ui:field="deleted" name="deleted" />
  		<g:Hidden ui:field="ddn" name="ddn" />
 		<g:Hidden ui:field="club_id_encoded" name="club_id_encoded" />
  				
-		<fieldset> <legend>Identit&eacute;</legend>
- 		 <div class="{style.fourper}" id="identite">
-		  <g:HTMLPanel addStyleNames="col-md-3"><label><span class="noprint">Nom<br /></span><b:TextBox ui:field="nom" name="nom"/></label></g:HTMLPanel>
-		  <g:HTMLPanel addStyleNames="col-md-3"><label><span class="noprint">Prénom<br /></span><b:TextBox ui:field="prenom" name="prenom"/></label></g:HTMLPanel>
-		  <g:HTMLPanel addStyleNames="col-md-3"><label><span class="noprint">Date de naissance (jj/mm/aaaa)<br /></span><b:TextBox ui:field="ddn_display" name="ddn_display"/></label></g:HTMLPanel>
-		  <g:HTMLPanel addStyleNames="col-xs-1"><label><span class="noprint">Sexe<br /></span><b:TextBox ui:field="sexe" name="sexe"/></label></g:HTMLPanel>
-		 </div>
-                </fieldset>
+		<b:FieldSet> <b:Legend>Identit&eacute;</b:Legend>
+                  <b:FormGroup>
+		   <b:Column size="XS_3"><b:FormLabel for="nom">Nom</b:FormLabel><b:TextBox ui:field="nom" name="nom"/></b:Column>
+		   <b:Column size="XS_4"><b:FormLabel for="prenom">Prénom</b:FormLabel><b:TextBox ui:field="prenom" name="prenom" /></b:Column>
+		   <b:Column size="XS_2"><b:FormLabel for="ddn_display">Date de naissance</b:FormLabel><b:TextBox ui:field="ddn_display" name="ddn_display" placeholder="jj/mm/aa" /> </b:Column>
+		   <b:Column size="XS_1"><b:FormLabel for="sexe">Sexe</b:FormLabel><b:TextBox ui:field="sexe" name="sexe" /></b:Column>
+		  </b:FormGroup>
+                </b:FieldSet>
 
-		<fieldset> 
-		 <legend>Adresse<span id="copySib" class="noprint"><g:Anchor ui:field="copysib">&nbsp;(copier)</g:Anchor></span></legend>
- 		 <div class="{style.oneper}">
-		  <g:HTMLPanel addStyleNames="col-md-10"><label><span class="noprint">Adresse<br /></span><b:TextBox ui:field="adresse" name="adresse" /></label></g:HTMLPanel>
-         </div>
-		 <div class="casMedical" style="width: 20em">
-			<p>L'état médical du judoka inscrit requiert de remplir une fiche médicale plus approfondie.</p>
-			<p style="padding-left: 1em">
- 			<span style="border:solid">&nbsp;&nbsp;&nbsp;&nbsp;</span> OUI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	 		<span style="border:solid">&nbsp;&nbsp;&nbsp;&nbsp;</span> NON
-			</p>
-			<p>Initiales ______</p>
-		 </div>
- 		 <div class="{style.fourper}">
-		  <g:HTMLPanel addStyleNames="col-md-2"><label><span class="noprint">Ville<br /></span><b:TextBox ui:field="ville" name="ville"/></label></g:HTMLPanel>
-		  <g:HTMLPanel addStyleNames="col-md-2"><label><span class="noprint">Code postal<br /></span><b:TextBox ui:field="codePostal" name="code_postal"/></label></g:HTMLPanel>
-		  <g:HTMLPanel addStyleNames="col-md-2"><label><span class="noprint">T&eacute;l&eacute;phone(s)<br /></span><b:TextBox ui:field="tel" name="tel"/></label></g:HTMLPanel>
-  		 </div>
- 		 <div class="{style.threeper}">
-		  <label>T&eacute;l&eacute;phone urgence<br /><b:TextBox ui:field="tel_contact_urgence" name="tel_contact_urgence"/></label>
-		  <label>Courriel<br /><b:TextBox ui:field="courriel"  name="courriel"/></label>
- 		 </div>
-		</fieldset>
+<!-- <g:Anchor ui:field="copysib" addStyleNames="hidden-print">&nbsp;(copier)</g:Anchor> -->
+		<b:FieldSet><b:Legend>Adresse</b:Legend>
+		<b:FormGroup>
+		  <b:Column size="XS_10"><b:FormLabel for="adresse" addStyleNames="hidden-print">Adresse</b:FormLabel><b:TextBox ui:field="adresse" name="adresse" /></b:Column>
+		  <b:Column size="XS_1"><b:FormLabel for="copysib" /><b:Button ui:field="copysib" addStyleNames="hidden-print offset-col-xs-1">copier</b:Button></b:Column>
+		</b:FormGroup>
+		<g:HTMLPanel>
+		  <div class="casMedical" style="width: 20em">
+		    <p>L'état médical du judoka inscrit requiert de remplir une fiche médicale plus approfondie.</p>
+		    <p style="padding-left: 1em">
+		      <span style="border:solid">&nbsp;&nbsp;&nbsp;&nbsp;</span> OUI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		      <span style="border:solid">&nbsp;&nbsp;&nbsp;&nbsp;</span> NON
+		    </p>
+		    <p>Initiales ______</p>
+		  </div>
+		</g:HTMLPanel>
+                 <b:FormGroup addStyleNames="{style.fourper}">
+		   <b:Column size="XS_2"><b:FormLabel for="ville" addStyleNames="hidden-print">Ville</b:FormLabel><b:TextBox ui:field="ville" name="ville"/></b:Column>
+		   <b:Column size="XS_2"><b:FormLabel for="code_postal" addStyleNames="hidden-print">Code postal</b:FormLabel><b:TextBox ui:field="codePostal" name="code_postal"/></b:Column>
+		   <b:Column size="XS_2"><b:FormLabel for="tel" addStyleNames="hidden-print">T&eacute;l&eacute;phone(s)</b:FormLabel><b:TextBox ui:field="tel" name="tel"/></b:Column>
+		 </b:FormGroup>
+                 <b:FormGroup>
+		   <b:Column size="XS_3"><b:FormLabel for="tel_contact_urgence" addStyleNames="hidden-print">T&eacute;l&eacute;phone urgence</b:FormLabel><b:TextBox ui:field="tel_contact_urgence" name="tel_contact_urgence"/></b:Column>
+		   <b:Column size="XS_3"><b:FormLabel for="courriel" addStyleNames="hidden-print">Courriel</b:FormLabel><b:TextBox ui:field="courriel" name="courriel"/></b:Column>
+		 </b:FormGroup>
+		</b:FieldSet>
 
- 		<fieldset> <legend>Autres renseignements</legend>
- 		 <div class="{style.fourper}">
-		  <label>Num&eacute;ro Judo Qu&eacute;bec<br /><b:TextBox ui:field="affiliation"  name="affiliation"/></label>
-		  <label>Grade judo <span class="noprint">(<g:Anchor ui:field="showgrades">histoire</g:Anchor>)</span><br /><b:TextBox ui:field="grade"/></label>
-	      <label>Date du grade<br /><b:TextBox ui:field="date_grade"/></label>
-	      <g:Hidden ui:field="grades_encoded" name="grades_encoded" />
-	      <g:Hidden ui:field="grade_dates_encoded" name="grade_dates_encoded" />
-		  <label style="font-size:80%">N° carte municipale<br /><b:TextBox ui:field="carte_resident" name="carte_resident" /></label>
-   	     </div>
- 		 <div class="{style.oneper}">
-		  <label>Nom re&ccedil;u imp&ocirc;t<br /><b:TextBox ui:field="nom_recu_impot" name="nom_recu_impot" /></label>
-		 </div>
- 		</fieldset>
+		<b:FieldSet> <b:Legend>Autres renseignements</b:Legend>
+		 <b:FormGroup addStyleNames="{style.fourper}">
+		  <b:Column size="XS_3"><b:FormLabel for="affiliation">Num&eacute;ro Judo Qu&eacute;bec</b:FormLabel><b:TextBox ui:field="affiliation"  name="affiliation" addStyleNames="{style.six-em}"/></b:Column>
+		  <b:Column size="XS_2"><g:HTMLPanel><label for="grade" class="control-label">Grade judo <span class="hidden-print">(<g:Anchor ui:field="showgrades">histoire</g:Anchor>)</span></label></g:HTMLPanel><b:TextBox ui:field="grade" addStyleNames="{style.six-em}"/></b:Column>
+	          <b:Column size="XS_3"><b:FormLabel for="date_grade">Date du grade</b:FormLabel><b:TextBox ui:field="date_grade" addStyleNames="{style.six-em}"/></b:Column>
+		  <g:Hidden ui:field="grades_encoded" name="grades_encoded" />
+		  <g:Hidden ui:field="grade_dates_encoded" name="grade_dates_encoded" />
+		  <b:Column size="XS_2"><b:FormLabel for="carte_resident">N° carte municipale</b:FormLabel><b:TextBox ui:field="carte_resident" name="carte_resident"/></b:Column>
+		</b:FormGroup>
+		 <b:FormGroup addStyleNames="{style.oneper}">
+		   <b:Column size="XS_10"><b:FormLabel for="nom_recu_impot">Nom re&ccedil;u imp&ocirc;t</b:FormLabel><b:TextBox ui:field="nom_recu_impot" name="nom_recu_impot" /></b:Column>
+		 </b:FormGroup>
+		</b:FieldSet>
 
- 		<fieldset> <legend>Inscription</legend>
-		 <div class="{style.fiveper}">
-   		  <label>Date d'inscription
-           <span class="noprint"><g:InlineLabel ui:field="semaines"></g:InlineLabel></span> <g:Anchor ui:field="inscrire"><span class="noprint">(inscrire)</span></g:Anchor> <g:Anchor ui:field="modifier"><span class="noprint">(modifier)</span></g:Anchor> <g:Anchor ui:field="desinscrire"><span id="desinscrire" class="noprint">(désinscrire)</span></g:Anchor><br />
-           <b:ListBox ui:field="date_inscription" /> <g:Hidden ui:field="date_inscription_encoded" name="date_inscription_encoded" />
-          </label>
-		  <label>Cat&eacute;gorie d'&acirc;ge<br /><b:TextBox ui:field="categorie" /></label>
-		  <label>Saisons<br /><b:TextBox ui:field="saisons"  /> <g:Hidden ui:field="saisons_encoded" name="saisons_encoded" /></label>
-   		  <label style="font-size:80%"><span class="noprint">Affiliation Judo QC envoy&eacute;<br /><g:CheckBox ui:field="verification"/></span> <g:Hidden ui:field="verification_encoded" name="verification_encoded" />
- 		  </label>
-		  <label><span class="noprint">Prorata<br /><g:CheckBox ui:field="prorata"/></span> <g:Hidden ui:field="prorata_encoded" name="prorata_encoded" />
-		  </label>
-  		 </div>
+		<b:FieldSet> <b:Legend>Inscription</b:Legend>
+		<b:FormGroup addStyleNames="{style.fiveper}">
+		  <b:Column size="XS_4">
+		    <g:HTMLPanel><label for="date_inscription">Date d'inscription <g:Anchor ui:field="inscrire" addStyleNames="hidden-print">(inscrire)</g:Anchor> <g:Anchor ui:field="modifier" addStyleNames="hidden-print">(modifier)</g:Anchor> <g:Anchor ui:field="desinscrire" addStyleNames="hidden-print">(désinscrire)</g:Anchor></label>
+		    <b:ListBox ui:field="date_inscription" /> <g:Hidden ui:field="date_inscription_encoded" name="date_inscription_encoded" />
+		    </g:HTMLPanel>
+		  </b:Column>
+		  <b:Column size="XS_2"><b:FormLabel for="categorie">Cat&eacute;gorie d'&acirc;ge</b:FormLabel><b:TextBox ui:field="categorie" addStyleNames="{style.six-em}"/></b:Column>
+		  <b:Column size="XS_2"><b:FormLabel for="saisons">Saisons</b:FormLabel><b:TextBox ui:field="saisons"  /> <g:Hidden ui:field="saisons_encoded" name="saisons_encoded" /></b:Column>
+		  <b:Column size="XS_2"><b:FormLabel for="verification">Affiliation Judo QC envoy&eacute;</b:FormLabel><b3:ToggleSwitch ui:field="verification" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="verification_encoded" name="verification_encoded" /></b:Column>
+		  <b:Column size="XS_2">
+		    <g:HTMLPanel><label for="prorata">Prorata <span class="hidden-print"><g:InlineLabel ui:field="semaines"/></span></label><b3:ToggleSwitch ui:field="prorata" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="prorata_encoded" name="prorata_encoded" /></g:HTMLPanel>
+		  </b:Column>
+		</b:FormGroup>
   		
-  		 <div class="{style.fourper}">
-		  <label style="width:46%">Cours<br /><b:ListBox ui:field="cours"/><g:Hidden ui:field="cours_encoded" name="cours_encoded" /></label>
-		  <label># sessions<br /><b:ListBox ui:field="no_sessions"/><g:Hidden ui:field="no_sessions_encoded" name="no_sessions_encoded" /></label>
-		  <span class="{style.fraisOnRight}"><label>Frais cours<br /><b:TextBox ui:field="categorieFrais" /> 
-   		    <g:Hidden ui:field="categorieFrais_encoded" name="categorie_frais_encoded"/></label></span>
-  		 </div>
-  		 <div class="{style.fourper}">
-		  <label>Escompte<br /><b:ListBox ui:field="escompte"/><g:Hidden ui:field="escompte_encoded" name="escompte_encoded"/></label>
-          <label>Raison cas sp&eacute;cial<br /><b:TextBox ui:field="cas_special_note"/><g:Hidden ui:field="cas_special_note_encoded" name="cas_special_note_encoded"/></label>
-		  <label>% escompte<br /><b:TextBox ui:field="cas_special_pct"  /><g:Hidden ui:field="cas_special_pct_encoded" name="cas_special_pct_encoded"/></label>
-          <span class="{style.fraisOnRight}"><label> - escompte<br /><b:TextBox ui:field="escompteFrais"  /><g:Hidden ui:field="escompteFrais_encoded" name="escompte_special_encoded"/></label></span>
-         </div>
-         <div class="{style.fourper}">
-   		  <label>Déjà affili&eacute; Judo Qu&eacute;bec 2014-15<br /><g:CheckBox ui:field="sans_affiliation"/> <g:Hidden ui:field="sans_affiliation_encoded" name="sans_affiliation_encoded" /></label>
-   		  <label>Affiliation &eacute;cole<br /><g:CheckBox ui:field="affiliation_ecole"/> <g:Hidden ui:field="affiliation_ecole_encoded" name="affiliation_ecole_encoded" /></label>
-   		  <label>Affiliation initiation<br /><g:CheckBox ui:field="affiliation_initiation"/> <g:Hidden ui:field="affiliation_initiation_encoded" name="affiliation_initiation_encoded" /></label>
-		  <span class="{style.fraisOnRight}"><label>Affiliation Judo Qu&eacute;bec<br /><b:TextBox ui:field="affiliationFrais"  /> <g:Hidden ui:field="affiliationFrais_encoded" name="affiliation_frais_encoded" /></label></span>
-         </div>
-         <div class="{style.fourper}" style="border-bottom: 1px grey;">
-          <label>Co&ucirc;t judogi<br /><b:ListBox ui:field="produit"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></label>
-          <label id="rabais_resident_label">Rabais r&eacute;sident<br /><g:CheckBox ui:field="resident"/><g:Hidden ui:field="resident_encoded" name="resident_encoded" /></label>
-          <label id="frais_paypal_label">Frais PayPal<br /><g:CheckBox ui:field="paypal"/><g:Hidden ui:field="paypal_encoded" name="paypal_encoded" /></label>
-          <span class="{style.fraisOnRight}"><label>Autres frais<br /><b:TextBox ui:field="suppFrais"  /><g:Hidden ui:field="suppFrais_encoded" name="supp_frais_encoded" /></label></span>
-        </div>
-        <div class="{style.fourper}">
-          <label>Paiement complet&eacute;<br /><g:CheckBox ui:field="solde"/><g:Hidden ui:field="solde_encoded" name="solde_encoded" /></label>
-          <span class="{style.fraisOnRight}"><label>Frais total<br /><b:TextBox ui:field="frais"  /><g:Hidden ui:field="frais_encoded" name="frais_encoded" /></label></span>
-        </div>
-       </fieldset>
-      <b:Button ui:field='saveAndReturnClientButton'>Sauvegarder et retourner</b:Button>
-      <b:Button ui:field='saveClientButton'>Sauvegarder</b:Button>
-      <span style="position: absolute; right:40%"><b:Button ui:field='deleteClientButton'>Supprimer</b:Button></span>
-      <b:Button ui:field='discardClientButton' addStyleNames='{style.floatRight}'>Annuler</b:Button>
-      </form>
+		<b:FormGroup addStyleNames="{style.fourper}">
+		  <b:Column size="XS_4"><b:FormLabel for="cours">Cours</b:FormLabel><b:ListBox ui:field="cours"/><g:Hidden ui:field="cours_encoded" name="cours_encoded" /></b:Column>
+		  <b:Column size="XS_2"><b:FormLabel for="no_sessions"># sessions</b:FormLabel><b:ListBox ui:field="no_sessions"/><g:Hidden ui:field="no_sessions_encoded" name="no_sessions_encoded" /></b:Column>
+		  <b:Column size="XS_2" addStyleNames="pull-right"><b:FormLabel for="categorieFrais">Frais cours</b:FormLabel><b:TextBox ui:field="categorieFrais" /> <g:Hidden ui:field="categorieFrais_encoded" name="categorie_frais_encoded"/></b:Column>
 
-      <iframe style="display:none" name="eatFormSubmitResults" />
+		</b:FormGroup>
+		<b:FormGroup addStyleNames="{style.fourper}">
+		  <b:Column size="XS_2"><b:FormLabel for="escompte">Escompte</b:FormLabel><b:ListBox ui:field="escompte"/><g:Hidden ui:field="escompte_encoded" name="escompte_encoded"/></b:Column>
+		  <b:Column size="XS_3"><b:FormLabel for="cas_special_note">Raison cas sp&eacute;cial</b:FormLabel><b:TextBox ui:field="cas_special_note"/><g:Hidden ui:field="cas_special_note_encoded" name="cas_special_note_encoded"/></b:Column>
+		  <b:Column size="XS_2"><b:FormLabel for="cas_special_pct">% escompte</b:FormLabel><b:TextBox ui:field="cas_special_pct" addStyleNames="{style.six-em}"  /><g:Hidden ui:field="cas_special_pct_encoded" name="cas_special_pct_encoded"/></b:Column>
+		  <b:Column size="XS_2" addStyleNames="pull-right"><b:FormLabel for="escompteFrais"> - escompte</b:FormLabel><b:TextBox ui:field="escompteFrais"  /><g:Hidden ui:field="escompteFrais_encoded" name="escompte_special_encoded"/></b:Column>
+		</b:FormGroup>
+
+		<b:FormGroup addStyleNames="{style.fourper}">
+		  <b:Column size="XS_3"><b:FormLabel for="sans_affiliation">Déjà affili&eacute; Judo Qu&eacute;bec</b:FormLabel><g:HTMLPanel/><b3:ToggleSwitch ui:field="sans_affiliation" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="sans_affiliation_encoded" name="sans_affiliation_encoded" /></b:Column>
+		  <b:Column size="XS_2"><b:FormLabel for="affiliation_ecole">Affiliation &eacute;cole</b:FormLabel><b3:ToggleSwitch ui:field="affiliation_ecole" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="affiliation_ecole_encoded" name="affiliation_ecole_encoded" /></b:Column>
+		  <b:Column size="XS_2"><b:FormLabel for="affiliation_initiation">Affiliation initiation</b:FormLabel><b3:ToggleSwitch ui:field="affiliation_initiation" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="affiliation_initiation_encoded" name="affiliation_initiation_encoded" /></b:Column>
+		  <b:Column size="XS_2" addStyleNames="pull-right"><b:FormLabel for="affiliationFrais">Affiliation JQ</b:FormLabel><b:TextBox ui:field="affiliationFrais"/> <g:Hidden ui:field="affiliationFrais_encoded" name="affiliation_frais_encoded" /></b:Column>
+		</b:FormGroup>
+		<b:FormGroup addStyleNames="{style.fourper} ">
+		  <b:Column size="XS_3"><b:FormLabel for="judogi">Co&ucirc;t judogi</b:FormLabel><b:ListBox ui:field="produit"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></b:Column>
+		  <b:Column size="XS_2" ui:field="rabais_resident_label"><b:FormLabel for="resident">Rabais r&eacute;sident</b:FormLabel><b3:ToggleSwitch ui:field="resident" onIcon="CHECK" offIcon="TIMES"/><g:Hidden ui:field="resident_encoded" name="resident_encoded" /></b:Column>
+		  <b:Column size="XS_2" ui:field="frais_paypal_label"><b:FormLabel for="paypal">Frais PayPal</b:FormLabel><b3:ToggleSwitch ui:field="paypal" onIcon="CHECK" offIcon="TIMES"/><g:Hidden ui:field="paypal_encoded" name="paypal_encoded" /></b:Column>
+		  <b:Column size="XS_2" addStyleNames="pull-right"><b:FormLabel for="suppFrais">Autres frais</b:FormLabel><b:TextBox ui:field="suppFrais"  /><g:Hidden ui:field="suppFrais_encoded" name="supp_frais_encoded" /></b:Column>
+		</b:FormGroup>
+		<b:FormGroup addStyleNames="{style.fourper}">
+		  <b:Column size="XS_2"><b:FormLabel for="solde">Paiement complet&eacute;</b:FormLabel><b3:ToggleSwitch ui:field="solde" onIcon="CHECK" offIcon="TIMES"/><g:Hidden ui:field="solde_encoded" name="solde_encoded" /></b:Column>
+		  <b:Column size="XS_2" addStyleNames="pull-right"><b:FormLabel for="frais">Frais total</b:FormLabel><b:TextBox ui:field="frais"  /><g:Hidden ui:field="frais_encoded" name="frais_encoded" /></b:Column>
+		</b:FormGroup>
+       </b:FieldSet>
+       <b:Row addStyleNames="hidden-print">
+	 <b:Column size="XS_3"><b:Button ui:field='saveAndReturnClientButton'>Sauvegarder et retourner</b:Button></b:Column>
+	 <b:Column size="XS_3"><b:Button ui:field='saveClientButton'>Sauvegarder</b:Button></b:Column>
+	 <g:FlowPanel addStyleNames="col-xs-offset-5"><b:Column size="XS_2"><b:Button ui:field='deleteClientButton'>Supprimer</b:Button></b:Column></g:FlowPanel>
+	 <b:Column size="XS_2" addStyleNames="pull-right"><b:Button ui:field='discardClientButton' addStyleNames='{style.floatRight}'>Annuler</b:Button></b:Column>
+       </b:Row>
+    </g:HTMLPanel></b:Form>
 
       <g:HTMLPanel ui:field="blurb" styleName="blurb" />
 

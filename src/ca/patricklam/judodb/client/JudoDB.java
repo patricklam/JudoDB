@@ -120,8 +120,6 @@ public class JudoDB implements EntryPoint {
     final Anchor normalListes = new Anchor("Voir listes");
     final Anchor returnToMainFromListes = new Anchor("Retour page principale");
 
-    ArrayList<Widget> allWidgets = new ArrayList<Widget>();
-
     /* state */
     List<ClientSummary> allClients;
     JsArray<ClubSummary> allClubs;
@@ -188,8 +186,6 @@ public class JudoDB implements EntryPoint {
 
     private void _switchMode(Mode newMode) {
         History.newItem(newMode.toString(), false);
-        for (Widget w : allWidgets)
-            w.setVisible(false);
 
         switch (newMode.am) {
         case EDIT_CLIENT:
@@ -390,15 +386,6 @@ public class JudoDB implements EntryPoint {
         EditClientHandler ehandler = new EditClientHandler(null, -1);
         mainLayoutPanel.nouveauButton.addClickHandler(ehandler);
 
-
-        // initialize sets of widgets (subpanels)
-        allWidgets.add(mainLayoutPanel.editClient);
-        allWidgets.add(mainLayoutPanel.lists);
-        allWidgets.add(mainLayoutPanel.config);
-
-        // (anchors)
-        allWidgets.add(mainLayoutPanel.dropDownUserClubs);
-
         // history handlers
         History.addValueChangeHandler(new ValueChangeHandler<String>() {
             public void onValueChange(ValueChangeEvent<String> event) {
@@ -519,7 +506,7 @@ public class JudoDB implements EntryPoint {
 
     boolean pendingRetrieveClubList = false;
     void populateClubList(boolean tousOK, DropDownMenu dropDownUserClubs, ClubListHandlerFactory clhf) {
-        // note: tousOK is false when called from e.g. ClientWidget
+        // note: tousOK is false when called from ClientWidget
 
         if (allClubs == null) {
             if (pendingRetrieveClubList) return;
@@ -641,18 +628,23 @@ public class JudoDB implements EntryPoint {
             createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
                         loadClubListResults
-                            (tousOK,
-                             JsonUtils.<JsArray<ClubSummary>>safeEval(s));
+                            (JsonUtils.<JsArray<ClubSummary>>safeEval(s));
                     }
                 });
         retrieve(url, rc);
     }
 
-    private void loadClubListResults(boolean tousOK, JsArray<ClubSummary> clubs) {
-        firstSearchResultToDisplay = 0;
+    private void loadClubListResults(JsArray<ClubSummary> clubs) {
         this.allClubs = clubs;
-        populateClubList(tousOK, mainLayoutPanel.dropDownUserClubs, new MainClubListHandlerFactory());
+        refreshClubListResults();
+    }
+
+    void refreshClubListResults() {
+        firstSearchResultToDisplay = 0;
+        populateClubList(true, mainLayoutPanel.dropDownUserClubs, new MainClubListHandlerFactory());
         populateClubList(true, cfWidget.dropDownUserClubs, cfWidget.new ConfigClubListHandlerFactory());
+        if (clientWidget != null)
+            populateClubList(false, clientWidget.dropDownUserClubs, clientWidget.new ClientClubListHandlerFactory());
         pendingRetrieveClubList = false;
     }
 

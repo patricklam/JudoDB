@@ -1,3 +1,9 @@
+.clubBox {
+ position:absolute;
+ top: 0em; right: 2em;
+ width: 20em;
+}
+
 /* grades box */
 
 .gradeHistory {
@@ -42,14 +48,16 @@ option {
   margin-right: 2em;
 }
 
-input.radio, input.checkbox { 
+/*input.radio, input.checkbox { 
   margin-right: .5em;
-}
+}*/
 
 /* Create a bit of padding for text inputs and selects */
-input.text, input.button, textarea, select {
+/*input.text, input.button, textarea, select {
   padding: .2em;
-}
+}*/
+
+.six-em { width: 6em; }
 
 .compactform { overflow: hidden; } 
 .compactform div, 
@@ -57,14 +65,10 @@ input.text, input.button, textarea, select {
 .compactform input, 
 .compactform select, 
 .compactform textarea {
-  float: left;
 }
 .compactform input.text, 
 .compactform select, 
 .compactform textarea {
-  /* set width: auto to allow form element content 
-  to set width otherwise 90% is a good setting */
-  width: auto; /* determines space between form elements */
 }
 /* Increase width of elements in twoper 
    columns to provide better alignment */
@@ -99,22 +103,22 @@ input.text, input.button, textarea, select {
 }
  
 /* Compact layout - Set item width within rows */
-.oneper label, .oneper div     { width: 99%; } /* can't be 100%, IE bug */
+/*.oneper label, .oneper div     { width: 99%; }*/ /* can't be 100%, IE bug */
 .twoper label, .twoper div     { width: 46%; }
 .threeper label, .threeper div { width: 32%; }
-.fourper label, .fourper div   { width: 23%; }
-.fiveper label, .fiveper div   { width: 19%; }
+/*.fourper label, .fourper div   { width: 23%; }*/
+/*.fiveper label, .fiveper div   { width: 19%; }*/
 .sixper label, .sixper div     { width: 15%; }
 .sevenper label, .sevenper div { width: 13%; }
 .eightper label, .eightper div { width: 11%; }
 .nineper label, .nineper div   { width: 10%; }
 .tenper label, .tenper div     { width: 8.7%; }
  
-.oneper label, .oneper div, 
+/*.oneper label, .oneper div, */
 .twoper label, .twoper div, 
 .threeper label, .threeper div, 
-.fourper label, .fourper div, 
-.fiveper label, .fiveper div, 
+/*.fourper label, .fourper div, */
+/*.fiveper label, .fiveper div, */
 .sixper label, .sixper div, 
 .sevenper label, .sevenper div, 
 .eightper label, .eightper div, 
@@ -126,6 +130,10 @@ input.text, input.button, textarea, select {
   border-collapse: collapse;
 }
 
+.oneper label, .oneper div {}
+.fourper label, .fourper div {}
+.fiveper label, .fiveper div {}
+
 .fraisOnRight label {
   padding-right: 2em;
   float: right;
@@ -133,6 +141,10 @@ input.text, input.button, textarea, select {
 
 .floatRight {
   float: right;
+}
+
+.border-bottom {
+  border-bottom: 1px grey;
 }
 
 /* end form stuff */
