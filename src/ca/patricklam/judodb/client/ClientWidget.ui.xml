@@ -25,7 +25,6 @@
 		  </b:FormGroup>
                 </b:FieldSet>
 
-<!-- <g:Anchor ui:field="copysib" addStyleNames="hidden-print">&nbsp;(copier)</g:Anchor> -->
 		<b:FieldSet><b:Legend>Adresse</b:Legend>
 		<b:FormGroup>
 		  <b:Column size="XS_10"><b:FormLabel for="adresse" addStyleNames="hidden-print">Adresse</b:FormLabel><b:TextBox ui:field="adresse" name="adresse" /></b:Column>

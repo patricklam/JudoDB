@@ -300,7 +300,7 @@ public class ConfigWidget extends Composite {
 	indicatif_regional.setText(cs.getIndicatifRegional());
 	escompte_resident.setText(cs.getEscompteResident());
 	supplement_prorata.setText(cs.getSupplementProrata());
-	default_prorata.setValue(cs.getDefaultProrata());
+	default_prorata.setValue(cs.getEnableProrata());
         afficher_paypal.setValue(cs.getAfficherPaypal());
     }
     /* --- end club tab --- */

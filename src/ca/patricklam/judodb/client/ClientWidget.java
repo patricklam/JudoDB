@@ -15,7 +15,6 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.FormElement;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -47,6 +46,7 @@ import com.google.gwt.http.client.Response;
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
 import org.gwtbootstrap3.client.ui.Column;
+import org.gwtbootstrap3.client.ui.Form;
 import org.gwtbootstrap3.client.ui.Label;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
@@ -171,7 +171,7 @@ public class ClientWidget extends Composite {
     @UiField Button dropDownUserClubsButton;
     @UiField DropDownMenu dropDownUserClubs;
 
-    private final FormElement clientform;
+    @UiField Form clientform;
 
     private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php";
     private static final String PUSH_ONE_CLIENT_URL = JudoDB.BASE_URL + "push_one_client.php";
@@ -195,12 +195,12 @@ public class ClientWidget extends Composite {
     }
     private static final BlurbTemplate BLURB = GWT.create(BlurbTemplate.class);
 
-    private ClubPrix[] clubPrix;
+    private List<ClubPrix> clubPrix = new ArrayList<>();
     /** A list of cours as retrieved from the server.
      * Must stay in synch with the ListBox field cours. */
-    private List<CoursSummary> backingCours = new ArrayList<CoursSummary>();
-    private List<EscompteSummary> escompteSummaries = new ArrayList<EscompteSummary>();
-    private List<ProduitSummary> produitSummaries = new ArrayList<ProduitSummary>();
+    private List<CoursSummary> backingCours = new ArrayList<>();
+    private List<EscompteSummary> escompteSummaries = new ArrayList<>();
+    private List<ProduitSummary> produitSummaries = new ArrayList<>();
     private ClientData cd;
     private String guid;
     private int currentServiceNumber;
@@ -246,9 +246,7 @@ public class ClientWidget extends Composite {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
 
-        clientform = FormElement.as(clientMain.getElementById("clientform"));
-        // xxx: set action, form targe (eatFormSubmitResults)
-        //clientform.setAction(PUSH_ONE_CLIENT_URL);
+        clientform.setAction(PUSH_ONE_CLIENT_URL);
         deleted.setValue("");
 
         no_sessions.addItem("1");
@@ -299,6 +297,7 @@ public class ClientWidget extends Composite {
         grade.addChangeHandler(recomputeHandler);
         date_inscription.addChangeHandler(changeSaisonHandler);
         prorata.addValueChangeHandler(recomputeValueHandler);
+        cours.addChangeHandler(recomputeHandler);
         no_sessions.addChangeHandler(recomputeHandler);
         escompte.addChangeHandler(changeEscompteHandler);
         cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
@@ -975,7 +974,7 @@ public class ClientWidget extends Composite {
     private void regularizeEscompte() {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-        double dCategorieFrais = CostCalculator.proratedFraisCours(currentSession, cd, sd, cs, clubPrix);
+        double dCategorieFrais = CostCalculator.proratedFraisCours(currentSession, cd, sd, cs, backingCours, clubPrix);
 
         if (CostCalculator.isCasSpecial(sd,
 					CostCalculator.getApplicableEscompte(sd, escompteSummaries))) {
@@ -1091,6 +1090,16 @@ public class ClientWidget extends Composite {
         }
     }
 
+    private void disableProrataPerConfig(ClubSummary cs) {
+        if (cs == null) return;
+        boolean showProrata = cs.getEnableProrata();
+        if (!showProrata) {
+            prorata.setEnabled(false);
+        } else {
+            prorata.setEnabled(true);
+        }
+    }
+
     private void updateDynamicFields() {
         saveClientData();
         ServiceData sd = cd.getServices().get(currentServiceNumber);
@@ -1099,10 +1108,11 @@ public class ClientWidget extends Composite {
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
         hideEscompteResidentIfUnneeded(cs);
         hidePaypalIfDisabled(cs);
+        disableProrataPerConfig(cs);
 
         ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
 
-        CostCalculator.recompute(currentSession, cd, sd, cs, ps, prorata.getValue(), clubPrix, escompteSummaries);
+        CostCalculator.recompute(currentSession, cd, sd, cs, backingCours, ps, prorata.getValue(), clubPrix, escompteSummaries);
 
         /* view stuff here */
         Display d = Display.NONE;
@@ -1326,8 +1336,6 @@ public class ClientWidget extends Composite {
             return;
         }
 
-        clubPrix = null;
-
         String url = JudoDB.PULL_CLUB_PRIX_URL +
             "?numero_club=" + numero_club +
             "&session_seqno=" + currentSession.getSeqno();
@@ -1337,9 +1345,9 @@ public class ClientWidget extends Composite {
                     public void eval(String s) {
                         gotPrix = true;
                         JsArray<ClubPrix> cp = JsonUtils.<JsArray<ClubPrix>>safeEval(s);
-                        clubPrix = new ClubPrix[cp.length()];
+                        clubPrix.clear();
                         for (int i = 0; i < cp.length(); i++)
-                            clubPrix[i] = cp.get(i);
+                            clubPrix.add(cp.get(i));
                     }
                 });
         jdb.retrieve(url, rc);

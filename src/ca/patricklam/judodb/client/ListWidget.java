@@ -403,7 +403,7 @@ public class ListWidget extends Composite {
             ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
 
             // XXX getPrix on ListWidget as well
-            CostCalculator.recompute(currentSession, cd, sd, cs, ps, true, null, escompteSummaries);
+            CostCalculator.recompute(currentSession, cd, sd, cs, backingCours, ps, true, null, escompteSummaries);
         }
     }
 
@@ -504,7 +504,7 @@ public class ListWidget extends Composite {
             ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
             ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
             // XXX getPrix on ListWidget as well
-            CostCalculator.recompute(currentSession, cd, sd, cs, ps, prorata.getValue(), null, escompteSummaries);
+            CostCalculator.recompute(currentSession, cd, sd, cs, backingCours, ps, prorata.getValue(), null, escompteSummaries);
             // this is potentially slow; use a hash map instead.
             for (CoursSummary cc : backingCours) {
                 if (cc.getId().equals(sd.getCours()))
@@ -557,7 +557,7 @@ public class ListWidget extends Composite {
        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
        ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
        // XXX clubPrix on ListWidget
-       CostCalculator.recompute(currentSession, cd, sd, cs, ps, prorata.getValue(), null, escompteSummaries);
+       CostCalculator.recompute(currentSession, cd, sd, cs, backingCours, ps, prorata.getValue(), null, escompteSummaries);
        if (sd != null) {
            dv += Constants.currencyFormat.format(Double.parseDouble(sd.getFrais()));
        }
