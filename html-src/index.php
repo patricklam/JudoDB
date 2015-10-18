@@ -74,11 +74,11 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] != "yes")
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta name="gwt:property" content="locale=fr_CA">
 
-	<link type="text/css" rel="stylesheet" href="screen.css" media="screen">
-	<link type="text/css" rel="stylesheet" href="print.css" media="print">
-
     <title>Facturation Judo Qu&eacute;bec</title>
     <script type="text/javascript" language="javascript" src="judodb/judodb.nocache.js"></script>
+
+    <link type="text/css" rel="stylesheet" href="screen.css" media="screen">
+    <link type="text/css" rel="stylesheet" href="print.css" media="print">
   </head>
 
   <body>

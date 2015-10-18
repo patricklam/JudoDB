@@ -189,7 +189,7 @@ public class ClientWidget extends Composite {
            "Seuls les frais de cours correspondant à la période restante sont remboursables. "+
            "En cas d'annulation par le participant, un crédit pourra être émis par le Club, "+
            "pour les frais de cours correspondant à la période restante.</p>"+
-           "<p>Signature {1}: <span style='float:right'>Date: _________</span></p>"+
+           "<p>Signature {1}: <span style='float:right'>Date: _________________</span></p>"+
            "<p>Signature résponsable du club:  <span style='float:right'>Date: {2}</span></p>")
            SafeHtml blurb(String nom, String membreOuParent, String today, String clubName);
     }

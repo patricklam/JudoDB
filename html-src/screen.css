@@ -1,4 +1,3 @@
-
 /* client widget stuff which gets redefined for print */
 .cid {
  position:absolute;
@@ -6,14 +5,10 @@
  font-size: xx-large;
 }
 
-.blurb {
-  display: none;
-}
-
 .darkBG {
-  background-color: #eee;
+ background-color: #eee;
 }
 
-.h1 {
-  margin-left: 1em;
+.blurb {
+ display: none;
 }
