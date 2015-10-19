@@ -20,8 +20,6 @@
  padding-right:1em;
 }
 
-/* Inspired by http://2tbsp.com/content/flexible_and_efficient_htmlcss_form_layout */
-
 /* Zero out padding and margin, adjust where needed later */
 form, fieldset, label, input, .checkbox, textarea, select, option, form div {
   margin: 0;
@@ -48,59 +46,8 @@ option {
   margin-right: 2em;
 }
 
-/*input.radio, input.checkbox { 
-  margin-right: .5em;
-}*/
-
-/* Create a bit of padding for text inputs and selects */
-/*input.text, input.button, textarea, select {
-  padding: .2em;
-}*/
-
 .six-em { width: 6em; }
-
-.compactform { overflow: hidden; } 
-.compactform div, 
-.compactform label, 
-.compactform input, 
-.compactform select, 
-.compactform textarea {
-}
-.compactform input.text, 
-.compactform select, 
-.compactform textarea {
-}
-/* Increase width of elements in twoper 
-   columns to provide better alignment */
-.compactform .twoper input.text, 
-.compactform .twoper select, 
-.compactform .twoper textarea {
-  width: 95%;
-}
-.compactform div {
-  width: 99%;
-  margin-bottom: 0.5em; /* space between rows */
-  clear: both;
-}
-/* Nested divs shouldn't clear floated elements */
-/* keeps nested divs from compounding margin value */
-.compactform div div {
-  margin-bottom: 0; 
-  clear: none;
-}
-/* Nested div label contents should determine their own width */
-.compactform div div label {
-  width: auto;
-  white-space: normal;
-  /* unccomment to stack form inputs inside a row */
-  /*clear: left;*/
-  margin-right: 1em;
-}
-/* Fix paragraph white space in Safari */
-.compactform div div p {
-  margin: 0;
-  padding: 0;
-}
+.nine-em { width: 9em; }
  
 .fraisOnRight label {
   padding-right: 2em;
