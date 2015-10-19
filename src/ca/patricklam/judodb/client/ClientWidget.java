@@ -699,6 +699,7 @@ public class ClientWidget extends Composite {
         gd.setValue(dateGrade); /*gd.setVisibleLength(10);*/
         gradeTable.setWidget(row, 0, g);
         gradeTable.setWidget(row, 1, gd);
+
         ((TextBox)gradeTable.getWidget(row, 0)).addChangeHandler(ensureGradeSpace);
         ((TextBox)gradeTable.getWidget(row, 1)).addChangeHandler(ensureGradeSpace);
     }

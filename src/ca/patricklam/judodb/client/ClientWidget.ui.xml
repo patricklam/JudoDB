@@ -120,7 +120,7 @@
 
       <g:HTMLPanel ui:field="blurb" styleName="blurb" />
 
-	  <g:HTMLPanel ui:field="gradeHistory" styleName="{style.gradeHistory}">
+      <g:HTMLPanel ui:field="gradeHistory" styleName="{style.gradeHistory}">
        <div class="hidden-print">
         <h4 id="gradeHeader">Histoire grades</h4>
         <g:Grid ui:field="gradeTable" />
