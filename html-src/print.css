@@ -88,7 +88,8 @@ input.text, input.button, textarea, select {
 }
 
 .form-control[name="nom"], .form-control[name="prenom"], .form-control[name="sexe"] {
-  font-size: x-large;
+  font-size: large;
+  font-weight: bold;
 }
 
 .form-control[name="ddn"] {
