@@ -45,6 +45,7 @@ import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 
 import org.gwtbootstrap3.client.ui.Button;
+import org.gwtbootstrap3.client.ui.ButtonGroup;
 import org.gwtbootstrap3.client.ui.Label;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
@@ -116,7 +117,51 @@ public class ListWidget extends Composite {
     private int pushTries;
 
     @UiField ListBox sessionListBox;
+    @UiField ButtonGroup dropDownUserClubsButtonGroup;
+    @UiField Button dropDownUserClubsButton;
     @UiField DropDownMenu dropDownUserClubs;
+
+    void selectClub(ClubSummary club) {
+        if (club == null)
+            dropDownUserClubsButton.setText(JudoDB.TOUS);
+        else
+            dropDownUserClubsButton.setText(club.getClubText());
+
+        if (jdb.isClubSelected()) {
+            retrieveSessions(jdb.getSelectedClub());
+            actuallyHandleClubChange();
+        }
+    }
+
+    private void actuallyHandleClubChange() {
+        if (!jdb.isClubSelected()) return;
+
+        if (!gotSessions) {
+            new Timer() {
+                public void run() { actuallyHandleClubChange(); }
+            }.schedule(100);
+            return;
+        }
+
+        coursHandler.generateCoursList();
+        showList();
+    }
+
+    class ListClubListHandlerFactory implements JudoDB.ClubListHandlerFactory {
+        public ClickHandler instantiate(ClubSummary s) {
+            return new ClubListHandler(s);
+        }
+    }
+
+    class ClubListHandler implements ClickHandler {
+        final ClubSummary club;
+
+        ClubListHandler(ClubSummary club) { this.club = club; }
+
+        @Override public void onClick(ClickEvent e) {
+            selectClub(club);
+        }
+    }
 
     private class Columns {
         final static int CID = 0;
@@ -168,31 +213,6 @@ public class ListWidget extends Composite {
       }
     }
 
-    class ClubListHandler implements ClickHandler {
-        final ClubSummary club;
-
-        ClubListHandler(ClubSummary club) { this.club = club; }
-
-        public void onClick(ClickEvent e) {
-            jdb.selectClub(club);
-            retrieveSessions(jdb.getSelectedClub());
-            actuallyHandleChange();
-        }
-
-        public void actuallyHandleChange() {
-            if (!gotSessions) {
-                new Timer() {
-                    public void run() { actuallyHandleChange(); }
-                }.schedule(100);
-                return;
-            }
-
-            coursHandler.generateCoursList();
-            showList();
-        }
-    }
-
-    final Widget[] allListModeWidgets;
     final HashMap<Mode, Widget[]> listModeVisibility = new HashMap<Mode, Widget[]>();
 
     private Mode mode = Mode.NORMAL;
@@ -217,11 +237,8 @@ public class ListWidget extends Composite {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
         listForm.addStyleName("hidden-print");
-
-        allListModeWidgets = new Widget[] { jdb.filtrerListes, jdb.editerListes, jdb.ftListes,
-                                            jdb.clearXListes, jdb.normalListes,
-                                            ft303_controls, edit_controls, filter_controls,
-                                            impot_controls, sessionListBox, save, quit, dropDownUserClubs };
+        jdb.populateClubList(true, dropDownUserClubs, new ListClubListHandlerFactory());
+        selectClub(jdb.getSelectedClub());
 
         listModeVisibility.put(Mode.EDIT, new Widget[]
                 { jdb.normalListes, jdb.filtrerListes,
@@ -303,8 +320,6 @@ public class ListWidget extends Composite {
 
         listEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
 
-        // XXX
-        jdb.populateClubList(true, dropDownUserClubs, null);
         retrieveSessions(jdb.getSelectedClub());
         coursHandler.generateCoursList();
 
@@ -952,8 +967,6 @@ public class ListWidget extends Composite {
     public void switchMode(Mode m) {
         this.mode = m;
 
-        for (Widget w : allListModeWidgets)
-            w.setVisible(false);
         for (Widget w : listModeVisibility.get(m))
             w.setVisible(true);
 
@@ -1045,6 +1058,8 @@ public class ListWidget extends Composite {
     /* --- network functions --- */
     private boolean gotSessions = false;
     public void retrieveSessions(ClubSummary cs) {
+        if (cs == null) return;
+
         gotSessions = false;
         String url = JudoDB.PULL_SESSIONS_URL;
         url += "?club_id="+cs.getId();

@@ -36,11 +36,20 @@ table {
 td {
   padding: 0.3em;
 }
+
+.clubBox {
+ position:absolute;
+ top: 0em; right: 2em;
+ width: 20em;
+}
 </ui:style>
     
 <g:HTMLPanel>
 	<b:ListBox ui:field="sessionListBox" visibleItemCount="1" styleName="{style.session}" />
-	<b:DropDownMenu ui:field="dropDownUserClubs" styleName="{style.userclub}" />
+	<b:ButtonGroup ui:field='dropDownUserClubsButtonGroup' addStyleNames="{style.clubBox} hidden-print">
+	  <b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
+	  <b:DropDownMenu ui:field='dropDownUserClubs' />
+	</b:ButtonGroup>
 	<h1 id="stdTitle" class="hidden-print">Listes des cours</h1>
 
 	<g:FormPanel ui:field="listForm" method="post">

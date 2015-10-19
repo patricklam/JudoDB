@@ -132,7 +132,7 @@ public class JudoDB implements EntryPoint {
     private ClientWidget clientWidget;
 
     /* view lists stuff */
-    private ListWidget l;
+    private ListWidget listWidget;
 
     /* config management stuff */
     private ConfigWidget cfWidget;
@@ -203,50 +203,46 @@ public class JudoDB implements EntryPoint {
         }
     }
 
+    private void hideAllSubpanels() {
+        mainLayoutPanel.editClient.setVisible(false);
+        mainLayoutPanel.lists.setVisible(false);
+        mainLayoutPanel.config.setVisible(false);
+        mainLayoutPanel.mainPanel.setVisible(false);
+    }
+
     private void _switchMode_editClient (int cid) {
         mainLayoutPanel.editClient.clear();
         this.clientWidget = new ClientWidget(cid, this);
         mainLayoutPanel.editClient.add(this.clientWidget);
 
+        hideAllSubpanels();
         mainLayoutPanel.editClient.setVisible(true);
-        mainLayoutPanel.lists.setVisible(false);
-        mainLayoutPanel.config.setVisible(false);
-        mainLayoutPanel.mainPanel.setVisible(false);
     }
 
     public void _switchMode_viewLists() {
-        if (this.l == null) {
-            this.l = new ListWidget(this);
-            mainLayoutPanel.lists.add(this.l);
+        if (this.listWidget == null) {
+            this.listWidget = new ListWidget(this);
+            mainLayoutPanel.lists.add(this.listWidget);
         }
+        this.listWidget.selectClub(selectedClub);
 
-        // mainLayoutPanel.dock.remove(mainLayoutPanel.mainPanel);
-        // mainLayoutPanel.dock.remove(mainLayoutPanel.editClient);
-        // mainLayoutPanel.dock.remove(mainLayoutPanel.config);
-        // mainLayoutPanel.dock.add(mainLayoutPanel.lists);
-
+        hideAllSubpanels();
         mainLayoutPanel.lists.setVisible(true);
 
-        this.l.switchMode(ListWidget.Mode.NORMAL);
+        this.listWidget.switchMode(ListWidget.Mode.NORMAL);
     }
 
     public void _switchMode_config() {
         this.cfWidget.selectClub(selectedClub);
 
-        clearStatus();
-
-        mainLayoutPanel.editClient.setVisible(false);
-        mainLayoutPanel.lists.setVisible(false);
+        hideAllSubpanels();
         mainLayoutPanel.config.setVisible(true);
-        mainLayoutPanel.mainPanel.setVisible(false);
     }
 
     public void _switchMode_main() {
         clearStatus();
 
-        mainLayoutPanel.editClient.setVisible(false);
-        mainLayoutPanel.lists.setVisible(false);
-        mainLayoutPanel.config.setVisible(false);
+        hideAllSubpanels();
         mainLayoutPanel.mainPanel.setVisible(true);
 
         mainLayoutPanel.dropDownUserClubs.setVisible(true);
@@ -257,9 +253,9 @@ public class JudoDB implements EntryPoint {
 
     /** After changing any data, invalidate stored data. */
     public void invalidateListWidget() {
-        if (this.l != null) {
-            this.l.removeFromParent();
-            this.l = null;
+        if (this.listWidget != null) {
+            this.listWidget.removeFromParent();
+            this.listWidget = null;
         }
 
         if (mainLayoutPanel.searchResults != null) {
@@ -320,16 +316,15 @@ public class JudoDB implements EntryPoint {
         this.cfWidget = new ConfigWidget(this, selectedClub);
         mainLayoutPanel.config.add(this.cfWidget);
 
-        // right bar actions: main
         mainLayoutPanel.listeButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST)); }});
         mainLayoutPanel.configButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
         mainLayoutPanel.logoutButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent event) { Window.Location.assign("/logout.php"); }});
 
+        /*
         // right bar actions: list
         filtrerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
-            if (JudoDB.this.l != null) JudoDB.this.l.toggleFiltering(); }});
+            if (JudoDB.this.listWidget != null) JudoDB.this.listWidget.toggleFiltering(); }});
 
-        /*
         mainLayoutPanel.listActions.add(filtrerListes);
         mainLayoutPanel.listActions.add(new Label(""));
         editerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
@@ -643,8 +638,12 @@ public class JudoDB implements EntryPoint {
         firstSearchResultToDisplay = 0;
         populateClubList(true, mainLayoutPanel.dropDownUserClubs, new MainClubListHandlerFactory());
         populateClubList(true, cfWidget.dropDownUserClubs, cfWidget.new ConfigClubListHandlerFactory());
+        if (listWidget != null)
+            populateClubList(true, listWidget.dropDownUserClubs, 
+                             listWidget.new ListClubListHandlerFactory());
         if (clientWidget != null)
-            populateClubList(false, clientWidget.dropDownUserClubs, clientWidget.new ClientClubListHandlerFactory());
+            populateClubList(false, clientWidget.dropDownUserClubs, 
+                             clientWidget.new ClientClubListHandlerFactory());
         pendingRetrieveClubList = false;
     }
 
