@@ -122,8 +122,9 @@ public class ListWidget extends Composite {
     @UiField DropDownMenu dropDownUserClubs;
 
     void selectClub(ClubSummary club) {
+        jdb.selectClub(club);
         if (club == null)
-            dropDownUserClubsButton.setText(JudoDB.TOUS);
+            dropDownUserClubsButton.setText("---");
         else
             dropDownUserClubsButton.setText(club.getClubText());
 
@@ -191,7 +192,7 @@ public class ListWidget extends Composite {
       }
 
       void generateCoursList() {
-        if (jdb.getSelectedClubID() == null || !gotSessions) {
+        if (!jdb.isClubSelected() || !gotSessions) {
             new Timer() {
                 public void run() { generateCoursList(); }
             }.schedule(100);
@@ -205,8 +206,8 @@ public class ListWidget extends Composite {
             session_seqno = currentSession.getSeqno();
 
         String numero_club = null;
-        if (jdb.getSelectedClubID() != null)
-            numero_club = jdb.getClubSummaryByID(jdb.getSelectedClubID()).getNumeroClub();
+        if (jdb.isClubSelected())
+            numero_club = jdb.getSelectedClub().getNumeroClub();
 
         jdb.pleaseWait();
         retrieveCours(session_seqno, numero_club);
@@ -1076,7 +1077,7 @@ public class ListWidget extends Composite {
 
     private boolean gotCours = false;
     public void retrieveCours(final String session_seqno, final String numero_club) {
-        if (jdb.getSelectedClubID() == null || !gotSessions) {
+        if (!jdb.isClubSelected() || !gotSessions) {
             new Timer() {
                 public void run() { retrieveCours(session_seqno, numero_club); }
             }.schedule(100);

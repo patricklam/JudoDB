@@ -7,9 +7,16 @@
   xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
 <ui:style>
+.clubBox {
+ position:absolute;
+ top: 0em; right: 2em;
+ width: 20em;
+}
+
 .session {
-	position:absolute;
-	top:3.5em; right: 1em; margin-left: 1px;
+ position:absolute;
+ top:3.5em; right: 1em; margin-left: 1px;
+ width: 5em;
 }
 
 .userclub {
@@ -36,20 +43,14 @@ table {
 td {
   padding: 0.3em;
 }
-
-.clubBox {
- position:absolute;
- top: 0em; right: 2em;
- width: 20em;
-}
 </ui:style>
     
 <g:HTMLPanel>
-	<b:ListBox ui:field="sessionListBox" visibleItemCount="1" styleName="{style.session}" />
 	<b:ButtonGroup ui:field='dropDownUserClubsButtonGroup' addStyleNames="{style.clubBox} hidden-print">
 	  <b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
 	  <b:DropDownMenu ui:field='dropDownUserClubs' />
 	</b:ButtonGroup>
+	<b:ListBox ui:field="sessionListBox" visibleItemCount="1" addStyleNames="{style.session} hidden-print" />
 	<h1 id="stdTitle" class="hidden-print">Listes des cours</h1>
 
 	<g:FormPanel ui:field="listForm" method="post">
