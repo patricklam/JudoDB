@@ -109,7 +109,7 @@ public class JudoDB implements EntryPoint {
     int jsonRequestId = 0;
 
     /* main layout */
-    private final MainLayoutPanel mainLayoutPanel = new MainLayoutPanel();
+    private final MainPanel mainPanel = new MainPanel();
 
     /* actions */
     final Anchor filtrerListes = new Anchor("Filtrer");
@@ -204,30 +204,30 @@ public class JudoDB implements EntryPoint {
     }
 
     private void hideAllSubpanels() {
-        mainLayoutPanel.editClient.setVisible(false);
-        mainLayoutPanel.lists.setVisible(false);
-        mainLayoutPanel.config.setVisible(false);
-        mainLayoutPanel.mainPanel.setVisible(false);
+        mainPanel.editClient.setVisible(false);
+        mainPanel.lists.setVisible(false);
+        mainPanel.config.setVisible(false);
+        mainPanel.mainPanel.setVisible(false);
     }
 
     private void _switchMode_editClient (int cid) {
-        mainLayoutPanel.editClient.clear();
+        mainPanel.editClient.clear();
         this.clientWidget = new ClientWidget(cid, this);
-        mainLayoutPanel.editClient.add(this.clientWidget);
+        mainPanel.editClient.add(this.clientWidget);
 
         hideAllSubpanels();
-        mainLayoutPanel.editClient.setVisible(true);
+        mainPanel.editClient.setVisible(true);
     }
 
     public void _switchMode_viewLists() {
         if (this.listWidget == null) {
             this.listWidget = new ListWidget(this);
-            mainLayoutPanel.lists.add(this.listWidget);
+            mainPanel.lists.add(this.listWidget);
         }
         this.listWidget.selectClub(selectedClub);
 
         hideAllSubpanels();
-        mainLayoutPanel.lists.setVisible(true);
+        mainPanel.lists.setVisible(true);
 
         this.listWidget.switchMode(ListWidget.Mode.NORMAL);
     }
@@ -236,19 +236,19 @@ public class JudoDB implements EntryPoint {
         this.cfWidget.selectClub(selectedClub);
 
         hideAllSubpanels();
-        mainLayoutPanel.config.setVisible(true);
+        mainPanel.config.setVisible(true);
     }
 
     public void _switchMode_main() {
         clearStatus();
 
         hideAllSubpanels();
-        mainLayoutPanel.mainPanel.setVisible(true);
+        mainPanel.mainPanel.setVisible(true);
 
-        mainLayoutPanel.dropDownUserClubs.setVisible(true);
-        mainLayoutPanel.searchButton.setEnabled(true);
-        mainLayoutPanel.searchTextBox.setFocus(true);
-        mainLayoutPanel.searchResultsPanel.setVisible(false);
+        mainPanel.dropDownUserClubs.setVisible(true);
+        mainPanel.searchButton.setEnabled(true);
+        mainPanel.searchTextBox.setFocus(true);
+        mainPanel.searchResultsPanel.setVisible(false);
     }
 
     /** After changing any data, invalidate stored data. */
@@ -258,8 +258,8 @@ public class JudoDB implements EntryPoint {
             this.listWidget = null;
         }
 
-        if (mainLayoutPanel.searchResults != null) {
-            mainLayoutPanel.searchResults.removeAllRows();
+        if (mainPanel.searchResults != null) {
+            mainPanel.searchResults.removeAllRows();
             firstSearchResultToDisplay = 0;
         }
     }
@@ -294,67 +294,67 @@ public class JudoDB implements EntryPoint {
                 }
             });
 
-	RootPanel.get().add(mainLayoutPanel);
+	RootPanel.get().add(mainPanel);
 
         // main panel itself
-	mainLayoutPanel.versionLabel.setText(Version.VERSION);
+	mainPanel.versionLabel.setText(Version.VERSION);
 
-        mainLayoutPanel.nextResultsButton.setVisible(false);
-        mainLayoutPanel.nextResultsButton.addClickHandler(new ClickHandler() {
+        mainPanel.nextResultsButton.setVisible(false);
+        mainPanel.nextResultsButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
                 firstSearchResultToDisplay += MAX_RESULTS;
                 if (firstSearchResultToDisplay > allClients.size()) firstSearchResultToDisplay -= MAX_RESULTS;
                 displaySearchResults(); } });
-        mainLayoutPanel.prevResultsButton.setVisible(false);
-        mainLayoutPanel.prevResultsButton.addClickHandler(new ClickHandler() {
+        mainPanel.prevResultsButton.setVisible(false);
+        mainPanel.prevResultsButton.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
                 firstSearchResultToDisplay -= MAX_RESULTS;
                 if (firstSearchResultToDisplay < 0) firstSearchResultToDisplay = 0;
                 displaySearchResults(); } });
 
-        mainLayoutPanel.searchResultsPanel.setVisible(false);
+        mainPanel.searchResultsPanel.setVisible(false);
 
-        mainLayoutPanel.listeButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST)); }});
-        mainLayoutPanel.configButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
-        mainLayoutPanel.logoutButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent event) { Window.Location.assign("/logout.php"); }});
+        mainPanel.listeButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST)); }});
+        mainPanel.configButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
+        mainPanel.logoutButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent event) { Window.Location.assign("/logout.php"); }});
 
         // Focus the cursor on the name field when the app loads
-        mainLayoutPanel.searchTextBox.setFocus(true);
-        mainLayoutPanel.searchTextBox.selectAll();
+        mainPanel.searchTextBox.setFocus(true);
+        mainPanel.searchTextBox.selectAll();
 
         // Add a handler to send the name to the server
         SearchHandler shandler = new SearchHandler();
-        mainLayoutPanel.searchButton.addClickHandler(shandler);
+        mainPanel.searchButton.addClickHandler(shandler);
 
         // Add a handler for "nouveau client"
         EditClientHandler ehandler = new EditClientHandler(null, -1);
-        mainLayoutPanel.nouveauButton.addClickHandler(ehandler);
+        mainPanel.nouveauButton.addClickHandler(ehandler);
 
         // config widget
         this.cfWidget = new ConfigWidget(this, selectedClub);
-        mainLayoutPanel.config.add(this.cfWidget);
+        mainPanel.config.add(this.cfWidget);
 
         /*
         // right bar actions: list
         filtrerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             if (JudoDB.this.listWidget != null) JudoDB.this.listWidget.toggleFiltering(); }});
 
-        mainLayoutPanel.listActions.add(filtrerListes);
-        mainLayoutPanel.listActions.add(new Label(""));
+        mainPanel.listActions.add(filtrerListes);
+        mainPanel.listActions.add(new Label(""));
         editerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             if (JudoDB.this.l != null) {
               JudoDB.this.l.switchMode(ListWidget.Mode.EDIT);
             }
         }});
-        mainLayoutPanel.listActions.add(editerListes);
-        mainLayoutPanel.listActions.add(new Label(""));
+        mainPanel.listActions.add(editerListes);
+        mainPanel.listActions.add(new Label(""));
         ftListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
           if (JudoDB.this.l != null) {
               JudoDB.this.l.switchMode(ListWidget.Mode.FT);
           }
         }});
-        mainLayoutPanel.listActions.add(ftListes);
-        mainLayoutPanel.listActions.add(new Label(""));
+        mainPanel.listActions.add(ftListes);
+        mainPanel.listActions.add(new Label(""));
         impotListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             if (JudoDB.this.l != null) {
                 JudoDB.this.l.switchMode(ListWidget.Mode.IMPOT);
@@ -369,18 +369,18 @@ public class JudoDB implements EntryPoint {
         /*
         clearXListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             if (JudoDB.this.l != null) JudoDB.this.l.clearX(); }});
-        mainLayoutPanel.listActions.add(clearXListes);
-        mainLayoutPanel.listActions.add(new Label(""));
+        mainPanel.listActions.add(clearXListes);
+        mainPanel.listActions.add(new Label(""));
         normalListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
            if (JudoDB.this.l != null) {
               JudoDB.this.l.switchMode(ListWidget.Mode.NORMAL);
             }
         }});
-        mainLayoutPanel.listActions.add(normalListes);
-        mainLayoutPanel.listActions.add(new Label(""));
+        mainPanel.listActions.add(normalListes);
+        mainPanel.listActions.add(new Label(""));
         returnToMainFromListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.MAIN)); }});
-        mainLayoutPanel.listActions.add(returnToMainFromListes);
-        mainLayoutPanel.listActions.add(new Label(""));
+        mainPanel.listActions.add(returnToMainFromListes);
+        mainPanel.listActions.add(new Label(""));
         */
 
         // history handlers
@@ -401,8 +401,8 @@ public class JudoDB implements EntryPoint {
     /* --- client search UI functions --- */
 
     private void loadClientListResults(JsArray<ClientSummary> allClients, boolean display) {
-        searchString = removeAccents(mainLayoutPanel.searchTextBox.getText());
-        mainLayoutPanel.searchResults.removeAllRows();
+        searchString = removeAccents(mainPanel.searchTextBox.getText());
+        mainPanel.searchResults.removeAllRows();
         firstSearchResultToDisplay = 0;
         this.allClients = new ArrayList<ClientSummary>();
 	for (int i = 0; i < allClients.length(); i++) {
@@ -423,17 +423,17 @@ public class JudoDB implements EntryPoint {
     private void displaySearchResults() {
         int resultCount = 0, displayedCount = 0;
 
-        mainLayoutPanel.nextResultsButton.setVisible(false);
-        mainLayoutPanel.prevResultsButton.setVisible(false);
+        mainPanel.nextResultsButton.setVisible(false);
+        mainPanel.prevResultsButton.setVisible(false);
 
         if (firstSearchResultToDisplay != 0)
-            mainLayoutPanel.prevResultsButton.setVisible(true);
+            mainPanel.prevResultsButton.setVisible(true);
 
-        mainLayoutPanel.searchResults.removeAllRows();
+        mainPanel.searchResults.removeAllRows();
         boolean bailOnNextIteration = false;
         for (ClientSummary cs : allClients) {
             if (bailOnNextIteration) {
-                mainLayoutPanel.nextResultsButton.setVisible(true);
+                mainPanel.nextResultsButton.setVisible(true);
                 break;
             }
 
@@ -463,7 +463,7 @@ public class JudoDB implements EntryPoint {
             if (resultCount >= firstSearchResultToDisplay) {
                 Anchor h = new Anchor(s);
                 h.addClickHandler(new EditClientHandler(club, Integer.parseInt(cs.getId())));
-                mainLayoutPanel.searchResults.setWidget(displayedCount++, 0, h);
+                mainPanel.searchResults.setWidget(displayedCount++, 0, h);
             }
 
             resultCount++;
@@ -471,7 +471,7 @@ public class JudoDB implements EntryPoint {
                 bailOnNextIteration = true;
             }
         }
-        mainLayoutPanel.searchResultsPanel.setVisible(true);
+        mainPanel.searchResultsPanel.setVisible(true);
     }
 
     /* --- club list UI functions --- */
@@ -542,11 +542,11 @@ public class JudoDB implements EntryPoint {
     }
 
     void selectClub(ClubSummary club) {
-        mainLayoutPanel.nouveauButton.setEnabled(club != null);
+        mainPanel.nouveauButton.setEnabled(club != null);
         if (club == null)
-            mainLayoutPanel.dropDownUserClubsButton.setText(TOUS);
+            mainPanel.dropDownUserClubsButton.setText(TOUS);
         else
-            mainLayoutPanel.dropDownUserClubsButton.setText(club.getClubText());
+            mainPanel.dropDownUserClubsButton.setText(club.getClubText());
         selectedClub = club;
     }
 
@@ -638,7 +638,7 @@ public class JudoDB implements EntryPoint {
 
     void refreshClubListResults() {
         firstSearchResultToDisplay = 0;
-        populateClubList(true, mainLayoutPanel.dropDownUserClubs, new MainClubListHandlerFactory());
+        populateClubList(true, mainPanel.dropDownUserClubs, new MainClubListHandlerFactory());
         populateClubList(true, cfWidget.dropDownUserClubs, cfWidget.new ConfigClubListHandlerFactory());
         if (listWidget != null)
             populateClubList(true, listWidget.dropDownUserClubs, 
@@ -652,21 +652,21 @@ public class JudoDB implements EntryPoint {
     /* --- helper functions for status bar --- */
 
     void displayError(String error) {
-        mainLayoutPanel.statusAlert.setType(AlertType.DANGER);
-        mainLayoutPanel.statusText.setText("Erreur: " + error);
-        mainLayoutPanel.statusAlert.setVisible(true);
+        mainPanel.statusAlert.setType(AlertType.DANGER);
+        mainPanel.statusText.setText("Erreur: " + error);
+        mainPanel.statusAlert.setVisible(true);
     }
     void clearStatus() {
-        mainLayoutPanel.statusText.setText("");
-        mainLayoutPanel.statusAlert.setVisible(false);
+        mainPanel.statusText.setText("");
+        mainPanel.statusAlert.setVisible(false);
     }
     void pleaseWait() {
         setStatus("Veuillez patienter...");
     }
     void setStatus(String s) {
-        mainLayoutPanel.statusAlert.setType(AlertType.INFO);
-        mainLayoutPanel.statusText.setText(s);
-        mainLayoutPanel.statusAlert.setVisible(true);
+        mainPanel.statusAlert.setType(AlertType.INFO);
+        mainPanel.statusText.setText(s);
+        mainPanel.statusAlert.setVisible(true);
     }
 
     /* --- miscellaneous utility functions --- */

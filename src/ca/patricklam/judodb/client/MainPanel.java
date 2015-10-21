@@ -26,8 +26,8 @@ import org.gwtbootstrap3.client.ui.DropDownMenu;
 import org.gwtbootstrap3.client.ui.Label;
 import org.gwtbootstrap3.client.ui.html.Text;
 
-public class MainLayoutPanel extends Composite {
-    interface MyUiBinder extends UiBinder<Widget, MainLayoutPanel> {}
+public class MainPanel extends Composite {
+    interface MyUiBinder extends UiBinder<Widget, MainPanel> {}
     public static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
 
     // main column
@@ -65,7 +65,7 @@ public class MainLayoutPanel extends Composite {
         config.setHeight(height);
     }
 
-    public MainLayoutPanel() {
+    public MainPanel() {
         initWidget(uiBinder.createAndBindUi(this));
 
         resizeScrollPanels();
