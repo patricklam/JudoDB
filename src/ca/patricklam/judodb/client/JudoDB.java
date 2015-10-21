@@ -111,15 +111,6 @@ public class JudoDB implements EntryPoint {
     /* main layout */
     private final MainPanel mainPanel = new MainPanel();
 
-    /* actions */
-    final Anchor filtrerListes = new Anchor("Filtrer");
-    final Anchor editerListes = new Anchor("Éditer");
-    final Anchor ftListes = new Anchor("FT-303");
-    final Anchor impotListes = new Anchor("Reçus d'impot");
-    final Anchor clearXListes = new Anchor("Effacer les X");
-    final Anchor normalListes = new Anchor("Voir listes");
-    final Anchor returnToMainFromListes = new Anchor("Retour page principale");
-
     /* state */
     List<ClientSummary> allClients;
     JsArray<ClubSummary> allClubs;
@@ -128,13 +119,9 @@ public class JudoDB implements EntryPoint {
     private Stack<Mode> modeStack = new Stack<Mode>();
     private Mode currentMode = null;
 
-    /* edit client stuff */
+    /* these go in their respective ScrollPanels */
     private ClientWidget clientWidget;
-
-    /* view lists stuff */
     private ListWidget listWidget;
-
-    /* config management stuff */
     private ConfigWidget cfWidget;
 
     // Create a handler for the searchButton and nameField
@@ -333,55 +320,6 @@ public class JudoDB implements EntryPoint {
         // config widget
         this.cfWidget = new ConfigWidget(this, selectedClub);
         mainPanel.config.add(this.cfWidget);
-
-        /*
-        // right bar actions: list
-        filtrerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
-            if (JudoDB.this.listWidget != null) JudoDB.this.listWidget.toggleFiltering(); }});
-
-        mainPanel.listActions.add(filtrerListes);
-        mainPanel.listActions.add(new Label(""));
-        editerListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
-            if (JudoDB.this.l != null) {
-              JudoDB.this.l.switchMode(ListWidget.Mode.EDIT);
-            }
-        }});
-        mainPanel.listActions.add(editerListes);
-        mainPanel.listActions.add(new Label(""));
-        ftListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
-          if (JudoDB.this.l != null) {
-              JudoDB.this.l.switchMode(ListWidget.Mode.FT);
-          }
-        }});
-        mainPanel.listActions.add(ftListes);
-        mainPanel.listActions.add(new Label(""));
-        impotListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
-            if (JudoDB.this.l != null) {
-                JudoDB.this.l.switchMode(ListWidget.Mode.IMPOT);
-            }
-        }});
-        */
-
-        // temporarily disable; issue 50
-        // mainLayout.listActions.add(impotListes);
-        // mainLayout.listActions.add(new Label(""));
-
-        /*
-        clearXListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
-            if (JudoDB.this.l != null) JudoDB.this.l.clearX(); }});
-        mainPanel.listActions.add(clearXListes);
-        mainPanel.listActions.add(new Label(""));
-        normalListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
-           if (JudoDB.this.l != null) {
-              JudoDB.this.l.switchMode(ListWidget.Mode.NORMAL);
-            }
-        }});
-        mainPanel.listActions.add(normalListes);
-        mainPanel.listActions.add(new Label(""));
-        returnToMainFromListes.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.MAIN)); }});
-        mainPanel.listActions.add(returnToMainFromListes);
-        mainPanel.listActions.add(new Label(""));
-        */
 
         // history handlers
         History.addValueChangeHandler(new ValueChangeHandler<String>() {

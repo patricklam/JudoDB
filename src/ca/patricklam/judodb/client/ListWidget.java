@@ -245,20 +245,6 @@ public class ListWidget extends Composite {
         jdb.populateClubList(true, dropDownUserClubs, new ListClubListHandlerFactory());
         selectClub(jdb.getSelectedClub());
 
-        listModeVisibility.put(Mode.EDIT, new Widget[]
-                { jdb.normalListes, jdb.filtrerListes,
-                  jdb.clearXListes, sessionListBox, jdb.returnToMainFromListes,
-                  edit_controls, dropDownUserClubs });
-        listModeVisibility.put(Mode.FT, new Widget[]
-                { jdb.normalListes, jdb.filtrerListes, jdb.clearXListes,
-                  ft303_controls, sessionListBox, jdb.returnToMainFromListes, dropDownUserClubs } );
-            listModeVisibility.put(Mode.IMPOT, new Widget[]
-                        { jdb.normalListes, jdb.filtrerListes, jdb.clearXListes,
-                          impot_controls, sessionListBox, jdb.returnToMainFromListes, dropDownUserClubs } );
-        listModeVisibility.put(Mode.NORMAL, new Widget[]
-                { jdb.filtrerListes, jdb.editerListes,
-                  jdb.ftListes, jdb.impotListes, sessionListBox, jdb.returnToMainFromListes, dropDownUserClubs } );
-
         jdb.pleaseWait();
         switchMode(Mode.NORMAL);
 
@@ -961,11 +947,6 @@ public class ListWidget extends Composite {
     public void switchMode(Mode m) {
         this.mode = m;
 
-        for (Widget w : listModeVisibility.get(m))
-            w.setVisible(true);
-
-        // blow away state...
-        //session.setSelectedIndex(0);
         originalVerifValues.clear();
 
         if (cours.getItemCount() > 0)
