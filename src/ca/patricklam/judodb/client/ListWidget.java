@@ -326,7 +326,7 @@ public class ListWidget extends Composite {
                     ft303_button.setIcon(IconType.PLUS);
                 } } );
 
-
+        sortir_impot.setVisible(false);
 /*      recalc.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { recalc(); } }); */
 
