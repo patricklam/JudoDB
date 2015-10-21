@@ -86,8 +86,8 @@ td {
 	      </b:Column>
 		
 	      <b:Column size="XS_2">
-		<b:Button dataToggle='COLLAPSE' dataTarget='#filtres' icon="PLUS" text="Filtres" />
-		<b:Button dataToggle='COLLAPSE' dataTarget='#ft303' icon="PLUS" text="FT-303" />
+		<b:Button ui:field="filter_button" dataToggle='COLLAPSE' dataTarget='#filtres' icon="PLUS" text="Filtres" />
+		<b:Button ui:field="ft303_button" dataToggle='COLLAPSE' dataTarget='#ft303' icon="PLUS" text="FT-303" />
 	      </b:Column>
 	      <b:Column size="XS_2" addStyleNames="col-xs-offset-2"><b:Button ui:field='return_to_main'>Retour page principale</b:Button></b:Column>
 	      </b:Row>

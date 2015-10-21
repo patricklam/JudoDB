@@ -58,6 +58,8 @@ import org.gwtbootstrap3.client.shared.event.HideHandler;
 import org.gwtbootstrap3.client.shared.event.ShowEvent;
 import org.gwtbootstrap3.client.shared.event.ShowHandler;
 
+import org.gwtbootstrap3.client.ui.constants.IconType;
+
 public class ListWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ListWidget> {}
     public static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
@@ -98,6 +100,7 @@ public class ListWidget extends Composite {
 
     @UiField Hidden club_id;
 
+    @UiField Button ft303_button;
     @UiField Collapse ft303_controls;
     @UiField TextBox evt;
     @UiField TextBox date;
@@ -109,6 +112,7 @@ public class ListWidget extends Composite {
     @UiField HTMLPanel edit_controls;
     @UiField TextBox edit_date;
 
+    @UiField Button filter_button;
     @UiField Collapse filter_controls;
     @UiField ListBox division;
     @UiField ListBox grade_lower;
@@ -296,9 +300,15 @@ public class ListWidget extends Composite {
             public void onClick(ClickEvent e) { collectDV(); computeImpotMailMerge(); submit("impot"); } });
 
         filter_controls.addShowHandler(new ShowHandler() {
-                @Override public void onShow(ShowEvent e) { isFiltering = true; showList(); } } );
+                @Override public void onShow(ShowEvent e) {
+                    isFiltering = true; showList();
+                    filter_button.setIcon(IconType.MINUS);
+                } } );
         filter_controls.addHideHandler(new HideHandler() {
-                @Override public void onHide(HideEvent e) { isFiltering = false; showList(); } } );
+                @Override public void onHide(HideEvent e) {
+                    isFiltering = false; showList();
+                    filter_button.setIcon(IconType.PLUS);
+                } } );
 
         division.addChangeHandler(new ChangeHandler() {
                 @Override public void onChange(ChangeEvent e) { showList(); } });
@@ -306,6 +316,16 @@ public class ListWidget extends Composite {
                 @Override public void onChange(ChangeEvent e) { showList(); } });
         grade_upper.addChangeHandler(new ChangeHandler() {
                 @Override public void onChange(ChangeEvent e) { showList(); } });
+
+        ft303_controls.addShowHandler(new ShowHandler() {
+                @Override public void onShow(ShowEvent e) {
+                    ft303_button.setIcon(IconType.MINUS);
+                } } );
+        ft303_controls.addHideHandler(new HideHandler() {
+                @Override public void onHide(HideEvent e) {
+                    ft303_button.setIcon(IconType.PLUS);
+                } } );
+
 
 /*      recalc.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { recalc(); } }); */
