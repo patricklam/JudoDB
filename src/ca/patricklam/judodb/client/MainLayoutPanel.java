@@ -14,6 +14,9 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
@@ -36,10 +39,9 @@ public class MainLayoutPanel extends Composite {
     @UiField Button logoutButton; // logout.php
 
     // results column
-    @UiField VerticalPanel searchResultsPanel = new VerticalPanel();
+    @UiField FlowPanel searchResultsPanel;
     @UiField FlexTable searchResults = new FlexTable();
 
-    @UiField HorizontalPanel searchNavPanel;
     @UiField Button nextResultsButton;
     @UiField Button prevResultsButton;
 
@@ -52,11 +54,26 @@ public class MainLayoutPanel extends Composite {
     @UiField DropDownMenu dropDownUserClubs;
 
     @UiField ScrollPanel mainPanel;
-    @UiField OnlyYScrollPanel editClient;
+    @UiField ScrollPanel editClient;
     @UiField ScrollPanel lists;
     @UiField ScrollPanel config;
 
+    void resizeScrollPanels() {
+        String height = Integer.toString(Window.getClientHeight()-20)+"px";
+        editClient.setHeight(height);
+        lists.setHeight(height);
+        config.setHeight(height);
+    }
+
     public MainLayoutPanel() {
         initWidget(uiBinder.createAndBindUi(this));
+
+        resizeScrollPanels();
+        Window.addResizeHandler(new ResizeHandler() {
+                @Override
+                public void onResize(ResizeEvent e) {
+                    resizeScrollPanels();
+                }
+            });
     }
 }

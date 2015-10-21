@@ -81,14 +81,14 @@
        </b:Column>
 
        <b:Column size="MD_5">
-        <g:VerticalPanel ui:field='searchResultsPanel'>
+        <g:FlowPanel ui:field='searchResultsPanel'>
          <b:Heading size="H3"><b:Label text='Résultats' /></b:Heading>
          <g:FlexTable ui:field='searchResults' />
-         <g:HorizontalPanel ui:field='searchNavPanel'>
+         <g:FlowPanel>
           <b:Button ui:field='nextResultsButton' text='Résultats suivants'/>
           <b:Button ui:field='prevResultsButton' text='Résultats précedents'/>
-         </g:HorizontalPanel>
-        </g:VerticalPanel>
+         </g:FlowPanel>
+        </g:FlowPanel>
        </b:Column></b:Row>
       </b:Container>
 
@@ -101,9 +101,9 @@
      </g:FlowPanel>
     </g:ScrollPanel>
 
-    <c:OnlyYScrollPanel ui:field='editClient' width='99%' height='100%'/>
-    <g:ScrollPanel ui:field='lists' width='99%' height='100%'/>
-    <g:ScrollPanel ui:field='config' width='99%' height='100%'/>
+    <c:OnlyYScrollPanel ui:field='editClient'/>
+    <c:OnlyYScrollPanel ui:field='lists'/>
+    <c:OnlyYScrollPanel ui:field='config'/>
 </g:FlowPanel>
 
 </ui:UiBinder>

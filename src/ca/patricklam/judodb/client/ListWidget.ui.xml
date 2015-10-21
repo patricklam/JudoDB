@@ -3,6 +3,7 @@
 
 <ui:UiBinder
   xmlns:b="urn:import:org.gwtbootstrap3.client.ui"
+  xmlns:b.html="urn:import:org.gwtbootstrap3.client.ui.html"
   xmlns:ui='urn:ui:com.google.gwt.uibinder'
   xmlns:g='urn:import:com.google.gwt.user.client.ui'>
 
@@ -28,9 +29,11 @@
 }
 
 .impot {
+ display:none;
 }
 
 .edit {
+ display:none;
 }
 
 .filter {
@@ -44,7 +47,7 @@ td {
   padding: 0.3em;
 }
 </ui:style>
-    
+
 <g:HTMLPanel>
 	<b:ButtonGroup ui:field='dropDownUserClubsButtonGroup' addStyleNames="{style.clubBox} hidden-print">
 	  <b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
@@ -55,38 +58,59 @@ td {
 
 	<g:FormPanel ui:field="listForm" method="post">
 	  <g:HTMLPanel>
-	    <g:HorizontalPanel>
-		<g:InlineLabel>Cours&nbsp;</g:InlineLabel><b:ListBox ui:field="cours" visibleItemCount="1" />
-		<g:InlineLabel>&nbsp;sortir: </g:InlineLabel><g:Anchor ui:field="pdf">(PDF)</g:Anchor>
-		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="presences">(présences)</g:Anchor>
-		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="xls">(XLS)</g:Anchor>
-		<g:InlineLabel>&nbsp;</g:InlineLabel><g:Anchor ui:field="xls2">(XLS complet)</g:Anchor>
-		
-		<g:Hidden ui:field="multi" name="multi"/>
-		<g:Hidden ui:field="title" name="title"/>
-		<g:Hidden ui:field="short_title" name="short_title"/>
-		<g:Hidden ui:field="data" name="data"/>
-		<g:Hidden ui:field="data_full" name="data_full"/>
-		<g:Hidden ui:field="auxdata" name="auxdata"/>
+            <b:Form type="INLINE">
+	      <g:Hidden ui:field="multi" name="multi"/>
+	      <g:Hidden ui:field="title" name="title"/>
+	      <g:Hidden ui:field="short_title" name="short_title"/>
+	      <g:Hidden ui:field="data" name="data"/>
+	      <g:Hidden ui:field="data_full" name="data_full"/>
+	      <g:Hidden ui:field="auxdata" name="auxdata"/>
+	      <g:Hidden ui:field="club_id" name="club_id"/>
 
-		<g:Hidden ui:field="club_id" name="club_id"/>
-	    </g:HorizontalPanel>
-		<g:HTMLPanel ui:field="ft303_controls" styleName="{style.ft303}">
-		  &Eacute;v&eacute;nement: <b:TextBox ui:field="evt" name="evt" />&nbsp; &nbsp; 
-		  Date: <b:TextBox ui:field="date" name="date" />&nbsp;&nbsp;
- 		  <g:Anchor ui:field="createFT">(créer FT)</g:Anchor>
- 		</g:HTMLPanel>
-		<g:HTMLPanel ui:field="impot_controls" styleName="{style.impot}">
- 		  <!--  <g:Anchor ui:field="recalc">recalcul des prix</g:Anchor> -->
- 		  <label>Utiliser les prorata: <g:CheckBox ui:field="prorata" value="true"/></label>
-		  <g:Anchor ui:field="mailmerge">Créer reçus</g:Anchor>
- 		</g:HTMLPanel>
-		<g:HTMLPanel ui:field="edit_controls" styleName="{style.edit}">
-		  Date passage: <b:TextBox ui:field="edit_date" name="edit_date" />&nbsp;&nbsp;
- 		</g:HTMLPanel>
-	    <g:HTMLPanel ui:field="filter_controls" styleName="{style.filter}">
-	      Division: <b:ListBox ui:field="division"/>&nbsp; &nbsp;
-	      Grade: entre <b:ListBox ui:field="grade_lower"/> et <b:ListBox ui:field="grade_upper"/>&nbsp; &nbsp;
+	      <b:Row>
+	      <b:Column size="XS_3">
+		<b:FormLabel for="cours_lb">Cours&nbsp;</b:FormLabel><b:ListBox ui:field="cours" name="cours_lb" visibleItemCount="1" />
+	      </b:Column>
+	      <b:Column size="XS_2">
+		<b:ButtonGroup ui:field='sortirButtonGroup' addStyleNames="hidden-print">
+		  <b:Button dataToggle='DROPDOWN' text='sortir...' toggleCaret='true' ui:field='sortirButton'/>
+		  <b:DropDownMenu ui:field='sortir'>
+		    <b:AnchorListItem ui:field="sortir_pdf" text="PDF"/>
+		    <b:AnchorListItem ui:field="sortir_presences" text="pr&eacute;sences"/>
+		    <b:AnchorListItem ui:field="sortir_xls" text="XLS"/>
+		    <b:AnchorListItem ui:field="sortir_ft303" text="FT-303"/>
+		    <b:AnchorListItem ui:field="sortir_impot" text="Re&ccedil;us d'imp&ocirc;t"/>
+		    <b:AnchorListItem ui:field="sortir_xls_complet" text="XLS complet"/>
+		  </b:DropDownMenu>
+		</b:ButtonGroup>
+	      </b:Column>
+		
+	      <b:Column size="XS_2">
+		<b:Button dataToggle='COLLAPSE' dataTarget='#filtres' icon="PLUS" text="Filtres" />
+		<b:Button dataToggle='COLLAPSE' dataTarget='#ft303' icon="PLUS" text="FT-303" />
+	      </b:Column>
+	      <b:Column size="XS_2" addStyleNames="col-xs-offset-2"><b:Button ui:field='return_to_main'>Retour page principale</b:Button></b:Column>
+	      </b:Row>
+
+	      <b:Collapse toggle='false' b:id="filtres" ui:field="filter_controls">
+		<b.html:Span>Division:&nbsp;</b.html:Span><b:ListBox ui:field="division" name="division_lb"/>
+		<b.html:Span>&nbsp;&nbsp;Grade: entre&nbsp;</b.html:Span><b:ListBox ui:field="grade_lower"/> <b.html:Span>&nbsp;et&nbsp;</b.html:Span> <b:ListBox ui:field="grade_upper"/>
+	      </b:Collapse>
+	      <b:Collapse toggle='false' b:id="ft303" ui:field="ft303_controls">
+		<b.html:Span>&Eacute;v&eacute;nement:&nbsp;</b.html:Span><b:TextBox ui:field="evt" name="evt" />
+		<b.html:Span>&nbsp; &nbsp;Date:</b.html:Span><b:TextBox ui:field="date" name="date" />
+	      </b:Collapse>
+
+	    <g:HTMLPanel ui:field="edit_controls" styleName="{style.edit}">
+	      Date passage: <b:TextBox ui:field="edit_date" name="edit_date" />&nbsp;&nbsp;
+	    </g:HTMLPanel>
+
+
+	    </b:Form>
+	    <g:HTMLPanel ui:field="impot_controls" styleName="{style.impot}">
+	      <!--  <g:Anchor ui:field="recalc">recalcul des prix</g:Anchor> -->
+	      <!-- <label>Utiliser les prorata: --><g:CheckBox ui:field="prorata" value="true"/><!--</label> -->
+	      <!-- <g:Anchor ui:field="mailmerge">Créer reçus</g:Anchor> -->
 	    </g:HTMLPanel>
 	  </g:HTMLPanel>
 	</g:FormPanel>
@@ -102,15 +126,6 @@ td {
             <g:Hidden ui:field="dataToSave" name="data_to_save" />
           </g:FlowPanel>
 	</g:FormPanel>
-	<div id="saveorquit" class="actions hidden-print" style="padding-bottom: 1em">
-     <div style="float:left; text-align:right;">
-      <b:Button ui:field="save">Sauvegarder</b:Button>
-     </div>
-     <div style="float:right; text-align:right;">
-      <b:Button ui:field="quit">Annuler</b:Button>
-     </div>
-    </div>
-	
- </g:HTMLPanel>
+</g:HTMLPanel>
  
 </ui:UiBinder>

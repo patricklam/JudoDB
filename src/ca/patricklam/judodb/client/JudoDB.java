@@ -295,6 +295,8 @@ public class JudoDB implements EntryPoint {
             });
 
 	RootPanel.get().add(mainLayoutPanel);
+
+        // main panel itself
 	mainLayoutPanel.versionLabel.setText(Version.VERSION);
 
         mainLayoutPanel.nextResultsButton.setVisible(false);
@@ -312,13 +314,25 @@ public class JudoDB implements EntryPoint {
 
         mainLayoutPanel.searchResultsPanel.setVisible(false);
 
-        // config widget
-        this.cfWidget = new ConfigWidget(this, selectedClub);
-        mainLayoutPanel.config.add(this.cfWidget);
-
         mainLayoutPanel.listeButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST)); }});
         mainLayoutPanel.configButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
         mainLayoutPanel.logoutButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent event) { Window.Location.assign("/logout.php"); }});
+
+        // Focus the cursor on the name field when the app loads
+        mainLayoutPanel.searchTextBox.setFocus(true);
+        mainLayoutPanel.searchTextBox.selectAll();
+
+        // Add a handler to send the name to the server
+        SearchHandler shandler = new SearchHandler();
+        mainLayoutPanel.searchButton.addClickHandler(shandler);
+
+        // Add a handler for "nouveau client"
+        EditClientHandler ehandler = new EditClientHandler(null, -1);
+        mainLayoutPanel.nouveauButton.addClickHandler(ehandler);
+
+        // config widget
+        this.cfWidget = new ConfigWidget(this, selectedClub);
+        mainLayoutPanel.config.add(this.cfWidget);
 
         /*
         // right bar actions: list
@@ -368,18 +382,6 @@ public class JudoDB implements EntryPoint {
         mainLayoutPanel.listActions.add(returnToMainFromListes);
         mainLayoutPanel.listActions.add(new Label(""));
         */
-
-        // Focus the cursor on the name field when the app loads
-        mainLayoutPanel.searchTextBox.setFocus(true);
-        mainLayoutPanel.searchTextBox.selectAll();
-
-        // Add a handler to send the name to the server
-        SearchHandler shandler = new SearchHandler();
-        mainLayoutPanel.searchButton.addClickHandler(shandler);
-
-        // Add a handler for "nouveau client"
-        EditClientHandler ehandler = new EditClientHandler(null, -1);
-        mainLayoutPanel.nouveauButton.addClickHandler(ehandler);
 
         // history handlers
         History.addValueChangeHandler(new ValueChangeHandler<String>() {

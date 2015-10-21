@@ -44,8 +44,10 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 
+import org.gwtbootstrap3.client.ui.AnchorListItem;
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
+import org.gwtbootstrap3.client.ui.Collapse;
 import org.gwtbootstrap3.client.ui.Label;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
@@ -70,10 +72,15 @@ public class ListWidget extends Composite {
     private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
 
     @UiField(provided=true) FormPanel listForm = new FormPanel(new NamedFrame("_"));
-    @UiField Anchor pdf;
-    @UiField Anchor presences;
-    @UiField Anchor xls;
-    @UiField Anchor xls2;
+
+    @UiField Button sortirButton;
+    @UiField DropDownMenu sortir;
+    @UiField AnchorListItem sortir_pdf;
+    @UiField AnchorListItem sortir_presences;
+    @UiField AnchorListItem sortir_xls;
+    @UiField AnchorListItem sortir_xls_complet;
+    @UiField AnchorListItem sortir_ft303;
+    @UiField AnchorListItem sortir_impot;
 
     @UiField Hidden multi;
     @UiField Hidden title;
@@ -84,20 +91,18 @@ public class ListWidget extends Composite {
 
     @UiField Hidden club_id;
 
-    @UiField HTMLPanel ft303_controls;
+    @UiField Collapse ft303_controls;
     @UiField TextBox evt;
     @UiField TextBox date;
-    @UiField Anchor createFT;
 
     @UiField HTMLPanel impot_controls;
     /*@UiField Anchor recalc;*/
     @UiField CheckBox prorata;
-    @UiField Anchor mailmerge;
 
     @UiField HTMLPanel edit_controls;
     @UiField TextBox edit_date;
 
-    @UiField HTMLPanel filter_controls;
+    @UiField Collapse filter_controls;
     @UiField ListBox division;
     @UiField ListBox grade_lower;
     @UiField ListBox grade_upper;
@@ -106,8 +111,7 @@ public class ListWidget extends Composite {
     @UiField Grid results;
     @UiField Label nb;
 
-    @UiField Button save;
-    @UiField Button quit;
+    @UiField Button return_to_main;
 
     @UiField FormPanel listEditForm;
     @UiField Hidden guid_on_form;
@@ -244,7 +248,7 @@ public class ListWidget extends Composite {
         listModeVisibility.put(Mode.EDIT, new Widget[]
                 { jdb.normalListes, jdb.filtrerListes,
                   jdb.clearXListes, sessionListBox, jdb.returnToMainFromListes,
-                  edit_controls, save, quit, dropDownUserClubs });
+                  edit_controls, dropDownUserClubs });
         listModeVisibility.put(Mode.FT, new Widget[]
                 { jdb.normalListes, jdb.filtrerListes, jdb.clearXListes,
                   ft303_controls, sessionListBox, jdb.returnToMainFromListes, dropDownUserClubs } );
@@ -285,14 +289,19 @@ public class ListWidget extends Composite {
 
         sessionListBox.addChangeHandler(new ChangeHandler() {
             public void onChange(ChangeEvent e) { coursHandler.generateCoursList(); showList(); } });
-        pdf.addClickHandler(new ClickHandler() {
+        sortir_pdf.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("pdf"); } });
-        presences.addClickHandler(new ClickHandler() {
+        sortir_presences.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("presences"); } });
-        xls.addClickHandler(new ClickHandler() {
+        sortir_xls.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("xls"); } });
-        xls2.addClickHandler(new ClickHandler() {
+        sortir_xls_complet.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("xlsfull"); } });
+        sortir_ft303.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent e) { if (makeFT()) submit("ft"); }});
+        sortir_impot.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent e) { collectDV(); computeImpotMailMerge(); submit("impot"); } });
+
         division.addChangeHandler(new ChangeHandler() {
             public void onChange(ChangeEvent e) { showList(); } });
         grade_lower.addChangeHandler(new ChangeHandler() {
@@ -302,21 +311,12 @@ public class ListWidget extends Composite {
 
 /*      recalc.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { recalc(); } }); */
-        mailmerge.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent e) { collectDV(); computeImpotMailMerge(); submit("impot"); } });
 
-        createFT.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent e) { if (makeFT()) submit("ft"); }});
-
-        save.addClickHandler(new ClickHandler() {
+        return_to_main.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
-                save();
+                ListWidget.this.jdb.clearStatus();
+                ListWidget.this.jdb.popMode();
             }
-        });
-        quit.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent e) {
-                reset();
-                ListWidget.this.switchMode(Mode.NORMAL); }
         });
 
         listEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
@@ -628,13 +628,6 @@ public class ListWidget extends Composite {
 		return s;
 	}
 	return null;
-    }
-
-    public void toggleFiltering()
-    {
-        this.isFiltering = !this.isFiltering;
-        filter_controls.setVisible(this.isFiltering);
-        showList();
     }
 
     private boolean clubServiceFilter(ServiceData sd) {
