@@ -53,6 +53,11 @@ import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
 import org.gwtbootstrap3.client.ui.DropDownMenu;
 
+import org.gwtbootstrap3.client.shared.event.HideEvent;
+import org.gwtbootstrap3.client.shared.event.HideHandler;
+import org.gwtbootstrap3.client.shared.event.ShowEvent;
+import org.gwtbootstrap3.client.shared.event.ShowHandler;
+
 public class ListWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ListWidget> {}
     public static MyUiBinder uiBinder = GWT.create(MyUiBinder.class);
@@ -73,6 +78,13 @@ public class ListWidget extends Composite {
 
     @UiField(provided=true) FormPanel listForm = new FormPanel(new NamedFrame("_"));
 
+    @UiField Hidden multi;
+    @UiField Hidden title;
+    @UiField Hidden short_title;
+    @UiField Hidden data;
+    @UiField Hidden data_full;
+    @UiField Hidden auxdata;
+
     @UiField Button sortirButton;
     @UiField DropDownMenu sortir;
     @UiField AnchorListItem sortir_pdf;
@@ -82,12 +94,7 @@ public class ListWidget extends Composite {
     @UiField AnchorListItem sortir_ft303;
     @UiField AnchorListItem sortir_impot;
 
-    @UiField Hidden multi;
-    @UiField Hidden title;
-    @UiField Hidden short_title;
-    @UiField Hidden data;
-    @UiField Hidden data_full;
-    @UiField Hidden auxdata;
+    @UiField Button return_to_main;
 
     @UiField Hidden club_id;
 
@@ -108,10 +115,10 @@ public class ListWidget extends Composite {
     @UiField ListBox grade_upper;
 
     @UiField ListBox cours;
-    @UiField Grid results;
-    @UiField Label nb;
 
-    @UiField Button return_to_main;
+    @UiField Grid results;
+
+    @UiField Label nb;
 
     @UiField FormPanel listEditForm;
     @UiField Hidden guid_on_form;
@@ -128,7 +135,7 @@ public class ListWidget extends Composite {
     void selectClub(ClubSummary club) {
         jdb.selectClub(club);
         if (club == null)
-            dropDownUserClubsButton.setText("---");
+            dropDownUserClubsButton.setText(jdb.TOUS);
         else
             dropDownUserClubsButton.setText(club.getClubText());
 
@@ -288,12 +295,17 @@ public class ListWidget extends Composite {
         sortir_impot.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); computeImpotMailMerge(); submit("impot"); } });
 
+        filter_controls.addShowHandler(new ShowHandler() {
+                @Override public void onShow(ShowEvent e) { isFiltering = true; showList(); } } );
+        filter_controls.addHideHandler(new HideHandler() {
+                @Override public void onHide(HideEvent e) { isFiltering = false; showList(); } } );
+
         division.addChangeHandler(new ChangeHandler() {
-            public void onChange(ChangeEvent e) { showList(); } });
+                @Override public void onChange(ChangeEvent e) { showList(); } });
         grade_lower.addChangeHandler(new ChangeHandler() {
-            public void onChange(ChangeEvent e) { showList(); } });
+                @Override public void onChange(ChangeEvent e) { showList(); } });
         grade_upper.addChangeHandler(new ChangeHandler() {
-            public void onChange(ChangeEvent e) { showList(); } });
+                @Override public void onChange(ChangeEvent e) { showList(); } });
 
 /*      recalc.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { recalc(); } }); */
