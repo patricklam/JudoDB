@@ -10,7 +10,7 @@
 <ui:style>
 .clubBox {
  position:absolute;
- top: 0em; right: 2em;
+ top: 0em; right: 5em;
  width: 20em;
 }
 
