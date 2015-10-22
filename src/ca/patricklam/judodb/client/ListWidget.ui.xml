@@ -14,10 +14,8 @@
  width: 20em;
 }
 
-.sessionBox {
- position:absolute;
- top:3.5em; right: 1em; margin-left: 1px;
- width: 6em;
+.margin-right {
+ margin-right: 1em;
 }
 
 .userclub {
@@ -54,11 +52,6 @@ td {
 	  <b:DropDownMenu ui:field='dropDownUserClubs' />
 	</b:ButtonGroup>
 
-	<b:ButtonGroup ui:field='dropDownSessionButtonGroup' addStyleNames="{style.sessionBox} hidden-print">
-	  <b:Button dataToggle='DROPDOWN' text='TOUS' toggleCaret='true' ui:field='dropDownSessionButton'/>
-	  <b:DropDownMenu ui:field='dropDownSessions' />
-	</b:ButtonGroup>
-
 	<h1 id="stdTitle" class="hidden-print">Listes des cours</h1>
 
 	<g:FormPanel ui:field="listForm" method="post">
@@ -91,10 +84,16 @@ td {
 	      </b:Column>
 		
 	      <b:Column size="XS_2">
-		<b:Button ui:field="filter_button" dataToggle='COLLAPSE' dataTarget='#filtres' icon="PLUS" text="Filtres" />
+		<b:Button ui:field="filter_button" dataToggle='COLLAPSE' dataTarget='#filtres' icon="PLUS" text="Filtres" addStyleNames="{style.margin-right}" />
 		<b:Button ui:field="ft303_button" dataToggle='COLLAPSE' dataTarget='#ft303' icon="PLUS" text="FT-303" />
 	      </b:Column>
-	      <b:Column size="XS_2" addStyleNames="col-xs-offset-1"><b:Button ui:field='return_to_main'>Retour page principale</b:Button></b:Column>
+	      <b:Column size="XS_3" addStyleNames="pull-right">
+		<b:Button ui:field='return_to_main' addStyleNames="{style.margin-right}">Retour page principale</b:Button>
+		<b:ButtonGroup ui:field='dropDownSessionButtonGroup' addStyleNames="hidden-print">
+		  <b:Button dataToggle='DROPDOWN' text='TOUS' toggleCaret='true' ui:field='dropDownSessionButton'/>
+		  <b:DropDownMenu ui:field='dropDownSessions' />
+		</b:ButtonGroup>
+	      </b:Column>
 	      </b:Row>
 
 	      <b:Collapse toggle='false' b:id="filtres" ui:field="filter_controls">
