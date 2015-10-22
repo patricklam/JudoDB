@@ -131,7 +131,10 @@ public class ListWidget extends Composite {
     private String guid;
     private int pushTries;
 
-    @UiField ListBox sessionListBox;
+    @UiField ButtonGroup dropDownSessionButtonGroup;
+    @UiField Button dropDownSessionButton;
+    @UiField DropDownMenu dropDownSessions;
+
     @UiField ButtonGroup dropDownUserClubsButtonGroup;
     @UiField Button dropDownUserClubsButton;
     @UiField DropDownMenu dropDownUserClubs;
@@ -159,7 +162,7 @@ public class ListWidget extends Composite {
             return;
         }
 
-        coursHandler.generateCoursList();
+        generateCoursList();
         showList();
     }
 
@@ -177,6 +180,17 @@ public class ListWidget extends Composite {
         @Override public void onClick(ClickEvent e) {
             selectClub(club);
         }
+    }
+
+    void selectSession(SessionSummary session) {
+        if (session == null)
+            dropDownSessionButton.setText(jdb.TOUS);
+        else
+            dropDownSessionButton.setText(session.getAbbrev());
+
+        currentSession = session;
+        generateCoursList();
+        showList();
     }
 
     private class Columns {
@@ -205,8 +219,9 @@ public class ListWidget extends Composite {
       public void onChange(ChangeEvent event) {
         showList();
       }
+    }
 
-      void generateCoursList() {
+    void generateCoursList() {
         if (!jdb.isClubSelected() || !gotSessions) {
             new Timer() {
                 public void run() { generateCoursList(); }
@@ -216,8 +231,8 @@ public class ListWidget extends Composite {
 
         jdb.clearStatus();
 
-        String session_seqno = requestedSessionNo();
-        if (session_seqno == null)
+        String session_seqno = null;
+        if (currentSession != null)
             session_seqno = currentSession.getSeqno();
 
         String numero_club = null;
@@ -226,7 +241,6 @@ public class ListWidget extends Composite {
 
         jdb.pleaseWait();
         retrieveCours(session_seqno, numero_club);
-      }
     }
 
     final HashMap<Mode, Widget[]> listModeVisibility = new HashMap<Mode, Widget[]>();
@@ -259,9 +273,6 @@ public class ListWidget extends Composite {
         jdb.pleaseWait();
         switchMode(Mode.NORMAL);
 
-        sessionListBox.addItem("Tous", "-1");
-        sessionListBox.setSelectedIndex(0);
-
         division.addItem("Tous", "-1");
         for (Division c : Constants.DIVISIONS)
             if (!c.noire)
@@ -284,8 +295,6 @@ public class ListWidget extends Composite {
 
         cours.addChangeHandler(coursHandler);
 
-        sessionListBox.addChangeHandler(new ChangeHandler() {
-            public void onChange(ChangeEvent e) { coursHandler.generateCoursList(); showList(); } });
         sortir_pdf.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("pdf"); } });
         sortir_presences.addClickHandler(new ClickHandler() {
@@ -340,7 +349,7 @@ public class ListWidget extends Composite {
         listEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
 
         retrieveSessions(jdb.getSelectedClub());
-        coursHandler.generateCoursList();
+        generateCoursList();
 
         retrieveAllClients();
         sorts.add(3); sorts.add(2);
@@ -523,7 +532,7 @@ public class ListWidget extends Composite {
         dv += cd.getSexe() + "|";
         dv += cd.getJudoQC() + "|";
         dv += cd.getDDNString() + "|";
-        dv += cd.getDivision(requestedSession().getYear()).abbrev + "|";
+        dv += cd.getDivision(currentSession.getYear()).abbrev + "|";
         dv += cd.getCourriel() + "|";
         dv += cd.getAdresse() + "|";
         dv += cd.getVille() + "|";
@@ -561,7 +570,7 @@ public class ListWidget extends Composite {
             ClientData cd = allClients.get(i);
             if (!sessionFilter(cd)) continue;
 
-            Division d = cd.getDivision(requestedSession().getYear());
+            Division d = cd.getDivision(currentSession.getYear());
             if (d.abbrev.equals("S") || d.aka.equals("S")) continue;
             filteredClients.add(cd);
         }
@@ -633,21 +642,6 @@ public class ListWidget extends Composite {
         return !dv.equals("");
     }
 
-    public String requestedSessionNo() {
-        if (sessionListBox == null || sessionListBox.getSelectedIndex() == -1) return null;
-        return sessionListBox.getValue(sessionListBox.getSelectedIndex());
-    }
-
-    public SessionSummary requestedSession() {
-        String requestedSessionNo = requestedSessionNo();
-        if (requestedSessionNo == null) return null;
-	for (SessionSummary s : sessions) {
-	    if (s.getSeqno().equals(requestedSessionNo))
-		return s;
-	}
-	return null;
-    }
-
     private boolean clubServiceFilter(ServiceData sd) {
         if (jdb.getSelectedClubID() == null) return true;
 	if (sd == null) return false;
@@ -656,7 +650,7 @@ public class ListWidget extends Composite {
 
     /* unlike the other filters, this one can't be disabled */
     private boolean clubFilter(ClientData cd) {
-        SessionSummary rs = requestedSession();
+        SessionSummary rs = currentSession;
         if (rs == null) {
             for (int i = 0; i < cd.getServices().length(); i++) {
                 if (clubServiceFilter(cd.getServices().get(i)))
@@ -669,10 +663,9 @@ public class ListWidget extends Composite {
     }
 
     private boolean sessionFilter(ClientData cd) {
-        SessionSummary rs = requestedSession();
-        if (rs == null) return true;
+        if (currentSession == null) return true;
 
-        return cd.getServiceFor(rs) != null;
+        return cd.getServiceFor(currentSession) != null;
     }
 
     private boolean coursFilter(ClientData cd) {
@@ -680,7 +673,7 @@ public class ListWidget extends Composite {
         if (selectedCours.equals("-1"))
             return true;
 
-        if (selectedCours.equals(cd.getServiceFor(requestedSession()).getCours()))
+        if (selectedCours.equals(cd.getServiceFor(currentSession).getCours()))
             return true;
 
         return false;
@@ -691,7 +684,7 @@ public class ListWidget extends Composite {
         if (selectedDivision.equals("-1"))
             return true;
 
-        Division c = cd.getDivision(requestedSession().getYear());
+        Division c = cd.getDivision(currentSession.getYear());
         if (selectedDivision.equals(c.abbrev) || selectedDivision.equals(c.aka))
             return true;
         return false;
@@ -747,8 +740,7 @@ public class ListWidget extends Composite {
 	if (!gotSessions) return;
 
         boolean all = "-1".equals(cours.getValue(cours.getSelectedIndex()));
-        String requestedSessionNo = requestedSessionNo();
-        final SessionSummary rs = requestedSession();
+        final SessionSummary rs = currentSession;
         int count = 0, curRow;
         final ArrayList<ClientData> filteredClients = new ArrayList<ClientData>();
 
@@ -825,7 +817,7 @@ public class ListWidget extends Composite {
         boolean[] visibility = new boolean[] {
                 true, mode==Mode.EDIT || mode==Mode.FT, true, true, mode==Mode.EDIT || mode==Mode.FT,
                 true, true, true, true, true, true, mode==Mode.EDIT || all, false,
-                requestedSessionNo == null, mode==Mode.FT
+                currentSession == null, mode==Mode.FT
         };
 
         for (int i = 0; i < heads.length; i++) {
@@ -939,7 +931,7 @@ public class ListWidget extends Composite {
                 results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
             }
 
-            if (requestedSessionNo == null) {
+            if (currentSession == null) {
                 results.setText(curRow, Columns.SESSION, cd.getAllActiveSaisons());
             } else {
                 results.setText(curRow, Columns.SESSION, "");
@@ -1032,12 +1024,39 @@ public class ListWidget extends Composite {
     List<SessionSummary> sessions = new ArrayList<SessionSummary>();
     SessionSummary currentSession;
 
+    class SessionAnchorListItem extends AnchorListItem implements Comparable<SessionAnchorListItem> {
+        int effective_seqno;
+        public SessionAnchorListItem(String label, int effective_seqno) {
+            super(label);
+            this.effective_seqno = effective_seqno;
+        }
+
+        public int compareTo(SessionAnchorListItem other) {
+            return effective_seqno - other.effective_seqno;
+        }
+    }
+
+    class SessionItemHandler implements ClickHandler {
+        final SessionSummary session;
+
+        SessionItemHandler(SessionSummary session) {
+            this.session = session;
+        }
+
+        @Override
+        public void onClick(ClickEvent e) {
+            selectSession(session);
+        }
+    }
+
     void populateSessions(JsArray<SessionSummary> ss) {
 	sessions.clear();
-	sessionListBox.clear();
+        dropDownSessions.clear();
 	currentSession = null;
+
 	Date today = new Date();
-	TreeSet<SessionSummary> sss = new TreeSet<SessionSummary>();
+	TreeSet<SessionAnchorListItem> sss = new TreeSet<>();
+
 	for (int i = 0; i < ss.length(); i++) {
 	    SessionSummary s = ss.get(i);
 	    sessions.add(s);
@@ -1049,16 +1068,27 @@ public class ListWidget extends Composite {
 		    currentSession = s; continue;
 		}
 	    } catch (IllegalArgumentException e) {}
-	    sss.add(s);
+
+            SessionAnchorListItem sali =
+                new SessionAnchorListItem(s.getAbbrev(),
+                                          Integer.parseInt(s.getSeqno()));
+            sali.addClickHandler(new SessionItemHandler(s));
+	    sss.add(sali);
 	}
 
-	sessionListBox.insertItem("Tous", "-1", 0);
-	for (SessionSummary s : sss) {
-	    sessionListBox.insertItem(s.getAbbrev(), s.getSeqno(), 1);
+	if (currentSession != null) {
+            AnchorListItem cs = new SessionAnchorListItem(currentSession.getAbbrev(), -2);
+            cs.addClickHandler(new SessionItemHandler(currentSession));
+            dropDownSessions.add(cs);
         }
-	if (currentSession != null)
-	    sessionListBox.insertItem(currentSession.getAbbrev(), currentSession.getSeqno(), 0);
-	sessionListBox.setSelectedIndex(0);
+        selectSession(currentSession);
+
+        AnchorListItem ts = new SessionAnchorListItem("Tous", -1);
+        ts.addClickHandler(new SessionItemHandler(null));
+        dropDownSessions.add(ts);
+
+	for (AnchorListItem s : sss)
+            dropDownSessions.add(s);
     }
     /* --- end sessions --- */
 
