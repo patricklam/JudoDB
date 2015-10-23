@@ -67,7 +67,11 @@ td {
             <b:Form type="INLINE">
 	      <b:Row>
 	      <b:Column size="XS_3">
-		<b:FormLabel for="cours_lb">Cours&nbsp;</b:FormLabel><b:ListBox ui:field="cours" name="cours_lb" visibleItemCount="1" />
+		<b:FormLabel for="cours_btngrp">Cours&nbsp;</b:FormLabel>
+		<b:ButtonGroup ui:field='dropDownCoursButtonGroup' addStyleNames="hidden-print">
+		  <b:Button dataToggle='DROPDOWN' text='Cours' toggleCaret='true' ui:field='dropDownCoursButton'/>
+		  <b:DropDownMenu ui:field='dropDownCours' />
+		</b:ButtonGroup>
 	      </b:Column>
 	      <b:Column size="XS_2">
 		<b:ButtonGroup ui:field='sortirButtonGroup' addStyleNames="hidden-print">

@@ -210,8 +210,9 @@ public class JudoDB implements EntryPoint {
         if (this.listWidget == null) {
             this.listWidget = new ListWidget(this);
             mainPanel.lists.add(this.listWidget);
+        } else {
+            this.listWidget.selectClub(selectedClub);
         }
-        this.listWidget.selectClub(selectedClub);
 
         hideAllSubpanels();
         mainPanel.lists.setVisible(true);
