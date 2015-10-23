@@ -386,6 +386,7 @@ public class ListWidget extends Composite {
                     sortirButton.setText(SORTIR_LABEL);
                     sortirButton.setToggleCaret(true);
                     sortirButton.setDataToggle(Toggle.DROPDOWN);
+                    sortirButton.setActive(false);
                     ft303_handler_registration.removeHandler();
                 } } );
 
