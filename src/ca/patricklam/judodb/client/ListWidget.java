@@ -59,6 +59,9 @@ import org.gwtbootstrap3.client.shared.event.ShowEvent;
 import org.gwtbootstrap3.client.shared.event.ShowHandler;
 
 import org.gwtbootstrap3.client.ui.constants.IconType;
+import org.gwtbootstrap3.client.ui.constants.Toggle;
+
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 public class ListWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ListWidget> {}
@@ -99,7 +102,6 @@ public class ListWidget extends Composite {
     @UiField AnchorListItem sortir_presences;
     @UiField AnchorListItem sortir_xls;
     @UiField AnchorListItem sortir_xls_complet;
-    @UiField AnchorListItem sortir_ft303;
     @UiField AnchorListItem sortir_impot;
 
     @UiField Button return_to_main;
@@ -284,6 +286,10 @@ public class ListWidget extends Composite {
 
     private Mode mode = Mode.NORMAL;
 
+    private static final String SORTIR_LABEL = "sortir...";
+    private static final String SORTIR_FT303_LABEL = "sortir FT-303";
+    private HandlerRegistration ft303_handler_registration;
+
     public String[] heads = new String[] {
         "No", "V", "Nom", "Prenom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Cat", "Cours", "", "Saisons", "Division"
     };
@@ -326,6 +332,7 @@ public class ListWidget extends Composite {
 
         edit_date.setValue(Constants.STD_DATE_FORMAT.format(new Date()));
 
+        sortirButton.setText(SORTIR_LABEL);
         sortir_pdf.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("pdf"); } });
         sortir_presences.addClickHandler(new ClickHandler() {
@@ -334,8 +341,7 @@ public class ListWidget extends Composite {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("xls"); } });
         sortir_xls_complet.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("xlsfull"); } });
-        sortir_ft303.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent e) { if (makeFT()) submit("ft"); }});
+
         sortir_impot.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); computeImpotMailMerge(); submit("impot"); } });
 
@@ -357,17 +363,30 @@ public class ListWidget extends Composite {
         grade_upper.addChangeHandler(new ChangeHandler() {
                 @Override public void onChange(ChangeEvent e) { showList(); } });
 
+        final ClickHandler ft303_handler = new ClickHandler() {
+                public void onClick(ClickEvent e) {
+                    if (makeFT()) submit("ft");
+                }};
+
         ft303_controls.addShowHandler(new ShowHandler() {
                 @Override public void onShow(ShowEvent e) {
                     isFT = true;
                     showList();
                     ft303_button.setIcon(IconType.MINUS);
+                    sortirButton.setText(SORTIR_FT303_LABEL);
+                    sortirButton.setToggleCaret(false);
+                    sortirButton.setDataToggle(Toggle.BUTTON);
+                    ft303_handler_registration = sortirButton.addClickHandler(ft303_handler);
                 } } );
         ft303_controls.addHideHandler(new HideHandler() {
                 @Override public void onHide(HideEvent e) {
                     isFT = false;
                     showList();
                     ft303_button.setIcon(IconType.PLUS);
+                    sortirButton.setText(SORTIR_LABEL);
+                    sortirButton.setToggleCaret(true);
+                    sortirButton.setDataToggle(Toggle.DROPDOWN);
+                    ft303_handler_registration.removeHandler();
                 } } );
 
         sortir_impot.setVisible(false);

@@ -77,12 +77,11 @@ td {
 	      </b:Column>
 	      <b:Column size="XS_2">
 		<b:ButtonGroup ui:field='sortirButtonGroup' addStyleNames="hidden-print">
-		  <b:Button dataToggle='DROPDOWN' text='sortir...' toggleCaret='true' ui:field='sortirButton'/>
+		  <b:Button dataToggle='DROPDOWN' toggleCaret='true' ui:field='sortirButton'/>
 		  <b:DropDownMenu ui:field='sortir'>
 		    <b:AnchorListItem ui:field="sortir_pdf" text="PDF"/>
 		    <b:AnchorListItem ui:field="sortir_presences" text="pr&eacute;sences"/>
 		    <b:AnchorListItem ui:field="sortir_xls" text="XLS"/>
-		    <b:AnchorListItem ui:field="sortir_ft303" text="FT-303"/>
 		    <b:AnchorListItem ui:field="sortir_impot" text="Re&ccedil;us d'imp&ocirc;t"/>
 		    <b:AnchorListItem ui:field="sortir_xls_complet" text="XLS complet"/>
 		  </b:DropDownMenu>
