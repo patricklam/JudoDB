@@ -71,8 +71,6 @@ public class ConfigWidget extends Composite {
     private int pushTries;
 
     private final JudoDB jdb;
-    private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
-    private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
 
     CellTable<SessionSummary> sessions;
     private final List<SessionSummary> sessionData = new ArrayList<>();
@@ -173,7 +171,7 @@ public class ConfigWidget extends Composite {
         initializeEscompteTable(); escompteTab.add(escomptes);
         initializeProduitTable(); produitTab.add(produits);
 
-        configEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
+        configEditForm.setAction(JudoDB.PUSH_MULTI_CLIENTS_URL);
         jdb.clearStatus();
 
         selectClub(selectedClub);
@@ -1320,7 +1318,7 @@ public class ConfigWidget extends Composite {
     private boolean refreshEscomptes = false;
     private boolean refreshProduits = false;
     public void pushChanges(final String guid) {
-        String url = CONFIRM_PUSH_URL + "?guid=" + guid;
+        String url = JudoDB.CONFIRM_PUSH_URL + "?guid=" + guid;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {

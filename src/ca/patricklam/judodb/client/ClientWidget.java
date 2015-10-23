@@ -175,7 +175,6 @@ public class ClientWidget extends Composite {
 
     private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php";
     private static final String PUSH_ONE_CLIENT_URL = JudoDB.BASE_URL + "push_one_client.php";
-    private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
     private int pushTries;
 
     public interface BlurbTemplate extends SafeHtmlTemplates {
@@ -1421,7 +1420,7 @@ public class ClientWidget extends Composite {
     }
 
     public void pushOneClient(final String guid, final boolean leaveAfterPush) {
-        String url = CONFIRM_PUSH_URL + "?guid=" + guid;
+        String url = JudoDB.CONFIRM_PUSH_URL + "?guid=" + guid;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {

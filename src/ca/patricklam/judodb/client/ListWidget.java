@@ -67,15 +67,20 @@ public class ListWidget extends Composite {
 
     private JsArray<ClientData> allClients;
     private HashMap<String, ClientData> cidToCD = new HashMap<String, ClientData>();
+
+    private List<SessionSummary> sessionSummaries = new ArrayList<SessionSummary>();
     private List<CoursSummary> coursSummaries = new ArrayList<CoursSummary>();
     private List<EscompteSummary> escompteSummaries = new ArrayList<EscompteSummary>();
     private List<ProduitSummary> produitSummaries = new ArrayList<ProduitSummary>();
+
     private Set<String> clubsPresent = new HashSet<String>();
-    private CoursSummary selectedCours;
+    private SessionSummary currentSession;
+    private CoursSummary currentCours;
+
+    private boolean isFiltering;
+    private boolean isFT;
 
     private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
-    private static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
-    private static final String CONFIRM_PUSH_URL = JudoDB.BASE_URL + "confirm_push.php";
 
     @UiField(provided=true) FormPanel listForm = new FormPanel(new NamedFrame("_"));
 
@@ -85,6 +90,8 @@ public class ListWidget extends Composite {
     @UiField Hidden data;
     @UiField Hidden data_full;
     @UiField Hidden auxdata;
+    @UiField Hidden ft_evt;
+    @UiField Hidden ft_date;
 
     @UiField Button sortirButton;
     @UiField DropDownMenu sortir;
@@ -125,8 +132,6 @@ public class ListWidget extends Composite {
     @UiField Hidden guid_on_form;
     @UiField Hidden currentSessionField;
     @UiField Hidden dataToSave;
-    private String guid;
-    private int pushTries;
 
     @UiField ButtonGroup dropDownSessionButtonGroup;
     @UiField Button dropDownSessionButton;
@@ -140,8 +145,8 @@ public class ListWidget extends Composite {
     @UiField Button dropDownCoursButton;
     @UiField DropDownMenu dropDownCours;
 
-    List<SessionSummary> sessions = new ArrayList<SessionSummary>();
-    SessionSummary currentSession;
+    private String guid;
+    private int pushTries;
 
     void selectClub(ClubSummary club) {
         jdb.selectClub(club);
@@ -155,10 +160,13 @@ public class ListWidget extends Composite {
     }
 
     private void selectSession(SessionSummary session) {
-        if (session == null)
+        if (session == null) {
             dropDownSessionButton.setText(jdb.TOUS);
-        else
+            ft303_button.setVisible(false);
+        } else {
             dropDownSessionButton.setText(session.getAbbrev());
+            ft303_button.setVisible(true);
+        }
 
         currentSession = session;
         showList();
@@ -170,7 +178,7 @@ public class ListWidget extends Composite {
         else
             dropDownCoursButton.setText(cours.getShortDesc());
 
-        selectedCours = cours;
+        currentCours = cours;
         showList();
     }
 
@@ -195,7 +203,9 @@ public class ListWidget extends Composite {
     class ClubItemHandler implements ClickHandler {
         final ClubSummary club;
 
-        ClubItemHandler(ClubSummary club) { this.club = club; }
+        ClubItemHandler(ClubSummary club) {
+            this.club = club;
+        }
 
         @Override public void onClick(ClickEvent e) {
             selectClub(club);
@@ -230,7 +240,9 @@ public class ListWidget extends Composite {
     class CoursItemHandler implements ClickHandler {
         final CoursSummary cours;
 
-        CoursItemHandler(CoursSummary cours) { this.cours = cours; }
+        CoursItemHandler(CoursSummary cours) {
+            this.cours = cours;
+        }
 
         @Override public void onClick(ClickEvent e) {
             selectCours(cours);
@@ -267,11 +279,10 @@ public class ListWidget extends Composite {
     final HashMap<Mode, Widget[]> listModeVisibility = new HashMap<Mode, Widget[]>();
 
     enum Mode {
-        NORMAL, FT, EDIT, IMPOT
+        NORMAL, EDIT, IMPOT
     };
 
     private Mode mode = Mode.NORMAL;
-    private boolean isFiltering;
 
     public String[] heads = new String[] {
         "No", "V", "Nom", "Prenom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Cat", "Cours", "", "Saisons", "Division"
@@ -348,10 +359,14 @@ public class ListWidget extends Composite {
 
         ft303_controls.addShowHandler(new ShowHandler() {
                 @Override public void onShow(ShowEvent e) {
+                    isFT = true;
+                    showList();
                     ft303_button.setIcon(IconType.MINUS);
                 } } );
         ft303_controls.addHideHandler(new HideHandler() {
                 @Override public void onHide(HideEvent e) {
+                    isFT = false;
+                    showList();
                     ft303_button.setIcon(IconType.PLUS);
                 } } );
 
@@ -366,7 +381,7 @@ public class ListWidget extends Composite {
             }
         });
 
-        listEditForm.setAction(PUSH_MULTI_CLIENTS_URL);
+        listEditForm.setAction(JudoDB.PUSH_MULTI_CLIENTS_URL);
 
         retrieveAllClients();
         sorts.add(3); sorts.add(2);
@@ -469,12 +484,14 @@ public class ListWidget extends Composite {
 
     private void addMetaData() {
         title.setValue("");
-        if (selectedCours != null || isFiltering) {
+        ft_evt.setValue(evt.getValue());
+        ft_date.setValue(date.getValue());
+        if (currentCours != null || isFiltering) {
             multi.setValue("0");
             if (isFiltering) {
                 title.setValue("");
-                if (selectedCours != null) {
-                    short_title.setValue(selectedCours.getShortDesc());
+                if (currentCours != null) {
+                    short_title.setValue(currentCours.getShortDesc());
                 }
                 else {
                     short_title.setValue("");
@@ -484,7 +501,7 @@ public class ListWidget extends Composite {
                 // TODO: add filters to title
                 title.setValue(st);
             } else {
-                short_title.setValue(selectedCours.getShortDesc());
+                short_title.setValue(currentCours.getShortDesc());
             }
         } else {
             // all classes
@@ -703,10 +720,10 @@ public class ListWidget extends Composite {
     }
 
     private boolean coursFilter(ClientData cd) {
-        if (selectedCours == null)
+        if (currentCours == null)
             return true;
 
-        if (selectedCours.getId().equals(cd.getServiceFor(currentSession).getCours()))
+        if (currentCours.getId().equals(cd.getServiceFor(currentSession).getCours()))
             return true;
 
         return false;
@@ -753,7 +770,7 @@ public class ListWidget extends Composite {
 
     @SuppressWarnings("deprecation")
     public void showList() {
-        boolean all = selectedCours == null;
+        boolean all = currentCours == null;
         final SessionSummary rs = currentSession;
         int count = 0, curRow;
         final ArrayList<ClientData> filteredClients = new ArrayList<ClientData>();
@@ -823,15 +840,15 @@ public class ListWidget extends Composite {
 
         results.resize(count+1, 15);
 
-        if (mode==Mode.FT)
+        if (isFT)
             heads[Columns.VERIFICATION] = "FT";
         else
             heads[Columns.VERIFICATION] = "V";
 
         boolean[] visibility = new boolean[] {
-                true, mode==Mode.EDIT || mode==Mode.FT, true, true, mode==Mode.EDIT || mode==Mode.FT,
+                true, mode==Mode.EDIT || isFT, true, true, mode==Mode.EDIT || isFT,
                 true, true, true, true, true, true, mode==Mode.EDIT || all, false,
-                currentSession == null, mode==Mode.FT
+                currentSession == null, isFT
         };
 
         for (int i = 0; i < heads.length; i++) {
@@ -994,7 +1011,7 @@ public class ListWidget extends Composite {
     private void loadCours(JsArray<CoursSummary> coursArray) {
         coursSummaries.clear();
         dropDownCours.clear();
-        selectedCours = null;
+        currentCours = null;
 
         dropDownCoursButton.setText(jdb.TOUS);
         AnchorListItem tous = new AnchorListItem(jdb.TOUS);
@@ -1033,7 +1050,7 @@ public class ListWidget extends Composite {
     }
 
     void loadSessions(JsArray<SessionSummary> ss) {
-	sessions.clear();
+	sessionSummaries.clear();
         dropDownSessions.clear();
 	currentSession = null;
 
@@ -1042,7 +1059,7 @@ public class ListWidget extends Composite {
 
 	for (int i = 0; i < ss.length(); i++) {
 	    SessionSummary s = ss.get(i);
-	    sessions.add(s);
+	    sessionSummaries.add(s);
 
 	    try {
 		Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
@@ -1187,7 +1204,7 @@ public class ListWidget extends Composite {
     }
 
     public void pushChanges(final String guid) {
-        String url = CONFIRM_PUSH_URL + "?guid=" + guid;
+        String url = JudoDB.CONFIRM_PUSH_URL + "?guid=" + guid;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {

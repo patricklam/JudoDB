@@ -63,6 +63,8 @@ td {
 	    <g:Hidden ui:field="data_full" name="data_full"/>
 	    <g:Hidden ui:field="auxdata" name="auxdata"/>
 	    <g:Hidden ui:field="club_id" name="club_id"/>
+	    <g:Hidden ui:field="ft_evt" name="evt"/>
+	    <g:Hidden ui:field="ft_date" name="date"/>
 
             <b:Form type="INLINE">
 	      <b:Row>
@@ -105,8 +107,8 @@ td {
 		<b.html:Span>&nbsp;&nbsp;Grade: entre&nbsp;</b.html:Span><b:ListBox ui:field="grade_lower"/> <b.html:Span>&nbsp;et&nbsp;</b.html:Span> <b:ListBox ui:field="grade_upper"/>
 	      </b:Collapse>
 	      <b:Collapse toggle='false' b:id="ft303" ui:field="ft303_controls">
-		<b.html:Span>&Eacute;v&eacute;nement:&nbsp;</b.html:Span><b:TextBox ui:field="evt" name="evt" />
-		<b.html:Span>&nbsp; &nbsp;Date:</b.html:Span><b:TextBox ui:field="date" name="date" />
+		<b.html:Span>&Eacute;v&eacute;nement:&nbsp;</b.html:Span><b:TextBox ui:field="evt" />
+		<b.html:Span>&nbsp; &nbsp;Date:</b.html:Span><b:TextBox ui:field="date" placeholder="jj/mm/aa"/>
 	      </b:Collapse>
 
 	    <g:HTMLPanel ui:field="edit_controls" styleName="{style.edit}">
