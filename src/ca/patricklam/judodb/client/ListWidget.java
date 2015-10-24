@@ -569,7 +569,7 @@ public class ListWidget extends Composite {
         String dv = "";
         for (int i = 0; i < allClients.length(); i++) {
             ClientData cd = allClients.get(i);
-            if (!sessionFilter(cd)) continue;
+            if (!clubFilter(cd) || !sessionFilter(cd)) continue;
 
             dv += toDVFullString(cd) + "*";
         }
