@@ -31,7 +31,7 @@
 </ui:style>
 
 <g:FlowPanel>
-    <g:ScrollPanel ui:field='mainPanel' width='99%' height='100%'>
+    <c:OnlyYScrollPanel ui:field='mainPanel' width='99%' height='100%'>
      <g:FlowPanel>
       <b:Container styleName="{style.status}">
        <b:Alert ui:field="statusAlert" type="WARNING" styleName="{style.statusAlert}"> 
@@ -99,7 +99,7 @@
 
       <b:Label ui:field="versionLabel" styleName='{style.version}' />
      </g:FlowPanel>
-    </g:ScrollPanel>
+    </c:OnlyYScrollPanel>
 
     <c:OnlyYScrollPanel ui:field='editClient'/>
     <c:OnlyYScrollPanel ui:field='lists'/>
