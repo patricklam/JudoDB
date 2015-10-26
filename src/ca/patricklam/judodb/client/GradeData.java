@@ -16,6 +16,14 @@ public class GradeData extends JavaScriptObject {
     public final native void setDateGrade(String date_grade) /*-{ this.date_grade = date_grade; }-*/;
 
     static class GradeComparator implements Comparator<GradeData> {
+        public final int compare(GradeData g0, GradeData g1) {
+            Constants.Grade gg0 = Constants.stringToGrade(g0.getGrade());
+            Constants.Grade gg1 = Constants.stringToGrade(g1.getGrade());
+            return gg0.order - gg1.order;
+        }
+    }
+
+    static class GradeDateComparator implements Comparator<GradeData> {
         @SuppressWarnings("deprecation")
         public final int compare(GradeData g0, GradeData g1) {
             if (g0.getDateGrade().equals(g1.getDateGrade())) return 0;

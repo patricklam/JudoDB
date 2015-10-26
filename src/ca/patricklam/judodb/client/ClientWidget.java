@@ -216,8 +216,8 @@ public class ClientWidget extends Composite {
 
         hideEscompteResidentIfUnneeded(club);
         hidePaypalIfDisabled(club);
-        retrieveSessions(club.getId());
-        retrieveClubPrix(club.getNumeroClub());
+        retrieveSessions(club);
+        retrievePrix(club.getNumeroClub());
         retrieveCours(club.getNumeroClub());
         retrieveEscomptes(club.getId());
         retrieveProduits(club.getId());
@@ -336,17 +336,18 @@ public class ClientWidget extends Composite {
             }
         });
 
-        ClubSummary currentClub = jdb.getSelectedClub();
-        selectClub(currentClub);
-        if (cid != -1)
+        retrieveSessions(null);
+        if (cid != -1) {
             retrieveClient(cid);
-        else {
+        } else {
+            ClubSummary currentClub = jdb.getSelectedClub();
+            selectClub(currentClub);
+
             this.cd = JavaScriptObject.createObject().cast();
             this.cd.setID(null); this.cd.setNom("");
 
             addNewService();
-            ClubSummary cs = currentClub;
-            cd.makeDefault(cs);
+            cd.setDefaultsPerClub(currentClub);
             currentServiceNumber = this.cd.getMostRecentServiceNumber();
 
             JsArray<GradeData> ga = JavaScriptObject.createArray().cast();
@@ -679,7 +680,7 @@ public class ClientWidget extends Composite {
         for (int i = 0; i < grades_.length(); i++)
             grades[i] = grades_.get(i);
 
-        Arrays.sort(grades, new GradeData.GradeComparator());
+        Arrays.sort(grades, new GradeData.GradeDateComparator());
 
         for (int i = 0; i < grades.length; i++) {
             setGradesTableRow(i+1, grades[i].getGrade(), Constants.dbToStdDate(grades[i].getDateGrade()));
@@ -1269,10 +1270,11 @@ public class ClientWidget extends Composite {
 		Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
 		Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
 		if (today.after(inscrBegin) && today.before(inscrEnd)) {
-		    currentSession = s; continue;
+		    currentSession = s; break;
 		}
-	    } catch (IllegalArgumentException e) {}
+	    } catch (IllegalArgumentException e) { }
 	}
+        gotSessions = true;
     }
 
     /* --- end sessions --- */
@@ -1302,6 +1304,7 @@ public class ClientWidget extends Composite {
                         ClientWidget.this.cd = JsonUtils.<ClientData>safeEval(s);
                         currentServiceNumber = cd.getMostRecentServiceNumber();
                         jdb.clearStatus();
+                        selectClub(jdb.getClubSummaryByID(cd.getServices().get(currentServiceNumber).getClubID()));
                         loadClientData();
 
                         for (ChangeHandler ch : onPopulated) {
@@ -1313,13 +1316,12 @@ public class ClientWidget extends Composite {
     }
 
     private boolean gotSessions = false;
-    public void retrieveSessions(String club_id) {
+    public void retrieveSessions(ClubSummary cs) {
         String url = JudoDB.PULL_SESSIONS_URL;
-        url += "?club_id="+club_id;
+        url += "?club_id=" + ((cs == null) ? "0" : cs.getId());
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
-                        gotSessions = true;
                         populateSessions(JsonUtils.<JsArray<SessionSummary>>safeEval(s));
                     }
                 });
@@ -1328,17 +1330,19 @@ public class ClientWidget extends Composite {
 
     /* depends on jdb.retrieveClubList() and retrieveSessions() having succeeded */
     private boolean gotPrix = false;
-    public void retrieveClubPrix(final String numero_club) {
+    public void retrievePrix(final String numero_club) {
         if (!gotSessions) {
             new Timer() {
-                public void run() { retrieveClubPrix(numero_club); }
+                public void run() { retrievePrix(numero_club); }
             }.schedule(100);
             return;
         }
 
         String url = JudoDB.PULL_CLUB_PRIX_URL +
-            "?numero_club=" + numero_club +
-            "&session_seqno=" + currentSession.getSeqno();
+            "?numero_club=" + numero_club;
+
+        if (currentSession != null)
+            url += "&session_seqno=" + currentSession.getSeqno();
 
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
@@ -1353,9 +1357,9 @@ public class ClientWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
-    /* depends on jdb.retrieveClubList() and retrieveSessions() having succeeded */
+    /* depends on jdb.retrieveClubList() and retrieveSessions() having succeeded with an actual club */
     public void retrieveCours(final String numero_club) {
-        if (!gotSessions) {
+        if (currentSession == null) {
             new Timer() {
                 public void run() { retrieveCours(numero_club); }
             }.schedule(100);

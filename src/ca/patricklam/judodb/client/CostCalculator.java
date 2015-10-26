@@ -10,6 +10,7 @@ import com.google.gwt.user.datepicker.client.CalendarUtil;
 public class CostCalculator {
     static int remainingWeeks(SessionSummary ss, Date dateInscription) {
         try {
+            if (ss == null) return 0;
             Date sessionEnd = Constants.DB_DATE_FORMAT.parse(ss.getLastClassDate());
 
             double remainingWeeks = (CalendarUtil.getDaysBetween(dateInscription, sessionEnd) + 6) / 7.0;

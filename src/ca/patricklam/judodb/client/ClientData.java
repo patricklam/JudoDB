@@ -84,6 +84,7 @@ public class ClientData extends JavaScriptObject {
         if (services == null || services.length() == 0) return r;
 
         for (int i = 0; i < services.length(); i++) {
+            if (i > 0) r += " ";
             r += services.get(i).getSaisons();
         }
         return r;
@@ -143,7 +144,7 @@ public class ClientData extends JavaScriptObject {
     /* deprecated */
     public final native String getRAMQ() /*-{ return this.RAMQ; }-*/;
 
-    public final void makeDefault(ClubSummary cs) {
+    public final void setDefaultsPerClub(ClubSummary cs) {
         setVille(cs.getVille());
         setCodePostal(cs.getPrefixCodepostale());
         setTel(cs.getIndicatifRegional());
