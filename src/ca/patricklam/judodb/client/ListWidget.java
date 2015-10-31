@@ -570,13 +570,10 @@ public class ListWidget extends Composite {
                 } });
         results.addColumn(ddnColumn, heads[Columns.DDN]);
 
-        List<String> divSMNames = new ArrayList<>();
+        final List<String> divSMNames = new ArrayList<>();
         divSMNames.add("Senior"); divSMNames.add("Masters");
         divisionColumn = new Column<ClientData, String>(new SelectionCell(divSMNames))
-            { @Override public String getValue(ClientData cd) {
-                    String s = cdToSM.get(cd);
-                    return s == null ? "" : s;
-              }
+            { @Override public String getValue(ClientData cd) { return ""; }
 
               @Override
               public void render(Cell.Context ctx, ClientData cd, SafeHtmlBuilder s) {
@@ -591,6 +588,13 @@ public class ListWidget extends Composite {
                           s.appendHtmlConstant(cd.getDivision(currentSession.getYear()).abbrev);
                   }
               } };
+	divisionColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
+		@Override
+		public void update(int index, ClientData cd, String value) {
+                    cdToSM.put(cd, value);
+		}
+	    });
+
         resultsListHandler.setComparator(divisionColumn, new Comparator<ClientData>() {
                 @Override public int compare(ClientData c1, ClientData c2) {
                     int xc = c1.getDivision(currentSession.getYear()).years_ago;
@@ -889,9 +893,10 @@ public class ListWidget extends Composite {
         for (ClientData cd : filteredClients) {
             if (resultsSelectionModel.isSelected(cd)) {
                 StringBuilder post = new StringBuilder();
-                // ListBox w = (ListBox)(results.getWidget(i, Columns.DIVISION_SM));
-                // if (w != null)
-                //     post.append(w.getValue(w.getSelectedIndex()));
+
+                if (cdToSM.containsKey(cd)) {
+                    post.append(cdToSM.get(cd));
+                }
                 post.append("|");
                 dv.append(toDVFullString(cd) + post + "*");
             }
