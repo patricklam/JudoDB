@@ -1439,7 +1439,7 @@ public class ClientWidget extends Composite {
 
                             new Timer() { public void run() {
                                 pushOneClient(guid, leaveAfterPush);
-                            } }.schedule(2000);
+                            } }.schedule(1000);
                             pushTries++;
                         } else {
                             jdb.setStatus("Sauvegardé.");
@@ -1448,7 +1448,7 @@ public class ClientWidget extends Composite {
                                 jdb.clearStatus();
                                 if (leaveAfterPush)
                                     ClientWidget.this.jdb.popMode();
-                            } }.schedule(2000);
+                            } }.schedule(500);
                             if (cd.getID() == null || cd.getID().equals("")) {
                                 cd.setID(Integer.toString(cro.getSid()));
                                 loadClientData();
