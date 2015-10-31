@@ -743,7 +743,7 @@ public class ConfigWidget extends Composite {
 	DIV_COLUMN = new ColumnFields("division_abbrev", "Division", 4, Unit.EM),
 	FRAIS_1_COLUMN = new ColumnFields("frais_1_session", "Frais 1 session", 4, Unit.EM),
 	FRAIS_2_COLUMN = new ColumnFields("frais_2_session", "Frais 2 sessions", 4, Unit.EM),
-	FRAIS_JUDO_QC_COLUMN = new ColumnFields("frais_judo_qc", "Frais Judo QC", 4, Unit.EM);
+	FRAIS_JUDO_QC_COLUMN = new ColumnFields("frais_judo_qc", "Frais affiliation", 4, Unit.EM);
 
     private List<ColumnFields> perPrixColumns = Collections.unmodifiableList(Arrays.asList(PRIX_SESSION_COLUMN, DIV_COLUMN, FRAIS_1_COLUMN, FRAIS_2_COLUMN, FRAIS_JUDO_QC_COLUMN));
 
