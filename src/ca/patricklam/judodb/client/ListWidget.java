@@ -48,7 +48,7 @@ import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
-import com.google.gwt.user.cellview.client.CellTable;
+import org.gwtbootstrap3.client.ui.gwt.CellTable;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.EditTextCell;
@@ -178,7 +178,7 @@ public class ListWidget extends Composite {
     Column<ClientData, String> divisionColumn;
     Column<ClientData, String> sessionsColumn;
     Column<ClientData, String> coursColumn;
-    Column<ClientData, String> divisionSMColumn;
+    boolean divisionSMColumnVisible = false;
 
     Map<ClientData, String> cdToSM = new HashMap<>();
 
@@ -327,7 +327,7 @@ public class ListWidget extends Composite {
     }
 
     public String[] heads = new String[] {
-        "No", "V", "Nom", "Prénom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Div", "Cours", "", "Saisons", "Division"
+        "No", "V", "Nom", "Prénom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Div", "Cours", "", "Saisons", "Div (FT303)"
     };
 
     enum Mode {
@@ -426,6 +426,8 @@ public class ListWidget extends Composite {
 
                     results.insertColumn(0, checkColumn);
                     checkColumnVisible = true;
+
+                    divisionSMColumnVisible = true;
                 } } );
         ft303_controls.addHideHandler(new HideHandler() {
                 @Override public void onHide(HideEvent e) {
@@ -442,6 +444,8 @@ public class ListWidget extends Composite {
                         results.removeColumn(checkColumn);
                         checkColumnVisible = false;
                     }
+
+                    divisionSMColumnVisible = false;
                 } } );
 
         sortir_impot.setVisible(false);
@@ -566,12 +570,27 @@ public class ListWidget extends Composite {
                 } });
         results.addColumn(ddnColumn, heads[Columns.DDN]);
 
-        divisionColumn = new Column<ClientData, String>(new TextCell())
+        List<String> divSMNames = new ArrayList<>();
+        divSMNames.add("Senior"); divSMNames.add("Masters");
+        divisionColumn = new Column<ClientData, String>(new SelectionCell(divSMNames))
             { @Override public String getValue(ClientData cd) {
-                    if (currentSession == null) return null;
-                    return cd.getDivision(currentSession.getYear()).abbrev;
-                } };
-        divisionColumn.setSortable(true);
+                    String s = cdToSM.get(cd);
+                    return s == null ? "" : s;
+              }
+
+              @Override
+              public void render(Cell.Context ctx, ClientData cd, SafeHtmlBuilder s) {
+                  if (divisionSMColumnVisible && (cd != null && currentSession != null &&
+                                                (Integer.parseInt(currentSession.getYear()) -
+                                                 (cd.getDDN().getYear() + 1900)) > Constants.VETERAN))
+                      super.render(ctx, cd, s);
+                  else {
+                      if (currentSession == null)
+                          return;
+                      else
+                          s.appendHtmlConstant(cd.getDivision(currentSession.getYear()).abbrev);
+                  }
+              } };
         resultsListHandler.setComparator(divisionColumn, new Comparator<ClientData>() {
                 @Override public int compare(ClientData c1, ClientData c2) {
                     int xc = c1.getDivision(currentSession.getYear()).years_ago;
@@ -602,27 +621,6 @@ public class ListWidget extends Composite {
         sessionsColumn = new Column<ClientData, String>(new TextCell())
             { @Override public String getValue(ClientData cd) { return cd.getAllActiveSaisons(); } };
         results.addColumn(sessionsColumn, heads[Columns.SESSION]);
-
-        List<String> divSMNames = new ArrayList<>();
-        divSMNames.add("Senior"); divSMNames.add("Masters");
-        divisionSMColumn = new Column<ClientData, String>(new SelectionCell(divSMNames))
-            { @Override public String getValue(ClientData cd) {
-                    String s = cdToSM.get(cd);
-                    return s == null ? "" : s;
-                } };
-        results.addColumn(divisionSMColumn, heads[Columns.DIVISION_SM]);
-
-        //     if (visibility[Columns.DIVISION_SM] && (Integer.parseInt(currentSession.getYear()) - (cd.getDDN().getYear() + 1900)) > Constants.VETERAN) {
-        //         ListBox d = new ListBox();
-        //         d.addItem("Senior", "S");
-        //         d.addItem("Masters", "M");
-        //         results.setWidget(curRow, Columns.DIVISION_SM, d);
-        //     } else {
-        //         results.clearCell(curRow, Columns.DIVISION_SM);
-        //     }
-
-        // XXX senior vs masters
-
     }
 
     private void save() {
