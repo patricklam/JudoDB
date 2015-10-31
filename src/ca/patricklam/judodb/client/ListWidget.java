@@ -553,11 +553,13 @@ public class ListWidget extends Composite {
             { @Override public String getValue(ClientData cd) { return cd.getTel(); } };
         telColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
         results.addColumn(telColumn, heads[Columns.TEL]);
+        results.getHeader(results.getColumnCount()-1).setHeaderStyleNames("right-align");
 
         Column<ClientData, String> judoQCColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) { return cd.getJudoQC(); } };
         judoQCColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
         results.addColumn(judoQCColumn, heads[Columns.JUDOQC]);
+        results.getHeader(results.getColumnCount()-1).setHeaderStyleNames("right-align");
 
         ddnColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) {
