@@ -695,8 +695,8 @@ public class ClientWidget extends Composite {
         TextBox g = new TextBox();
         TextBox gd = new TextBox();
 
-        g.setValue(grade); /*g.setVisibleLength(5);*/
-        gd.setValue(dateGrade); /*gd.setVisibleLength(10);*/
+        g.setValue(grade);
+        gd.setValue(dateGrade);
         gradeTable.setWidget(row, 0, g);
         gradeTable.setWidget(row, 1, gd);
 
@@ -795,7 +795,7 @@ public class ClientWidget extends Composite {
                 // and update the array.
                 ensureGradeSpace.onChange(null);
                 date_grade.setText(Constants.STD_DATE_FORMAT.format(new Date()));
-                setGradesTableRow(0,
+                setGradesTableRow(gradeTable.getRowCount()-1,
                         grade.getText(), date_grade.getText());
                 saveGradesData();
             }
