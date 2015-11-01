@@ -356,8 +356,6 @@ public class ListWidget extends Composite {
         grade_upper.insertItem("---", "", 0);
         grade_upper.setSelectedIndex(0);
 
-        edit_date.setValue(Constants.STD_DATE_FORMAT.format(new Date()));
-
         sortirButton.setText(SORTIR_LABEL);
         sortir_pdf.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("pdf"); } });
@@ -439,6 +437,7 @@ public class ListWidget extends Composite {
             }
         });
 
+        mostRecentGradeDate = Constants.STD_DATE_FORMAT.format(new Date());
         listEditForm.setAction(JudoDB.PUSH_MULTI_CLIENTS_URL);
 
         retrieveAllClients();
@@ -600,6 +599,17 @@ public class ListWidget extends Composite {
                     String dg = cd.getMostRecentGrade().getDateGrade();
                     return dg == null ? Constants.STD_DUMMY_DATE : Constants.dbToStdDate(dg); } };
         results.addColumn(gradeDateColumn, heads[Columns.DATE_GRADE]);
+        gradeDateColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
+                @Override public void update(int index, ClientData cd, String value) {
+                    StringBuffer edits = new StringBuffer();
+                    mostRecentGradeDate = value;
+
+                    GradeData gd = cd.getMostRecentGrade();
+                    gd.setDateGrade(Constants.stdToDbDate(value));
+                    edits.append(cd.getID()+",G," + gd.getGrade() + "|" + gd.getDateGrade() + ";");
+                    pushEdit(edits.toString());
+                }
+            });
 
         Column<ClientData, String> telColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) { return cd.getTel(); } };
@@ -721,7 +731,10 @@ public class ListWidget extends Composite {
 
         guid = UUID.uuid();
         guid_on_form.setValue(guid);
-        currentSessionField.setValue(currentSession.getAbbrev());
+        if (currentSession != null)
+            currentSessionField.setValue(currentSession.getAbbrev());
+        else
+            currentSessionField.setValue("");
         dataToSave.setValue(edits);
 
         listEditForm.submit();
