@@ -330,12 +330,6 @@ public class ListWidget extends Composite {
         "No", "V", "Nom", "Prénom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Div", "Cours", "", "Saisons", "Div (FT303)"
     };
 
-    enum Mode {
-        NORMAL, EDIT, IMPOT
-    };
-
-    private Mode mode = Mode.NORMAL;
-
     private static final String SORTIR_LABEL = "sortir...";
     private static final String SORTIR_FT303_LABEL = "sortir FT-303";
     private HandlerRegistration ft303_handler_registration;
@@ -1097,7 +1091,6 @@ public class ListWidget extends Composite {
         //         }
         //     }
 
-
         //     if (mode == Mode.EDIT) {
         //         ListBox w = newCoursWidget(sd.getClubID(), cours);
         //         results.setWidget(curRow, Columns.COURS_DESC, w);
@@ -1128,14 +1121,6 @@ public class ListWidget extends Composite {
         if (matching_index != -1)
             lb.setSelectedIndex(matching_index);
         return lb;
-    }
-
-    public void switchMode(Mode m) {
-        this.mode = m;
-
-        originalVerifValues.clear();
-
-        showList();
     }
 
     /* --- process data from network --- */

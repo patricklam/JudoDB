@@ -218,8 +218,6 @@ public class JudoDB implements EntryPoint {
 
         hideAllSubpanels();
         mainPanel.lists.setVisible(true);
-
-        this.listWidget.switchMode(ListWidget.Mode.NORMAL);
     }
 
     public void _switchMode_config() {
