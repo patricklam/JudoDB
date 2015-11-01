@@ -94,7 +94,7 @@
 		</b:FormGroup>
 
 		<b:FormGroup>
-		  <b:Column size="XS_3"><b:FormLabel for="sans_affiliation">Déjà affili&eacute; Judo Qu&eacute;bec</b:FormLabel><g:HTMLPanel/><b3:ToggleSwitch ui:field="sans_affiliation" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="sans_affiliation_encoded" name="sans_affiliation_encoded" /></b:Column>
+		  <b:Column size="XS_3"><b:FormLabel for="sans_affiliation">Déjà affili&eacute; Judo Qu&eacute;bec</b:FormLabel><g:HTMLPanel /><b3:ToggleSwitch ui:field="sans_affiliation" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="sans_affiliation_encoded" name="sans_affiliation_encoded" /></b:Column>
 		  <b:Column size="XS_2"><b:FormLabel for="affiliation_ecole" addStyleNames="visible-print">Aff. &eacute;cole</b:FormLabel><b:FormLabel for="affiliation_ecole" addStyleNames="hidden-print">Affiliation &eacute;cole</b:FormLabel><g:HTMLPanel /><b3:ToggleSwitch ui:field="affiliation_ecole" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="affiliation_ecole_encoded" name="affiliation_ecole_encoded" /></b:Column>
 		  <b:Column size="XS_2"><b:FormLabel for="affiliation_ecole" addStyleNames="visible-print">Aff. initiation</b:FormLabel><b:FormLabel for="affiliation_initiation" addStyleNames="hidden-print">Affiliation initiation</b:FormLabel><b3:ToggleSwitch ui:field="affiliation_initiation" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="affiliation_initiation_encoded" name="affiliation_initiation_encoded" /></b:Column>
 		  <b:Column size="XS_2" addStyleNames="pull-right"><b:FormLabel for="affiliationFrais">Affiliation JQ</b:FormLabel><b:TextBox ui:field="affiliationFrais"/> <g:Hidden ui:field="affiliationFrais_encoded" name="affiliation_frais_encoded" /></b:Column>
@@ -102,7 +102,7 @@
 		<b:FormGroup>
 		  <b:Column size="XS_3"><b:FormLabel for="judogi">Co&ucirc;t judogi</b:FormLabel><b:ListBox ui:field="produit"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></b:Column>
 		  <b:Column size="XS_2" ui:field="rabais_resident_label"><b:FormLabel for="resident">Rabais r&eacute;sident</b:FormLabel><b3:ToggleSwitch ui:field="resident" onIcon="CHECK" offIcon="TIMES"/><g:Hidden ui:field="resident_encoded" name="resident_encoded" /></b:Column>
-		  <b:Column size="XS_2" ui:field="frais_paypal_label"><b:FormLabel for="paypal">Frais PayPal</b:FormLabel><b3:ToggleSwitch ui:field="paypal" onIcon="CHECK" offIcon="TIMES"/><g:Hidden ui:field="paypal_encoded" name="paypal_encoded" /></b:Column>
+		  <b:Column size="XS_2" ui:field="frais_paypal_label"><b:FormLabel for="paypal">Frais PayPal</b:FormLabel><g:HTMLPanel /><b3:ToggleSwitch ui:field="paypal" onIcon="CHECK" offIcon="TIMES"/><g:Hidden ui:field="paypal_encoded" name="paypal_encoded" /></b:Column>
 		  <b:Column size="XS_2" addStyleNames="pull-right"><b:FormLabel for="suppFrais">Autres frais</b:FormLabel><b:TextBox ui:field="suppFrais"  /><g:Hidden ui:field="suppFrais_encoded" name="supp_frais_encoded" /></b:Column>
 		</b:FormGroup>
 		<b:FormGroup>
