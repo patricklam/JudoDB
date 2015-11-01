@@ -122,7 +122,7 @@
 
 	<b:Label ui:field="nb" />
 	
-	<g:FormPanel ui:field="listEditForm" method="post">
+	<g:FormPanel ui:field="listEditForm" method="post" visible="false">
           <g:FlowPanel>
             <g:Hidden ui:field="guid_on_form" name="guid" />
             <g:Hidden ui:field="currentSessionField" name="current_session" />

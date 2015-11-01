@@ -546,7 +546,9 @@ public class ListWidget extends Composite {
         results.addColumn(gradeColumn, heads[Columns.GRADE]);
 
         Column<ClientData, String> gradeDateColumn = new Column<ClientData, String>(new EditTextCell())
-            { @Override public String getValue(ClientData cd) { return cd.getMostRecentGrade().getDateGrade(); } };
+            { @Override public String getValue(ClientData cd) {
+                    String dg = cd.getMostRecentGrade().getDateGrade();
+                    return dg == null ? Constants.STD_DUMMY_DATE : Constants.dbToStdDate(dg); } };
         results.addColumn(gradeDateColumn, heads[Columns.DATE_GRADE]);
 
         Column<ClientData, String> telColumn = new Column<ClientData, String>(new EditTextCell())
@@ -554,12 +556,26 @@ public class ListWidget extends Composite {
         telColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
         results.addColumn(telColumn, heads[Columns.TEL]);
         results.getHeader(results.getColumnCount()-1).setHeaderStyleNames("right-align");
+        telColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
+                @Override public void update(int index, ClientData cd, String value) {
+                    StringBuffer edits = new StringBuffer();
+                    edits.append(cd.getID()+",Ctel," + value + ";");
+                    pushEdit(edits.toString());
+                }
+            });
 
         Column<ClientData, String> judoQCColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) { return cd.getJudoQC(); } };
         judoQCColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
         results.addColumn(judoQCColumn, heads[Columns.JUDOQC]);
         results.getHeader(results.getColumnCount()-1).setHeaderStyleNames("right-align");
+        judoQCColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
+                @Override public void update(int index, ClientData cd, String value) {
+                    StringBuffer edits = new StringBuffer();
+                    edits.append(cd.getID()+",Caffiliation," + value + ";");
+                    pushEdit(edits.toString());
+                }
+            });
 
         ddnColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) {
@@ -571,6 +587,15 @@ public class ListWidget extends Composite {
                     return c1.getDDN().compareTo(c2.getDDN());
                 } });
         results.addColumn(ddnColumn, heads[Columns.DDN]);
+        ddnColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
+                @Override public void update(int index, ClientData cd, String value) {
+                    StringBuffer edits = new StringBuffer();
+                    String converted_ddn = Constants.stdToDbDate(value);
+                    cd.setDDNString(Constants.stdToDbDate(value));
+                    edits.append(cd.getID()+",Cddn," + converted_ddn + ";");
+                    pushEdit(edits.toString());
+                }
+            });
 
         final List<String> divSMNames = new ArrayList<>();
         divSMNames.add("Senior"); divSMNames.add("Masters");
@@ -591,8 +616,7 @@ public class ListWidget extends Composite {
                   }
               } };
 	divisionColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
-		@Override
-		public void update(int index, ClientData cd, String value) {
+		@Override public void update(int index, ClientData cd, String value) {
                     cdToSM.put(cd, value);
 		}
 	    });
@@ -629,14 +653,10 @@ public class ListWidget extends Composite {
         results.addColumn(sessionsColumn, heads[Columns.SESSION]);
     }
 
-    private void save() {
+    private void pushEdit(String edits) {
         // // iterate through originalVerifValues and see which ones to generate
         // // create a list of tuples of the form: 163, "verification", "0"; 164, "verification", "1"
         // // we'll push to the server, which will update the services that match the cid and the current session.
-
-        // guid = UUID.uuid();
-        // guid_on_form.setValue(guid);
-        // currentSessionField.setValue(currentSession.getAbbrev());
 
         // StringBuffer dv = new StringBuffer();
         // for (int i = 0; i < results.getRowCount(); i++) {
@@ -652,14 +672,6 @@ public class ListWidget extends Composite {
         //         if (lb.getSelectedIndex() != originalCours.get(lb)) {
         //             String cid = results.getText(i, Columns.CID);
         //             dv.append(cid + ",Scours,"+coursSummaries.get(lb.getSelectedIndex()).getId()+";");
-        //         }
-        //     }
-        //     Widget jqw = results.getWidget(i, Columns.JUDOQC);
-        //     if (jqw != null && jqw instanceof TextBox) {
-        //         TextBox jq = (TextBox) jqw;
-        //         if (!jq.getValue().equals(originalJudoQC.get(jq))) {
-        //             String cid = results.getText(i, Columns.CID);
-        //             dv.append(cid + ",Caffiliation,"+jq.getValue()+";");
         //         }
         //     }
         //     Widget gw = results.getWidget(i, Columns.GRADE);
@@ -698,13 +710,18 @@ public class ListWidget extends Composite {
         //             dv.append(cid + ",G,"+ngs+"|"+ngd+";");
         //     }
         // }
-        // dataToSave.setValue(dv.toString());
-        // listEditForm.submit();
 
-        // pushTries = 0;
-        // new Timer() { public void run() {
-        //     pushChanges(guid);
-        // } }.schedule(500);
+        guid = UUID.uuid();
+        guid_on_form.setValue(guid);
+        currentSessionField.setValue(currentSession.getAbbrev());
+        dataToSave.setValue(edits);
+
+        listEditForm.submit();
+
+        pushTries = 0;
+        new Timer() { public void run() {
+            pushChanges(guid);
+        } }.schedule(500);
     }
 
     private void reset() {
@@ -1329,6 +1346,7 @@ public class ListWidget extends Composite {
                             pushTries++;
                         } else {
                             jdb.setStatus("Sauvegardé.");
+                            results.redraw();
                         }
                         new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
                     }

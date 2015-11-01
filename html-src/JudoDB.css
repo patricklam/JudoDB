@@ -7,3 +7,6 @@ body {
  font-weight: bold;
 }
 
+.right-align {
+ text-align: right;
+}
