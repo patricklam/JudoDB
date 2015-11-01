@@ -533,7 +533,15 @@ public class ListWidget extends Composite {
 
         Column<ClientData, String> sexeColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) { return cd.getSexe(); } };
+        sexeColumn.setSortable(true);
         results.addColumn(sexeColumn, heads[Columns.SEXE]);
+        sexeColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
+                @Override public void update(int index, ClientData cd, String value) {
+                    StringBuffer edits = new StringBuffer();
+                    edits.append(cd.getID()+",Csexe," + value + ";");
+                    pushEdit(edits.toString());
+                }
+            });
 
         Column<ClientData, String> gradeColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) { return cd.getMostRecentGrade().getGrade(); } };
