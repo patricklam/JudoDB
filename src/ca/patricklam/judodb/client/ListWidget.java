@@ -168,7 +168,8 @@ public class ListWidget extends Composite {
     SelectionModel<ClientData> resultsSelectionModel;
     ListHandler<ClientData> resultsListHandler;
 
-    boolean checkColumnVisible = false;
+    boolean checkColumnVisible = true;
+    boolean checksFromResultModel = false;
     Column<ClientData, Boolean> checkColumn;
     Column<ClientData, String> ddnColumn;
     boolean divisionColumnVisible = false;
@@ -226,6 +227,7 @@ public class ListWidget extends Composite {
         if (session == null) {
             dropDownSessionButton.setText(jdb.TOUS);
             ft303_button.setVisible(false);
+
             if (divisionColumnVisible) {
                 results.removeColumn(divisionColumn);
 
@@ -233,14 +235,23 @@ public class ListWidget extends Composite {
                 results.insertColumn(coursIndex+1, sessionsColumn, heads[Columns.SESSION]);
                 divisionColumnVisible = false;
             }
+            if (checkColumnVisible) {
+                results.removeColumn(checkColumn);
+                checkColumnVisible = false;
+            }
         } else {
             dropDownSessionButton.setText(session.getAbbrev());
             ft303_button.setVisible(true);
+
             if (!divisionColumnVisible) {
                 int coursIndex = results.getColumnIndex(coursColumn);
                 results.insertColumn(coursIndex+1, divisionColumn, heads[Columns.DIVISION]);
                 results.removeColumn(sessionsColumn);
                 divisionColumnVisible = true;
+            }
+            if (!checkColumnVisible) {
+                results.insertColumn(0, checkColumn);
+                checkColumnVisible = true;
             }
         }
         coursButtonCell.setShowButton(jdb.getSelectedClub() != null && session != null);
@@ -405,10 +416,15 @@ public class ListWidget extends Composite {
                     sortirButton.setToggleCaret(false);
                     sortirButton.setDataToggle(Toggle.BUTTON);
                     ft303_handler_registration = sortirButton.addClickHandler(ft303_handler);
+                    results.setSelectionModel(resultsSelectionModel,
+                                              DefaultSelectionEventManager.<ClientData>
+                                              createCheckboxManager());
 
-                    results.insertColumn(0, checkColumn);
-                    checkColumnVisible = true;
-
+                    if (!checkColumnVisible) {
+                        results.insertColumn(0, checkColumn);
+                        checkColumnVisible = true;
+                    }
+                    checksFromResultModel = true;
                     divisionSMColumnVisible = true;
                 } } );
         ft303_controls.addHideHandler(new HideHandler() {
@@ -421,12 +437,9 @@ public class ListWidget extends Composite {
                     sortirButton.setDataToggle(Toggle.DROPDOWN);
                     sortirButton.setActive(false);
                     ft303_handler_registration.removeHandler();
+                    results.setSelectionModel(null);
 
-                    if (checkColumnVisible) {
-                        results.removeColumn(checkColumn);
-                        checkColumnVisible = false;
-                    }
-
+                    checksFromResultModel = false;
                     divisionSMColumnVisible = false;
                 } } );
 
@@ -482,17 +495,30 @@ public class ListWidget extends Composite {
                     public Object getKey(ClientData cd) {
                         return cd.getID();
                     }});
-        results.setSelectionModel(resultsSelectionModel,
-                                  DefaultSelectionEventManager.<ClientData>
-                                  createCheckboxManager());
 
         checkColumn =
             new Column<ClientData, Boolean>(new CheckboxCell(true, false)) {
             @Override
             public Boolean getValue(ClientData cd) {
-                return resultsSelectionModel.isSelected(cd);
+                if (checksFromResultModel)
+                    return resultsSelectionModel.isSelected(cd);
+                else {
+                    if (cd.getServiceFor(currentSession) != null)
+                        return cd.getServiceFor(currentSession).getVerification();
+                    return false;
+                }
             }
         };
+        results.addColumn(checkColumn);
+        checkColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
+                @Override public void update(int index, ClientData cd, Boolean value) {
+                    StringBuffer edits = new StringBuffer();
+                    String valueString = value ? "1" : "0";
+                    edits.append(cd.getID() + ",Sverification," + valueString + ";");
+                    cd.getServiceFor(currentSession).setVerification(value);
+                    pushEdit(edits.toString());
+                }
+            });
 
         Column<ClientData, SafeHtml> nomColumn =
             new AnchorColumn(new SafeHtmlCell())
@@ -700,13 +726,6 @@ public class ListWidget extends Composite {
     }
 
     private void pushEdit(String edits) {
-        //     CheckBox cb = (CheckBox)results.getWidget(i, Columns.VERIFICATION);
-        //     if (cb != null && cb.getValue() != originalVerifValues.get(cb)) {
-        //         String cid = results.getText(i, Columns.CID);
-        //         String v = cb.getValue() ? "1" : "0";
-        //         dv.append(cid + ",Sverification,"+v+";");
-        //     }
-
         guid = UUID.uuid();
         guid_on_form.setValue(guid);
         if (currentSession != null)
@@ -1047,16 +1066,6 @@ public class ListWidget extends Composite {
         list.clear();
         list.addAll(filteredClients);
         results.setRowCount(count, true);
-
-        //     if (visibility[Columns.VERIFICATION]) {
-        //         CheckBox cb = new CheckBox();
-        //         cb.addStyleName("hidden-print");
-        //         results.setWidget(curRow, Columns.VERIFICATION, cb);
-        //         if (mode==Mode.EDIT) {
-        //             cb.setValue(sd.getVerification());
-        //             originalVerifValues.put(cb, sd.getVerification());
-        //         }
-        //     }
     }
 
     /* --- process data from network --- */
