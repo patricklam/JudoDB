@@ -2,8 +2,9 @@
 package ca.patricklam.judodb.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.user.client.TakesValue;
 
-public class CoursSummary extends JavaScriptObject {
+public class CoursSummary extends JavaScriptObject implements TakesValue<String> {
     protected CoursSummary() { }
 
     // as used in ConfigWidget, id is synthetic
@@ -17,6 +18,9 @@ public class CoursSummary extends JavaScriptObject {
     public final native void setShortDesc(String short_desc) /*-{ this.short_desc = short_desc; }-*/;
     public final native String getSupplement() /*-{ return this.supplement_cours; }-*/;
     public final native void setSupplement(String supplement_cours) /*-{ this.supplement_cours = supplement_cours; }-*/;
+
+    public final String getValue() { return getShortDesc(); }
+    public final void setValue(String short_desc) { setShortDesc(short_desc); }
 
     public final String get(String key) {
 	if (key.equals("id")) return getId();

@@ -178,6 +178,7 @@ public class ListWidget extends Composite {
     boolean divisionSMColumnVisible = false;
 
     Map<ClientData, String> cdToSM = new HashMap<>();
+    private ButtonGroupCell<CoursSummary> coursButtonCell;
 
     String mostRecentGradeDate;
 
@@ -210,10 +211,12 @@ public class ListWidget extends Composite {
 
     void selectClub(ClubSummary club) {
         jdb.selectClub(club);
-        if (club == null)
+        if (club == null) {
             dropDownUserClubsButton.setText(jdb.TOUS);
-        else
+        } else {
             dropDownUserClubsButton.setText(club.getClubText());
+        }
+        coursButtonCell.setShowButton(club != null && currentSession != null);
 
         retrieveSessions(jdb.getSelectedClub());
         actuallyHandleClubChange();
@@ -240,6 +243,7 @@ public class ListWidget extends Composite {
                 divisionColumnVisible = true;
             }
         }
+        coursButtonCell.setShowButton(jdb.getSelectedClub() != null && session != null);
 
         currentSession = session;
         showList();
@@ -651,7 +655,8 @@ public class ListWidget extends Composite {
                     return xc - yc;
                 } });
 
-        coursColumn = new Column<ClientData, String>(new TextCell())
+        coursButtonCell = new ButtonGroupCell<CoursSummary>(coursSummaries);
+        coursColumn = new Column<ClientData, String>(coursButtonCell)
             { @Override public String getValue(ClientData cd) {
                     int cours = -1;
                     if (cd.getServiceFor(currentSession) != null)
@@ -668,6 +673,26 @@ public class ListWidget extends Composite {
                     return xcours - ycours;
                 } });
         results.addColumn(coursColumn, heads[Columns.COURS_DESC]);
+        coursColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
+                @Override public void update(int index, ClientData cd, String value) {
+                    CoursSummary c = null;
+                    for (CoursSummary cs : coursSummaries) {
+                        if (cs.getValue().equals(value)) {
+                            c = cs; break;
+                        }
+                    }
+                    if (c == null) return;
+                    if (cd.getServiceFor(currentSession) != null) {
+                        if (c.getId().equals(cd.getServiceFor(currentSession).getCours()))
+                            return;
+                        cd.getServiceFor(currentSession).setCours(c.getId());
+                    }
+
+                    StringBuffer edits = new StringBuffer();
+                    edits.append(cd.getID() + ",Scours,"+c.getId()+";");
+                    pushEdit(edits.toString());
+                }
+            });
 
         sessionsColumn = new Column<ClientData, String>(new TextCell())
             { @Override public String getValue(ClientData cd) { return cd.getAllActiveSaisons(); } };
@@ -680,14 +705,6 @@ public class ListWidget extends Composite {
         //         String cid = results.getText(i, Columns.CID);
         //         String v = cb.getValue() ? "1" : "0";
         //         dv.append(cid + ",Sverification,"+v+";");
-        //     }
-        //     Widget lbw = results.getWidget(i, Columns.COURS_DESC);
-        //     if (lbw != null && lbw instanceof ListBox) {
-        //         ListBox lb = (ListBox) lbw;
-        //         if (lb.getSelectedIndex() != originalCours.get(lb)) {
-        //             String cid = results.getText(i, Columns.CID);
-        //             dv.append(cid + ",Scours,"+coursSummaries.get(lb.getSelectedIndex()).getId()+";");
-        //         }
         //     }
 
         guid = UUID.uuid();
@@ -872,7 +889,7 @@ public class ListWidget extends Composite {
        dv += cd.getDDNString() + "|";
        ServiceData sd = cd.getServiceFor(currentSession);
        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-       ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
+       ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);
        // XXX clubPrix on ListWidget
        CostCalculator.recompute(currentSession, cd, sd, cs, coursSummaries, ps, prorata.getValue(), null, escompteSummaries);
        if (sd != null) {
@@ -1040,38 +1057,7 @@ public class ListWidget extends Composite {
         //             originalVerifValues.put(cb, sd.getVerification());
         //         }
         //     }
-
-        //     if (mode == Mode.EDIT) {
-        //         ListBox w = newCoursWidget(sd.getClubID(), cours);
-        //         results.setWidget(curRow, Columns.COURS_DESC, w);
-        //         results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
-        //         originalCours.put(w, cours);
-        //     } else if (cours != -1) {
-        //         results.setText(curRow, Columns.COURS_DESC, getShortDescForCoursId(cours));
-        //         results.setText(curRow, Columns.COURS_NUM, Integer.toString(cours));
-        //     }
-
-        // }
     }
-
-    // private ListBox newCoursWidget(String clubId, int coursId) {
-    //     ListBox lb = new ListBox();
-    //     int matching_index = -1;
-    //     int i = 0;
-    //     String ciString = Integer.toString(coursId);
-
-    //     for (CoursSummary cs : coursSummaries) {
-    //         if (clubId.equals(cs.getClubId())) {
-    //             lb.addItem(cs.getShortDesc(), cs.getId());
-    //             if (cs.getId().equals(ciString))
-    //                 matching_index = i;
-    //             i++;
-    //         }
-    //     }
-    //     if (matching_index != -1)
-    //         lb.setSelectedIndex(matching_index);
-    //     return lb;
-    // }
 
     /* --- process data from network --- */
     private void loadCours(JsArray<CoursSummary> coursArray) {
