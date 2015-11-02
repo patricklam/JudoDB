@@ -534,65 +534,26 @@ public class ListWidget extends Composite {
         results.addColumn(gradeColumn, heads[Columns.GRADE]);
         results.getHeader(results.getColumnCount()-1).setHeaderStyleNames("right-align");
 
-        // change handler:
-        // for (ClientData cd : filteredClients) {
-        //     if (mode == Mode.EDIT) {
-        //         TextBox g = new TextBox();
-        //         final TextBox gd = new TextBox();
-        //         g.setValue(grade); g.setWidth("3em");
-        //         g.addChangeHandler(new ChangeHandler() {
-        //             public void onChange(ChangeEvent e) {
-        //                 String gdv = gd.getValue();
-        //                 if (gdv.equals("") || gdv.equals(Constants.STD_DUMMY_DATE))
-        //                     gd.setValue(edit_date.getValue());
-        //             }
-        //         });
-        //         results.setWidget(curRow, Columns.GRADE, g);
-        //         originalGrades.put(g, cd.getGrade());
-        //         gd.setValue(Constants.dbToStdDate(cd.getDateGrade())); gd.setWidth("6em");
-        //         results.setWidget(curRow, Columns.DATE_GRADE, gd);
-        //         originalGradeDates.put(gd, cd.getDateGrade());
-        //     } else if (grade != null && !grade.equals("")) {
-        //         results.setText(curRow, Columns.GRADE, grade);
-        //         results.setText(curRow, Columns.DATE_GRADE, Constants.dbToStdDate(cd.getDateGrade()));
-        //     }
+        gradeColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
+                @Override public void update(int index, ClientData cd, String value) {
+                    StringBuffer edits = new StringBuffer();
 
-        // save handler:
-        //     Widget gw = results.getWidget(i, Columns.GRADE);
-        //     // if the grade changed (but not the date)---delete old grade
-        //     // if the grade didn't change but the date changed---delete old grade/date, but use old grade (untruncated) as new grade
-        //     // if the grade and date changed---don't delete anything
-        //     if (gw != null && gw instanceof TextBox) {
-        //         TextBox g = (TextBox) gw,
-        //                 gd = (TextBox)results.getWidget(i, Columns.DATE_GRADE);
-        //         boolean changed = false, deleteOld = false;
-        //         String origGrade = originalGrades.get(g), ogs;
-        //         String newGrade = g.getValue(), ngs;
+                    // comments for historic reasons
+                    // if the grade changed (but not the date):
+                    //   delete old grade
+                    // if the grade didn't change but the date changed:
+                    //   delete old grade/date, but use old grade (untruncated) as new grade
+                    // if the grade and date changed:
+                    //   don't delete anything
 
-        //         if (origGrade == null) origGrade = "";
-        //         ogs = new String(origGrade); ngs = new String(newGrade);
-        //         if (ogs.length() >= 3) ogs = ogs.substring(0, 3);
-        //         if (ngs.length() >= 3) ngs = ngs.substring(0, 3);
+                    GradeData gd = cd.getMostRecentGrade();
+                    gd.setDateGrade(Constants.stdToDbDate(mostRecentGradeDate));
+                    gd.setGrade(value);
 
-        //         String ogd = originalGradeDates.get(gd);
-        //         String ngd = Constants.stdToDbDate(gd.getValue());
-
-        //         if (!ogs.equals(ngs) && ngd.equals(ogd))
-        //             { changed = true; deleteOld = true; }
-        //         if (ogs.equals(ngs) && !ngd.equals(ogd))
-        //             { changed = true; ngs = origGrade; deleteOld = true; }
-        //         if (!ogs.equals(ngs) && !ngd.equals(ogd))
-        //             { changed = true; }
-        //         // otherwise, everything is equal, no changes.
-
-        //         String cid = results.getText(i, Columns.CID);
-
-        //         if (deleteOld)
-        //             dv.append(cid + ",!,"+origGrade+"|"+ogd+";");
-        //         if (changed)
-        //             dv.append(cid + ",G,"+ngs+"|"+ngd+";");
-        //     }
-        // }
+                    edits.append(cd.getID()+",G," + gd.getGrade() + "|" + gd.getDateGrade() + ";");
+                    pushEdit(edits.toString());
+                }
+            });
 
         Column<ClientData, String> gradeDateColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) {
