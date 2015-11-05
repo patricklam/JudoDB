@@ -38,7 +38,7 @@
          <b.html:Text ui:field="statusText" />
        </b:Alert>
       </b:Container>
-      <b:Heading size="H1" text="Logiciel gestion de club Menba Judo Qu&eacute;bec"/>
+      <b:Heading size="H1" text="Menba: Logiciel gestion de club Judo Qu&eacute;bec"/>
       <b:Container>
        <b:Row><b:Column size="MD_7">
         <b:Container ui:field="main">
