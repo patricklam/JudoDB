@@ -102,7 +102,6 @@ public class Constants {
         new Grade("Bleue", "Ble", -20),
         new Grade("B/M", -15),
         new Grade("Marron", "Mar", -10),
-        new Grade("Brune", "Bru", -10),
         new Grade("1D", 10),
         new Grade("2D", 20),
         new Grade("3D", 30),
