@@ -38,7 +38,7 @@
          <b.html:Text ui:field="statusText" />
        </b:Alert>
       </b:Container>
-      <b:Heading size="H1" text="Base des donn&eacute;es Judo Qu&eacute;bec"/>
+      <b:Heading size="H1" text="Logiciel gestion de club Menba Judo Qu&eacute;bec"/>
       <b:Container>
        <b:Row><b:Column size="MD_7">
         <b:Container ui:field="main">
@@ -60,7 +60,7 @@
          </b:Row>
          <b:Row>
           <b:Column size="MD_6">
-           <b:Button ui:field="listeButton" text="Recherche par liste" />
+           <b:Button ui:field="listeButton" text="Gestion par liste" />
           </b:Column>
          </b:Row>
 
@@ -70,6 +70,18 @@
            <b:Button ui:field="configButton" text="Configuration club (cours, inscription)"></b:Button>
           </b:Column>
          </b:Row>
+
+         <b:Row> <b:Heading size="H2" text="Outils" /> </b:Row>
+          <b:Row>
+           <b:Column size="MD_6">
+            <b:Button ui:field="ftButton" text="Imprimer feuilles FT-303" />
+           </b:Column>
+          </b:Row>
+          <b:Row>
+           <b:Column size="MD_6">
+            <b:Button ui:field="impotButton" text="Imprimer re&ccedil;us d'impot" />
+	   </b:Column>
+          </b:Row>
 
          <b:Row> <b:Heading size="H2" text="Autre" /> </b:Row>
          <b:Row>
