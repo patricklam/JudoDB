@@ -114,6 +114,7 @@ public class JudoDB implements EntryPoint {
     private final MainPanel mainPanel = new MainPanel();
 
     /* state */
+    boolean isAdmin;
     List<ClientSummary> allClients;
     List<ClubSummary> allClubs;
     private String searchString;
@@ -575,8 +576,13 @@ public class JudoDB implements EntryPoint {
     private void loadClubListResults(List<ClubSummary> clubs) {
         List<ClubSummary> newClubs = new ArrayList<ClubSummary>();
         for (ClubSummary c : clubs) {
-            if (Integer.parseInt(c.getId()) > 0)
+            if (Integer.parseInt(c.getId()) > 0) {
                 newClubs.add(c);
+            } else {
+                /* gross hack! */
+                if (c.getId().equals("-1"))
+                    isAdmin = c.getNom().equals("admin");
+            }
         }
         this.allClubs = newClubs;
         refreshClubListResults();

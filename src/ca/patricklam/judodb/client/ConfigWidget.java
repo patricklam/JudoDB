@@ -428,14 +428,17 @@ public class ConfigWidget extends Composite {
 
 	addSessionColumn(sessions, ABBREV_COLUMN, !jdb.isClubSelected());
 	addSessionColumn(sessions, YEAR_COLUMN, !jdb.isClubSelected());
-	addSessionColumn(sessions, SEQNO_COLUMN, false);
-	addSessionColumn(sessions, LINKED_SEQNO_COLUMN, !jdb.isClubSelected());
 	if (jdb.isClubSelected()) {
 	    addSessionColumn(sessions, FIRST_CLASS_COLUMN, true);
 	    addSessionColumn(sessions, FIRST_SIGNUP_COLUMN, true);
 	    addSessionColumn(sessions, LAST_CLASS_COLUMN, true);
 	    addSessionColumn(sessions, LAST_SIGNUP_COLUMN, true);
-	}
+	} else {
+            if (jdb.isAdmin) {
+                addSessionColumn(sessions, SEQNO_COLUMN, false);
+                addSessionColumn(sessions, LINKED_SEQNO_COLUMN, !jdb.isClubSelected());
+            }
+        }
 	addSessionColumn(sessions, DELETE_SESSION_COLUMN, false);
     }
 
