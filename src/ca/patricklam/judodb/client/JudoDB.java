@@ -115,7 +115,7 @@ public class JudoDB implements EntryPoint {
 
     /* state */
     List<ClientSummary> allClients;
-    JsArray<ClubSummary> allClubs;
+    List<ClubSummary> allClubs;
     private String searchString;
     private int firstSearchResultToDisplay = 0;
     private Stack<Mode> modeStack = new Stack<Mode>();
@@ -458,15 +458,14 @@ public class JudoDB implements EntryPoint {
           dropDownUserClubs.add(tous);
       }
 
-      for(int i = 0; i < allClubs.length(); ++i) {
-          ClubSummary cs = allClubs.get(i);
+      for(ClubSummary cs : allClubs) {
           AnchorListItem it = new AnchorListItem(cs.getClubText());
           it.addClickHandler(clhf.instantiate(cs));
           dropDownUserClubs.add(it);
       }
 
       // don't select TOUS by default if there is only 1 club
-      if (allClubs.length() == 1) 
+      if (allClubs.size() == 1)
           selectedClub = allClubs.get(0);
       selectClub(selectedClub);
     }
@@ -502,8 +501,7 @@ public class JudoDB implements EntryPoint {
     }
 
     ClubSummary getClubSummaryByID(String cid) {
-        for(int i = 0; i < allClubs.length(); ++i) {
-          ClubSummary cs = allClubs.get(i);
+        for(ClubSummary cs : allClubs) {
           if (cs.getId().equals(cid)) return cs;
         }
         return null;
@@ -564,15 +562,23 @@ public class JudoDB implements EntryPoint {
         RequestCallback rc =
             createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
-                        loadClubListResults
-                            (JsonUtils.<JsArray<ClubSummary>>safeEval(s));
+                        JsArray<ClubSummary> clubsArray = JsonUtils.<JsArray<ClubSummary>>safeEval(s);
+                        List<ClubSummary> clubs = new ArrayList<ClubSummary>();
+                        for (int i = 0; i < clubsArray.length(); i++)
+                            clubs.add(clubsArray.get(i));
+                        loadClubListResults(clubs);
                     }
                 });
         retrieve(url, rc);
     }
 
-    private void loadClubListResults(JsArray<ClubSummary> clubs) {
-        this.allClubs = clubs;
+    private void loadClubListResults(List<ClubSummary> clubs) {
+        List<ClubSummary> newClubs = new ArrayList<ClubSummary>();
+        for (ClubSummary c : clubs) {
+            if (Integer.parseInt(c.getId()) > 0)
+                newClubs.add(c);
+        }
+        this.allClubs = newClubs;
         refreshClubListResults();
     }
 
