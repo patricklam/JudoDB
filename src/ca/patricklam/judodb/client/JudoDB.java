@@ -313,6 +313,7 @@ public class JudoDB implements EntryPoint {
         // Add a handler to send the name to the server
         SearchHandler shandler = new SearchHandler();
         mainPanel.searchButton.addClickHandler(shandler);
+        mainPanel.searchTextBox.addKeyUpHandler(shandler);
 
         // Add a handler for "nouveau client"
         EditClientHandler ehandler = new EditClientHandler(null, -1);
