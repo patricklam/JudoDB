@@ -21,6 +21,9 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -29,6 +32,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -48,13 +52,13 @@ import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
-import org.gwtbootstrap3.client.ui.gwt.CellTable;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextCell;
-import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.cell.client.SelectionCell;
 import com.google.gwt.view.client.ListDataProvider;
@@ -64,6 +68,7 @@ import com.google.gwt.view.client.MultiSelectionModel;
 import com.google.gwt.view.client.DefaultSelectionEventManager;
 import com.google.gwt.http.client.RequestCallback;
 
+import org.gwtbootstrap3.client.ui.gwt.CellTable;
 import org.gwtbootstrap3.client.ui.AnchorListItem;
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
@@ -128,7 +133,6 @@ public class ListWidget extends Composite {
 
     @UiField Hidden club_id;
 
-    @UiField Button ft303_button;
     @UiField Collapse ft303_controls;
     @UiField TextBox evt;
     @UiField TextBox date;
@@ -169,9 +173,12 @@ public class ListWidget extends Composite {
     ListHandler<ClientData> resultsListHandler;
 
     boolean checkColumnVisible = true;
-    boolean checksFromResultModel = false;
+    VerificationCheckboxHeader checkHeader;
     Column<ClientData, Boolean> checkColumn;
     Column<ClientData, String> ddnColumn;
+    Column<ClientData, String> gradeColumn;
+    boolean dateGradeColumnVisible = true;
+    Column<ClientData, String> dateGradeColumn;
     boolean divisionColumnVisible = false;
     Column<ClientData, String> divisionColumn;
     Column<ClientData, String> sessionsColumn;
@@ -187,7 +194,7 @@ public class ListWidget extends Composite {
     private int pushTries;
 
     private class Columns {
-        final static int VERIFICATION = 0;
+        final static int SELECTION = 0;
         final static int NOM = 1;
         final static int PRENOM = 2;
         final static int SEXE = 3;
@@ -195,20 +202,25 @@ public class ListWidget extends Composite {
         final static int DATE_GRADE = 5;
         final static int TEL = 6;
         final static int JUDOQC = 7;
-        final static int DDN = 8;
-        final static int DIVISION = 9;
-        final static int COURS_DESC = 10;
-        final static int SESSION = 11;
-        final static int DIVISION_SM = 12;
+        final static int VERIFICATION = 8;
+        final static int DDN = 9;
+        final static int DIVISION = 10;
+        final static int COURS_DESC = 11;
+        final static int SESSION = 12;
+        final static int DIVISION_SM = 13;
     }
 
     public String[] heads = new String[] {
-        "V", "Nom", "Prénom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "DDN", "Div", "Cours", "Saisons", "Div (FT303)"
+        "V", "Nom", "Prénom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "Verif", "DDN", "Div", "Cours", "Saisons", "Div (FT303)"
     };
 
-    private static final String SORTIR_LABEL = "sortir...";
-    private static final String SORTIR_FT303_LABEL = "sortir FT-303";
+    private static final String SORTIR_LABEL = "afficher...";
+    private static final String SORTIR_FT303_LABEL = "afficher FT-303";
     private HandlerRegistration ft303_handler_registration;
+    private final ClickHandler ft303_handler = new ClickHandler() {
+            public void onClick(ClickEvent e) {
+                if (makeFT()) submit("ft");
+            }};
 
     void selectClub(ClubSummary club) {
         jdb.selectClub(club);
@@ -226,7 +238,6 @@ public class ListWidget extends Composite {
     private void selectSession(SessionSummary session) {
         if (session == null) {
             dropDownSessionButton.setText(jdb.TOUS);
-            ft303_button.setVisible(false);
 
             if (divisionColumnVisible) {
                 results.removeColumn(divisionColumn);
@@ -241,7 +252,6 @@ public class ListWidget extends Composite {
             }
         } else {
             dropDownSessionButton.setText(session.getAbbrev());
-            ft303_button.setVisible(true);
 
             if (!divisionColumnVisible) {
                 int coursIndex = results.getColumnIndex(coursColumn);
@@ -250,7 +260,7 @@ public class ListWidget extends Composite {
                 divisionColumnVisible = true;
             }
             if (!checkColumnVisible) {
-                results.insertColumn(0, checkColumn);
+                results.insertColumn(0, checkColumn, checkHeader);
                 checkColumnVisible = true;
             }
         }
@@ -341,10 +351,107 @@ public class ListWidget extends Composite {
         return "inconnu";
     }
 
+    class VerificationCheckboxHeader extends Header<Boolean> {
+        public VerificationCheckboxHeader() {
+            super(new CheckboxCell());
+        }
+
+        @Override
+        public Boolean getValue() {
+            boolean allItemsSelected = true, allItemsDeselected = true;
+            if (currentSession == null) return false;
+
+            for (ClientData cd : filteredClients) {
+                if (cd.getServiceFor(currentSession).getVerification())
+                    allItemsDeselected = false;
+                else
+                    allItemsSelected = false;
+                if (!allItemsDeselected && !allItemsSelected)
+                    break;
+            }
+
+            if (!allItemsDeselected && !allItemsSelected) {
+                // xxx too bad indeterminate doesn't work
+                return true;
+            }
+            return allItemsSelected;
+        }
+
+        @Override
+        public void onBrowserEvent(Context context, Element elem, NativeEvent event) {
+            InputElement input = elem.getFirstChild().cast();
+            Boolean value = input.isChecked();
+            String valueString = value ? "1" : "0";
+
+            StringBuffer edits = new StringBuffer();
+
+            for (ClientData cd : filteredClients) {
+                edits.append(cd.getID() + ",Sverification," + valueString + ";");
+                cd.getServiceFor(currentSession).setVerification(value);
+            }
+            pushEdit(edits.toString());
+            }
+    }
+
+    private void enableFTMode() {
+        isFT = true;
+        showList();
+        ft303_controls.show();
+        sortirButton.setText(SORTIR_FT303_LABEL);
+        sortirButton.setToggleCaret(false);
+        sortirButton.setDataToggle(Toggle.BUTTON);
+        ft303_handler_registration = sortirButton.addClickHandler(ft303_handler);
+        results.setSelectionModel(resultsSelectionModel,
+                                  DefaultSelectionEventManager.<ClientData>
+                                  createCheckboxManager());
+
+        if (!checkColumnVisible) {
+            results.insertColumn(0, checkColumn, checkHeader);
+            checkColumnVisible = true;
+        }
+        if (dateGradeColumnVisible) {
+            results.removeColumn(dateGradeColumn);
+            dateGradeColumnVisible = false;
+        }
+        divisionSMColumnVisible = true;
+    }
+
+    private void disableFTMode() {
+        isFT = false;
+        showList();
+        ft303_controls.hide();
+        sortirButton.setText(SORTIR_LABEL);
+        sortirButton.setToggleCaret(true);
+        sortirButton.setDataToggle(Toggle.DROPDOWN);
+        sortirButton.setActive(false);
+        if (ft303_handler_registration != null)
+            ft303_handler_registration.removeHandler();
+        results.setSelectionModel(null);
+        if (!dateGradeColumnVisible) {
+            int gradeIndex = results.getColumnIndex(gradeColumn);
+            results.insertColumn(gradeIndex + 1, dateGradeColumn, heads[Columns.DATE_GRADE]);
+            dateGradeColumnVisible = true;
+        }
+
+        divisionSMColumnVisible = false;
+    }
+
+    void processArg(String arg) {
+        disableFTMode();
+        if (JudoDB.Mode.LIST_PARAM_FT303.equals(arg)) {
+            enableFTMode();
+        }
+    }
+
+    private void enableImpotMode() {
+        // XXX TODO
+    }
+
     public ListWidget(JudoDB jdb) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
 
+        checkColumnVisible = false;
         initializeResultsTable();
 
         listForm.addStyleName("hidden-print");
@@ -402,47 +509,6 @@ public class ListWidget extends Composite {
         grade_upper.addChangeHandler(new ChangeHandler() {
                 @Override public void onChange(ChangeEvent e) { showList(); } });
 
-        final ClickHandler ft303_handler = new ClickHandler() {
-                public void onClick(ClickEvent e) {
-                    if (makeFT()) submit("ft");
-                }};
-
-        ft303_controls.addShowHandler(new ShowHandler() {
-                @Override public void onShow(ShowEvent e) {
-                    isFT = true;
-                    showList();
-                    ft303_button.setIcon(IconType.MINUS);
-                    sortirButton.setText(SORTIR_FT303_LABEL);
-                    sortirButton.setToggleCaret(false);
-                    sortirButton.setDataToggle(Toggle.BUTTON);
-                    ft303_handler_registration = sortirButton.addClickHandler(ft303_handler);
-                    results.setSelectionModel(resultsSelectionModel,
-                                              DefaultSelectionEventManager.<ClientData>
-                                              createCheckboxManager());
-
-                    if (!checkColumnVisible) {
-                        results.insertColumn(0, checkColumn);
-                        checkColumnVisible = true;
-                    }
-                    checksFromResultModel = true;
-                    divisionSMColumnVisible = true;
-                } } );
-        ft303_controls.addHideHandler(new HideHandler() {
-                @Override public void onHide(HideEvent e) {
-                    isFT = false;
-                    showList();
-                    ft303_button.setIcon(IconType.PLUS);
-                    sortirButton.setText(SORTIR_LABEL);
-                    sortirButton.setToggleCaret(true);
-                    sortirButton.setDataToggle(Toggle.DROPDOWN);
-                    sortirButton.setActive(false);
-                    ft303_handler_registration.removeHandler();
-                    results.setSelectionModel(null);
-
-                    checksFromResultModel = false;
-                    divisionSMColumnVisible = false;
-                } } );
-
         sortir_impot.setVisible(false);
 /*      recalc.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { recalc(); } }); */
@@ -479,7 +545,7 @@ public class ListWidget extends Composite {
     }
 
     private void initializeResultsTable() {
-        results.setAutoHeaderRefreshDisabled(true);
+        results.setAutoHeaderRefreshDisabled(false);
         results.setAutoFooterRefreshDisabled(true);
 
         resultsDataProvider = new ListDataProvider<>();
@@ -496,20 +562,14 @@ public class ListWidget extends Composite {
                         return cd.getID();
                     }});
 
+        checkHeader = new VerificationCheckboxHeader();
         checkColumn =
             new Column<ClientData, Boolean>(new CheckboxCell(true, false)) {
             @Override
             public Boolean getValue(ClientData cd) {
-                if (checksFromResultModel)
-                    return resultsSelectionModel.isSelected(cd);
-                else {
-                    if (cd.getServiceFor(currentSession) != null)
-                        return cd.getServiceFor(currentSession).getVerification();
-                    return false;
-                }
+                return resultsSelectionModel.isSelected(cd);
             }
         };
-        results.addColumn(checkColumn);
         checkColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
                 @Override public void update(int index, ClientData cd, Boolean value) {
                     StringBuffer edits = new StringBuffer();
@@ -552,7 +612,7 @@ public class ListWidget extends Composite {
                 }
             });
 
-        Column<ClientData, String> gradeColumn = new Column<ClientData, String>(new EditTextCell())
+        gradeColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) { return cd.getMostRecentGrade().getGrade(); } };
         gradeColumn.setSortable(true);
         gradeColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -585,12 +645,12 @@ public class ListWidget extends Composite {
                 }
             });
 
-        Column<ClientData, String> gradeDateColumn = new Column<ClientData, String>(new EditTextCell())
+        dateGradeColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) {
                     String dg = cd.getMostRecentGrade().getDateGrade();
                     return dg == null ? Constants.STD_DUMMY_DATE : Constants.dbToStdDate(dg); } };
-        results.addColumn(gradeDateColumn, heads[Columns.DATE_GRADE]);
-        gradeDateColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
+        results.addColumn(dateGradeColumn, heads[Columns.DATE_GRADE]);
+        dateGradeColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
                 @Override public void update(int index, ClientData cd, String value) {
                     StringBuffer edits = new StringBuffer();
                     mostRecentGradeDate = value;
@@ -624,6 +684,22 @@ public class ListWidget extends Composite {
                 @Override public void update(int index, ClientData cd, String value) {
                     StringBuffer edits = new StringBuffer();
                     edits.append(cd.getID()+",Caffiliation," + value + ";");
+                    pushEdit(edits.toString());
+                }
+            });
+
+        Column<ClientData, Boolean> verifColumn = new Column<ClientData, Boolean>(new CheckboxCell())
+            { @Override public Boolean getValue(ClientData cd) {
+                    if (cd.getServiceFor(currentSession) != null)
+                        return cd.getServiceFor(currentSession).getVerification();
+                    return false;
+                } };
+        results.addColumn(verifColumn, heads[Columns.VERIFICATION]);
+        verifColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
+                @Override public void update(int index, ClientData cd, Boolean value) {
+                    StringBuffer edits = new StringBuffer();
+                    edits.append(cd.getID()+",Sverification," + (value ? "1" : "0") + ";");
+                    cd.getServiceFor(currentSession).setVerification(value.equals("1"));
                     pushEdit(edits.toString());
                 }
             });
@@ -723,6 +799,7 @@ public class ListWidget extends Composite {
         sessionsColumn = new Column<ClientData, String>(new TextCell())
             { @Override public String getValue(ClientData cd) { return cd.getAllActiveSaisons(); } };
         results.addColumn(sessionsColumn, heads[Columns.SESSION]);
+        results.redrawHeaders();
     }
 
     private void pushEdit(String edits) {
@@ -740,10 +817,6 @@ public class ListWidget extends Composite {
         new Timer() { public void run() {
             pushChanges(guid);
         } }.schedule(500);
-    }
-
-    private void reset() {
-        retrieveAllClients();
     }
 
     private void recalc() {
@@ -810,7 +883,6 @@ public class ListWidget extends Composite {
         String dv = "|";
         for (int i = 1; i < results.getRowCount(); i++) {
             for (int j = 0; j < results.getColumnCount(); j++) {
-                if (j == Columns.VERIFICATION) continue;
                 // dv += results.getText(i, j) + "|";
             }
             dv += "*|";
@@ -941,7 +1013,12 @@ public class ListWidget extends Composite {
         data.setValue("");
         data_full.setValue(dv.toString());
         if (jdb.getSelectedClubID() == null) {
-            jdb.setStatus("Veuillez selectionner un club.");
+            jdb.displayError("Veuillez selectionner un club.");
+            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+            return false;
+        }
+        if (currentSession == null) {
+            jdb.displayError("Veuillez selectionner une session.");
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
             return false;
         }
@@ -1029,16 +1106,6 @@ public class ListWidget extends Composite {
         } else {
             return emptyLC && emptyUC;
         }
-    }
-
-    // --- actions ---
-    private void clearX() {
-        // for (int i = 0; i < results.getRowCount(); i++) {
-        //     CheckBox cb = (CheckBox)results.getWidget(i, Columns.VERIFICATION);
-        //     if (cb != null && cb.getValue()) {
-        //         cb.setValue(false);
-        //     }
-        // }
     }
 
     @SuppressWarnings("deprecation")

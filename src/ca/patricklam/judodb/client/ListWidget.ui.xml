@@ -72,7 +72,6 @@
 
 	      <b:Column size="XS_3">
 		<b:Button ui:field="filter_button" dataToggle='COLLAPSE' dataTarget='#filtres' icon="PLUS" text="Filtres" addStyleNames="{style.margin-right}" />
-		<b:Button ui:field="ft303_button" dataToggle='COLLAPSE' dataTarget='#ft303' icon="PLUS" text="FT-303" />
 	      </b:Column>
 
 	      <b:Column size="XS_2">

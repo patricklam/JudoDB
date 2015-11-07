@@ -31,13 +31,13 @@
 </ui:style>
 
 <g:FlowPanel>
+  <b:Container styleName="{style.status}">
+    <b:Alert ui:field="statusAlert" type="WARNING" styleName="{style.statusAlert}"> 
+      <b.html:Text ui:field="statusText" />
+    </b:Alert>
+  </b:Container>
     <c:OnlyYScrollPanel ui:field='mainPanel' width='99%' height='100%'>
      <g:FlowPanel>
-      <b:Container styleName="{style.status}">
-       <b:Alert ui:field="statusAlert" type="WARNING" styleName="{style.statusAlert}"> 
-         <b.html:Text ui:field="statusText" />
-       </b:Alert>
-      </b:Container>
       <b:Heading size="H1" text="Menba: Logiciel gestion de club Judo Qu&eacute;bec"/>
       <b:Container>
        <b:Row><b:Column size="MD_7">
@@ -64,24 +64,26 @@
           </b:Column>
          </b:Row>
 
-         <b:Row> <b:Heading size="H2" text="Configuration" /> </b:Row>
-         <b:Row>
-          <b:Column size="MD_6">
-           <b:Button ui:field="configButton" text="Configuration club (cours, inscription)"></b:Button>
-          </b:Column>
-         </b:Row>
-
          <b:Row> <b:Heading size="H2" text="Outils" /> </b:Row>
           <b:Row>
            <b:Column size="MD_6">
             <b:Button ui:field="ftButton" text="Imprimer feuilles FT-303" />
            </b:Column>
           </b:Row>
+<!-- disable for now
           <b:Row>
            <b:Column size="MD_6">
             <b:Button ui:field="impotButton" text="Imprimer re&ccedil;us d'impot" />
 	   </b:Column>
           </b:Row>
+-->
+
+         <b:Row> <b:Heading size="H2" text="Configuration" /> </b:Row>
+         <b:Row>
+          <b:Column size="MD_6">
+           <b:Button ui:field="configButton" text="Configuration club (cours, inscription)"></b:Button>
+          </b:Column>
+         </b:Row>
 
          <b:Row> <b:Heading size="H2" text="Autre" /> </b:Row>
          <b:Row>

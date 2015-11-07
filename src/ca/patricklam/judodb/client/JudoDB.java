@@ -58,6 +58,8 @@ import com.google.gwt.uibinder.client.UiField;
  */
 public class JudoDB implements EntryPoint {
     static class Mode {
+        public static final String LIST_PARAM_FT303 = "ft303";
+        public static final String LIST_PARAM_IMPOT = "impot";
         enum ActualMode {
             MAIN("main"), LIST("list"), EDIT_CLIENT("edit"), CONFIG("config");
             final String label;
@@ -69,26 +71,28 @@ public class JudoDB implements EntryPoint {
             }
         };
         ActualMode am;
-        int arg;
+        String arg;
 
         public Mode(ActualMode am) { this.am = am; }
-        public Mode(ActualMode am, int arg) {
+        public Mode(ActualMode am, String arg) {
             this.am = am; this.arg = arg;
         }
 
         public String toString() {
             if (am == ActualMode.EDIT_CLIENT) return am.label + arg;
+            if (am == ActualMode.LIST) return am.label + arg;
             return am.label;
         }
 
         static Mode parse(String s) {
             for (ActualMode m : ActualMode.values())
                 if (m.matchesLabel(s)) {
-                    if (m == ActualMode.EDIT_CLIENT) {
+                    if (m == ActualMode.EDIT_CLIENT || m == ActualMode.LIST) {
                         String n = s.substring(m.label.length());
-                        return new Mode(ActualMode.EDIT_CLIENT, Integer.parseInt(n));
+                        return new Mode(m, n);
+                    } else {
+                        return new Mode(m);
                     }
-                    return new Mode(m);
                 }
             return new Mode(ActualMode.MAIN);
         }
@@ -153,7 +157,7 @@ public class JudoDB implements EntryPoint {
         public void onClick(ClickEvent event) {
             if (club != null)
                 selectClub(club);
-            switchMode(new Mode (Mode.ActualMode.EDIT_CLIENT, cid));
+            switchMode(new Mode (Mode.ActualMode.EDIT_CLIENT, Integer.toString(cid)));
         }
     }
 
@@ -171,6 +175,8 @@ public class JudoDB implements EntryPoint {
             _switchMode(currentMode);
 
             modeStack.pop();
+        } else {
+            _switchMode(new Mode(Mode.ActualMode.MAIN));
         }
     }
 
@@ -182,7 +188,7 @@ public class JudoDB implements EntryPoint {
             _switchMode_editClient(newMode.arg);
             break;
         case LIST:
-            _switchMode_viewLists();
+            _switchMode_viewLists(newMode.arg);
             break;
         case MAIN:
             _switchMode_main();
@@ -200,22 +206,23 @@ public class JudoDB implements EntryPoint {
         mainPanel.mainPanel.setVisible(false);
     }
 
-    private void _switchMode_editClient (int cid) {
+    private void _switchMode_editClient (String cid) {
         mainPanel.editClient.clear();
-        this.clientWidget = new ClientWidget(cid, this);
+        this.clientWidget = new ClientWidget(Integer.parseInt(cid), this);
         mainPanel.editClient.add(this.clientWidget);
 
         hideAllSubpanels();
         mainPanel.editClient.setVisible(true);
     }
 
-    public void _switchMode_viewLists() {
+    public void _switchMode_viewLists(String arg) {
         if (this.listWidget == null) {
             this.listWidget = new ListWidget(this);
             mainPanel.lists.add(this.listWidget);
         } else {
             this.listWidget.selectClub(selectedClub);
         }
+        this.listWidget.processArg(arg);
 
         hideAllSubpanels();
         mainPanel.lists.setVisible(true);
@@ -258,7 +265,7 @@ public class JudoDB implements EntryPoint {
      */
     public void onModuleLoad() {
         // handle exceptions
-                if(false)
+        if(false)
         GWT.setUncaughtExceptionHandler(new
                                         GWT.UncaughtExceptionHandler() {
                 public void onUncaughtException(Throwable e) {
@@ -303,7 +310,8 @@ public class JudoDB implements EntryPoint {
 
         mainPanel.searchResultsPanel.setVisible(false);
 
-        mainPanel.listeButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST)); }});
+        mainPanel.listeButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST, "")); }});
+        mainPanel.ftButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST, Mode.LIST_PARAM_FT303)); }});
         mainPanel.configButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
         mainPanel.logoutButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent event) { Window.Location.assign("/logout.php"); }});
 
@@ -334,7 +342,6 @@ public class JudoDB implements EntryPoint {
         });
 
         History.fireCurrentHistoryState();
-        switchMode(new Mode(Mode.ActualMode.MAIN));
         generateClubList();
         retrieveClientList(false);
     }
