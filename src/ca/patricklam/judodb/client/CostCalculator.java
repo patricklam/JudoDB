@@ -43,7 +43,7 @@ public class CostCalculator {
 
     static int totalWeeksBothSessions(ServiceData sd, SessionSummary ss, List<SessionSummary> sessionSummaries) {
         int totalWeeks = totalWeeks(ss);
-        if (sd.getSessionCount() == 2) {
+        if (ss != null && sd.getSessionCount() == 2) {
             for (SessionSummary ssp : sessionSummaries) {
                 if (ssp.getSeqno().equals(ss.getLinkedSeqno())) {
                     totalWeeks += totalWeeks(ssp);
