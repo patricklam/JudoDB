@@ -91,6 +91,7 @@ public class ClientWidget extends Composite {
     @UiField Anchor modifier;
     @UiField Anchor desinscrire;
     @UiField TextBox saisons;
+    @UiField HTMLPanel prorata_group;
     @UiField ToggleSwitch prorata;
     @UiField ToggleSwitch verification;
 
@@ -975,7 +976,7 @@ public class ClientWidget extends Composite {
     private void regularizeEscompte() {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-        double dCategorieFrais = CostCalculator.proratedFraisCours(currentSession, cd, sd, cs, backingCours, clubPrix);
+        double dCategorieFrais = CostCalculator.proratedFraisCours(currentSession, cd, sd, cs, sessionSummaries, backingCours, clubPrix);
 
         if (CostCalculator.isCasSpecial(sd,
 					CostCalculator.getApplicableEscompte(sd, escompteSummaries))) {
@@ -1006,7 +1007,7 @@ public class ClientWidget extends Composite {
         Date dateInscription = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
         int sessionCount = sd.getSessionCount();
 
-        semaines.setText(CostCalculator.getWeeksSummary(currentSession, dateInscription));
+        semaines.setText(CostCalculator.getWeeksSummary(sd, currentSession, dateInscription, sessionSummaries));
         escompteFrais.setReadOnly
 	    (!CostCalculator.isCasSpecial(sd,
 					  CostCalculator.getApplicableEscompte(sd, escompteSummaries)));
@@ -1095,9 +1096,10 @@ public class ClientWidget extends Composite {
         if (cs == null) return;
         boolean showProrata = cs.getEnableProrata();
         if (!showProrata) {
-            prorata.setEnabled(false);
+            prorata_group.setVisible(false);
+            prorata.setValue(false);
         } else {
-            prorata.setEnabled(true);
+            prorata_group.setVisible(true);
         }
     }
 
@@ -1113,7 +1115,7 @@ public class ClientWidget extends Composite {
 
         ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
 
-        CostCalculator.recompute(currentSession, cd, sd, cs, backingCours, ps, prorata.getValue(), clubPrix, escompteSummaries);
+        CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, backingCours, ps, prorata.getValue(), clubPrix, escompteSummaries);
 
         /* view stuff here */
         Display d = Display.NONE;

@@ -8,19 +8,28 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.datepicker.client.CalendarUtil;
 
 public class CostCalculator {
-    static int remainingWeeks(SessionSummary ss, Date dateInscription) {
+    static int remainingWeeks(ServiceData sd, SessionSummary ss, Date dateInscription, List<SessionSummary> sessionSummaries) {
         try {
             if (ss == null) return 0;
             Date sessionEnd = Constants.DB_DATE_FORMAT.parse(ss.getLastClassDate());
 
             double remainingWeeks = (CalendarUtil.getDaysBetween(dateInscription, sessionEnd) + 6) / 7.0;
+
+            if (sd.getSessionCount() == 2) {
+                for (SessionSummary ssp : sessionSummaries) {
+                    if (ssp.getSeqno().equals(ss.getLinkedSeqno())) {
+                        remainingWeeks += totalWeeks(ssp);
+                    }
+                }
+            }
+
             return (int)(remainingWeeks+0.5);
         }
         catch (NullPointerException e) { return 1; }
         catch (IllegalArgumentException e) { return 1; }
     }
 
-    static int totalWeeks(SessionSummary ss, Date dateInscription) {
+    static int totalWeeks(SessionSummary ss) {
         try {
             if (ss == null) return 1;
             Date sessionStart = Constants.DB_DATE_FORMAT.parse(ss.getFirstClassDate());
@@ -32,10 +41,22 @@ public class CostCalculator {
         catch (IllegalArgumentException e) { return 1; }
     }
 
-    private static final double getFraisCours(int cours, SessionSummary ss, Constants.Division c, int sessionCount, List<CoursSummary> backingCours, List<ClubPrix> cpA) {
+    static int totalWeeksBothSessions(ServiceData sd, SessionSummary ss, List<SessionSummary> sessionSummaries) {
+        int totalWeeks = totalWeeks(ss);
+        if (sd.getSessionCount() == 2) {
+            for (SessionSummary ssp : sessionSummaries) {
+                if (ssp.getSeqno().equals(ss.getLinkedSeqno())) {
+                    totalWeeks += totalWeeks(ssp);
+                }
+            }
+        }
+        return totalWeeks;
+    }
+
+    private static final double getFraisCours(int cours, SessionSummary ss, Constants.Division c, int sessionCount, List<CoursSummary> coursSummaries, List<ClubPrix> cpA) {
         double supp = 0.0;
-        if (backingCours != null) {
-            for (CoursSummary cos : backingCours) {
+        if (coursSummaries != null) {
+            for (CoursSummary cos : coursSummaries) {
                 if (Integer.parseInt(cos.getId()) == cours && !cos.getSupplement().equals("")) {
                     try { supp = Double.parseDouble(cos.getSupplement()); } catch (Exception e) {}
                 }
@@ -61,16 +82,16 @@ public class CostCalculator {
         return 0.0;
     }
 
-    static double fraisCours(SessionSummary ss, ClientData cd, ServiceData sd, List<CoursSummary> backingCours, List<ClubPrix> cpA) {
+    static double fraisCours(SessionSummary ss, ClientData cd, ServiceData sd, List<CoursSummary> coursSummaries, List<ClubPrix> cpA) {
         Constants.Division c = cd.getDivision(ss.getYear());
         int sessionCount = 2; int cours = -1;
         try { sessionCount = sd.getSessionCount(); } catch (Exception e) {}
         try { cours = Integer.parseInt(sd.getCours()); } catch (Exception e) {}
-        return getFraisCours(cours, ss, c, sessionCount, backingCours, cpA);
+        return getFraisCours(cours, ss, c, sessionCount, coursSummaries, cpA);
     }
 
-    static double proratedFraisCours(SessionSummary ss, ClientData cd, ServiceData sd, ClubSummary cs, List<CoursSummary> backingCours, List<ClubPrix> cpA) {
-        double baseCost = fraisCours(ss, cd, sd, backingCours, cpA);
+    static double proratedFraisCours(SessionSummary ss, ClientData cd, ServiceData sd, ClubSummary cs, List<SessionSummary> sessionSummaries, List<CoursSummary> coursSummaries, List<ClubPrix> cpA) {
+        double baseCost = fraisCours(ss, cd, sd, coursSummaries, cpA);
         if (sd == null || sd.getDateInscription() == null || sd.getDateInscription() == Constants.DB_DUMMY_DATE)
             return baseCost;
 
@@ -82,8 +103,8 @@ public class CostCalculator {
         // divide, then add Constants.PRORATA_PENALITE
         // but only use the prorated frais if ew < tw - 4
 
-        int rw = remainingWeeks(ss, dateInscription);
-        int tw = totalWeeks(ss, dateInscription);
+        int rw = remainingWeeks(sd, ss, dateInscription, sessionSummaries);
+        int tw = totalWeeksBothSessions(sd, ss, sessionSummaries);
         double supplement_prorata = 0;
         if (cs.getSupplementProrata() != null && !cs.getSupplementProrata().equals(""))
             supplement_prorata = Double.parseDouble(cs.getSupplementProrata());
@@ -183,9 +204,9 @@ public class CostCalculator {
         return -dCategorieFrais * (escomptePct / 100.0);
     }
 
-    static String getWeeksSummary(SessionSummary ss, Date dateInscription) {
-        int rw = remainingWeeks(ss, dateInscription);
-        int tw = totalWeeks(ss, dateInscription);
+    static String getWeeksSummary(ServiceData sd, SessionSummary ss, Date dateInscription, List<SessionSummary> sessionSummaries) {
+        int rw = remainingWeeks(sd, ss, dateInscription, sessionSummaries);
+        int tw = totalWeeksBothSessions(sd, ss, sessionSummaries);
         if (rw < tw)
             return " ("+rw+"/"+tw+")";
         else
@@ -193,12 +214,12 @@ public class CostCalculator {
     }
 
     /** Model-level method to recompute costs. */
-    public static void recompute(SessionSummary ss, ClientData cd, ServiceData sd, ClubSummary cs, List<CoursSummary> backingCours, ProduitSummary ps, boolean prorataOverride, List<ClubPrix> cpA, List<EscompteSummary> escompteSummaries) {
+    public static void recompute(SessionSummary ss, ClientData cd, ServiceData sd, ClubSummary cs, List<SessionSummary> sessionSummaries, List<CoursSummary> coursSummaries, ProduitSummary ps, boolean prorataOverride, List<ClubPrix> cpA, List<EscompteSummary> escompteSummaries) {
       if (cpA == null) return;
       if (ss == null) return;
 
-      double dCategorieFrais = proratedFraisCours(ss, cd, sd, cs, backingCours, cpA);
-      if (!prorataOverride) dCategorieFrais = fraisCours(ss, cd, sd, backingCours, cpA);
+      double dCategorieFrais = proratedFraisCours(ss, cd, sd, cs, sessionSummaries, coursSummaries, cpA);
+      if (!prorataOverride) dCategorieFrais = fraisCours(ss, cd, sd, coursSummaries, cpA);
       double dEscompteFrais = escompteFrais(sd, dCategorieFrais, escompteSummaries);
       double dAffiliationFrais = affiliationFrais(ss, cd, sd, cpA);
       double dSuppFrais = suppFrais(sd, cs, ps, dCategorieFrais + dEscompteFrais + dAffiliationFrais);

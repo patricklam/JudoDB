@@ -76,7 +76,7 @@
 		  <b:Column size="XS_2"><b:FormLabel for="saisons">Saisons</b:FormLabel><g:HTMLPanel /><b:TextBox ui:field="saisons"  /> <g:Hidden ui:field="saisons_encoded" name="saisons_encoded" /></b:Column>
 		  <b:Column addStyleNames="hidden-print" size="XS_2"><b:FormLabel for="verification">Affiliation Judo QC envoy&eacute;</b:FormLabel><g:HTMLPanel /><b3:ToggleSwitch ui:field="verification" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="verification_encoded" name="verification_encoded" /></b:Column>
 		  <b:Column size="XS_2">
-		    <g:HTMLPanel><label class="control-label" for="prorata">Prorata <span class="hidden-print"><g:InlineLabel ui:field="semaines"/></span></label><g:HTMLPanel /><b3:ToggleSwitch ui:field="prorata" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="prorata_encoded" name="prorata_encoded" /></g:HTMLPanel>
+		    <g:HTMLPanel ui:field="prorata_group"><label class="control-label" for="prorata">Prorata <span class="hidden-print"><g:InlineLabel ui:field="semaines"/></span></label><g:HTMLPanel /><b3:ToggleSwitch ui:field="prorata" onIcon="CHECK" offIcon="TIMES"/> <g:Hidden ui:field="prorata_encoded" name="prorata_encoded" /></g:HTMLPanel>
 		  </b:Column>
 		</b:FormGroup>
   		
