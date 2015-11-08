@@ -342,7 +342,6 @@ public class JudoDB implements EntryPoint {
         });
 
         History.fireCurrentHistoryState();
-        generateClubList();
         retrieveClientList(false);
     }
 
@@ -479,15 +478,6 @@ public class JudoDB implements EntryPoint {
     }
 
     /* --- club-list related utility functions --- */
-    void generateClubList() {
-        pleaseWait();
-        retrieveClubList(true);
-      }
-
-    void clearSelectedClub() {
-        selectedClub = null;
-    }
-
     void selectClub(ClubSummary club) {
         mainPanel.nouveauButton.setEnabled(club != null);
         if (club == null)
