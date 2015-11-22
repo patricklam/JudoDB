@@ -108,6 +108,9 @@ public class ListWidget extends Composite {
     private boolean isFiltering;
     private boolean isFT;
 
+    private boolean aeFilter_indifferent, aeFilter_value;
+    private boolean pcFilter_indifferent, pcFilter_value;
+
     private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
 
     @UiField(provided=true) FormPanel listForm = new FormPanel(new NamedFrame("_"));
@@ -138,7 +141,6 @@ public class ListWidget extends Composite {
     @UiField TextBox date;
 
     @UiField HTMLPanel impot_controls;
-    /*@UiField Anchor recalc;*/
     @UiField CheckBox prorata;
 
     @UiField Button filter_button;
@@ -146,6 +148,14 @@ public class ListWidget extends Composite {
     @UiField ListBox division;
     @UiField ListBox grade_lower;
     @UiField ListBox grade_upper;
+    @UiField Button aeButton;
+    @UiField AnchorListItem aff_indifferent;
+    @UiField AnchorListItem aff_oui;
+    @UiField AnchorListItem aff_non;
+    @UiField Button pcButton;
+    @UiField AnchorListItem pc_indifferent;
+    @UiField AnchorListItem pc_oui;
+    @UiField AnchorListItem pc_non;
 
     @UiField CellTable<ClientData> results;
 
@@ -225,6 +235,10 @@ public class ListWidget extends Composite {
             public void onClick(ClickEvent e) {
                 if (makeFT()) submit("ft");
             }};
+
+    private static final String INDIFFERENT_LABEL = "---";
+    private static final String OUI_LABEL = "oui";
+    private static final String NON_LABEL = "non";
 
     void selectClub(ClubSummary club) {
         jdb.selectClub(club);
@@ -465,6 +479,8 @@ public class ListWidget extends Composite {
         initWidget(uiBinder.createAndBindUi(this));
 
         checkColumnVisible = false;
+        aeFilter_indifferent = true;
+        pcFilter_indifferent = true;
         initializeResultsTable();
 
         listForm.addStyleName("hidden-print");
@@ -522,9 +538,23 @@ public class ListWidget extends Composite {
         grade_upper.addChangeHandler(new ChangeHandler() {
                 @Override public void onChange(ChangeEvent e) { showList(); } });
 
+        aeButton.setText(INDIFFERENT_LABEL);
+        aff_indifferent.addClickHandler(new ClickHandler() {
+                @Override public void onClick(ClickEvent e) { aeButton.setText(INDIFFERENT_LABEL); aeFilter_indifferent = true; showList(); } });
+        aff_oui.addClickHandler(new ClickHandler() {
+                @Override public void onClick(ClickEvent e) { aeButton.setText(OUI_LABEL); aeFilter_indifferent = false; aeFilter_value = true; showList(); } });
+        aff_non.addClickHandler(new ClickHandler() {
+                @Override public void onClick(ClickEvent e) { aeButton.setText(NON_LABEL); aeFilter_indifferent = false; aeFilter_value = false; showList(); } });
+
+        pcButton.setText(INDIFFERENT_LABEL);
+        pc_indifferent.addClickHandler(new ClickHandler() {
+                @Override public void onClick(ClickEvent e) { pcButton.setText(INDIFFERENT_LABEL); pcFilter_indifferent = true; showList(); } });
+        pc_oui.addClickHandler(new ClickHandler() {
+                @Override public void onClick(ClickEvent e) { pcButton.setText(OUI_LABEL); pcFilter_indifferent = false; aeFilter_value = true; showList(); } });
+        pc_non.addClickHandler(new ClickHandler() {
+                @Override public void onClick(ClickEvent e) { pcButton.setText(NON_LABEL); pcFilter_indifferent = false; aeFilter_value = false; showList(); } });
+
         sortir_impot.setVisible(false);
-/*      recalc.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent e) { recalc(); } }); */
 
         return_to_main.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
@@ -850,6 +880,7 @@ public class ListWidget extends Composite {
         } }.schedule(500);
     }
 
+    // currently unused, as well as doing nothing
     private void recalc() {
         for (int i = 0; i < results.getRowCount(); i++) {
             // ClientData cd = cidToCD.get(results.getText(i, Columns.CID));
@@ -1071,6 +1102,10 @@ public class ListWidget extends Composite {
                 return false;
             if (!gradeFilter(cd))
                 return false;
+            if (!aeFilter(cd))
+                return false;
+            if (!pcFilter(cd))
+                return false;
         }
 
         return true;
@@ -1137,6 +1172,18 @@ public class ListWidget extends Composite {
         } else {
             return emptyLC && emptyUC;
         }
+    }
+
+    private boolean aeFilter(ClientData cd) {
+        if (aeFilter_indifferent) return true;
+        ServiceData sd = cd.getServiceFor(currentSession);
+        return sd.getVerification() == aeFilter_value;
+    }
+
+    private boolean pcFilter(ClientData cd) {
+        if (pcFilter_indifferent) return true;
+        ServiceData sd = cd.getServiceFor(currentSession);
+        return sd.getSolde() == aeFilter_value;
     }
 
     @SuppressWarnings("deprecation")

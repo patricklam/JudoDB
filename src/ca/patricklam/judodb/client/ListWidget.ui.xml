@@ -99,6 +99,24 @@
 	      <b:Collapse toggle='false' b:id="filtres" ui:field="filter_controls">
 		<b.html:Span>Division:&nbsp;</b.html:Span><b:ListBox ui:field="division" name="division_lb"/>
 		<b.html:Span>&nbsp;&nbsp;Grade: entre&nbsp;</b.html:Span><b:ListBox ui:field="grade_lower"/> <b.html:Span>&nbsp;et&nbsp;</b.html:Span> <b:ListBox ui:field="grade_upper"/>
+		<b.html:Span>&nbsp;&nbsp;Affiliation envoy&eacute;&nbsp;</b.html:Span>
+		<b:ButtonGroup ui:field='aeButtonGroup' addStyleNames="hidden-print">
+		  <b:Button dataToggle='DROPDOWN' toggleCaret='true' ui:field='aeButton'/>
+		  <b:DropDownMenu ui:field="affFilter">
+		    <b:AnchorListItem ui:field="aff_indifferent" text="---"/>
+		    <b:AnchorListItem ui:field="aff_oui" text="oui"/>
+		    <b:AnchorListItem ui:field="aff_non" text="non"/>
+		  </b:DropDownMenu>
+		</b:ButtonGroup>
+		<b.html:Span>&nbsp;&nbsp;Paiement complet&eacute;&nbsp;</b.html:Span>
+		<b:ButtonGroup ui:field='pcButtonGroup' addStyleNames="hidden-print">
+		  <b:Button dataToggle='DROPDOWN' toggleCaret='true' ui:field='pcButton'/>
+		  <b:DropDownMenu ui:field="pcFilter">
+		    <b:AnchorListItem ui:field="pc_indifferent" text="---"/>
+		    <b:AnchorListItem ui:field="pc_oui" text="oui"/>
+		    <b:AnchorListItem ui:field="pc_non" text="non"/>
+		  </b:DropDownMenu>
+		</b:ButtonGroup>
 	      </b:Collapse>
 	      <b:Collapse toggle='false' b:id="ft303" ui:field="ft303_controls">
 		<b.html:Span>&Eacute;v&eacute;nement:&nbsp;</b.html:Span><b:TextBox ui:field="evt" />
