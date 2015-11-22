@@ -179,6 +179,9 @@ public class ListWidget extends Composite {
     Column<ClientData, String> gradeColumn;
     boolean dateGradeColumnVisible = true;
     Column<ClientData, String> dateGradeColumn;
+    Column<ClientData, Boolean> affEnvoyeColumn;
+    boolean payeColumnVisible = true;
+    Column<ClientData, Boolean> payeColumn;
     boolean divisionColumnVisible = false;
     Column<ClientData, String> divisionColumn;
     Column<ClientData, String> sessionsColumn;
@@ -202,16 +205,17 @@ public class ListWidget extends Composite {
         final static int DATE_GRADE = 5;
         final static int TEL = 6;
         final static int JUDOQC = 7;
-        final static int VERIFICATION = 8;
-        final static int DDN = 9;
-        final static int DIVISION = 10;
-        final static int COURS_DESC = 11;
-        final static int SESSION = 12;
-        final static int DIVISION_SM = 13;
+        final static int AFF_ENVOYE = 8;
+        final static int PAYE = 9;
+        final static int DDN = 10;
+        final static int DIVISION = 11;
+        final static int COURS_DESC = 12;
+        final static int SESSION = 13;
+        final static int DIVISION_SM = 14;
     }
 
     public String[] heads = new String[] {
-        "V", "Nom", "Prénom", "Sexe", "Grade", "DateGrade", "Tel", "JudoQC", "Verif", "DDN", "Div", "Cours", "Saisons", "Div (FT303)"
+        "V", "Nom", "Prénom", "Sexe", "Grade", "DateGrade", "Tel", "JudoCA", "Affilié", "Payé", "DDN", "Div", "Cours", "Saisons", "Div (FT303)"
     };
 
     private static final String SORTIR_LABEL = "afficher...";
@@ -259,7 +263,7 @@ public class ListWidget extends Composite {
                 results.removeColumn(sessionsColumn);
                 divisionColumnVisible = true;
             }
-            if (!checkColumnVisible) {
+            if (!checkColumnVisible && isFT) {
                 results.insertColumn(0, checkColumn, checkHeader);
                 checkColumnVisible = true;
             }
@@ -413,6 +417,10 @@ public class ListWidget extends Composite {
             results.removeColumn(dateGradeColumn);
             dateGradeColumnVisible = false;
         }
+        if (payeColumnVisible) {
+            results.removeColumn(payeColumn);
+            payeColumnVisible = false;
+        }
         divisionSMColumnVisible = true;
     }
 
@@ -431,6 +439,11 @@ public class ListWidget extends Composite {
             int gradeIndex = results.getColumnIndex(gradeColumn);
             results.insertColumn(gradeIndex + 1, dateGradeColumn, heads[Columns.DATE_GRADE]);
             dateGradeColumnVisible = true;
+        }
+        if (!payeColumnVisible) {
+            int affEnvoyeIndex = results.getColumnIndex(affEnvoyeColumn);
+            results.insertColumn(affEnvoyeIndex + 1, payeColumn, heads[Columns.PAYE]);
+            payeColumnVisible = false;
         }
 
         divisionSMColumnVisible = false;
@@ -688,18 +701,36 @@ public class ListWidget extends Composite {
                 }
             });
 
-        Column<ClientData, Boolean> verifColumn = new Column<ClientData, Boolean>(new CheckboxCell())
+        affEnvoyeColumn = new Column<ClientData, Boolean>(new CheckboxCell())
             { @Override public Boolean getValue(ClientData cd) {
                     if (cd.getServiceFor(currentSession) != null)
                         return cd.getServiceFor(currentSession).getVerification();
                     return false;
                 } };
-        results.addColumn(verifColumn, heads[Columns.VERIFICATION]);
-        verifColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
+        affEnvoyeColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+        results.addColumn(affEnvoyeColumn, heads[Columns.AFF_ENVOYE]);
+        affEnvoyeColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
                 @Override public void update(int index, ClientData cd, Boolean value) {
                     StringBuffer edits = new StringBuffer();
                     edits.append(cd.getID()+",Sverification," + (value ? "1" : "0") + ";");
                     cd.getServiceFor(currentSession).setVerification(value.equals("1"));
+                    pushEdit(edits.toString());
+                }
+            });
+
+        payeColumn = new Column<ClientData, Boolean>(new CheckboxCell())
+            { @Override public Boolean getValue(ClientData cd) {
+                    if (cd.getServiceFor(currentSession) != null)
+                        return cd.getServiceFor(currentSession).getSolde();
+                    return false;
+                } };
+        payeColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+        results.addColumn(payeColumn, heads[Columns.PAYE]);
+        payeColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
+                @Override public void update(int index, ClientData cd, Boolean value) {
+                    StringBuffer edits = new StringBuffer();
+                    edits.append(cd.getID()+",Ssolde," + (value ? "1" : "0") + ";");
+                    cd.getServiceFor(currentSession).setSolde(value.equals("1"));
                     pushEdit(edits.toString());
                 }
             });
