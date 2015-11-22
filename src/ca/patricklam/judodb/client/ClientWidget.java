@@ -1205,6 +1205,8 @@ public class ClientWidget extends Composite {
     }
 
     private void pushClientDataToServer(final boolean leaveAfterPush) {
+        saveClientData();
+
         if (cd.getNom().equals("") || cd.getPrenom().equals("")) {
             jdb.displayError("pas de nom ou prenom");
             return;
@@ -1216,7 +1218,7 @@ public class ClientWidget extends Composite {
 
         grades_encoded.setValue(encodeGrades());
         grade_dates_encoded.setValue(encodeGradeDates());
-        saveClientData(); loadClientData();
+        loadClientData();
         encodeServices();
 
         // http://stackoverflow.com/questions/2699277/post-data-to-jsonp
@@ -1248,10 +1250,16 @@ public class ClientWidget extends Composite {
         backingCours.clear();
         cours.setVisibleItemCount(1);
         cours.clear();
+
         for (int i = 0; i < coursArray.length(); i++) {
             CoursSummary c = coursArray.get(i);
             cours.addItem(c.getShortDesc(), c.getId());
             backingCours.add(c);
+        }
+
+        if (backingCours.size() == 0) {
+            jdb.setStatus("note: aucun cours defini pour " + jdb.getSelectedClub().getNom() + " pour la session "+currentSession.getName());
+            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         }
     }
 
