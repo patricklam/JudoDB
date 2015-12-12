@@ -19,6 +19,11 @@ public class GradeData extends JavaScriptObject {
         public final int compare(GradeData g0, GradeData g1) {
             Constants.Grade gg0 = Constants.stringToGrade(g0.getGrade());
             Constants.Grade gg1 = Constants.stringToGrade(g1.getGrade());
+
+            if (gg0 == null && gg1 == null) return 0;
+            if (gg0 == null) return 1;
+            if (gg1 == null) return -1;
+
             return gg0.order - gg1.order;
         }
     }
