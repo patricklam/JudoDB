@@ -77,7 +77,7 @@ public class ClientWidget extends Composite {
     @UiField TextBox courriel;
 
     @UiField TextBox affiliation;
-    @UiField TextBox grade;
+    @UiField ListBox grade;
     @UiField Anchor showgrades;
     @UiField TextBox date_grade;
     @UiField TextBox carte_resident;
@@ -242,6 +242,14 @@ public class ClientWidget extends Composite {
         }
     }
 
+    private void populateGradeListBox(ListBox lb) {
+        lb.clear();
+        lb.addItem("---");
+        for (Constants.Grade g : Constants.GRADES) {
+            lb.addItem(g.name);
+        }
+    }
+
     public ClientWidget(int cid, JudoDB jdb) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
@@ -251,6 +259,7 @@ public class ClientWidget extends Composite {
 
         no_sessions.addItem("1");
         no_sessions.addItem("2");
+        populateGradeListBox(grade);
 
         gradeHistory.setVisible(false);
         prorata.setValue(true);
@@ -688,7 +697,11 @@ public class ClientWidget extends Composite {
         }
         setGradesTableRow(grades.length+1, "", "");
 
-        grade.setText(cd.getGrade());
+        for (int i = 0; i < grade.getItemCount(); i++) {
+            if (grade.getItemText(i).equals(cd.getGrade())) {
+                grade.setSelectedIndex(i); break;
+            }
+        }
         date_grade.setText(Constants.dbToStdDate(cd.getDateGrade()));
     }
 
@@ -789,7 +802,7 @@ public class ClientWidget extends Composite {
             // erase the old grade
             if (date_grade.getText().equals(Constants.STD_DUMMY_DATE) || cd.getGrade().equals("")) {
                 date_grade.setText(Constants.STD_DATE_FORMAT.format(new Date()));
-                setGradesTableRow(1, grade.getText(), date_grade.getText());
+                setGradesTableRow(1, grade.getSelectedItemText(), date_grade.getText());
                 saveGradesData();
             } else {
                 // old grade set, and has date;  keep the old grade-date in the array
@@ -797,7 +810,7 @@ public class ClientWidget extends Composite {
                 ensureGradeSpace.onChange(null);
                 date_grade.setText(Constants.STD_DATE_FORMAT.format(new Date()));
                 setGradesTableRow(gradeTable.getRowCount()-1,
-                        grade.getText(), date_grade.getText());
+                        grade.getSelectedItemText(), date_grade.getText());
                 saveGradesData();
             }
         }
