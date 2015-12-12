@@ -44,6 +44,7 @@ import com.google.gwt.user.client.ui.NamedFrame;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
@@ -53,6 +54,8 @@ import com.google.gwt.http.client.Response;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.cellview.client.Header;
+import com.google.gwt.user.cellview.client.ColumnSortEvent;
+import com.google.gwt.user.cellview.client.ColumnSortList;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;
@@ -224,9 +227,11 @@ public class ListWidget extends Composite {
         final static int DIVISION_SM = 14;
     }
 
-    public String[] heads = new String[] {
+    private static final SafeHtml ARROWS = SafeHtmlUtils.fromSafeConstant("<i class=\"fa fa-fw fa-sort\"></i> ");
+    private String[] heads = new String[] {
         "V", "Nom", "Prénom", "Sexe", "Grade", "DateGrade", "Tel", "JudoCA", "Affilié", "Payé", "DDN", "Div", "Cours", "Saisons", "Div (FT303)"
     };
+    Column currentSortColumn;
 
     private static final String SORTIR_LABEL = "afficher...";
     private static final String SORTIR_FT303_LABEL = "afficher FT-303";
@@ -623,7 +628,7 @@ public class ListWidget extends Composite {
                 }
             });
 
-        Column<ClientData, SafeHtml> nomColumn =
+        final Column<ClientData, SafeHtml> nomColumn =
             new AnchorColumn(new SafeHtmlCell())
             { @Override String getText(ClientData cd) { return cd.getNom(); } };
         nomColumn.setSortable(true);
@@ -631,9 +636,21 @@ public class ListWidget extends Composite {
                 @Override public int compare(ClientData c1, ClientData c2) {
                     return c1.getNom().compareToIgnoreCase(c2.getNom());
                 } });
-        results.addColumn(nomColumn, heads[Columns.NOM]);
 
-        Column<ClientData, SafeHtml> prenomColumn =
+        results.addColumn(nomColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        if (currentSortColumn != nomColumn)
+                            sb.append(ARROWS);
+                        sb.append(value);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.NOM];
+                } });
+
+        final Column<ClientData, SafeHtml> prenomColumn =
             new AnchorColumn(new SafeHtmlCell())
             { @Override String getText(ClientData cd) { return cd.getPrenom(); } };
         prenomColumn.setSortable(true);
@@ -641,12 +658,38 @@ public class ListWidget extends Composite {
                 @Override public int compare(ClientData c1, ClientData c2) {
                     return c1.getPrenom().compareToIgnoreCase(c2.getPrenom());
                 } });
-        results.addColumn(prenomColumn, heads[Columns.PRENOM]);
+        results.addColumn(prenomColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        if (currentSortColumn != prenomColumn)
+                            sb.append(ARROWS);
+                        sb.append(value);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.PRENOM];
+                } });
 
-        Column<ClientData, String> sexeColumn = new Column<ClientData, String>(new EditTextCell())
+        final Column<ClientData, String> sexeColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) { return cd.getSexe(); } };
         sexeColumn.setSortable(true);
-        results.addColumn(sexeColumn, heads[Columns.SEXE]);
+        resultsListHandler.setComparator(sexeColumn, new Comparator<ClientData>() {
+                @Override public int compare(ClientData c1, ClientData c2) {
+                    return c1.getSexe().compareTo(c2.getSexe());
+                } });
+        results.addColumn(sexeColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        if (currentSortColumn != sexeColumn)
+                            sb.append(ARROWS);
+                        sb.append(value);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.SEXE];
+                } });
         sexeColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
                 @Override public void update(int index, ClientData cd, String value) {
                     StringBuffer edits = new StringBuffer();
@@ -664,7 +707,18 @@ public class ListWidget extends Composite {
                     return new GradeData.GradeComparator().compare
                         (c1.getMostRecentGrade(), c2.getMostRecentGrade());
                 } });
-        results.addColumn(gradeColumn, heads[Columns.GRADE]);
+        results.addColumn(gradeColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        if (currentSortColumn != gradeColumn)
+                            sb.append(ARROWS);
+                        sb.append(value);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.GRADE];
+                } });
         results.getHeader(results.getColumnCount()-1).setHeaderStyleNames("right-align");
 
         gradeColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
@@ -705,7 +759,7 @@ public class ListWidget extends Composite {
                 }
             });
 
-        Column<ClientData, String> telColumn = new Column<ClientData, String>(new EditTextCell())
+        final Column<ClientData, String> telColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) { return cd.getTel(); } };
         telColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
         results.addColumn(telColumn, heads[Columns.TEL]);
@@ -718,7 +772,7 @@ public class ListWidget extends Composite {
                 }
             });
 
-        Column<ClientData, String> judoQCColumn = new Column<ClientData, String>(new EditTextCell())
+        final Column<ClientData, String> judoQCColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) { return cd.getJudoQC(); } };
         judoQCColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
         results.addColumn(judoQCColumn, heads[Columns.JUDOQC]);
@@ -774,7 +828,18 @@ public class ListWidget extends Composite {
                 @Override public int compare(ClientData c1, ClientData c2) {
                     return c1.getDDN().compareTo(c2.getDDN());
                 } });
-        results.addColumn(ddnColumn, heads[Columns.DDN]);
+        results.addColumn(ddnColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        if (currentSortColumn != ddnColumn)
+                            sb.append(ARROWS);
+                        sb.append(value);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.DDN];
+                } });
         ddnColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
                 @Override public void update(int index, ClientData cd, String value) {
                     StringBuffer edits = new StringBuffer();
@@ -835,7 +900,18 @@ public class ListWidget extends Composite {
                     int ycours = ysd != null ? Integer.parseInt(ysd.getCours()) : -1;
                     return xcours - ycours;
                 } });
-        results.addColumn(coursColumn, heads[Columns.COURS_DESC]);
+        results.addColumn(coursColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        if (currentSortColumn != coursColumn)
+                            sb.append(ARROWS);
+                        sb.append(value);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.COURS_DESC];
+                } });
         coursColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
                 @Override public void update(int index, ClientData cd, String value) {
                     CoursSummary c = null;
@@ -861,6 +937,17 @@ public class ListWidget extends Composite {
             { @Override public String getValue(ClientData cd) { return cd.getAllActiveSaisons(); } };
         results.addColumn(sessionsColumn, heads[Columns.SESSION]);
         results.redrawHeaders();
+
+        results.addColumnSortHandler(new ColumnSortEvent.Handler() {
+                @Override
+                @SuppressWarnings("unchecked")
+                public void onColumnSort(ColumnSortEvent event) {
+                    ColumnSortList sortList = results.getColumnSortList();
+                    if (sortList != null && sortList.size() > 0) {
+                        currentSortColumn = (Column<ClientData, SafeHtml>)sortList.get(0).getColumn();
+                    }
+                }
+            });
     }
 
     private void pushEdit(String edits) {
