@@ -1,6 +1,7 @@
 // -*-  indent-tabs-mode:nil; c-basic-offset:4; -*-
 package ca.patricklam.judodb.client;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -202,6 +203,7 @@ public class ListWidget extends Composite {
     boolean divisionSMColumnVisible = false;
 
     Map<ClientData, String> cdToSM = new HashMap<>();
+    private ButtonGroupCell<Grade> gradeButtonCell;
     private ButtonGroupCell<CoursSummary> coursButtonCell;
 
     String mostRecentGradeDate;
@@ -502,15 +504,10 @@ public class ListWidget extends Composite {
         for (int i = 0; i < Constants.GRADES.length; i++) {
             Grade g = Constants.GRADES[i];
             grade_lower.insertItem(g.name, String.valueOf(g.order), i);
-        }
-        grade_lower.insertItem("---", "", 0);
-        grade_lower.setSelectedIndex(0);
-        for (int i = 0; i < Constants.GRADES.length; i++) {
-            Grade g = Constants.GRADES[i];
             grade_upper.insertItem(g.name, String.valueOf(g.order), i);
         }
-        grade_upper.insertItem("---", "", 0);
-        grade_upper.setSelectedIndex(0);
+        grade_lower.insertItem("---", "", 0); grade_lower.setSelectedIndex(0);
+        grade_upper.insertItem("---", "", 0); grade_upper.setSelectedIndex(0);
 
         sortirButton.setText(SORTIR_LABEL);
         sortir_pdf.addClickHandler(new ClickHandler() {
@@ -698,7 +695,9 @@ public class ListWidget extends Composite {
                 }
             });
 
-        gradeColumn = new Column<ClientData, String>(new EditTextCell())
+        gradeButtonCell = new ButtonGroupCell<Grade>(Arrays.asList(Constants.GRADES));
+        gradeButtonCell.setShowButton(true);
+        gradeColumn = new Column<ClientData, String>(gradeButtonCell)
             { @Override public String getValue(ClientData cd) { return cd.getMostRecentGrade().getGrade(); } };
         gradeColumn.setSortable(true);
         gradeColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -723,6 +722,14 @@ public class ListWidget extends Composite {
 
         gradeColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
                 @Override public void update(int index, ClientData cd, String value) {
+                    Grade g = null;
+                    for (Grade gg : Constants.GRADES) {
+                        if (gg.name.equals(value)) {
+                            g = gg; break;
+                        }
+                    }
+                    if (g == null || g.name.equals(cd.getMostRecentGrade().getGrade())) return;
+
                     StringBuffer edits = new StringBuffer();
 
                     // comments for historic reasons

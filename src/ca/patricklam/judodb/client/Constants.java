@@ -7,6 +7,7 @@ import java.util.HashMap;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.TakesValue;
 
 public class Constants {
     public static final String STD_DUMMY_DATE = "01/01/0000";
@@ -38,7 +39,7 @@ public class Constants {
         }
     }
 
-    static class Grade {
+    static class Grade implements TakesValue<String> {
         final String name; final String n3;
         final int order;
         public Grade(String name, String n3, int order) {
@@ -47,6 +48,9 @@ public class Constants {
         public Grade(String name, int order) {
             this.name = name; this.n3 = name; this.order = order;
         }
+
+        @Override public String getValue() { return name; }
+        @Override public void setValue(String v) {};
     }
 
     /** Case-insensitively assigns grade to one of GRADES.
