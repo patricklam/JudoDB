@@ -1301,10 +1301,9 @@ public class ListWidget extends Composite {
         }
         nb.setText("Nombre inscrit: "+count);
 
-        List<ClientData> list = resultsDataProvider.getList();
-        list.clear();
-        list.addAll(filteredClients);
-        results.setRowCount(count, true);
+        resultsDataProvider.setList(filteredClients);
+        filteredClients = resultsDataProvider.getList();
+        results.setVisibleRange(0, count);
     }
 
     /* --- process data from network --- */
