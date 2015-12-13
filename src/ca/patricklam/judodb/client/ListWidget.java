@@ -1102,7 +1102,7 @@ public class ListWidget extends Composite {
 
    private void computeImpotMailMerge() {
         String dv = "";
-        ArrayList<ClientData> filteredClients = new ArrayList<ClientData>();
+        ArrayList<ClientData> mmFilteredClients = new ArrayList<ClientData>();
 
         for (int i = 0; i < allClients.length(); i++) {
             ClientData cd = allClients.get(i);
@@ -1110,10 +1110,10 @@ public class ListWidget extends Composite {
 
             Division d = cd.getDivision(currentSession.getYear());
             if (d.abbrev.equals("S") || d.aka.equals("S")) continue;
-            filteredClients.add(cd);
+            mmFilteredClients.add(cd);
         }
 
-        Collections.sort(filteredClients, new Comparator<ClientData>() {
+        Collections.sort(mmFilteredClients, new Comparator<ClientData>() {
             public int compare(ClientData x, ClientData y) {
                 if (!x.getNom().equals(y.getNom()))
                     return x.getNom().compareTo(y.getNom());
@@ -1121,7 +1121,7 @@ public class ListWidget extends Composite {
             }
         });
 
-        for (ClientData cd : filteredClients) {
+        for (ClientData cd : mmFilteredClients) {
             dv += toDVImpot(cd) + "*";
         }
 
