@@ -103,6 +103,7 @@ public class ListWidget extends Composite {
 
     private List<SessionSummary> sessionSummaries = new ArrayList<>();
     private List<CoursSummary> coursSummaries = new ArrayList<>();
+    private Map<String, List<CoursSummary>> uniqueCoursSummaries = new HashMap<>();
     private List<EscompteSummary> escompteSummaries = new ArrayList<>();
     private List<ProduitSummary> produitSummaries = new ArrayList<>();
 
@@ -200,8 +201,9 @@ public class ListWidget extends Composite {
     Column<ClientData, String> divisionColumn;
     Column<ClientData, String> sessionsColumn;
     Column<ClientData, String> coursColumn;
-    boolean divisionSMColumnVisible = false;
+    boolean coursColumnVisible = true;
 
+    boolean divisionSMColumnVisible = false;
     Map<ClientData, String> cdToSM = new HashMap<>();
     private ButtonGroupCell<Grade> gradeButtonCell;
     private ButtonGroupCell<CoursSummary> coursButtonCell;
@@ -268,6 +270,7 @@ public class ListWidget extends Composite {
                 results.removeColumn(divisionColumn);
 
                 int coursIndex = results.getColumnIndex(coursColumn);
+                if (coursIndex == -1) coursIndex = results.getColumnIndex(ddnColumn);
                 results.insertColumn(coursIndex+1, sessionsColumn, heads[Columns.SESSION]);
                 divisionColumnVisible = false;
             }
@@ -280,6 +283,7 @@ public class ListWidget extends Composite {
 
             if (!divisionColumnVisible) {
                 int coursIndex = results.getColumnIndex(coursColumn);
+                if (coursIndex == -1) coursIndex = results.getColumnIndex(ddnColumn);
                 results.insertColumn(coursIndex+1, divisionColumn, heads[Columns.DIVISION]);
                 results.removeColumn(sessionsColumn);
                 divisionColumnVisible = true;
@@ -296,10 +300,22 @@ public class ListWidget extends Composite {
     }
 
     private void selectCours(CoursSummary cours) {
-        if (cours == null)
+        if (coursColumnVisible) {
+            results.removeColumn(coursColumn);
+        }
+
+        if (cours == null) {
             dropDownCoursButton.setText(jdb.TOUS);
-        else
+            coursColumnVisible = true;
+        } else {
             dropDownCoursButton.setText(cours.getShortDesc());
+            coursColumnVisible = false;
+        }
+
+        if (coursColumnVisible) {
+            int ddnIndex = results.getColumnIndex(ddnColumn);
+            results.insertColumn(ddnIndex+1, coursColumn, heads[Columns.COURS_DESC]);
+        }
 
         currentCours = cours;
         showList();
@@ -833,6 +849,8 @@ public class ListWidget extends Composite {
         ddnColumn.setSortable(true);
         resultsListHandler.setComparator(ddnColumn, new Comparator<ClientData>() {
                 @Override public int compare(ClientData c1, ClientData c2) {
+                    if (c1.getDDN() == null) return -1;
+                    if (c2.getDDN() == null) return 1;
                     return c1.getDDN().compareTo(c2.getDDN());
                 } });
         results.addColumn(ddnColumn, new Header<String>(new TextCell() {
@@ -1036,14 +1054,37 @@ public class ListWidget extends Composite {
     }
 
     private void collectDV() {
-        String dv = "|";
-        for (int i = 1; i < results.getRowCount(); i++) {
-            for (int j = 0; j < results.getColumnCount(); j++) {
-                // dv += results.getText(i, j) + "|";
+        StringBuilder dv = new StringBuilder("|");
+        for (ClientData cd : filteredClients) {
+            dv.append(cd.getID()); dv.append("|");
+            dv.append(cd.getNom()); dv.append("|");
+            dv.append(cd.getPrenom()); dv.append("|");
+            dv.append(cd.getSexe()); dv.append("|");
+            dv.append(cd.getMostRecentGrade().getGrade()); dv.append("|");
+            dv.append(cd.getMostRecentGrade().getDateGrade()); dv.append("|");
+            dv.append(cd.getTel()); dv.append("|");
+            dv.append(cd.getJudoQC()); dv.append("|");
+            dv.append(cd.getDDNString()); dv.append("|");
+            if (currentSession != null)
+                dv.append(cd.getDivision(currentSession.getYear()).abbrev);
+            dv.append("|");
+            ServiceData sd = cd.getServiceFor(currentSession);
+            if (sd != null && !sd.getCours().equals("")) {
+                CoursSummary matchedCours = null;
+                for (CoursSummary cc : coursSummaries) {
+                    if (cc.getId().equals(sd.getCours())) {
+                        dv.append(cc.getShortDesc());
+                        matchedCours = cc;
+                    }
+                }
+                dv.append("|");
+                if (matchedCours != null) {
+                    dv.append(matchedCours.getId()); dv.append("|");
+                }
             }
-            dv += "*|";
+            dv.append("*|");
         }
-        data.setValue(dv);
+        data.setValue(dv.toString());
     }
 
     private void clearFull() {
@@ -1235,8 +1276,11 @@ public class ListWidget extends Composite {
         if (currentCours == null)
             return true;
 
-        if (currentCours.getId().equals(cd.getServiceFor(currentSession).getCours()))
-            return true;
+        List<CoursSummary> likeCurrentCours =
+            uniqueCoursSummaries.get(currentCours.getShortDesc());
+        for (CoursSummary cc : likeCurrentCours)
+            if (cc.getId().equals(cd.getServiceFor(currentSession).getCours()))
+                return true;
 
         return false;
     }
@@ -1301,8 +1345,9 @@ public class ListWidget extends Composite {
         }
         nb.setText("Nombre inscrit: "+count);
 
-        resultsDataProvider.setList(filteredClients);
-        filteredClients = resultsDataProvider.getList();
+        List<ClientData> list = resultsDataProvider.getList();
+        list.clear();
+        list.addAll(filteredClients);
         results.setVisibleRange(0, count);
     }
 
@@ -1317,12 +1362,24 @@ public class ListWidget extends Composite {
         tous.addClickHandler(new CoursItemHandler(null));
         dropDownCours.add(tous);
 
+        // only include non-superceded cours
+        uniqueCoursSummaries.clear();
         for (int i = 0; i < coursArray.length(); i++) {
             CoursSummary c = coursArray.get(i);
-            AnchorListItem it = new AnchorListItem(c.getShortDesc());
-            it.addClickHandler(new CoursItemHandler(c));
-            dropDownCours.add(it);
             coursSummaries.add(c);
+
+            if (uniqueCoursSummaries.containsKey(c.getShortDesc())) {
+                List<CoursSummary> cc = uniqueCoursSummaries.get(c.getShortDesc());
+                cc.add(c);
+            } else {
+                List<CoursSummary> cc = new ArrayList<>();
+                cc.add(c);
+
+                uniqueCoursSummaries.put(c.getShortDesc(), cc);
+                AnchorListItem it = new AnchorListItem(c.getShortDesc());
+                it.addClickHandler(new CoursItemHandler(c));
+                dropDownCours.add(it);
+            }
         }
     }
 
