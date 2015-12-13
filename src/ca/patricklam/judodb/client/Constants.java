@@ -124,6 +124,8 @@ public class Constants {
     };
     public static final Division EMPTY_DIVISION = new Division("", "", 0, false, null);
 
+    public static final Grade EMPTY_GRADE = new Grade("---", "---", 0);
+
     public static final EscompteSummary EMPTY_ESCOMPTE =
 	JsonUtils.<EscompteSummary>safeEval
 	("{\"id\":\"0\", \"club_id\":\"0\", \"nom\":\"Aucun\","+

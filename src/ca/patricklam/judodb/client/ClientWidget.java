@@ -244,7 +244,7 @@ public class ClientWidget extends Composite {
 
     private void populateGradeListBox(ListBox lb) {
         lb.clear();
-        lb.addItem("---");
+        lb.addItem(Constants.EMPTY_GRADE.name);
         for (Constants.Grade g : Constants.GRADES) {
             lb.addItem(g.name);
         }
@@ -706,18 +706,26 @@ public class ClientWidget extends Composite {
     }
 
     private void setGradesTableRow(int row, String grade, String dateGrade) {
-        TextBox g = new TextBox();
+        ListBox g = new ListBox();
+        populateGradeListBox(g);
         TextBox gd = new TextBox();
 
-        g.setValue(grade);
         gd.setValue(dateGrade);
         gradeTable.setWidget(row, 0, g);
         gradeTable.setWidget(row, 1, gd);
+        for (int i = 0; i < g.getItemCount(); i++) {
+            if (g.getItemText(i).equals(grade)) {
+                g.setSelectedIndex(i); break;
+            }
+        }
 
-        ((TextBox)gradeTable.getWidget(row, 0)).addChangeHandler(ensureGradeSpace);
+        ((ListBox)gradeTable.getWidget(row, 0)).addChangeHandler(ensureGradeSpace);
         ((TextBox)gradeTable.getWidget(row, 1)).addChangeHandler(ensureGradeSpace);
     }
 
+    private ListBox getGradeTableListBox(int row, int col) {
+        return (ListBox) gradeTable.getWidget(row, col);
+    }
     private TextBox getGradeTableTextBox(int row, int col) {
         return (TextBox) gradeTable.getWidget(row, col);
     }
@@ -729,21 +737,22 @@ public class ClientWidget extends Composite {
         public void onChange(ChangeEvent e) {
             int rc = gradeTable.getRowCount();
             for (int i = 1; i < rc-2; i++) {
-                if (getGradeTableTextBox(i, 0).getText().equals("") &&
-                        getGradeTableTextBox(i, 1).getText().equals("")) {
+                if (getGradeTableListBox(i, 0).getSelectedIndex() == 0 &&
+                    getGradeTableTextBox(i, 1).getText().equals("")) {
                     for (int j = i; j < rc-1; j++) {
-                        getGradeTableTextBox(j, 0).setText(getGradeTableTextBox(j+1, 0).getText());
+                        getGradeTableListBox(j, 0).setSelectedIndex
+                            (getGradeTableListBox(j+1, 0).getSelectedIndex());
                         getGradeTableTextBox(j, 1).setText(getGradeTableTextBox(j+1, 1).getText());
                     }
-                    getGradeTableTextBox(rc-1, 0).setText("");
+                    getGradeTableListBox(rc-1, 0).setSelectedIndex(0);
                     getGradeTableTextBox(rc-1, 1).setText("");
                 }
             }
 
-            if (!getGradeTableTextBox(rc-1, 0).getText().equals("") &&
-                    !getGradeTableTextBox(rc-1, 1).getText().equals("")) {
+            if (getGradeTableListBox(rc-1, 0).getSelectedIndex() != 0 &&
+                !getGradeTableTextBox(rc-1, 1).getText().equals("")) {
                 gradeTable.resize(rc+1, 2);
-                setGradesTableRow(rc, "", "");
+                setGradesTableRow(rc, Constants.EMPTY_GRADE.name, "");
             }
         }
     };
@@ -754,11 +763,12 @@ public class ClientWidget extends Composite {
         ArrayList<GradeData> newGradesList = new ArrayList<GradeData>();
 
         for (int i = 1; i < gradeTable.getRowCount(); i++) {
-            String g = getGradeTableTextBox(i, 0).getText(),
+            int gi = getGradeTableListBox(i, 0).getSelectedIndex();
+            String g = getGradeTableListBox(i, 0).getSelectedItemText(),
                 gdate = getGradeTableTextBox(i, 1).getText();
-            if (!g.equals("")) {
+            if (gi != 0) {
                 GradeData gd = GradeData.createObject().cast();
-                gd.setGrade(g.replaceAll(",", ";"));
+                gd.setGrade(g);
                 gd.setDateGrade(Constants.stdToDbDate(gdate).replaceAll(",", ";"));
                 newGradesList.add(gd);
             }
@@ -818,8 +828,20 @@ public class ClientWidget extends Composite {
 
     private final ChangeHandler directGradeDateChangeHandler = new ChangeHandler() {
         public void onChange(ChangeEvent e) {
-            // TODO: if you change the grade-date, and grade is not empty, then
+            // if you change the grade-date, and grade is not empty, then
             // update the array.
+            if (grade.getSelectedIndex() != 0) {
+                int lastIndex = 0;
+                GradeData m = cd.getGrades().get(0);
+                for (int i = 0; i < cd.getGrades().length(); i++) {
+                    String dg = cd.getGrades().get(i).getDateGrade();
+                    if (dg != null && dg.compareTo(m.getDateGrade()) > 0) {
+                        m = cd.getGrades().get(i);
+                        lastIndex = i;
+                    }
+                }
+                setGradesTableRow(lastIndex+1, grade.getSelectedItemText(), date_grade.getText());
+            }
         }
     };
 
@@ -926,9 +948,9 @@ public class ClientWidget extends Composite {
     private int emptyGradeDates() {
         int empty = 0;
         for (int i = 1; i < gradeTable.getRowCount(); i++) {
-            String gv = getGradeTableTextBox(i, 0).getText();
+            int gvi = getGradeTableListBox(i, 0).getSelectedIndex();
             String gdv = getGradeTableTextBox(i, 1).getText();
-            if (gdv.equals(Constants.STD_DUMMY_DATE) || (!gv.equals("") && gv.equals("")))
+            if ((gdv.equals(Constants.STD_DUMMY_DATE) || gdv.equals("")) && gvi != 0)
                 empty++;
         }
         return empty;

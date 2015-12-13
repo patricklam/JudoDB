@@ -32,8 +32,8 @@ public class GradeData extends JavaScriptObject {
         @SuppressWarnings("deprecation")
         public final int compare(GradeData g0, GradeData g1) {
             if (g0.getDateGrade().equals(g1.getDateGrade())) return 0;
-            if (g0.getDateGrade().equals("") || g0.getDateGrade().equals("0000-00-00")) return -1;
-            if (g1.getDateGrade().equals("") || g1.getDateGrade().equals("0000-00-00")) return 1;
+            if (g0.getDateGrade().equals("") || g0.getDateGrade().equals(Constants.DB_DUMMY_DATE)) return 1;
+            if (g1.getDateGrade().equals("") || g1.getDateGrade().equals(Constants.DB_DUMMY_DATE)) return -1;
 
             Date d0 = Constants.DB_DATE_FORMAT.parse(g0.getDateGrade());
             Date d1 = Constants.DB_DATE_FORMAT.parse(g1.getDateGrade());
