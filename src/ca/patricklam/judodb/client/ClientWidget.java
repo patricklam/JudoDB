@@ -250,9 +250,15 @@ public class ClientWidget extends Composite {
         }
     }
 
-    public ClientWidget(int cid, JudoDB jdb) {
+    public ClientWidget(int cid, final JudoDB jdb) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
+        com.google.gwt.core.client.Scheduler.get().scheduleDeferred
+            (new com.google.gwt.user.client.Command() {
+                    public void execute() {
+                        jdb.mainPanel.editClient.ensureVisible(nom);
+                    }
+                });
 
         clientform.setAction(PUSH_ONE_CLIENT_URL);
         deleted.setValue("");
@@ -346,7 +352,6 @@ public class ClientWidget extends Composite {
             }
         });
 
-        retrieveSessions(null);
         if (cid != -1) {
             retrieveClient(cid);
         } else {
@@ -366,7 +371,6 @@ public class ClientWidget extends Composite {
             ga.set(0, gd);
             this.cd.setGrades(ga);
             loadClientData();
-            jdb.clearStatus();
         }
     }
 
@@ -1294,7 +1298,7 @@ public class ClientWidget extends Composite {
         }
 
         if (backingCours.size() == 0) {
-            jdb.setStatus("note: aucun cours defini pour " + jdb.getSelectedClub().getNom() + " pour la session "+currentSession.getName());
+            jdb.displayError("aucun cours defini pour " + jdb.getSelectedClub().getNom() + " pour la session "+currentSession.getName());
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         }
     }
@@ -1315,26 +1319,25 @@ public class ClientWidget extends Composite {
 	    try {
 		Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
 		Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
-		if (today.after(inscrBegin) && today.before(inscrEnd)) {
+		if (!today.before(inscrBegin) && !today.after(inscrEnd)) {
 		    currentSession = s; break;
 		}
 	    } catch (IllegalArgumentException e) { }
 	}
+        if (currentSession == null) {
+            if (jdb.getSelectedClub() != null) {
+                jdb.displayError("note: aucun session en cours pour " + jdb.getSelectedClub().getNom());
+            }
+            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
+        }
+
         gotSessions = true;
     }
 
     /* --- end sessions --- */
 
     /* --- network functions --- */
-    /* depends on there being sessions */
     public void retrieveClient(final int cid) {
-        if (!gotSessions) {
-            new Timer() {
-                public void run() { retrieveClient(cid); }
-            }.schedule(100);
-            return;
-        }
-
         String url = PULL_ONE_CLIENT_URL + "?id=" + cid;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
@@ -1349,7 +1352,6 @@ public class ClientWidget extends Composite {
 
                         ClientWidget.this.cd = JsonUtils.<ClientData>safeEval(s);
                         currentServiceNumber = cd.getMostRecentServiceNumber();
-                        jdb.clearStatus();
                         selectClub(jdb.getClubSummaryByID(cd.getServices().get(currentServiceNumber).getClubID()));
                         loadClientData();
 

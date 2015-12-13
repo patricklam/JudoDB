@@ -115,7 +115,7 @@ public class JudoDB implements EntryPoint {
     int jsonRequestId = 0;
 
     /* main layout */
-    private final MainPanel mainPanel = new MainPanel();
+    final MainPanel mainPanel = new MainPanel();
 
     /* state */
     boolean isAdmin;
@@ -519,7 +519,6 @@ public class JudoDB implements EntryPoint {
                     public void onResponseReceived(Request request,
                                                    Response response) {
                         if (200 == response.getStatusCode()) {
-                            JudoDB.this.clearStatus();
                             f.eval(response.getText());
                         } else if (403 == response.getStatusCode()) {
                             // at any point we might blow away the whole app w/a 403.
@@ -547,6 +546,7 @@ public class JudoDB implements EntryPoint {
         RequestCallback rc =
             createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
+                        clearStatus();
                         loadClientListResults
                             (JsonUtils.<JsArray<ClientSummary>>safeEval(s), display);
                     }
