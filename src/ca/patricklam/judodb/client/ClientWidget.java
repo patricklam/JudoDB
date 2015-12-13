@@ -709,6 +709,7 @@ public class ClientWidget extends Composite {
         ListBox g = new ListBox();
         populateGradeListBox(g);
         TextBox gd = new TextBox();
+        gd.getElement().setPropertyString("placeholder", "jj/mm/aa");
 
         gd.setValue(dateGrade);
         gradeTable.setWidget(row, 0, g);

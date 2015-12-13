@@ -55,7 +55,7 @@
 		 <b:FormGroup>
 		  <b:Column size="XS_3"><b:FormLabel for="affiliation">Num&eacute;ro Judo Qu&eacute;bec</b:FormLabel><b:TextBox ui:field="affiliation"  name="affiliation" addStyleNames="{style.six-em}"/></b:Column>
 		  <b:Column size="XS_2"><g:HTMLPanel><label for="grade" class="control-label">Grade judo <span class="hidden-print">(<g:Anchor ui:field="showgrades">histoire</g:Anchor>)</span></label></g:HTMLPanel><b:ListBox ui:field="grade" addStyleNames="{style.nine-em}"/></b:Column>
-	          <b:Column size="XS_3"><b:FormLabel for="date_grade">Date du grade</b:FormLabel><b:TextBox ui:field="date_grade" addStyleNames="{style.nine-em}"/></b:Column>
+	          <b:Column size="XS_3"><b:FormLabel for="date_grade">Date du grade</b:FormLabel><b:TextBox ui:field="date_grade" addStyleNames="{style.nine-em}" placeholder="jj/mm/aa"/></b:Column>
 		  <g:Hidden ui:field="grades_encoded" name="grades_encoded" />
 		  <g:Hidden ui:field="grade_dates_encoded" name="grade_dates_encoded" />
 		  <b:Column size="XS_2"><b:FormLabel for="carte_resident">N° carte municipale</b:FormLabel><b:TextBox ui:field="carte_resident" name="carte_resident"/></b:Column>
