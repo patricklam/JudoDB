@@ -351,7 +351,7 @@ public class ListWidget extends Composite {
         }
 
         @Override public int compareTo(SessionAnchorListItem other) {
-            return effective_seqno - other.effective_seqno;
+            return other.effective_seqno - effective_seqno;
         }
     }
 
