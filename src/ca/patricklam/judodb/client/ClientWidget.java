@@ -702,7 +702,7 @@ public class ClientWidget extends Composite {
         setGradesTableRow(grades.length+1, "", "");
 
         for (int i = 0; i < grade.getItemCount(); i++) {
-            if (grade.getItemText(i).equals(cd.getGrade())) {
+            if (Constants.stringToGrade(cd.getGrade()).name.equals(grade.getItemText(i))) {
                 grade.setSelectedIndex(i); break;
             }
         }
@@ -719,7 +719,8 @@ public class ClientWidget extends Composite {
         gradeTable.setWidget(row, 0, g);
         gradeTable.setWidget(row, 1, gd);
         for (int i = 0; i < g.getItemCount(); i++) {
-            if (g.getItemText(i).equals(grade)) {
+            Constants.Grade gg = Constants.stringToGrade(grade);
+            if (gg != null && gg.name.equals(g.getItemText(i))) {
                 g.setSelectedIndex(i); break;
             }
         }
