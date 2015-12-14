@@ -725,9 +725,9 @@ public class ListWidget extends Composite {
         results.addColumn(gradeColumn, new Header<String>(new TextCell() {
                 @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
                     if (value != null) {
+                        sb.append(value);
                         if (currentSortColumn != gradeColumn)
                             sb.append(ARROWS);
-                        sb.append(value);
                     }
                 }
             }) {
