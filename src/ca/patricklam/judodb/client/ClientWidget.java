@@ -814,12 +814,22 @@ public class ClientWidget extends Composite {
 
     private final ChangeHandler directGradeChangeHandler = new ChangeHandler() {
         public void onChange(ChangeEvent e) {
+            String todayDate = Constants.STD_DATE_FORMAT.format(new Date());
             // either no previous grade or no previous date-grade;
             // erase the old grade
             if (date_grade.getText().equals(Constants.STD_DUMMY_DATE) || cd.getGrade().equals("")) {
-                date_grade.setText(Constants.STD_DATE_FORMAT.format(new Date()));
+                date_grade.setText(todayDate);
                 setGradesTableRow(1, grade.getSelectedItemText(), date_grade.getText());
-                saveGradesData();
+            } else if (date_grade.getText().equals(todayDate)) {
+                if (!grade.getSelectedItemText().equals(cd.getGrade())) {
+                    String todayDateDB = Constants.DB_DATE_FORMAT.format(new Date());
+                    for (int i = 0; i < cd.getGrades().length(); i++) {
+                        String dg = cd.getGrades().get(i).getDateGrade();
+                        if (dg.equals(todayDateDB)) {
+                            getGradeTableListBox(i+1, 0).setSelectedIndex(grade.getSelectedIndex());
+                        }
+                    }
+                }
             } else {
                 // old grade set, and has date;  keep the old grade-date in the array
                 // and update the array.
@@ -827,8 +837,8 @@ public class ClientWidget extends Composite {
                 date_grade.setText(Constants.STD_DATE_FORMAT.format(new Date()));
                 setGradesTableRow(gradeTable.getRowCount()-1,
                         grade.getSelectedItemText(), date_grade.getText());
-                saveGradesData();
             }
+            saveGradesData();
         }
     };
 
@@ -847,6 +857,7 @@ public class ClientWidget extends Composite {
                     }
                 }
                 setGradesTableRow(lastIndex+1, grade.getSelectedItemText(), date_grade.getText());
+                saveGradesData();
             }
         }
     };
