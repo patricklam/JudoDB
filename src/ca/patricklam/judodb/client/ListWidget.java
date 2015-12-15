@@ -103,6 +103,7 @@ public class ListWidget extends Composite {
 
     private List<SessionSummary> sessionSummaries = new ArrayList<>();
     private List<CoursSummary> coursSummaries = new ArrayList<>();
+    private List<ClubPrix> clubPrix = new ArrayList<>();
     private Map<String, List<CoursSummary>> uniqueCoursSummaries = new HashMap<>();
     private List<EscompteSummary> escompteSummaries = new ArrayList<>();
     private List<ProduitSummary> produitSummaries = new ArrayList<>();
@@ -259,6 +260,8 @@ public class ListWidget extends Composite {
         coursButtonCell.setShowButton(club != null && currentSession != null);
 
         retrieveSessions(jdb.getSelectedClub());
+        if (club != null)
+            retrievePrix(club.getNumeroClub());
         actuallyHandleClubChange();
     }
 
@@ -1111,7 +1114,10 @@ public class ListWidget extends Composite {
         dv += cd.getSexe() + "|";
         dv += cd.getJudoQC() + "|";
         dv += cd.getDDNString() + "|";
-        dv += cd.getDivision(currentSession.getYear()).abbrev + "|";
+        if (currentSession != null)
+            dv += cd.getDivision(currentSession.getYear()).abbrev + "|";
+        else
+            dv += "|";
         dv += cd.getCourriel() + "|";
         dv += cd.getAdresse() + "|";
         dv += cd.getVille() + "|";
@@ -1121,21 +1127,25 @@ public class ListWidget extends Composite {
         dv += cd.getTelContactUrgence() + "|";
         dv += cd.getMostRecentGrade().getGrade() + "|";
         dv += cd.getMostRecentGrade().getDateGrade() + "|";
-        ServiceData sd = cd.getServiceFor(currentSession);
-        if (sd != null && !sd.getCours().equals("")) {
-            ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-            ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
-            // XXX getPrix on ListWidget as well
-            CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, prorata.getValue(), null, escompteSummaries);
-            // this is potentially slow; use a hash map instead.
-            for (CoursSummary cc : coursSummaries) {
-                if (cc.getId().equals(sd.getCours()))
-                    dv += cc.getShortDesc();
+        if (currentSession != null) {
+            ServiceData sd = cd.getServiceFor(currentSession);
+            if (sd != null && !sd.getCours().equals("")) {
+                // this is potentially slow; use a hash map instead.
+                for (CoursSummary cc : coursSummaries) {
+                    if (cc.getId().equals(sd.getCours()))
+                        dv += cc.getShortDesc();
+                }
+            }
+            dv += "|";
+            if (sd != null) {
+                ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
+                ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
+                CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, prorata.getValue(), clubPrix, escompteSummaries);
+                dv += sd.getFrais();
             }
         }
-        dv += "|";
-        if (sd != null) {
-            dv += sd.getFrais();
+        else {
+            dv += "|";
         }
         dv += "|";
         return dv;
@@ -1459,6 +1469,35 @@ public class ListWidget extends Composite {
                         gotSessions = true;
                         loadSessions(JsonUtils.<JsArray<SessionSummary>>safeEval(s));
                         jdb.clearStatus();
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    /* depends on jdb.retrieveClubList() and retrieveSessions() having succeeded */
+    private boolean gotPrix = false;
+    public void retrievePrix(final String numero_club) {
+        if (!gotSessions) {
+            new Timer() {
+                public void run() { retrievePrix(numero_club); }
+            }.schedule(100);
+            return;
+        }
+
+        String url = JudoDB.PULL_CLUB_PRIX_URL +
+            "?numero_club=" + numero_club;
+
+        if (currentSession != null)
+            url += "&session_seqno=" + currentSession.getSeqno();
+
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        gotPrix = true;
+                        JsArray<ClubPrix> cp = JsonUtils.<JsArray<ClubPrix>>safeEval(s);
+                        clubPrix.clear();
+                        for (int i = 0; i < cp.length(); i++)
+                            clubPrix.add(cp.get(i));
                     }
                 });
         jdb.retrieve(url, rc);
