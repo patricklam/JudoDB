@@ -90,7 +90,7 @@ public class ClientWidget extends Composite {
     @UiField Anchor inscrire;
     @UiField Anchor modifier;
     @UiField Anchor desinscrire;
-    @UiField TextBox saisons;
+    @UiField ListBox sessions;
     @UiField HTMLPanel prorata_group;
     @UiField ToggleSwitch prorata;
     @UiField ToggleSwitch verification;
@@ -99,7 +99,6 @@ public class ClientWidget extends Composite {
     @UiField TextBox categorieFrais;
 
     @UiField ListBox cours;
-    @UiField ListBox no_sessions;
 
     @UiField ListBox escompte;
     @UiField TextBox cas_special_note;
@@ -125,14 +124,13 @@ public class ClientWidget extends Composite {
     @UiField Hidden grade_dates_encoded;
 
     @UiField Hidden date_inscription_encoded;
-    @UiField Hidden saisons_encoded;
+    @UiField Hidden sessions_encoded;
     @UiField Hidden prorata_encoded;
     @UiField Hidden verification_encoded;
 
     @UiField Hidden categorieFrais_encoded;
 
     @UiField Hidden cours_encoded;
-    @UiField Hidden no_sessions_encoded;
 
     @UiField Hidden escompte_encoded;
     @UiField Hidden cas_special_note_encoded;
@@ -263,14 +261,11 @@ public class ClientWidget extends Composite {
         clientform.setAction(PUSH_ONE_CLIENT_URL);
         deleted.setValue("");
 
-        no_sessions.addItem("1");
-        no_sessions.addItem("2");
         populateGradeListBox(grade);
 
         gradeHistory.setVisible(false);
         prorata.setValue(true);
         categorie.setReadOnly(true);
-        saisons.setReadOnly(true);
         categorieFrais.setReadOnly(true); categorieFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
         cas_special_pct.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
         escompteFrais.setReadOnly(true); escompteFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
@@ -279,8 +274,6 @@ public class ClientWidget extends Composite {
         frais.setReadOnly(true); frais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
         ((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
-
-        no_sessions.setItemSelected(1, true);
 
         if (cid == -1 && jdb.getSelectedClubID() == null) {
             jdb.setStatus("Veuillez selectionner un club pour le client.");
@@ -312,8 +305,8 @@ public class ClientWidget extends Composite {
         grade.addChangeHandler(recomputeHandler);
         date_inscription.addChangeHandler(changeSaisonHandler);
         prorata.addValueChangeHandler(recomputeValueHandler);
+        sessions.addChangeHandler(recomputeHandler);
         cours.addChangeHandler(recomputeHandler);
-        no_sessions.addChangeHandler(recomputeHandler);
         escompte.addChangeHandler(changeEscompteHandler);
         cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
         escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
@@ -471,11 +464,10 @@ public class ClientWidget extends Composite {
     }
 
     private void disableAllSessionEditingInfo() {
-        saisons.setText("");
+        sessions.clear();
         verification.setValue(false);
         prorata.setValue(false);
         prorata.setEnabled(false);
-        no_sessions.setEnabled(false);
         categorieFrais.setText("");
 
         sans_affiliation.setValue(false);
@@ -575,7 +567,11 @@ public class ClientWidget extends Composite {
             return;
         }
 
-        saisons.setText(sd.getSaisons());
+        for (int i = 0; i < sessions.getItemCount(); i++) {
+            if (sessions.getItemText(i).equals(sd.getSessions()))
+                sessions.setSelectedIndex(i);
+        }
+        sessions.setEnabled(isToday);
         verification.setValue(sd.getVerification());
         int matching_index = 0;
         for (CoursSummary cs : backingCours) {
@@ -585,8 +581,6 @@ public class ClientWidget extends Composite {
             }
             matching_index++;
         }
-        no_sessions.setItemSelected(sd.getSessionCount()-1, true);
-        no_sessions.setEnabled(isToday);
         prorata.setEnabled(isToday);
         categorieFrais.setText(sd.getCategorieFrais());
 
@@ -650,12 +644,11 @@ public class ClientWidget extends Composite {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         if (currentServiceNumber < date_inscription.getItemCount())
             sd.setDateInscription(removeCommas(Constants.stdToDbDate(date_inscription.getItemText(currentServiceNumber))));
-        sd.setSaisons(removeCommas(saisons.getText()));
+        sd.setSessions(sessions.getSelectedItemText());
         sd.setClubID(jdb.getSelectedClubID());
         sd.setVerification(verification.getValue());
         if (cours.getSelectedIndex() != -1)
             sd.setCours(cours.getValue(cours.getSelectedIndex()));
-        sd.setSessionCount(no_sessions.getSelectedIndex()+1);
         sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 
         sd.setSansAffiliation(sans_affiliation.getValue());
@@ -1064,11 +1057,9 @@ public class ClientWidget extends Composite {
 	    (!CostCalculator.isCasSpecial(sd,
 					  CostCalculator.getApplicableEscompte(sd, escompteSummaries)));
 
-        saisons.setText(JudoDB.getSessionIds(Constants.DB_DATE_FORMAT.parse(sd.getDateInscription()), sessionCount, sessionSummaries));
-
         try {
-            categorieFrais.setText (cf.format(Double.parseDouble(sd.getCategorieFrais())));
-            affiliationFrais.setText (cf.format(Double.parseDouble(sd.getAffiliationFrais())));
+            categorieFrais.setText(cf.format(Double.parseDouble(sd.getCategorieFrais())));
+            affiliationFrais.setText(cf.format(Double.parseDouble(sd.getAffiliationFrais())));
             escompteFrais.setValue(cf.format(Double.parseDouble(sd.getEscompteFrais())));
             suppFrais.setText(cf.format(Double.parseDouble(sd.getSuppFrais())));
             frais.setText(cf.format(Double.parseDouble(sd.getFrais())));
@@ -1178,8 +1169,8 @@ public class ClientWidget extends Composite {
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);
         regularizeEscompte();
 
-        if (sd != null && !sd.getSaisons().equals("")) {
-            String a = sd.getSaisons().split(" ")[0];
+        if (sd != null && !sd.getSessions().equals("")) {
+            String a = sd.getSessions().split(" ")[0];
             SessionSummary that_session = null;
             for (SessionSummary s : sessionSummaries) {
                 if (a.equals(s.getAbbrev()))
@@ -1209,11 +1200,11 @@ public class ClientWidget extends Composite {
         for (int i = 0; i < services.length(); i++) {
             ServiceData sd = services.get(i);
             di.append(sd.getDateInscription()+",");
-            sais.append(sd.getSaisons()+",");
+            sais.append(sd.getSessions()+",");
             v.append(sd.getVerification() ? "1," : "0,");
             cf.append(sd.getCategorieFrais()+",");
             c.append(sd.getCours()+",");
-            sess.append(Integer.toString(sd.getSessionCount())+",");
+            sess.append("0,"); /* deprecated session count */
             e.append(sd.getEscompteId()+",");
             csn.append(sd.getCasSpecialNote()+",");
             ef.append(sd.getEscompteFrais()+",");
@@ -1234,11 +1225,10 @@ public class ClientWidget extends Composite {
         }
 
         date_inscription_encoded.setValue(di.toString());
-        saisons_encoded.setValue(sais.toString());
+        sessions_encoded.setValue(sais.toString());
         verification_encoded.setValue(v.toString());
         categorieFrais_encoded.setValue(cf.toString());
         cours_encoded.setValue(c.toString());
-        no_sessions_encoded.setValue(sess.toString());
         escompte_encoded.setValue(e.toString());
         cas_special_note_encoded.setValue(csn.toString());
         cas_special_pct_encoded.setValue(csp.toString());
@@ -1320,6 +1310,8 @@ public class ClientWidget extends Composite {
     SessionSummary currentSession;
 
     void populateSessions(JsArray<SessionSummary> ss) {
+        SessionSummary linkedSession = null;
+
 	sessionSummaries.clear();
 	for (int i = 0; i < ss.length(); i++) {
 	    sessionSummaries.add(ss.get(i));
@@ -1341,6 +1333,11 @@ public class ClientWidget extends Composite {
                 jdb.displayError("note: aucun session en cours pour " + jdb.getSelectedClub().getNom());
             }
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
+        } else {
+            sessions.clear();
+            if (currentSession.isPrimary())
+                sessions.addItem(JudoDB.getSessionIds(today, 2, sessionSummaries));
+            sessions.addItem(JudoDB.getSessionIds(today, 1, sessionSummaries));
         }
 
         gotSessions = true;

@@ -12,8 +12,8 @@ public class ServiceData extends JavaScriptObject {
     /** returns date d'inscription in DB format */
     public final native String getDateInscription() /*-{ return this.date_inscription == null ? "" : this.date_inscription; }-*/;
     public final native void setDateInscription(String date_inscription) /*-{ this.date_inscription = date_inscription; }-*/;
-    public final native String getSaisons() /*-{ return this.saisons == null ? "" : this.saisons; }-*/;
-    public final native void setSaisons(String saisons) /*-{ this.saisons = saisons; }-*/;
+    public final native String getSessions() /*-{ return this.saisons == null ? "" : this.saisons; }-*/;
+    public final native void setSessions(String sessions) /*-{ this.saisons = sessions; }-*/;
     public final native String getClubID() /*-{ return this.club_id; }-*/;
     public final native void setClubID(String club_id) /*-{ this.club_id = club_id; }-*/;
     public final native boolean getSansAffiliation() /*-{ return this.sans_affiliation != '0'; }-*/;
@@ -24,8 +24,7 @@ public class ServiceData extends JavaScriptObject {
     public final native void setAffiliationEcole(boolean affiliation_ecole) /*-{ this.affiliation_ecole = affiliation_ecole ? "1" : "0"; }-*/;
     public final native String getCours() /*-{ return this.cours; }-*/;
     public final native void setCours(String cours) /*-{ this.cours = cours; }-*/;
-    public final native int getSessionCount() /*-{ return (this.no_sessions == null || this.no_sessions == "") ? 2 : parseInt(this.no_sessions); }-*/;
-    public final native void setSessionCount(int no_sessions) /*-{ this.no_sessions = no_sessions.toString(); }-*/;
+    public final native int getSessionCount() /*-{ return this.saisons.split(" ").length; }-*/;
     public final native boolean getPasseport() /*-{ return false; }-*/;
     public final native void setPasseport(boolean passeport) /*-{ this.passeport = passeport ? "1" : "0"; }-*/;
     public final native boolean getResident() /*-{ return this.resident != '0'; }-*/;

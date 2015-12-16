@@ -72,7 +72,7 @@ public class ClientData extends JavaScriptObject {
         if (s == null) return services.get(getMostRecentServiceNumber());
 
         for (int i = 0; i < services.length(); i++) {
-            if (services.get(i).getSaisons().contains(s.getAbbrev()))
+            if (services.get(i).getSessions().contains(s.getAbbrev()))
                 return services.get(i);
         }
         return null;
@@ -85,7 +85,7 @@ public class ClientData extends JavaScriptObject {
 
         for (int i = 0; i < services.length(); i++) {
             if (i > 0) r += " ";
-            r += services.get(i).getSaisons();
+            r += services.get(i).getSessions();
         }
         return r;
 
