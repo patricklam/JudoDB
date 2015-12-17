@@ -2,6 +2,7 @@
 package ca.patricklam.judodb.client;
 
 import java.util.Date;
+import java.util.List;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
@@ -52,8 +53,10 @@ public class ServiceData extends JavaScriptObject {
     public final native boolean getSolde() /*-{ return this.solde!= '0'; }-*/;
     public final native void setSolde(boolean solde) /*-{ this.solde = solde ? "1" : "0"; }-*/;
 
-    public final void inscrireAujourdhui() {
-        setDateInscription(Constants.DB_DATE_FORMAT.format(new Date()));
+    public final void inscrireAujourdhui(List<SessionSummary> sessionSummaries) {
+        Date today = new Date();
+        setDateInscription(Constants.DB_DATE_FORMAT.format(today));
+        setSessions(JudoDB.getSessionIds(today, 2, sessionSummaries));
     }
 
     public static final native ServiceData newServiceData() /*-{

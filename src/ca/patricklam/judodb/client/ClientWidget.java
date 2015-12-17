@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.HashSet;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -374,7 +376,7 @@ public class ClientWidget extends Composite {
 
     private void addNewService() {
         ServiceData sd = ServiceData.newServiceData();
-        sd.inscrireAujourdhui();
+        sd.inscrireAujourdhui(sessionSummaries);
         sd.setClubID(jdb.getSelectedClubID());
 
         JsArray<ServiceData> sa = cd.getServices();
@@ -465,6 +467,8 @@ public class ClientWidget extends Composite {
 
     private void disableAllSessionEditingInfo() {
         sessions.clear();
+        sessions.addItem("");
+
         verification.setValue(false);
         prorata.setValue(false);
         prorata.setEnabled(false);
@@ -567,10 +571,7 @@ public class ClientWidget extends Composite {
             return;
         }
 
-        for (int i = 0; i < sessions.getItemCount(); i++) {
-            if (sessions.getItemText(i).equals(sd.getSessions()))
-                sessions.setSelectedIndex(i);
-        }
+        updateSessionLB();
         sessions.setEnabled(isToday);
         verification.setValue(sd.getVerification());
         int matching_index = 0;
@@ -642,6 +643,8 @@ public class ClientWidget extends Composite {
         if (cd.getServices() == null) return;
 
         ServiceData sd = cd.getServices().get(currentServiceNumber);
+        if (sd == null) return;
+
         if (currentServiceNumber < date_inscription.getItemCount())
             sd.setDateInscription(removeCommas(Constants.stdToDbDate(date_inscription.getItemText(currentServiceNumber))));
         sd.setSessions(sessions.getSelectedItemText());
@@ -907,12 +910,13 @@ public class ClientWidget extends Composite {
             saveClientData();
 
             ServiceData sd = cd.getServiceFor(currentSession);
+
             if (sd == null) {
                 sd = ServiceData.newServiceData();
 		sd.setClubID(jdb.getSelectedClubID());
                 cd.getServices().push(sd);
-            }  // actually, sd != null should not occur; that should be modify.
-            sd.inscrireAujourdhui();
+            }  // actually, sd != null should not occur; that case should be modify.
+            sd.inscrireAujourdhui(sessionSummaries);
             currentServiceNumber = cd.getMostRecentServiceNumber();
             loadClientData();
             updateDynamicFields();
@@ -929,13 +933,16 @@ public class ClientWidget extends Composite {
                 return;
 
             saveClientData();
-            sd.inscrireAujourdhui();
+            sd.inscrireAujourdhui(sessionSummaries);
             currentServiceNumber = cd.getMostRecentServiceNumber();
             loadClientData();
             updateDynamicFields();
         }
     };
 
+    /* behaviour of desinscrire:
+     * 1) can only desinscrire from current session;
+     * removes previous inscription and re-creates services JsArray with it. */
     private final ClickHandler desinscrireClickHandler = new ClickHandler() {
         public void onClick(ClickEvent e) {
             ServiceData sd = cd.getServiceFor(currentSession);
@@ -950,6 +957,7 @@ public class ClientWidget extends Composite {
             }
             cd.setServices(newServices);
             currentServiceNumber = cd.getMostRecentServiceNumber();
+
             loadClientData();
             updateDynamicFields();
         }
@@ -1042,6 +1050,33 @@ public class ClientWidget extends Composite {
                 }
                 escompteFrais.setValue(nf.format(-fCpct * dCategorieFrais / 100.0));
             }
+        }
+    }
+
+    /** View-level method to pull sessions from ServiceData and select the correct index in the ListBox. */
+    private void updateSessionLB() {
+        ServiceData sd = cd.getServices().get(currentServiceNumber);
+        Set<String> sdSessions = new HashSet<>(); sdSessions.addAll(Arrays.asList(sd.getSessions().split(" ")));
+
+        Date inscrDate = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
+
+        sessions.clear();
+        if (currentSession.isPrimary())
+            sessions.addItem(JudoDB.getSessionIds(inscrDate, 2, sessionSummaries));
+        sessions.addItem(JudoDB.getSessionIds(inscrDate, 1, sessionSummaries));
+
+        boolean found = false;
+        for (int i = 0; i < sessions.getItemCount(); i++) {
+            Set<String> sss = new HashSet<>(); sss.addAll(Arrays.asList(sessions.getItemText(i).split(" ")));
+            if (sss.equals(sdSessions)) {
+                sessions.setSelectedIndex(i);
+                found = true;
+            }
+        }
+
+        if (!found) {
+            jdb.displayError("aucun session en cours pour date d'inscription " + sd.getDateInscription());
+            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         }
     }
 
@@ -1309,6 +1344,19 @@ public class ClientWidget extends Composite {
     List<SessionSummary> sessionSummaries = new ArrayList<SessionSummary>();
     SessionSummary currentSession;
 
+    private void updateCurrentSession(Date inscriptionDate) {
+	currentSession = null;
+	for (SessionSummary s : sessionSummaries) {
+	    try {
+		Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
+		Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
+		if (!inscriptionDate.before(inscrBegin) && !inscriptionDate.after(inscrEnd)) {
+		    currentSession = s; break;
+		}
+	    } catch (IllegalArgumentException e) { }
+	}
+    }
+
     void populateSessions(JsArray<SessionSummary> ss) {
         SessionSummary linkedSession = null;
 
@@ -1317,27 +1365,14 @@ public class ClientWidget extends Composite {
 	    sessionSummaries.add(ss.get(i));
 	}
 
-	currentSession = null;
-	Date today = new Date();
-	for (SessionSummary s : sessionSummaries) {
-	    try {
-		Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
-		Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
-		if (!today.before(inscrBegin) && !today.after(inscrEnd)) {
-		    currentSession = s; break;
-		}
-	    } catch (IllegalArgumentException e) { }
-	}
+        updateCurrentSession(new Date());
         if (currentSession == null) {
             if (jdb.getSelectedClub() != null) {
-                jdb.displayError("note: aucun session en cours pour " + jdb.getSelectedClub().getNom());
+                jdb.displayError("aucun session en cours pour " + jdb.getSelectedClub().getNom());
             }
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         } else {
-            sessions.clear();
-            if (currentSession.isPrimary())
-                sessions.addItem(JudoDB.getSessionIds(today, 2, sessionSummaries));
-            sessions.addItem(JudoDB.getSessionIds(today, 1, sessionSummaries));
+            updateSessionLB();
         }
 
         gotSessions = true;
