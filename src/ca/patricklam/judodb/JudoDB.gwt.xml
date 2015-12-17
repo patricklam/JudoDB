@@ -28,6 +28,6 @@
   <set-configuration-property name="UiBinder.useSafeHtmlTemplates"
            value="true" />
            
-  <stylesheet src="files/JudoDB.css" />
+  <stylesheet src="JudoDB.css" />
   <collapse-all-properties />
 </module>
