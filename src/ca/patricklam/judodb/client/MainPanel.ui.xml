@@ -39,7 +39,10 @@
   </b:Container>
     <c:OnlyYScrollPanel ui:field='mainPanel' width='99%' height='100%'>
      <g:FlowPanel>
-      <b:Heading size="H1" text="Menba: Logiciel gestion de club Judo Qu&eacute;bec"/>
+      <b:Container>
+       <b:Image pull="LEFT" url="files/logo-jq.png" pixelSize="60,60" />
+       <b:Heading size="H1" text="&nbsp;Menba: Logiciel gestion de club Judo Qu&eacute;bec"/>
+      </b:Container>
       <b:Container>
        <b:Row><b:Column size="MD_7">
         <b:Container ui:field="main">

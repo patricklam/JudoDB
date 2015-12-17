@@ -66,7 +66,7 @@
       <arg value="-style"/>
       <arg value="PRETTY"/>
     </java>
-    <copy todir="war/judodb" file="war/JudoDB.css" />
+    <copy todir="war/judodb" file="war/files/JudoDB.css" />
   </target>
 
   <target name="devmode" depends="javac" description="Run development mode">

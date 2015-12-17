@@ -78,10 +78,6 @@ input.text, input.button, textarea, select {
   font-size: 80%;
 }
 
-.dark { 
-  border:1px solid;
-}
-
 .notlink-in-print {
   text-decoration: none;
   color: black;

@@ -77,8 +77,8 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] != "yes")
     <title>Facturation Judo Qu&eacute;bec</title>
     <script type="text/javascript" language="javascript" src="judodb/judodb.nocache.js"></script>
 
-    <link type="text/css" rel="stylesheet" href="screen.css" media="screen">
-    <link type="text/css" rel="stylesheet" href="print.css" media="print">
+    <link type="text/css" rel="stylesheet" href="files/screen.css" media="screen">
+    <link type="text/css" rel="stylesheet" href="files/print.css" media="print">
   </head>
 
   <body>
