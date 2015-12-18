@@ -659,8 +659,12 @@ public class JudoDB implements EntryPoint {
                 if (ss.getSeqno().equals(lsn))
                     next = ss;
             }
-            if (next != null)
-                return m.getAbbrev() + " " + next.getAbbrev();
+            if (next != null) {
+                if (m.isPrimary())
+                    return m.getAbbrev() + " " + next.getAbbrev();
+                else
+                    return next.getAbbrev() + " " + m.getAbbrev();
+            }
             else
                 return m.getAbbrev();
         }

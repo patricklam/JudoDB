@@ -419,8 +419,10 @@ public class ClientWidget extends Composite {
         produit.addItem(Constants.EMPTY_PRODUIT.getNom(), Constants.EMPTY_PRODUIT.getId());
         produitSummaries.add(Constants.EMPTY_PRODUIT);
         int idx = 1;
-	if (produitArray == null)
-	    com.google.gwt.user.client.Window.alert("produitArray is null");
+	if (produitArray == null) {
+            jdb.displayError("aucun produit recu");
+            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
+        }
 
         for (int i = 0; i < produitArray.length(); i++) {
             ProduitSummary e = produitArray.get(i);
@@ -1062,8 +1064,10 @@ public class ClientWidget extends Composite {
         Date inscrDate = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
 
         sessions.clear();
-        if (currentSession.isPrimary())
+        SessionSummary ts = getSessionForDate(inscrDate);
+        if (ts.isPrimary()) {
             sessions.addItem(JudoDB.getSessionIds(inscrDate, 2, sessionSummaries));
+        }
         sessions.addItem(JudoDB.getSessionIds(inscrDate, 1, sessionSummaries));
 
         boolean found = false;
@@ -1345,17 +1349,17 @@ public class ClientWidget extends Composite {
     List<SessionSummary> sessionSummaries = new ArrayList<SessionSummary>();
     SessionSummary currentSession;
 
-    private void updateCurrentSession(Date inscriptionDate) {
-	currentSession = null;
-	for (SessionSummary s : sessionSummaries) {
-	    try {
-		Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
-		Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
-		if (!inscriptionDate.before(inscrBegin) && !inscriptionDate.after(inscrEnd)) {
-		    currentSession = s; break;
-		}
-	    } catch (IllegalArgumentException e) { }
-	}
+    private SessionSummary getSessionForDate(Date inscriptionDate) {
+        for (SessionSummary s : sessionSummaries) {
+            try {
+                Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
+                Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
+                if (!inscriptionDate.before(inscrBegin) && !inscriptionDate.after(inscrEnd)) {
+                    return s;
+                }
+            } catch (IllegalArgumentException e) { }
+        }
+        return null;
     }
 
     void populateSessions(JsArray<SessionSummary> ss) {
@@ -1366,7 +1370,7 @@ public class ClientWidget extends Composite {
 	    sessionSummaries.add(ss.get(i));
 	}
 
-        updateCurrentSession(new Date());
+        currentSession = getSessionForDate(new Date());
         if (currentSession == null) {
             if (jdb.getSelectedClub() != null) {
                 jdb.displayError("aucun session en cours pour " + jdb.getSelectedClub().getNom());
