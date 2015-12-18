@@ -976,6 +976,7 @@ public class ListWidget extends Composite {
                     }
                 }
             });
+        results.getColumnSortList().push(nomColumn);
     }
 
     private void pushEdit(String edits) {
