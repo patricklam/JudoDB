@@ -1058,6 +1058,7 @@ public class ClientWidget extends Composite {
 
     /** View-level method to pull sessions from ServiceData and select the correct index in the ListBox. */
     private void updateSessionLB() {
+        if (cd.getServices() == null) return;
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         Set<String> sdSessions = new HashSet<>(); sdSessions.addAll(Arrays.asList(sd.getSessions().split(" ")));
 
