@@ -698,7 +698,8 @@ public class ClientWidget extends Composite {
         setGradesTableRow(grades.length+1, "", "");
 
         for (int i = 0; i < grade.getItemCount(); i++) {
-            if (Constants.stringToGrade(cd.getGrade()).name.equals(grade.getItemText(i))) {
+            Constants.Grade g = Constants.stringToGrade(cd.getGrade());
+            if (g != null && g.name.equals(grade.getItemText(i))) {
                 grade.setSelectedIndex(i); break;
             }
         }
