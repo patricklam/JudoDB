@@ -487,7 +487,7 @@ public class ListWidget extends Composite {
         if (!payeColumnVisible) {
             int affEnvoyeIndex = results.getColumnIndex(affEnvoyeColumn);
             results.insertColumn(affEnvoyeIndex + 1, payeColumn, heads[Columns.PAYE]);
-            payeColumnVisible = false;
+            payeColumnVisible = true;
         }
 
         divisionSMColumnVisible = false;
