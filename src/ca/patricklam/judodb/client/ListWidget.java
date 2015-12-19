@@ -475,6 +475,10 @@ public class ListWidget extends Composite {
         if (ft303_handler_registration != null)
             ft303_handler_registration.removeHandler();
         results.setSelectionModel(null);
+        if (checkColumnVisible) {
+            results.removeColumn(checkColumn);
+            checkColumnVisible = false;
+        }
         if (!dateGradeColumnVisible) {
             int gradeIndex = results.getColumnIndex(gradeColumn);
             results.insertColumn(gradeIndex + 1, dateGradeColumn, heads[Columns.DATE_GRADE]);
