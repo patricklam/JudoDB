@@ -53,7 +53,7 @@ public class CostCalculator {
         return totalWeeks;
     }
 
-    private static final double getFraisCours(int cours, SessionSummary ss, Constants.Division c, int sessionCount, List<CoursSummary> coursSummaries, List<ClubPrix> cpA) {
+    private static final double getFraisCours(int cours, SessionSummary ss, Constants.Division c, int sessionCount, List<CoursSummary> coursSummaries, List<ClubPrix> clubPrix) {
         double supp = 0.0;
         if (coursSummaries != null) {
             for (CoursSummary cos : coursSummaries) {
@@ -63,7 +63,7 @@ public class CostCalculator {
             }
         }
 
-        for (ClubPrix cp : cpA) {
+        for (ClubPrix cp : clubPrix) {
             if (cp.getDivisionAbbrev().equals(c.abbrev)) {
                 if (sessionCount == 2)
                     return supp + Double.parseDouble(cp.getFrais2Session());

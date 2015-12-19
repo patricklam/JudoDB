@@ -56,7 +56,12 @@ public class ServiceData extends JavaScriptObject {
     public final void inscrireAujourdhui(List<SessionSummary> sessionSummaries) {
         Date today = new Date();
         setDateInscription(Constants.DB_DATE_FORMAT.format(today));
-        setSessions(JudoDB.getSessionIds(today, 2, sessionSummaries));
+        SessionSummary ts = JudoDB.getSessionForDate(today, sessionSummaries);
+        if (ts.isPrimary()) {
+            setSessions(JudoDB.getSessionIds(today, 2, sessionSummaries));
+        } else {
+            setSessions(JudoDB.getSessionIds(today, 1, sessionSummaries));
+        }
     }
 
     public static final native ServiceData newServiceData() /*-{

@@ -376,7 +376,7 @@ public class ClientWidget extends Composite {
 
     private void addNewService() {
         ServiceData sd = ServiceData.newServiceData();
-        sd.inscrireAujourdhui(sessionSummaries);
+        mustInscrire = true;
         sd.setClubID(jdb.getSelectedClubID());
 
         JsArray<ServiceData> sa = cd.getServices();
@@ -1065,7 +1065,7 @@ public class ClientWidget extends Composite {
         Date inscrDate = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
 
         sessions.clear();
-        SessionSummary ts = getSessionForDate(inscrDate);
+        SessionSummary ts = JudoDB.getSessionForDate(inscrDate, sessionSummaries);
         if (ts.isPrimary()) {
             sessions.addItem(JudoDB.getSessionIds(inscrDate, 2, sessionSummaries));
         }
@@ -1080,7 +1080,7 @@ public class ClientWidget extends Composite {
             }
         }
 
-        if (!found) {
+        if (!sdSessions.equals("") && !found) {
             jdb.displayError("aucun session en cours pour date d'inscription " + sd.getDateInscription());
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         }
@@ -1349,19 +1349,7 @@ public class ClientWidget extends Composite {
     /* --- sessions --- */
     List<SessionSummary> sessionSummaries = new ArrayList<SessionSummary>();
     SessionSummary currentSession;
-
-    private SessionSummary getSessionForDate(Date inscriptionDate) {
-        for (SessionSummary s : sessionSummaries) {
-            try {
-                Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
-                Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
-                if (!inscriptionDate.before(inscrBegin) && !inscriptionDate.after(inscrEnd)) {
-                    return s;
-                }
-            } catch (IllegalArgumentException e) { }
-        }
-        return null;
-    }
+    boolean mustInscrire = false;
 
     void populateSessions(JsArray<SessionSummary> ss) {
         SessionSummary linkedSession = null;
@@ -1371,13 +1359,18 @@ public class ClientWidget extends Composite {
 	    sessionSummaries.add(ss.get(i));
 	}
 
-        currentSession = getSessionForDate(new Date());
+        currentSession = JudoDB.getSessionForDate(new Date(), sessionSummaries);
         if (currentSession == null) {
             if (jdb.getSelectedClub() != null) {
                 jdb.displayError("aucun session en cours pour " + jdb.getSelectedClub().getNom());
             }
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         } else {
+            if (mustInscrire) {
+                ServiceData sd = cd.getServices().get(currentServiceNumber);
+                sd.inscrireAujourdhui(sessionSummaries);
+                mustInscrire = false;
+            }
             updateSessionLB();
         }
 
@@ -1439,8 +1432,12 @@ public class ClientWidget extends Composite {
         String url = JudoDB.PULL_CLUB_PRIX_URL +
             "?numero_club=" + numero_club;
 
-        if (currentSession != null)
-            url += "&session_seqno=" + currentSession.getSeqno();
+        if (currentSession != null) {
+            SessionSummary ss = currentSession;
+            if (!ss.isPrimary())
+                ss = JudoDB.getLinkedSession(ss, sessionSummaries);
+            url += "&session_seqno=" + ss.getSeqno();
+        }
 
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {

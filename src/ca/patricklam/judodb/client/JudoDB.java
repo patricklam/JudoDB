@@ -40,6 +40,7 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.datepicker.client.CalendarUtil;
 
 import com.google.gwt.user.client.ui.Anchor;
 import org.gwtbootstrap3.client.ui.Button;
@@ -636,37 +637,45 @@ public class JudoDB implements EntryPoint {
         return r;
     }-*/;
 
-    static String getSessionIds(Date d, int sessionCount, List<SessionSummary> sessionSummaries) {
-        if (sessionSummaries == null) return "";
+    static SessionSummary getLinkedSession(SessionSummary ss,  List<SessionSummary> sessionSummaries) {
+        String linkedSeqno = ss.getLinkedSeqno();
+        for (SessionSummary s : sessionSummaries) {
+            if (s.getSeqno().equals(linkedSeqno))
+                return s;
+        }
+        return ss;
+    }
 
-        SessionSummary m = null;
+    static SessionSummary getSessionForDate(Date inscriptionDate, List<SessionSummary> sessionSummaries) {
         for (SessionSummary s : sessionSummaries) {
             try {
                 Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
                 Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
-                if (d.after(inscrBegin) && d.before(inscrEnd)) {
-                    m = s; continue;
+
+                int daysAfterBegin = CalendarUtil.getDaysBetween(inscrBegin, inscriptionDate);
+                int daysBeforeEnd = CalendarUtil.getDaysBetween(inscriptionDate, inscrEnd);
+
+                if (daysAfterBegin >= 0 && daysBeforeEnd >= 0) {
+                    return s;
                 }
-            } catch (IllegalArgumentException e) {}
+            } catch (IllegalArgumentException e) { }
         }
+        return null;
+    }
+
+    static String getSessionIds(Date d, int sessionCount, List<SessionSummary> sessionSummaries) {
+        if (sessionSummaries == null) return "";
+
+        SessionSummary m = JudoDB.getSessionForDate(d, sessionSummaries);
         if (m == null) return "";
 
         if (sessionCount == 1) return m.getAbbrev();
         if (sessionCount == 2) {
-            String lsn = m.getLinkedSeqno();
-            SessionSummary next = null;
-            for (SessionSummary ss : sessionSummaries) {
-                if (ss.getSeqno().equals(lsn))
-                    next = ss;
-            }
-            if (next != null) {
-                if (m.isPrimary())
-                    return m.getAbbrev() + " " + next.getAbbrev();
-                else
-                    return next.getAbbrev() + " " + m.getAbbrev();
-            }
+            SessionSummary next = getLinkedSession(m, sessionSummaries);
+            if (m.isPrimary())
+                return m.getAbbrev() + " " + next.getAbbrev();
             else
-                return m.getAbbrev();
+                return next.getAbbrev() + " " + m.getAbbrev();
         }
         return "";
     }
