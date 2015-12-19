@@ -694,6 +694,7 @@ public class ConfigWidget extends Composite {
             ids.add(cs.getId());
 
             SessionSummary ss = seqnoToSession.get(cs.getSession());
+            if (ss == null) continue;
             if (ll.get(cs.getShortDesc()).contains(ss.getAbbrev())) {
                 duplicateCours.add(cs);
                 continue;
