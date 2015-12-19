@@ -266,7 +266,7 @@ public class ClientWidget extends Composite {
         populateGradeListBox(grade);
 
         gradeHistory.setVisible(false);
-        prorata.setValue(true);
+        prorata.setValue(false);
         categorie.setReadOnly(true);
         categorieFrais.setReadOnly(true); categorieFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
         cas_special_pct.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
