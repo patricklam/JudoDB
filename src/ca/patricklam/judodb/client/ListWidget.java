@@ -357,7 +357,8 @@ public class ListWidget extends Composite {
         ClubItemHandler(ClubSummary club) { this.club = club; }
 
         @Override public void onClick(ClickEvent e) {
-            selectClub(club);
+            jdb.switchMode(new JudoDB.Mode(JudoDB.Mode.ActualMode.LIST,
+                                           ";" + CLUB_LABEL + club.getNumeroClub()));
         }
     }
 
@@ -513,9 +514,10 @@ public class ListWidget extends Composite {
 
         for (int i = 1; i < args.length; i++) {
             if (args[i].startsWith(CLUB_LABEL)) {
-                String id = args[i].substring(CLUB_LABEL.length());
+                String numero = args[i].substring(CLUB_LABEL.length());
+
                 for (ClubSummary cs : jdb.allClubs) {
-                    if (cs.getId().equals(id))
+                    if (cs.getNumeroClub().equals(numero))
                         selectClub(cs);
                 }
             }
