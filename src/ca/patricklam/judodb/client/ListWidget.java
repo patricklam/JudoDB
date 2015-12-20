@@ -357,9 +357,10 @@ public class ListWidget extends Composite {
         ClubItemHandler(ClubSummary club) { this.club = club; }
 
         @Override public void onClick(ClickEvent e) {
+            String ft = isFT ? JudoDB.Mode.LIST_PARAM_FT303 : "";
+            String clubString = club != null ? (";" + CLUB_LABEL + club.getNumeroClub()) : "";
             jdb.switchMode(new JudoDB.Mode(JudoDB.Mode.ActualMode.LIST,
-                                           (isFT ? JudoDB.Mode.LIST_PARAM_FT303 : "") +
-                                           (club != null ? (";" + CLUB_LABEL + club.getNumeroClub()) : "")));
+                                           ft + clubString));
         }
     }
 

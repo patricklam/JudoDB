@@ -164,25 +164,32 @@ public class JudoDB implements EntryPoint {
 
     // modes
     public void switchMode(Mode newMode) {
+        Mode previousMode = currentMode;
         if (currentMode != null)
             modeStack.push(currentMode);
         currentMode = newMode;
-        _switchMode(newMode);
+        _switchMode(newMode, previousMode);
     }
 
     public void popMode() {
         if (!modeStack.isEmpty()) {
+            Mode previousMode = currentMode;
             currentMode = modeStack.peek();
-            _switchMode(currentMode);
+            _switchMode(currentMode, previousMode);
 
             modeStack.pop();
         } else {
-            _switchMode(new Mode(Mode.ActualMode.MAIN));
+            _switchMode(new Mode(Mode.ActualMode.MAIN), null);
         }
     }
 
-    private void _switchMode(Mode newMode) {
-        History.newItem(newMode.toString(), false);
+    private void _switchMode(Mode newMode, Mode previousMode) {
+        if (newMode != null && previousMode != null &&
+            newMode.am == previousMode.am) {
+            History.replaceItem(newMode.toString(), false);
+        } else {
+            History.newItem(newMode.toString(), false);
+        }
 
         switch (newMode.am) {
         case EDIT_CLIENT:
@@ -266,7 +273,7 @@ public class JudoDB implements EntryPoint {
      */
     public void onModuleLoad() {
         // handle exceptions
-        if(false)
+        //if(false)
         GWT.setUncaughtExceptionHandler(new
                                         GWT.UncaughtExceptionHandler() {
                 public void onUncaughtException(Throwable e) {
