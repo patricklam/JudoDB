@@ -358,7 +358,8 @@ public class ListWidget extends Composite {
 
         @Override public void onClick(ClickEvent e) {
             jdb.switchMode(new JudoDB.Mode(JudoDB.Mode.ActualMode.LIST,
-                                           ";" + CLUB_LABEL + club.getNumeroClub()));
+                                           (isFT ? JudoDB.Mode.LIST_PARAM_FT303 : "") +
+                                           (club != null ? (";" + CLUB_LABEL + club.getNumeroClub()) : "")));
         }
     }
 
@@ -512,16 +513,20 @@ public class ListWidget extends Composite {
             enableFTMode();
         }
 
+        boolean haveClub = false;
         for (int i = 1; i < args.length; i++) {
             if (args[i].startsWith(CLUB_LABEL)) {
+                haveClub = true;
                 String numero = args[i].substring(CLUB_LABEL.length());
 
                 for (ClubSummary cs : jdb.allClubs) {
-                    if (cs.getNumeroClub().equals(numero))
+                    if (cs.getNumeroClub().equals(numero)) {
                         selectClub(cs);
+                    }
                 }
             }
         }
+        if (!haveClub && !isFT) selectClub(null);
     }
 
     private void enableImpotMode() {
