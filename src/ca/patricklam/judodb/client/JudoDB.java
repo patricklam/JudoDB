@@ -207,7 +207,7 @@ public class JudoDB implements EntryPoint {
         mainPanel.mainPanel.setVisible(false);
     }
 
-    private void _switchMode_editClient (String cid) {
+    private void _switchMode_editClient(String cid) {
         mainPanel.editClient.clear();
         this.clientWidget = new ClientWidget(Integer.parseInt(cid), this);
         mainPanel.editClient.add(this.clientWidget);
@@ -218,12 +218,12 @@ public class JudoDB implements EntryPoint {
 
     public void _switchMode_viewLists(String arg) {
         if (this.listWidget == null) {
-            this.listWidget = new ListWidget(this);
+            this.listWidget = new ListWidget(this, arg);
             mainPanel.lists.add(this.listWidget);
         } else {
+            this.listWidget.processArg(arg);
             this.listWidget.selectClub(selectedClub);
         }
-        this.listWidget.processArg(arg);
 
         hideAllSubpanels();
         mainPanel.lists.setVisible(true);

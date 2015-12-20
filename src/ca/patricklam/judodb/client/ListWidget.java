@@ -118,6 +118,7 @@ public class ListWidget extends Composite {
     private boolean pcFilter_indifferent, pcFilter_value;
 
     private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
+    private static final String CLUB_LABEL = "club=";
 
     @UiField(provided=true) FormPanel listForm = new FormPanel(new NamedFrame("_"));
 
@@ -188,7 +189,7 @@ public class ListWidget extends Composite {
     SelectionModel<ClientData> resultsSelectionModel;
     ListHandler<ClientData> resultsListHandler;
 
-    boolean checkColumnVisible = true;
+    boolean checkColumnVisible = false;
     VerificationCheckboxHeader checkHeader;
     Column<ClientData, Boolean> checkColumn;
     Column<ClientData, String> ddnColumn;
@@ -253,6 +254,14 @@ public class ListWidget extends Composite {
     void selectClub(ClubSummary club) {
         jdb.selectClub(club);
         if (club == null) {
+            if (isFT) {
+                jdb.displayError("Veuillez selectionner un club pour les FT-303.");
+                new Timer() { public void run() {
+                    ListWidget.this.jdb.popMode();
+                } }.schedule(2000);
+                return;
+            }
+
             dropDownUserClubsButton.setText(jdb.TOUS);
         } else {
             dropDownUserClubsButton.setText(club.getClubText());
@@ -494,9 +503,22 @@ public class ListWidget extends Composite {
     }
 
     void processArg(String arg) {
+        String[] args = arg.split(";");
+        String submode = args[0];
+
         disableFTMode();
-        if (JudoDB.Mode.LIST_PARAM_FT303.equals(arg)) {
+        if (JudoDB.Mode.LIST_PARAM_FT303.equals(submode)) {
             enableFTMode();
+        }
+
+        for (int i = 1; i < args.length; i++) {
+            if (args[i].startsWith(CLUB_LABEL)) {
+                String id = args[i].substring(CLUB_LABEL.length());
+                for (ClubSummary cs : jdb.allClubs) {
+                    if (cs.getId().equals(id))
+                        selectClub(cs);
+                }
+            }
         }
     }
 
@@ -504,17 +526,17 @@ public class ListWidget extends Composite {
         // XXX TODO
     }
 
-    public ListWidget(JudoDB jdb) {
+    public ListWidget(JudoDB jdb, String arg) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
 
-        checkColumnVisible = false;
         aeFilter_indifferent = true;
         pcFilter_indifferent = true;
         initializeResultsTable();
+        processArg(arg);
 
         listForm.addStyleName("hidden-print");
-        jdb.populateClubList(true, dropDownUserClubs, new ListClubListHandlerFactory());
+        jdb.populateClubList(!isFT, dropDownUserClubs, new ListClubListHandlerFactory());
         selectClub(jdb.getSelectedClub());
 
         jdb.pleaseWait();
