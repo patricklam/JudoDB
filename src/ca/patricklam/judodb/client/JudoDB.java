@@ -185,7 +185,7 @@ public class JudoDB implements EntryPoint {
 
     private void _switchMode(Mode newMode, Mode previousMode) {
         if (newMode != null && previousMode != null &&
-            newMode.am == previousMode.am) {
+            newMode.am.equals(previousMode.am)) {
             History.replaceItem(newMode.toString(), false);
         } else {
             History.newItem(newMode.toString(), false);
@@ -318,8 +318,13 @@ public class JudoDB implements EntryPoint {
 
         mainPanel.searchResultsPanel.setVisible(false);
 
-        mainPanel.listeButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST, "")); }});
-        mainPanel.ftButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.LIST, Mode.LIST_PARAM_FT303)); }});
+        mainPanel.listeButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
+            String clubString = selectedClub != null ? (";" + ListWidget.CLUB_LABEL + selectedClub.getNumeroClub()) : "";
+            switchMode(new Mode(Mode.ActualMode.LIST, clubString)); }});
+        mainPanel.ftButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
+            String clubString = selectedClub != null ? (";" + ListWidget.CLUB_LABEL + selectedClub.getNumeroClub()) : "";
+            switchMode(new Mode(Mode.ActualMode.LIST, Mode.LIST_PARAM_FT303 + clubString));
+        }});
         mainPanel.configButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
         mainPanel.logoutButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent event) { Window.Location.assign("/logout.php"); }});
 
@@ -488,6 +493,7 @@ public class JudoDB implements EntryPoint {
     /* --- club-list related utility functions --- */
     void selectClub(ClubSummary club) {
         mainPanel.nouveauButton.setEnabled(club != null);
+        mainPanel.ftButton.setEnabled(club != null);
         if (club == null)
             mainPanel.dropDownUserClubsButton.setText(TOUS);
         else

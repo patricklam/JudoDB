@@ -118,7 +118,7 @@ public class ListWidget extends Composite {
     private boolean pcFilter_indifferent, pcFilter_value;
 
     private static final String PULL_ALL_CLIENTS_URL = JudoDB.BASE_URL + "pull_all_clients.php";
-    private static final String CLUB_LABEL = "club=";
+    static final String CLUB_LABEL = "club=";
 
     @UiField(provided=true) FormPanel listForm = new FormPanel(new NamedFrame("_"));
 
@@ -474,6 +474,7 @@ public class ListWidget extends Composite {
             payeColumnVisible = false;
         }
         divisionSMColumnVisible = true;
+        jdb.populateClubList(!isFT, dropDownUserClubs, new ListClubListHandlerFactory());
     }
 
     private void disableFTMode() {
@@ -501,8 +502,8 @@ public class ListWidget extends Composite {
             results.insertColumn(affEnvoyeIndex + 1, payeColumn, heads[Columns.PAYE]);
             payeColumnVisible = true;
         }
-
         divisionSMColumnVisible = false;
+        jdb.populateClubList(!isFT, dropDownUserClubs, new ListClubListHandlerFactory());
     }
 
     void processArg(String arg) {
