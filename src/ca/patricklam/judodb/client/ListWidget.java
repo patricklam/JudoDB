@@ -105,7 +105,8 @@ public class ListWidget extends Composite {
     private List<SessionSummary> sessionSummaries = new ArrayList<>();
     private List<CoursSummary> coursSummaries = new ArrayList<>();
     private List<ClubPrix> clubPrix = new ArrayList<>();
-    private Map<String, List<CoursSummary>> uniqueCoursSummaries = new HashMap<>();
+    private Map<String, List<CoursSummary>> coursSummariesByShortDesc = new HashMap<>();
+    private List<CoursSummary> uniqueCoursSummariesForSession = new ArrayList<>();
     private List<EscompteSummary> escompteSummaries = new ArrayList<>();
     private List<ProduitSummary> produitSummaries = new ArrayList<>();
 
@@ -309,6 +310,7 @@ public class ListWidget extends Composite {
         coursButtonCell.setShowButton(jdb.getSelectedClub() != null && session != null);
 
         currentSession = session;
+        updateUniqueCoursSummariesForSession();
         showList();
     }
 
@@ -644,6 +646,7 @@ public class ListWidget extends Composite {
     }
 
     private void initializeResultsTable() {
+        boolean f = true;
         results.setAutoHeaderRefreshDisabled(false);
         results.setAutoFooterRefreshDisabled(true);
 
@@ -946,7 +949,7 @@ public class ListWidget extends Composite {
                     return xc - yc;
                 } });
 
-        coursButtonCell = new ButtonGroupCell<CoursSummary>(coursSummaries);
+        coursButtonCell = new ButtonGroupCell<CoursSummary>(uniqueCoursSummariesForSession);
         coursColumn = new Column<ClientData, String>(coursButtonCell)
             { @Override public String getValue(ClientData cd) {
                     int cours = -1;
@@ -1323,7 +1326,7 @@ public class ListWidget extends Composite {
             return true;
 
         List<CoursSummary> likeCurrentCours =
-            uniqueCoursSummaries.get(currentCours.getShortDesc());
+            coursSummariesByShortDesc.get(currentCours.getShortDesc());
         for (CoursSummary cc : likeCurrentCours)
             if (cc.getId().equals(cd.getServiceFor(currentSession).getCours()))
                 return true;
@@ -1409,22 +1412,37 @@ public class ListWidget extends Composite {
         dropDownCours.add(tous);
 
         // only include non-superceded cours
-        uniqueCoursSummaries.clear();
+        coursSummariesByShortDesc.clear();
         for (int i = 0; i < coursArray.length(); i++) {
             CoursSummary c = coursArray.get(i);
             coursSummaries.add(c);
 
-            if (uniqueCoursSummaries.containsKey(c.getShortDesc())) {
-                List<CoursSummary> cc = uniqueCoursSummaries.get(c.getShortDesc());
+            if (coursSummariesByShortDesc.containsKey(c.getShortDesc())) {
+                List<CoursSummary> cc = coursSummariesByShortDesc.get(c.getShortDesc());
                 cc.add(c);
             } else {
                 List<CoursSummary> cc = new ArrayList<>();
                 cc.add(c);
 
-                uniqueCoursSummaries.put(c.getShortDesc(), cc);
+                coursSummariesByShortDesc.put(c.getShortDesc(), cc);
                 AnchorListItem it = new AnchorListItem(c.getShortDesc());
                 it.addClickHandler(new CoursItemHandler(c));
                 dropDownCours.add(it);
+            }
+        }
+
+        updateUniqueCoursSummariesForSession();
+    }
+
+    private void updateUniqueCoursSummariesForSession() {
+        uniqueCoursSummariesForSession.clear();
+        if (currentSession == null)
+            uniqueCoursSummariesForSession.addAll(coursSummaries); // doesn't actually need uniqueness
+        else {
+            for (CoursSummary cs : coursSummaries) {
+                if (cs.getSession().equals(currentSession.getSeqno()) ||
+                    cs.getSession().equals(currentSession.getLinkedSeqno()))
+                    uniqueCoursSummariesForSession.add(cs);
             }
         }
     }
@@ -1550,13 +1568,8 @@ public class ListWidget extends Composite {
 
         coursSummaries.clear();
         String url = JudoDB.PULL_CLUB_COURS_URL;
-        if (currentSession != null) url += "?session_seqno="+currentSession.getSeqno();
         if (jdb.getSelectedClub() != null) {
-            if (currentSession == null)
-                url += "?";
-            else
-                url += "&";
-            url += "numero_club="+jdb.getSelectedClub().getNumeroClub();
+            url += "?numero_club="+jdb.getSelectedClub().getNumeroClub();
         }
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
