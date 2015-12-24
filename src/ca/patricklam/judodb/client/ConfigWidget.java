@@ -25,6 +25,7 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.AbstractEditableCell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.view.client.ProvidesKey;
@@ -357,22 +358,45 @@ public class ConfigWidget extends Composite {
 	newColumn.setFieldUpdater(new FieldUpdater<SessionSummary, String>() {
 		@Override
 		public void update(int index, SessionSummary object, String value) {
-		    if (c.key == null) return;
-		    object.set(c.key, value);
-		    if (perClubColumns.contains(c)) {
-			if (object.getId().equals("-1")) {
-			    refreshSessions = true;
-			    pushEdit("-1,F" + c.key + "," + value + "," +
-				     jdb.getSelectedClub().getNumeroClub() + "," + object.getSeqno() + ";");
-			} else {
-			    pushEdit("-1,f" + c.key + "," + value + "," +
-				     object.getClub() + "," + object.getId() + ";");
-			}
-		    } else {
-			pushEdit("-1,e" + c.key + "," + value + "," + object.getSeqno() + ";");
-		    }
-		    updateSessionToNameMapping();
-		    t.redraw();
+                    if (c.key == null) return;
+                    String oldValue = object.get(c.key);
+                    object.set(c.key, value);
+                    if (perClubColumns.contains(c)) {
+                        if (object.getId().equals("-1")) {
+                            refreshSessions = true;
+                            pushEdit("-1,F" + c.key + "," + value + "," +
+                                     jdb.getSelectedClub().getNumeroClub() + "," + object.getSeqno() + ";");
+                        } else {
+                            if (c.key.equals(FIRST_SIGNUP_COLUMN.key) ||
+                                c.key.equals(LAST_SIGNUP_COLUMN.key)) {
+                                boolean error = false;
+                                try {
+                                    SessionSummary conflicting = JudoDB.getSessionForDate(new Date(value), sessionData);
+                                    if (conflicting != object && conflicting != null) {
+                                        error = true;
+                                        jdb.displayError("conflit de dates entre "+object.getAbbrev()+ " et "+conflicting.getAbbrev());
+                                        new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
+                                    }
+
+                                } catch (IllegalArgumentException e) {
+                                    error = true;
+                                }
+                                if (error) {
+                                    object.set(c.key, oldValue);
+                                    ((EditTextCell)cell).clearViewData
+                                        (SESSION_KEY_PROVIDER.getKey(object));
+                                    t.redraw();
+                                    return;
+                                }
+                            }
+                            pushEdit("-1,f" + c.key + "," + value + "," +
+                                     object.getClub() + "," + object.getId() + ";");
+                        }
+                    } else {
+                        pushEdit("-1,e" + c.key + "," + value + "," + object.getSeqno() + ";");
+                    }
+                    updateSessionToNameMapping();
+                    t.redraw();
 		}
 	    });
 	sessions.setColumnWidth(newColumn, c.width, c.widthUnits);
