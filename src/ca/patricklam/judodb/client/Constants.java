@@ -18,11 +18,19 @@ public class Constants {
     public static final DateTimeFormat DB_DATE_FORMAT = DateTimeFormat.getFormat(Constants.DB_DATE_FORMAT_STRING);
     public static final String dbToStdDate(String d) {
         if (d.equals(DB_DUMMY_DATE) || d.equals("")) return STD_DUMMY_DATE;
-        return STD_DATE_FORMAT.format(DB_DATE_FORMAT.parse(d));
+        try {
+            return STD_DATE_FORMAT.format(DB_DATE_FORMAT.parse(d));
+        } catch (IllegalArgumentException e) {
+            return STD_DUMMY_DATE;
+        }
     }
     public static final String stdToDbDate(String d) {
         if (d.equals(STD_DUMMY_DATE) || d.equals("")) return DB_DUMMY_DATE;
-        return DB_DATE_FORMAT.format(STD_DATE_FORMAT.parse(d));
+        try {
+            return DB_DATE_FORMAT.format(STD_DATE_FORMAT.parse(d));
+        } catch (IllegalArgumentException e) {
+            return DB_DUMMY_DATE;
+        }
     }
     public static final NumberFormat currencyFormat = NumberFormat.getFormat("0.00");
 

@@ -175,10 +175,16 @@ public class JudoDB implements EntryPoint {
         if (!modeStack.isEmpty()) {
             Mode previousMode = currentMode;
             modeStack.pop();
-            currentMode = modeStack.peek();
+            if (!modeStack.isEmpty()) {
+                currentMode = modeStack.peek();
+            } else {
+                currentMode = new Mode(Mode.ActualMode.MAIN);
+            }
             _switchMode(currentMode, previousMode);
 
-            modeStack.pop();
+            if (!modeStack.isEmpty()) {
+                modeStack.pop();
+            }
         } else {
             _switchMode(new Mode(Mode.ActualMode.MAIN), null);
         }
@@ -190,7 +196,8 @@ public class JudoDB implements EntryPoint {
             History.replaceItem(newMode.toString(), false);
 
             // ... fix up the stack also
-            modeStack.pop();
+            if (!modeStack.isEmpty())
+                modeStack.pop();
             modeStack.push(newMode);
         } else {
             History.newItem(newMode.toString(), false);

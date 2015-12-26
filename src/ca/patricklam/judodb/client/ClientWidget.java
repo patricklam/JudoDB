@@ -1062,7 +1062,12 @@ public class ClientWidget extends Composite {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         Set<String> sdSessions = new HashSet<>(); sdSessions.addAll(Arrays.asList(sd.getSessions().split(" ")));
 
-        Date inscrDate = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
+        Date inscrDate;
+        try {
+            inscrDate = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
+        } catch (IllegalArgumentException e) {
+            inscrDate = new Date();
+        }
 
         sessions.clear();
         SessionSummary ts = JudoDB.getSessionForDate(inscrDate, sessionSummaries);
@@ -1093,7 +1098,12 @@ public class ClientWidget extends Composite {
     private void updateFrais() {
         NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
         ServiceData sd = cd.getServices().get(currentServiceNumber);
-        Date dateInscription = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
+        Date dateInscription;
+        try {
+            dateInscription = Constants.DB_DATE_FORMAT.parse(sd.getDateInscription());
+        } catch (IllegalArgumentException e) {
+            dateInscription = new Date();
+        }
         int sessionCount = sd.getSessionCount();
 
         semaines.setText(CostCalculator.getWeeksSummary(sd, currentSession, dateInscription, sessionSummaries));
