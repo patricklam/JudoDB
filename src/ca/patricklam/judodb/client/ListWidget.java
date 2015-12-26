@@ -953,7 +953,8 @@ public class ListWidget extends Composite {
         coursColumn = new Column<ClientData, String>(coursButtonCell)
             { @Override public String getValue(ClientData cd) {
                     int cours = -1;
-                    if (cd.getServiceFor(currentSession) != null)
+                    if (cd.getServiceFor(currentSession) != null &&
+                        !cd.getServiceFor(currentSession).getCours().equals(""))
                         cours = Integer.parseInt(cd.getServiceFor(currentSession).getCours());
                     return getShortDescForCoursId(cours); } };
         coursColumn.setSortable(true);
