@@ -21,7 +21,7 @@ label {
 
 .cid {
  position:absolute;
- top:0; right: 1em;
+ top:0; right: 0.1em;
  font-size: xx-large;
 }
 
@@ -103,4 +103,8 @@ input.text, input.button, textarea, select {
 
 .form-group[id="identite"] {
   height: 22px;
+}
+
+.tiny-print {
+  font-size: 50%;
 }
