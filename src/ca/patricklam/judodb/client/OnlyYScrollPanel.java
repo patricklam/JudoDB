@@ -7,5 +7,6 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 public class OnlyYScrollPanel extends ScrollPanel {
     public OnlyYScrollPanel() {
         getScrollableElement().getStyle().setOverflowX(Overflow.HIDDEN);
+        getScrollableElement().getStyle().setOverflowY(Overflow.VISIBLE);
     }
 }
