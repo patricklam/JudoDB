@@ -285,7 +285,7 @@ public class JudoDB implements EntryPoint {
      */
     public void onModuleLoad() {
         // handle exceptions
-        if(false)
+        //if(false)
         GWT.setUncaughtExceptionHandler(new
                                         GWT.UncaughtExceptionHandler() {
                 public void onUncaughtException(Throwable e) {
@@ -706,5 +706,41 @@ public class JudoDB implements EntryPoint {
                 return next.getAbbrev() + " " + m.getAbbrev();
         }
         return "";
+    }
+
+    static String sessionSeqnosFromAbbrevs(String in, List<SessionSummary> sessionSummaries) {
+        StringBuilder res = new StringBuilder();
+        boolean first = true;
+        for (String i : in.split(" ")) {
+            for (SessionSummary s : sessionSummaries) {
+                if (s.getAbbrev().equals(i)) {
+                    if (!first) {
+                        res.append(" ");
+                    } else {
+                        first = false;
+                    }
+                    res.append(s.getSeqno());
+                }
+            }
+        }
+        return res.toString();
+    }
+
+    static String sessionAbbrevsFromSeqnos(String in, List<SessionSummary> sessionSummaries) {
+        StringBuilder res = new StringBuilder();
+        boolean first = true;
+        for (String i : in.split(" ")) {
+            for (SessionSummary s : sessionSummaries) {
+                if (s.getSeqno().equals(i)) {
+                    if (!first) {
+                        res.append(" ");
+                    } else {
+                        first = false;
+                    }
+                    res.append(s.getAbbrev());
+                }
+            }
+        }
+        return res.toString();
     }
 }

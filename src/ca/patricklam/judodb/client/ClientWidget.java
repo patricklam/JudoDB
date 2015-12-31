@@ -218,7 +218,7 @@ public class ClientWidget extends Composite {
         hideEscompteResidentIfUnneeded(club);
         hidePaypalIfDisabled(club);
         retrieveSessions(club);
-        retrievePrix(club.getNumeroClub());
+        retrievePrix(club.getId());
         retrieveCours(club.getNumeroClub());
         retrieveEscomptes(club.getId());
         retrieveProduits(club.getId());
@@ -1434,23 +1434,16 @@ public class ClientWidget extends Composite {
 
     /* depends on jdb.retrieveClubList() and retrieveSessions() having succeeded */
     private boolean gotPrix = false;
-    public void retrievePrix(final String numero_club) {
+    public void retrievePrix(final String club_id) {
         if (!gotSessions) {
             new Timer() {
-                public void run() { retrievePrix(numero_club); }
+                public void run() { retrievePrix(club_id); }
             }.schedule(100);
             return;
         }
 
         String url = JudoDB.PULL_CLUB_PRIX_URL +
-            "?numero_club=" + numero_club;
-
-        if (currentSession != null) {
-            SessionSummary ss = currentSession;
-            if (!ss.isPrimary())
-                ss = JudoDB.getLinkedSession(ss, sessionSummaries);
-            url += "&session_seqno=" + ss.getSeqno();
-        }
+            "?club_id=" + club_id;
 
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {

@@ -246,6 +246,7 @@ public class ConfigWidget extends Composite {
 	    @Override
 	    public void onValueChange(ValueChangeEvent<Boolean> event) {
                 refreshClub = true;
+                refreshPrix = true;
                 pushEdit("-1,c" + key + "," + (event.getValue() ? "1" : "0") + "," +
                          jdb.getSelectedClubID() + ";");
 	    }
@@ -779,11 +780,11 @@ public class ConfigWidget extends Composite {
     // cours 1...
     // cours 2...
 
-    // if uniforme par cours:
+    // if not ajustable par cours:
     //            U8 U10 U12 U14 U16 U16N U18 U18N U20 U20N S SN
     // prix:     ...
 
-    // if uniforme par age:
+    // if not ajustable par age:
     // cours 1...
     // cours 2 ...
 
@@ -818,10 +819,10 @@ public class ConfigWidget extends Composite {
         while (prix.getColumnCount() > 0)
             prix.removeColumn(0);
 
-        // if uniforme par cours, don't do this
         Column<CoursPrix, String> coursColumn = new Column<CoursPrix, String>(new TextCell()) {
             public String getValue(CoursPrix object) {
-                if (object == null) return "nullcours";
+                if (object == null) return "";
+                if (jdb.getSelectedClub() != null && !ajustableCours.getValue()) return "TOUS";
                 if (object.c == null || object.c.equals("")) return "Affiliation";
                 return object.c.getShortDesc();
             }
@@ -890,7 +891,7 @@ public class ConfigWidget extends Composite {
     }
 
     private void addPrixRow(CoursSummary cs) {
-        String coursId = cs == null ? "-1" : cs.getId();
+        String coursId = cs == null ? FraisCoursCalculator.ALL_COURS : cs.getId();
         List<Prix> ps =
             FraisCoursCalculator.getPrixForClubSessionCours
             (rawPrixData, jdb.getSelectedClubID(),
@@ -904,13 +905,14 @@ public class ConfigWidget extends Composite {
         if (currentPrixSession == null) return;
 
         prixRows.clear();
-        if (jdb.getSelectedClub() == null)
+        if (jdb.getSelectedClub() == null || !ajustableCours.getValue()) {
             addPrixRow(null);
-
-        for (CoursSummary cs : rawCoursData) {
-            if (!coursApplicableToCurrentSession(cs))
-                continue;
-            addPrixRow(cs);
+        } else {
+            for (CoursSummary cs : rawCoursData) {
+                if (!coursApplicableToCurrentSession(cs))
+                    continue;
+                addPrixRow(cs);
+            }
         }
         refreshPrix();
     }
@@ -1023,19 +1025,18 @@ public class ConfigWidget extends Composite {
 
     private void selectSession(SessionSummary session, boolean isPair) {
         if (session != null) {
-            StringBuilder a = new StringBuilder(session.getAbbrev()),
-                b = new StringBuilder(session.getSeqno());
+            StringBuilder a = new StringBuilder(session.getAbbrev());
             if (isPair) {
                 a.append(" ");
                 a.append(JudoDB.getLinkedSession(session, rawSessionData).getAbbrev());
-                b.append(" ");
-                b.append(JudoDB.getLinkedSession(session, rawSessionData).getSeqno());
             }
-            prixSessionsButton.setText(a.toString());
-            currentPrixSeqnoString = b.toString();
+            String as = a.toString();
+            prixSessionsButton.setText(as);
+            currentPrixSeqnoString = as;
         } else {
-            currentPrixSeqnoString = session.getSeqno();
+            currentPrixSeqnoString = session.getAbbrev();
         }
+        currentPrixSeqnoString = JudoDB.sessionSeqnosFromAbbrevs(currentPrixSeqnoString, rawSessionData);
         currentPrixSession = session;
         this.isPairPrixSession = isPair;
         populatePrixRows();
@@ -1316,6 +1317,7 @@ public class ConfigWidget extends Composite {
         }
 
         prixRows.clear();
+        rawPrixData.clear();
 
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
         String url = JudoDB.PULL_CLUB_PRIX_URL +
@@ -1337,7 +1339,8 @@ public class ConfigWidget extends Composite {
     private boolean gotCours = false;
     // requires sessions
     public void retrieveCours(final String numero_club) {
-	if (numero_club.equals("")) return;
+        rawCoursData.clear(); coursData.clear();
+        if (numero_club.equals("")) return;
 
         if (!gotSessions) {
             new Timer() {
@@ -1351,13 +1354,13 @@ public class ConfigWidget extends Composite {
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
-			gotCours = true;
-			List<CoursSummary> lcs = new ArrayList<>();
-			JsArray<CoursSummary> jcs = JsonUtils.<JsArray<CoursSummary>>safeEval(s);
-			for (int i = 0; i < jcs.length(); i++)
-			    lcs.add(jcs.get(i));
-			populateCours(lcs);
-			jdb.clearStatus();
+                        gotCours = true;
+                        List<CoursSummary> lcs = new ArrayList<>();
+                        JsArray<CoursSummary> jcs = JsonUtils.<JsArray<CoursSummary>>safeEval(s);
+                        for (int i = 0; i < jcs.length(); i++)
+                            lcs.add(jcs.get(i));
+                        populateCours(lcs);
+                        jdb.clearStatus();
                     }
                 });
         jdb.retrieve(url, rc);
