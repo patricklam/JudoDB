@@ -285,7 +285,7 @@ public class JudoDB implements EntryPoint {
      */
     public void onModuleLoad() {
         // handle exceptions
-        //if(false)
+        if(false)
         GWT.setUncaughtExceptionHandler(new
                                         GWT.UncaughtExceptionHandler() {
                 public void onUncaughtException(Throwable e) {

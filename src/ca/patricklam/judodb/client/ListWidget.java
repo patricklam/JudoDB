@@ -924,8 +924,9 @@ public class ListWidget extends Composite {
               @Override
               public void render(Cell.Context ctx, ClientData cd, SafeHtmlBuilder s) {
                   if (divisionSMColumnVisible && (cd != null && currentSession != null &&
-                                                (Integer.parseInt(currentSession.getYear()) -
-                                                 (cd.getDDN().getYear() + 1900)) > Constants.VETERAN))
+                                                  cd.getDDN() != null &&
+                                                  (Integer.parseInt(currentSession.getYear()) -
+                                                   (cd.getDDN().getYear() + 1900)) > Constants.VETERAN))
                       super.render(ctx, cd, s);
                   else {
                       if (currentSession == null)
