@@ -104,7 +104,7 @@ public class ListWidget extends Composite {
 
     private List<SessionSummary> sessionSummaries = new ArrayList<>();
     private List<CoursSummary> coursSummaries = new ArrayList<>();
-    private List<ClubPrix> clubPrix = new ArrayList<>();
+    private List<Prix> prix = new ArrayList<>();
     private Map<String, List<CoursSummary>> coursSummariesByShortDesc = new HashMap<>();
     private List<CoursSummary> uniqueCoursSummariesForSession = new ArrayList<>();
     private List<EscompteSummary> escompteSummaries = new ArrayList<>();
@@ -1180,7 +1180,7 @@ public class ListWidget extends Composite {
             if (sd != null) {
                 ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
                 ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
-                CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, prorata.getValue(), clubPrix, escompteSummaries);
+                CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, prorata.getValue(), prix, escompteSummaries);
                 dv += sd.getFrais();
             }
         }
@@ -1228,8 +1228,7 @@ public class ListWidget extends Composite {
        ServiceData sd = cd.getServiceFor(currentSession);
        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
        ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);
-       // XXX clubPrix on ListWidget
-       CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, prorata.getValue(), null, escompteSummaries);
+       CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, prorata.getValue(), prix, escompteSummaries);
        if (sd != null) {
            dv += Constants.currencyFormat.format(Double.parseDouble(sd.getFrais()));
        }
@@ -1549,10 +1548,10 @@ public class ListWidget extends Composite {
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
                         gotPrix = true;
-                        JsArray<ClubPrix> cp = JsonUtils.<JsArray<ClubPrix>>safeEval(s);
-                        clubPrix.clear();
+                        JsArray<Prix> cp = JsonUtils.<JsArray<Prix>>safeEval(s);
+                        prix.clear();
                         for (int i = 0; i < cp.length(); i++)
-                            clubPrix.add(cp.get(i));
+                            prix.add(cp.get(i));
                     }
                 });
         jdb.retrieve(url, rc);

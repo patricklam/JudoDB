@@ -195,7 +195,7 @@ public class ClientWidget extends Composite {
     }
     private static final BlurbTemplate BLURB = GWT.create(BlurbTemplate.class);
 
-    private List<ClubPrix> clubPrix = new ArrayList<>();
+    private List<Prix> prix = new ArrayList<>();
     /** A list of cours as retrieved from the server.
      * Must stay in synch with the ListBox field cours. */
     private List<CoursSummary> backingCours = new ArrayList<>();
@@ -1032,7 +1032,7 @@ public class ClientWidget extends Composite {
     private void regularizeEscompte() {
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-        double dCategorieFrais = CostCalculator.proratedFraisCours(currentSession, cd, sd, cs, sessionSummaries, backingCours, clubPrix);
+        double dCategorieFrais = CostCalculator.proratedFraisCours(cd, sd, cs, currentSession, sessionSummaries, backingCours, prix);
 
         if (CostCalculator.isCasSpecial(sd,
 					CostCalculator.getApplicableEscompte(sd, escompteSummaries))) {
@@ -1212,7 +1212,7 @@ public class ClientWidget extends Composite {
 
         ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
 
-        CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, backingCours, ps, prorata.getValue(), clubPrix, escompteSummaries);
+        CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, backingCours, ps, prorata.getValue(), prix, escompteSummaries);
 
         /* view stuff here */
         Display d = Display.NONE;
@@ -1456,10 +1456,10 @@ public class ClientWidget extends Composite {
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
                         gotPrix = true;
-                        JsArray<ClubPrix> cp = JsonUtils.<JsArray<ClubPrix>>safeEval(s);
-                        clubPrix.clear();
+                        JsArray<Prix> cp = JsonUtils.<JsArray<Prix>>safeEval(s);
+                        prix.clear();
                         for (int i = 0; i < cp.length(); i++)
-                            clubPrix.add(cp.get(i));
+                            prix.add(cp.get(i));
                     }
                 });
         jdb.retrieve(url, rc);

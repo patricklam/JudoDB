@@ -136,6 +136,17 @@ public class Constants {
     };
     public static final Division EMPTY_DIVISION = new Division("", "", 0, false, null);
 
+    private static HashMap<String, Division> divisions;
+    public static Division getDivisionByAbbrev(String abbrev) {
+        if (divisions == null) {
+            divisions = new HashMap<>();
+            for (Division d : DIVISIONS) {
+                divisions.put(d.abbrev, d);
+            }
+        }
+        return divisions.get(abbrev);
+    }
+
     public static final Grade EMPTY_GRADE = new Grade("---", "---", 0);
 
     public static final EscompteSummary EMPTY_ESCOMPTE =

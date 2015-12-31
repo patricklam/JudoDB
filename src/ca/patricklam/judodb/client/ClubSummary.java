@@ -27,6 +27,10 @@ public class ClubSummary extends JavaScriptObject {
     public final native void setEnableProrata(boolean pro_rata) /*-{ this.pro_rata = pro_rata ? '1' : '0'; }-*/;
     public final native boolean getAfficherPaypal() /*-{ return this.afficher_paypal != '0'; }-*/;
     public final native void setAfficherPaypal(boolean afficher_paypal) /*-{ this.afficher_paypal = afficher_paypal ? '1' : '0'; }-*/;
+    public final native boolean getAjustableCours() /*-{ return this.ajustable_cours != '0'; }-*/;
+    public final native void setAjustableCours(boolean ajustable_cours) /*-{ this.ajustable_cours = ajustable_cours ? '1' : '0'; }-*/;
+    public final native boolean getAjustableDivision() /*-{ return this.ajustable_division != '0'; }-*/;
+    public final native void setAjustableDivision(boolean ajustable_division) /*-{ this.ajustable_division = ajustable_division ? '1' : '0'; }-*/;
 
     public final String getClubText() {
         return "[" + getNumeroClub() + "] " + getNom();

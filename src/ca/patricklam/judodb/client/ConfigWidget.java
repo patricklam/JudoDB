@@ -15,6 +15,7 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -34,8 +35,10 @@ import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.dom.client.Style.Unit;
 
 import org.gwtbootstrap3.client.ui.TabListItem;
+import org.gwtbootstrap3.client.ui.AnchorListItem;
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
+import org.gwtbootstrap3.client.ui.FormGroup;
 import org.gwtbootstrap3.client.ui.Container;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
@@ -51,6 +54,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.TreeSet;
 
 public class ConfigWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ConfigWidget> {}
@@ -64,6 +68,7 @@ public class ConfigWidget extends Composite {
     @UiField Button retour;
 
     @UiField FormPanel configEditForm;
+    @UiField FormGroup ajustable;
     @UiField Hidden current_session;
     @UiField Hidden dataToSave;
     @UiField Hidden guid_on_form;
@@ -74,7 +79,9 @@ public class ConfigWidget extends Composite {
     private final JudoDB jdb;
 
     CellTable<SessionSummary> sessions;
+    // contains the [add session] link also
     private final List<SessionSummary> sessionData = new ArrayList<>();
+    private final List<SessionSummary> rawSessionData = new ArrayList<>();
 
     CellTable<CoursSummary> cours;
     // rawCoursData is unconsolidated, coursData is merged by session
@@ -83,10 +90,11 @@ public class ConfigWidget extends Composite {
     private final HashMap<String, List<String>> coursShortDescToDbIds = new HashMap<>();
     private final HashSet<CoursSummary> duplicateCours = new HashSet<>();
 
-    CellTable<ClubPrix> prix;
-    private final List<ClubPrix> rawPrixData = new ArrayList<>();
-    private final List<ClubPrix> prixData = new ArrayList<>();
-    private final HashSet<ClubPrix> duplicatePrix = new HashSet<>();
+    private final List<Prix> rawPrixData = new ArrayList<>();
+    private final List<CoursPrix> prixRows = new ArrayList<>();
+    private SessionSummary currentPrixSession;
+    private String currentPrixSeqnoString;
+    private boolean isPairPrixSession;
 
     CellTable<EscompteSummary> escomptes;
     private final List<EscompteSummary> escompteData = new ArrayList<>();
@@ -128,11 +136,12 @@ public class ConfigWidget extends Composite {
         if (club != null) {
             retrieveSessions(club.getId());
             retrieveCours(club.getNumeroClub());
-            retrievePrix(club.getNumeroClub());
+            retrievePrix(club.getId());
             retrieveEscomptes(club.getId());
             retrieveProduits(club.getId());
         } else {
             retrieveSessions("0");
+            retrievePrix("0");
             clearCours();
             clearPrix();
             clearEscomptes();
@@ -284,23 +293,29 @@ public class ConfigWidget extends Composite {
     }
 
     void populateCurrentClub() {
-	String selectedClub = jdb.getSelectedClubID();
-	initializeClubFields();
-	if (selectedClub == null) {
-	    return;
-	}
+        String selectedClub = jdb.getSelectedClubID();
+        initializeClubFields();
+        if (selectedClub == null) {
+            ajustable.setVisible(false);
+            return;
+        }
 
-	ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-	nom_club.setText(cs.getNom());
-	nom_short.setText(cs.getNomShort());
-	numero_club.setText(cs.getNumeroClub());
-	ville.setText(cs.getVille());
-	prefix_codepostale.setText(cs.getPrefixCodepostale());
-	indicatif_regional.setText(cs.getIndicatifRegional());
-	escompte_resident.setText(cs.getEscompteResident());
-	supplement_prorata.setText(cs.getSupplementProrata());
-	default_prorata.setValue(cs.getEnableProrata());
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        nom_club.setText(cs.getNom());
+        nom_short.setText(cs.getNomShort());
+        numero_club.setText(cs.getNumeroClub());
+        ville.setText(cs.getVille());
+        prefix_codepostale.setText(cs.getPrefixCodepostale());
+        indicatif_regional.setText(cs.getIndicatifRegional());
+        escompte_resident.setText(cs.getEscompteResident());
+        supplement_prorata.setText(cs.getSupplementProrata());
+        default_prorata.setValue(cs.getEnableProrata());
         afficher_paypal.setValue(cs.getAfficherPaypal());
+
+        // on prix tab, but set by club:
+        ajustable.setVisible(true);
+        ajustableCours.setValue(cs.getAjustableCours());
+        ajustableDivision.setValue(cs.getAjustableDivision());
     }
     /* --- end club tab --- */
 
@@ -413,7 +428,7 @@ public class ConfigWidget extends Composite {
     final private static String ADD_SESSION_VALUE = "[ajouter session]";
     void addAddSessionSession() {
 	int maxSeqno = -1;
-	for (SessionSummary s : sessionData) {
+	for (SessionSummary s : rawSessionData) {
 	    if (Integer.parseInt(s.getSeqno()) > maxSeqno)
 		maxSeqno = Integer.parseInt(s.getSeqno());
 	}
@@ -467,21 +482,23 @@ public class ConfigWidget extends Composite {
     }
 
     private void populateSessions(JsArray<SessionSummary> sessionArray) {
-	// reset the editable status of the cells
-	initializeSessionColumns();
+        // reset the editable status of the cells
+        initializeSessionColumns();
 
-	sessionData.clear();
+        sessionData.clear();
         for (int i = 0; i < sessionArray.length(); i++) {
-	    sessionData.add(sessionArray.get(i));
-	}
+            sessionData.add(sessionArray.get(i));
+        }
+        rawSessionData.clear(); rawSessionData.addAll(sessionData);
 
-	if (!jdb.isClubSelected()) {
-	    addAddSessionSession();
-	}
+        if (!jdb.isClubSelected()) {
+            addAddSessionSession();
+        }
 
-	sessions.setRowData(sessionData);
-	sessions.redraw();
-	updateSessionToNameMapping();
+        sessions.setRowData(sessionData);
+        sessions.redraw();
+        updateSessionToNameMapping();
+        populateSessionsForPrix();
     }
     /* --- end session tab --- */
 
@@ -526,10 +543,9 @@ public class ConfigWidget extends Composite {
     };
 
     private final ColumnFields COURS_SESSION_COLUMN = new ColumnFields("session", "Session", 2, Unit.EM),
-        DESC_COLUMN = new ColumnFields("short_desc", "Description", 4, Unit.EM),
-        SUPPLEMENT_COURS_COLUMN = new ColumnFields("supplement_cours", "Supplement frais", 4, Unit.EM);
+        DESC_COLUMN = new ColumnFields("short_desc", "Description", 4, Unit.EM);
 
-    private List<ColumnFields> perCoursColumns = Collections.unmodifiableList(Arrays.asList(COURS_SESSION_COLUMN, DESC_COLUMN, SUPPLEMENT_COURS_COLUMN));
+    private List<ColumnFields> perCoursColumns = Collections.unmodifiableList(Arrays.asList(COURS_SESSION_COLUMN, DESC_COLUMN));
 
     void initializeCoursTable() {
 	cours = new CellTable<>(COURS_KEY_PROVIDER);
@@ -546,7 +562,7 @@ public class ConfigWidget extends Composite {
             }
         };
         cours.addColumn(newColumn, c.name);
-        // this handles updating the short_desc column and the supplement_cours column
+        // this handles updating the short_desc column
         newColumn.setFieldUpdater(new FieldUpdater<CoursSummary, String>() {
                 @Override
                 public void update(int index, CoursSummary object, String value) {
@@ -625,7 +641,6 @@ public class ConfigWidget extends Composite {
                         for (SessionSummary ss : newSessions) {
                             edits.append("-1,R," + ss.getSeqno() + "," +
                                          object.getShortDesc() + "," +
-                                         object.getSupplement() + "," +
                                          jdb.getSelectedClubID() + ";");
                         }
                         pushEdit(edits.toString());
@@ -636,7 +651,6 @@ public class ConfigWidget extends Composite {
                         for (SessionSummary ss : addedSessions) {
                             edits.append("-1,R," + ss.getSeqno() + "," +
                                          object.getShortDesc() + "," +
-                                         object.getSupplement() + "," +
                                          jdb.getSelectedClubID() + ";");
                         }
 
@@ -657,7 +671,6 @@ public class ConfigWidget extends Composite {
                 }
             });
         addCoursColumn(sessions, DESC_COLUMN, true);
-        addCoursColumn(sessions, SUPPLEMENT_COURS_COLUMN, true);
     }
 
     private void removeDuplicateCours(StringBuffer edits) {
@@ -682,7 +695,6 @@ public class ConfigWidget extends Composite {
         addNewCours.setSession("");
         addNewCours.setClubId(jdb.getSelectedClubID());
         addNewCours.setShortDesc(ADD_COURS_VALUE);
-        addNewCours.setSupplement("");
         coursData.add(addNewCours);
     }
 
@@ -694,7 +706,6 @@ public class ConfigWidget extends Composite {
         HashMap<String, StringBuffer> l = new HashMap<>();
         HashMap<String, Set<String>> ll = new HashMap<>();
         HashMap<String, List<String>> m = new HashMap<>();
-        HashMap<String, String> supp = new HashMap<>();
         rawCoursData.clear(); rawCoursData.addAll(coursArray);
         duplicateCours.clear();
 
@@ -704,15 +715,6 @@ public class ConfigWidget extends Composite {
                 ll.put(cs.getShortDesc(), new HashSet<String>());
                 m.put(cs.getShortDesc(), new ArrayList<String>());
             }
-            // in the future, should support different cours for different sessions
-            // with different supplements
-            if (supp.containsKey(cs.getShortDesc())) {
-                String csSupp = cs.getSupplement(); if (csSupp == null) csSupp = "";
-                assert supp.get(cs.getShortDesc()).equals(csSupp);
-            }
-            String newSupp = cs.getSupplement();
-            if (newSupp == null) newSupp = "";
-            supp.put(cs.getShortDesc(), newSupp);
             StringBuffer b = l.get(cs.getShortDesc());
             List<String> ids = m.get(cs.getShortDesc());
             ids.add(cs.getId());
@@ -740,7 +742,7 @@ public class ConfigWidget extends Composite {
         for (String s : l.keySet()) {
             CoursSummary cs = (CoursSummary)JavaScriptObject.createObject().cast();
             cs.setId(String.valueOf(id)); cs.setShortDesc(s);
-            cs.setSession(l.get(s).toString()); cs.setSupplement(supp.get(s));
+            cs.setSession(l.get(s).toString());
             coursShortDescToDbIds.put(cs.getShortDesc(), m.get(s));
             coursData.add(cs);
             id++;
@@ -759,229 +761,293 @@ public class ConfigWidget extends Composite {
     /* --- end cours tab --- */
 
     /* --- prix tab --- */
-    private static final ProvidesKey<ClubPrix> CLUB_PRIX_KEY_PROVIDER =
-	new ProvidesKey<ClubPrix>() {
+    @UiField ButtonGroup prixSessionButtonGroup;
+    @UiField Button prixSessionsButton;
+    @UiField DropDownMenu prixSessions;
+    @UiField ToggleSwitch ajustableCours;
+    @UiField ToggleSwitch ajustableDivision;
+    @UiField CellTable<CoursPrix> prix;
+
+    // session: A15/H16/A15 H16 [H16 => copier A15]
+    // next two visible when there is a club:
+    // prix uniforme par cours O/N
+    // prix uniforme par age O/N
+    // when no club, take entries for Affiliation JQ
+
+    // if all no:
+    //            U8 U10 U12 U14 U16 U16N U18 U18N U20 U20N S SN
+    // cours 1...
+    // cours 2...
+
+    // if uniforme par cours:
+    //            U8 U10 U12 U14 U16 U16N U18 U18N U20 U20N S SN
+    // prix:     ...
+
+    // if uniforme par age:
+    // cours 1...
+    // cours 2 ...
+
+    // prix cours is a function of: club, session, division, cours
+
+    class CoursPrix {
+        CoursSummary c;
+        List<Prix> prix;
+    }
+
+    private static final Object AFFILIATION_PRIX_KEY = new Object();
+
+    private static final ProvidesKey<CoursPrix> PRIX_KEY_PROVIDER =
+        new ProvidesKey<CoursPrix>() {
         @Override
-        public Object getKey(ClubPrix item) {
-	    return item.getId();
+        public Object getKey(CoursPrix item) {
+            if (item.c == null) return AFFILIATION_PRIX_KEY;
+            return item.c.getId();
         }
     };
 
-    private final ColumnFields PRIX_SESSION_COLUMN = new ColumnFields("session", "Session", 2, Unit.EM),
-	DIV_COLUMN = new ColumnFields("division_abbrev", "Division", 4, Unit.EM),
-	FRAIS_1_COLUMN = new ColumnFields("frais_1_session", "Frais 1 session", 4, Unit.EM),
-	FRAIS_2_COLUMN = new ColumnFields("frais_2_session", "Frais 2 sessions", 4, Unit.EM),
-	FRAIS_JUDO_QC_COLUMN = new ColumnFields("frais_judo_qc", "Frais affiliation", 4, Unit.EM);
-
-    private List<ColumnFields> perPrixColumns = Collections.unmodifiableList(Arrays.asList(PRIX_SESSION_COLUMN, DIV_COLUMN, FRAIS_1_COLUMN, FRAIS_2_COLUMN, FRAIS_JUDO_QC_COLUMN));
-
     void initializePrixTable() {
-	prix = new CellTable<>(CLUB_PRIX_KEY_PROVIDER);
-	prix.setWidth("60em", true);
+        ajustableCours.addValueChangeHandler(newValueChangeHandlerBoolean("ajustable_cours"));
+        ajustableDivision.addValueChangeHandler(newValueChangeHandlerBoolean("ajustable_division"));
+        prix = new CellTable<>(PRIX_KEY_PROVIDER);
+        prix.setWidth("60em", true);
 
-	initializePrixColumns();
-    }
-
-    private Column<ClubPrix, String> addPrixColumn(final CellTable<ClubPrix> t, final ColumnFields c, final boolean editable) {
-	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
-	Column<ClubPrix, String> newColumn = new Column<ClubPrix, String>(cell) {
-	    public String getValue(ClubPrix object) {
-		return object.get(c.key);
-	    }
-	};
-	t.addColumn(newColumn, c.name);
-	newColumn.setFieldUpdater(new FieldUpdater<ClubPrix, String>() {
-		@Override
-		public void update(int index, ClubPrix object, String value) {
-                    refreshPrix = true;
-                    if (object.get(DIV_COLUMN.key).equals(ADD_PRIX_VALUE)) {
-                        assert (object.get(PRIX_SESSION_COLUMN.key).equals(""));
-                        String currentSessions = JudoDB.getSessionIds(new Date(), 2, sessionData);
-                        object.set(PRIX_SESSION_COLUMN.key, currentSessions);
-                        List<SessionSummary> currentSessionsList = parseSessionIds(currentSessions);
-                        StringBuffer edits = new StringBuffer();
-                        for (SessionSummary ss : currentSessionsList) {
-                            edits.append("-1,P," + ss.getSeqno() + "," +
-                                         value + "," /* + frais_1 */ + "," /* + frais_2 */ + ","
-                                         /* + frais_judo_qc */ + "," + jdb.getSelectedClubID() + ";");
-                        }
-                        pushEdit(edits.toString());
-                        addAddPrixPrix();
-                    } else {
-                        StringBuffer edits = new StringBuffer();
-                        for (String dbId : prixInternalIdToDbIds.get(object.getId())) {
-                            edits.append("-1,p" + c.key + "," + dbId + "," + value + "," + jdb.getSelectedClubID() + ";");
-                        }
-                        pushEdit(edits.toString());
-                    }
-                    object.set(c.key, value);
-                    t.redraw();
-                }
-	    });
-	t.setColumnWidth(newColumn, c.width, c.widthUnits);
-	return newColumn;
+        initializePrixColumns();
     }
 
     void initializePrixColumns() {
         while (prix.getColumnCount() > 0)
             prix.removeColumn(0);
 
-        final Column<ClubPrix, String> sessionColumn =
-            addPrixColumn(prix, PRIX_SESSION_COLUMN, true);
-        sessionColumn.setFieldUpdater(new FieldUpdater<ClubPrix, String>() {
-                @Override
-                public void update(int index, ClubPrix object, String value) {
-                    List<SessionSummary> newSessions = parseSessionIds(value);
-                    List<SessionSummary> oldSessions = parseSessionIds(object.get(PRIX_SESSION_COLUMN.key));
-                    if (oldSessions.equals(newSessions)) return;
-                    refreshPrix = true;
+        // if uniforme par cours, don't do this
+        Column<CoursPrix, String> coursColumn = new Column<CoursPrix, String>(new TextCell()) {
+            public String getValue(CoursPrix object) {
+                if (object == null) return "nullcours";
+                if (object.c == null || object.c.equals("")) return "Affiliation";
+                return object.c.getShortDesc();
+            }
+        };
+        prix.addColumn(coursColumn, "Cours");
+        prix.setColumnWidth(coursColumn, 10, Unit.EM);
 
-                    List<SessionSummary> addedSessions = new ArrayList<>(),
-                        removedSessions = new ArrayList<>();
-                    for (SessionSummary s : newSessions)
-                        if (!oldSessions.contains(s)) addedSessions.add(s);
-                    for (SessionSummary s : oldSessions)
-                        if (!newSessions.contains(s)) removedSessions.add(s);
+        // if uniforme par age, don't do this
+        for (final Constants.Division d : Constants.DIVISIONS) {
+            Column<CoursPrix, String> col = new Column<CoursPrix, String>(new EditTextCell()) {
+                public String getValue(CoursPrix object) {
+                    if (object == null) return "";
 
-                    StringBuffer sb = new StringBuffer();
-                    if (object.get(DIV_COLUMN.key).equals(ADD_PRIX_VALUE)) {
-                        object.set(DIV_COLUMN.key, "");
-                        assert (removedSessions.isEmpty());
-			StringBuffer edits = new StringBuffer();
-                        for (SessionSummary ss : newSessions) {
-                            edits.append("-1,P," + ss.getSeqno() + "," +
-                                         object.getDivisionAbbrev() + "," +
-					 object.getFrais1Session() + "," +
-					 object.getFrais2Session() + "," +
-                                         object.getFraisJudoQC() + "," + jdb.getSelectedClubID() + ";");
-                        }
-			pushEdit(edits.toString());
-                        addAddPrixPrix();
-                    } else {
-                        // add added prix
-                        StringBuffer edits = new StringBuffer();
-                        for (SessionSummary ss : addedSessions) {
-                            edits.append("-1,P," + ss.getSeqno() + "," +
-                                         object.getDivisionAbbrev() + "," +
-					 object.getFrais1Session() + "," +
-					 object.getFrais2Session() + "," +
-                                         object.getFraisJudoQC() + "," + jdb.getSelectedClubID() + ";");
-                        }
-
-                        // remove deleted prix
-                        for (SessionSummary ss : removedSessions) {
-                            for (ClubPrix cs : rawPrixData) {
-                                if (cs.getDivisionAbbrev().equals(object.getDivisionAbbrev()) &&
-                                    cs.getSession().equals(ss.getSeqno())) {
-                                    edits.append("-1,Q," + cs.getId() + "," +
-                                                 cs.getDivisionAbbrev() + "," + jdb.getSelectedClubID() + ";");
-                                }
+                    for (Prix p : object.prix) {
+                        if (p.getDivisionAbbrev().equals(d.abbrev))
+                            return p.getFrais();
+                    }
+                    return "";
+                }
+            };
+            col.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+            prix.addColumn(col, d.abbrev);
+            col.setFieldUpdater(new FieldUpdater<CoursPrix, String>() {
+                    @Override public void update(int index, CoursPrix object, String value) {
+                        Prix p = null;
+                        for (Prix pp : object.prix) {
+                            if (pp.getDivisionAbbrev().equals(d.abbrev)) {
+                                p = pp; break;
                             }
                         }
-                        removeDuplicatePrix(edits);
+                        // should not happen; we should always have a match (even for new Prix)
+                        if (p == null) return;
+                        p.setFrais(value);
+
+                        StringBuilder edits = new StringBuilder();
+                        String coursId;
+                        if (object.c == null) {
+                            // indicate frais d'affiliation with coursId -1 (and clubId -1 also)
+                            // note: on server side, only admin can write clubId -1
+                            coursId = "-1";
+                        } else {
+                            coursId = object.c.getId();
+                        }
+
+                        // sessionseqno isn't populated right for normal cours in the '12 13' session
+                        if (p.getId().equals("0")) {
+                            // new prix, not previously in db
+                            edits.append("-1,P," +
+                                         value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
+                                         p.getDivisionAbbrev() + "," + coursId + ";");
+                        } else {
+                            edits.append("-1,p," + p.getId() + "," +
+                                         value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
+                                         p.getDivisionAbbrev() + "," + coursId + ";");
+                        }
                         pushEdit(edits.toString());
+                        refreshPrix = true;
                     }
-                }
-            });
-        addPrixColumn(prix, DIV_COLUMN, true);
-        addPrixColumn(prix, FRAIS_1_COLUMN, true);
-        addPrixColumn(prix, FRAIS_2_COLUMN, true);
-        addPrixColumn(prix, FRAIS_JUDO_QC_COLUMN, true);
-    }
-
-    private void removeDuplicatePrix(StringBuffer edits) {
-        for (ClubPrix cs : duplicatePrix) {
-            edits.append("-1,Q," + cs.getId() + "," +
-                         cs.getDivisionAbbrev() + "," + jdb.getSelectedClubID() + ";");
+                });
         }
-        duplicateCours.clear();
-    }
-    final private static String ADD_PRIX_VALUE = "[ajouter division]";
-    void addAddPrixPrix() {
-        int maxId = -1;
-        for (ClubPrix c : prixData) {
-            if (Integer.parseInt(c.getId()) > maxId)
-                maxId = Integer.parseInt(c.getId());
-        }
-
-        ClubPrix addNewPrix =
-            JsonUtils.<ClubPrix>safeEval
-            ("{\"id\":\""+(maxId+1)+"\"}");
-        addNewPrix.setDivisionAbbrev(ADD_PRIX_VALUE);
-        prixData.add(addNewPrix);
     }
 
-    private final HashMap<String, List<String>> prixInternalIdToDbIds = new HashMap<>();
+    private void populatePrix(List<Prix> lcp) {
+        rawPrixData.clear(); rawPrixData.addAll(lcp);
+        populatePrixRows();
+    }
 
-    private void populatePrix(List<ClubPrix> prixArray) {
-        initializePrixColumns();
+    private void addPrixRow(CoursSummary cs) {
+        String coursId = cs == null ? "-1" : cs.getId();
+        List<Prix> ps =
+            FraisCoursCalculator.getPrixForClubSessionCours
+            (rawPrixData, jdb.getSelectedClubID(),
+             currentPrixSeqnoString, coursId);
+        CoursPrix cp = new CoursPrix();
+        cp.c = cs; cp.prix = ps;
+        prixRows.add(cp);
+    }
 
-        // l has keys=signatures, values=session abbrevs
-        // m has keys=signatures, values=original ids
-        HashMap<String, StringBuffer> l = new HashMap<>();
-        HashMap<String, Set<String>> ll = new HashMap<>();
-        HashMap<String, List<String>> m = new HashMap<>();
-        rawPrixData.clear(); rawPrixData.addAll(prixArray);
-        duplicatePrix.clear();
+    private void populatePrixRows() {
+        if (currentPrixSession == null) return;
 
-        for (ClubPrix p : prixArray) {
-            String ps = p.getSignature();
-            if (!l.containsKey(ps)) {
-                l.put(ps, new StringBuffer());
-		ll.put(ps, new HashSet<String>());
-                m.put(ps, new ArrayList<String>());
-            }
-            StringBuffer b = l.get(ps);
-            if (b.length() > 0) b.append(" ");
-            SessionSummary ss = seqnoToSession.get(p.getSession());
-            if (ll.get(ps).contains(ss.getAbbrev())) {
-                duplicatePrix.add(p);
+        prixRows.clear();
+        if (jdb.getSelectedClub() == null)
+            addPrixRow(null);
+
+        for (CoursSummary cs : rawCoursData) {
+            if (!coursApplicableToCurrentSession(cs))
                 continue;
-            }
-
-            ll.get(ps).add(ss.getAbbrev());
-            b.append(ss.getAbbrev());
-            String ls = ss.getLinkedSeqno();
-            if (!ls.equals("")) {
-                b.append(" ");
-                b.append(seqnoToSession.get(ls).getAbbrev());
-                ll.get(ps).add(seqnoToSession.get(ls).getAbbrev());
-            }
-
-            List<String> ids = m.get(ps);
-            ids.add(p.getId());
+            addPrixRow(cs);
         }
+        refreshPrix();
+    }
 
-        prixData.clear();
-        prixInternalIdToDbIds.clear();
-        int id = 0;
-        for (String s : l.keySet()) {
-            String[] pnArray = s.split("\\|");
-            ClubPrix pn = (ClubPrix)JavaScriptObject.createObject().cast();
-
-            prixInternalIdToDbIds.put(Integer.toString(id), m.get(s));
-            pn.setId(String.valueOf(id));
-            id++;
-
-            // parse the components of ps and put them in pn
-            pn.setSession(l.get(s).toString());
-            pn.setDivisionAbbrev(pnArray.length > 0 ? pnArray[0] : "");
-            pn.setFrais1Session(pnArray.length > 1 ? pnArray[1] : "");
-            pn.setFrais2Session(pnArray.length > 2 ? pnArray[2] : "");
-            pn.setFraisJudoQC(pnArray.length > 3 ? pnArray[3] : "");
-            prixData.add(pn);
-        }
-
-        addAddPrixPrix();
-        prix.setRowData(prixData);
+    private void refreshPrix() {
+        prix.setRowData(prixRows);
         prix.redraw();
     }
 
     private void clearPrix() {
-        prixData.clear();
-        prix.setRowData(prixData);
-        prix.redraw();
+        prixRows.clear();
+        refreshPrix();
     }
+
+    class SessionAnchorListItem extends AnchorListItem implements Comparable<SessionAnchorListItem> {
+        int effective_seqno;
+        boolean isPair;
+        public SessionAnchorListItem(String label, int effective_seqno, boolean isPair) {
+            super(label);
+            this.effective_seqno = effective_seqno;
+            this.isPair = isPair;
+        }
+
+        @Override public int compareTo(SessionAnchorListItem other) {
+            return other.effective_seqno * 2 + (other.isPair ? 1 : 0) -
+                (effective_seqno * 2 + (isPair ? 1 : 0));
+        }
+    }
+
+    class SessionItemHandler implements ClickHandler {
+        final SessionSummary session;
+        final boolean isPair;
+
+        SessionItemHandler(SessionSummary session, boolean isPair) {
+            this.session = session;
+            this.isPair = isPair;
+        }
+
+        @Override public void onClick(ClickEvent e) {
+            selectSession(session, isPair);
+        }
+    }
+
+    private AnchorListItem addSali(SessionSummary s, Set<SessionAnchorListItem> sss, int pos) {
+        SessionAnchorListItem sali =
+            new SessionAnchorListItem(s.getAbbrev(), pos, false);
+        sali.addClickHandler(new SessionItemHandler(s, false));
+
+        // only display paired sessions when in affiliation mode
+        if (jdb.getSelectedClub() != null)
+            sss.add(sali);
+
+        if (s.isPrimary()) {
+            StringBuilder a = new StringBuilder(s.getAbbrev());
+            a.append(" ");
+            a.append(JudoDB.getLinkedSession(s, rawSessionData).getAbbrev());
+
+            SessionAnchorListItem sali2 =
+                new SessionAnchorListItem(a.toString(), pos, true);
+            sali2.addClickHandler(new SessionItemHandler(s, true));
+            sss.add(sali2);
+            return sali2;
+        }
+        return sali;
+    }
+
+    void populateSessionsForPrix() {
+        prixSessions.clear();
+        SessionSummary currentSession = null;
+
+        Date today = new Date();
+        TreeSet<SessionAnchorListItem> sss = new TreeSet<>();
+        SessionSummary latest = null;
+
+        for (SessionSummary s : rawSessionData) {
+            if (latest == null || (s.isPrimary() && Integer.parseInt(s.getSeqno()) > Integer.parseInt(latest.getSeqno())))
+                latest = s;
+
+            try {
+                Date inscrBegin = Constants.DB_DATE_FORMAT.parse(s.getFirstSignupDate());
+                Date inscrEnd = Constants.DB_DATE_FORMAT.parse(s.getLastSignupDate());
+                if (today.after(inscrBegin) && today.before(inscrEnd)) {
+                    currentSession = s; continue;
+                }
+            } catch (IllegalArgumentException e) {}
+
+            addSali(s, sss, Integer.parseInt(s.getSeqno()));
+        }
+
+        AnchorListItem cs = null;
+        if (currentSession != null) {
+            cs = addSali(currentSession, sss, Integer.parseInt(currentSession.getSeqno()));
+            prixSessions.add(cs);
+        }
+
+        for (AnchorListItem s : sss) {
+            if (s != cs) {
+                prixSessions.add(s);
+            }
+        }
+
+        if (currentSession != null)
+            selectSession(currentSession, true);
+        else {
+            // isPair certainly true when in affiliation mode (club == TOUS)
+            // otherwise we might not have a pairee...
+            selectSession(latest, jdb.getSelectedClub() == null);
+        }
+    }
+
+    private void selectSession(SessionSummary session, boolean isPair) {
+        if (session != null) {
+            StringBuilder a = new StringBuilder(session.getAbbrev()),
+                b = new StringBuilder(session.getSeqno());
+            if (isPair) {
+                a.append(" ");
+                a.append(JudoDB.getLinkedSession(session, rawSessionData).getAbbrev());
+                b.append(" ");
+                b.append(JudoDB.getLinkedSession(session, rawSessionData).getSeqno());
+            }
+            prixSessionsButton.setText(a.toString());
+            currentPrixSeqnoString = b.toString();
+        } else {
+            currentPrixSeqnoString = session.getSeqno();
+        }
+        currentPrixSession = session;
+        this.isPairPrixSession = isPair;
+        populatePrixRows();
+    }
+
+    private boolean coursApplicableToCurrentSession(CoursSummary cs) {
+        if (cs.getSession().equals(currentPrixSession.getSeqno()) ||
+            cs.getSession().equals(currentPrixSession.getLinkedSeqno()))
+            return true;
+        return false;
+    }
+
     /* --- end prix tab --- */
 
     /* --- escompte tab --- */
@@ -1241,28 +1307,28 @@ public class ConfigWidget extends Composite {
         jdb.retrieve(url, rc);
     }
 
-    public void retrievePrix(final String numero_club) {
+    public void retrievePrix(final String club_id) {
         if (!gotSessions) {
             new Timer() {
-                public void run() { retrievePrix(numero_club); }
+                public void run() { retrievePrix(club_id); }
             }.schedule(100);
             return;
         }
 
-        prixData.clear();
+        prixRows.clear();
 
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
         String url = JudoDB.PULL_CLUB_PRIX_URL +
-            "?numero_club=" + numero_club;
+            "?club_id=" + club_id;
 
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
-                        List<ClubPrix> lcp = new ArrayList<ClubPrix>();
-                        JsArray<ClubPrix> cp = JsonUtils.<JsArray<ClubPrix>>safeEval(s);
+                        List<Prix> lp = new ArrayList<Prix>();
+                        JsArray<Prix> cp = JsonUtils.<JsArray<Prix>>safeEval(s);
                         for (int i = 0; i < cp.length(); i++)
-                            lcp.add(cp.get(i));
-                        populatePrix(lcp);
+                            lp.add(cp.get(i));
+                        populatePrix(lp);
                     }
                 });
         jdb.retrieve(url, rc);
@@ -1381,11 +1447,13 @@ public class ConfigWidget extends Composite {
 				}
 			    }
 			    if (refreshPrix) {
-				refreshPrix = false;
-				ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-				if (cs != null) {
-				    retrievePrix(cs.getNumeroClub());
-				}
+                                refreshPrix = false;
+                                ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+                                if (cs != null) {
+                                    retrievePrix(cs.getId());
+                                } else {
+                                    retrievePrix("0");
+                                }
 			    }
 			    if (refreshEscomptes) {
 				refreshEscomptes = false;

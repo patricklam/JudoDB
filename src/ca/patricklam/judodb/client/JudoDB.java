@@ -422,7 +422,7 @@ public class JudoDB implements EntryPoint {
                 }
                 if (!found) continue;
             } else {
-		if (cs.getClubs().length() > 0)
+		if (cs.getClubs() != null && cs.getClubs().length() > 0)
 		    club = getClubSummaryByID(cs.getClubs().get(0));
 	    }
 
@@ -525,6 +525,7 @@ public class JudoDB implements EntryPoint {
     }
 
     ClubSummary getClubSummaryByID(String cid) {
+        if (allClubs == null) return null;
         for(ClubSummary cs : allClubs) {
           if (cs.getId().equals(cid)) return cs;
         }
@@ -614,7 +615,9 @@ public class JudoDB implements EntryPoint {
     void refreshClubListResults() {
         firstSearchResultToDisplay = 0;
         populateClubList(true, mainPanel.dropDownUserClubs, new MainClubListHandlerFactory());
-        populateClubList(true, cfWidget.dropDownUserClubs, cfWidget.new ConfigClubListHandlerFactory());
+        if (cfWidget != null)
+            populateClubList(true, cfWidget.dropDownUserClubs,
+                             cfWidget.new ConfigClubListHandlerFactory());
         if (listWidget != null)
             populateClubList(true, listWidget.dropDownUserClubs, 
                              listWidget.new ListClubListHandlerFactory());
@@ -662,7 +665,7 @@ public class JudoDB implements EntryPoint {
         return r;
     }-*/;
 
-    static SessionSummary getLinkedSession(SessionSummary ss,  List<SessionSummary> sessionSummaries) {
+    static SessionSummary getLinkedSession(SessionSummary ss, List<SessionSummary> sessionSummaries) {
         String linkedSeqno = ss.getLinkedSeqno();
         for (SessionSummary s : sessionSummaries) {
             if (s.getSeqno().equals(linkedSeqno))
