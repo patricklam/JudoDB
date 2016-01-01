@@ -835,7 +835,7 @@ public class ConfigWidget extends Composite {
 
                     Prix p = null;
                     for (Prix pp : object.prix) {
-                        if (p.getDivisionAbbrev().equals(FraisCoursCalculator.ALL_DIVISIONS)) {
+                        if (pp.getDivisionAbbrev().equals(FraisCoursCalculator.ALL_DIVISIONS)) {
                             p = pp; break;
                         }
                     }

@@ -53,7 +53,7 @@ public class CostCalculator {
         return totalWeeks;
     }
 
-    static double fraisCours(ClientData cd, ServiceData sd, List<SessionSummary> sessionSummaries, List<CoursSummary> coursSummaries, List<Prix> prixSummaries) {
+    static double fraisCours(ClientData cd, ServiceData sd, ClubSummary cs, List<SessionSummary> sessionSummaries, List<CoursSummary> coursSummaries, List<Prix> prixSummaries) {
         Constants.Division d = null;
         String[] sessionsByName = sd.getSessions().split(" ");
         StringBuilder sessions = new StringBuilder();
@@ -66,14 +66,14 @@ public class CostCalculator {
             }
         }
         if (d == null) return -1.0;
-        return Double.parseDouble(FraisCoursCalculator.getFrais(prixSummaries, sd.getClubID(),
-                                                                JudoDB.sessionSeqnosFromAbbrevs(sd.getSessions(), sessionSummaries), 
+        return Double.parseDouble(FraisCoursCalculator.getFrais(prixSummaries, cs, 
+                                                                JudoDB.sessionSeqnosFromAbbrevs(sd.getSessions(), sessionSummaries),
                                                                 d.abbrev,
                                                                 sd.getCours()));
     }
 
     static double proratedFraisCours(ClientData cd, ServiceData sd, ClubSummary cs, SessionSummary ss, List<SessionSummary> sessionSummaries, List<CoursSummary> coursSummaries, List<Prix> prixSummaries) {
-        double baseCost = fraisCours(cd, sd, sessionSummaries, coursSummaries, prixSummaries);
+        double baseCost = fraisCours(cd, sd, cs, sessionSummaries, coursSummaries, prixSummaries);
         if (sd == null || sd.getDateInscription() == null || sd.getDateInscription() == Constants.DB_DUMMY_DATE)
             return baseCost;
 
@@ -115,7 +115,7 @@ public class CostCalculator {
                 seqnoPair.append(ss.getSeqno());
             }
         }
-        return Double.parseDouble(FraisCoursCalculator.getFrais(prixSummaries, FraisCoursCalculator.JUDO_QC,
+        return Double.parseDouble(FraisCoursCalculator.getFrais(prixSummaries, null,
                                                                 seqnoPair.toString(), c.abbrev,
                                                                 FraisCoursCalculator.ALL_COURS));
     }
@@ -224,7 +224,7 @@ public class CostCalculator {
       if (ss == null) return;
 
       double dCategorieFrais = proratedFraisCours(cd, sd, cs, ss, sessionSummaries, coursSummaries, prixSummaries);
-      if (!prorataOverride) dCategorieFrais = fraisCours(cd, sd, sessionSummaries, coursSummaries, prixSummaries);
+      if (!prorataOverride) dCategorieFrais = fraisCours(cd, sd, cs, sessionSummaries, coursSummaries, prixSummaries);
       double dEscompteFrais = escompteFrais(sd, dCategorieFrais, escompteSummaries);
       double dAffiliationFrais = affiliationFrais(cd, sd, ss, sessionSummaries, prixSummaries);
       double dSuppFrais = suppFrais(sd, cs, ps, dCategorieFrais + dEscompteFrais + dAffiliationFrais);
