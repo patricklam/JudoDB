@@ -170,7 +170,7 @@ public class ConfigWidget extends Composite {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
 
-        retour.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { ConfigWidget.this.jdb.switchMode(new JudoDB.Mode(JudoDB.Mode.ActualMode.MAIN)); }});
+        retour.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { ConfigWidget.this.jdb.popMode(); }});
 
         jdb.pleaseWait();
         jdb.populateClubList(true, dropDownUserClubs, new ConfigClubListHandlerFactory());
