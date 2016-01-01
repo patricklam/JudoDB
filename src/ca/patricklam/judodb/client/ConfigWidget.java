@@ -1084,19 +1084,19 @@ public class ConfigWidget extends Composite {
     }
 
     private void selectSession(SessionSummary session, boolean isPair) {
-        if (session != null) {
-            StringBuilder a = new StringBuilder(session.getAbbrev());
-            if (isPair) {
-                a.append(" ");
-                a.append(JudoDB.getLinkedSession(session, rawSessionData).getAbbrev());
-            }
-            String as = a.toString();
-            prixSessionsButton.setText(as);
-            currentPrixSeqnoString = as;
-        } else {
-            currentPrixSeqnoString = session.getAbbrev();
+        SessionSummary primary;
+        if (session.isPrimary())
+            primary = session;
+        else
+            primary = JudoDB.getLinkedSession(session, rawSessionData);
+
+        StringBuilder a = new StringBuilder(primary.getAbbrev());
+        if (isPair) {
+            a.append(" ");
+            a.append(JudoDB.getLinkedSession(primary, rawSessionData).getAbbrev());
         }
-        currentPrixSeqnoString = JudoDB.sessionSeqnosFromAbbrevs(currentPrixSeqnoString, rawSessionData);
+        prixSessionsButton.setText(a.toString());
+        currentPrixSeqnoString = JudoDB.sessionSeqnosFromAbbrevs(a.toString(), rawSessionData);
         currentPrixSession = session;
         this.isPairPrixSession = isPair;
         populatePrixRows();
