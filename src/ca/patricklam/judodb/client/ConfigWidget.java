@@ -583,7 +583,6 @@ public class ConfigWidget extends Composite {
                             cs.add(ss.getAbbrev());
                             edits.append("-1,R," + ss.getSeqno() + "," +
                                          value + "," +
-                                         /* supplement */ "," +
                                          jdb.getSelectedClubID() + ";");
                         }
                         pushEdit(edits.toString());
