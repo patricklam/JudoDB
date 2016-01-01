@@ -855,8 +855,20 @@ public class ListWidget extends Composite {
                         return cd.getServiceFor(currentSession).getVerification();
                     return false;
                 } };
+        affEnvoyeColumn.setSortable(true);
         affEnvoyeColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-        results.addColumn(affEnvoyeColumn, heads[Columns.AFF_ENVOYE]);
+        results.addColumn(affEnvoyeColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        sb.append(value);
+                        if (currentSortColumn != gradeColumn)
+                            sb.append(ARROWS);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.AFF_ENVOYE];
+                } });
         affEnvoyeColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
                 @Override public void update(int index, ClientData cd, Boolean value) {
                     StringBuffer edits = new StringBuffer();
@@ -865,6 +877,15 @@ public class ListWidget extends Composite {
                     pushEdit(edits.toString());
                 }
             });
+        resultsListHandler.setComparator(affEnvoyeColumn, new Comparator<ClientData>() {
+                @Override public int compare(ClientData c1, ClientData c2) {
+                    ServiceData xsd = c1.getServiceFor(currentSession);
+                    int xverif = xsd != null ? (xsd.getVerification() ? 1 : 0) : 0;
+
+                    ServiceData ysd = c2.getServiceFor(currentSession);
+                    int yverif = ysd != null ? (ysd.getVerification() ? 1 : 0) : 0;
+                    return yverif - xverif;
+                } });
 
         payeColumn = new Column<ClientData, Boolean>(new CheckboxCell())
             { @Override public Boolean getValue(ClientData cd) {
@@ -872,8 +893,20 @@ public class ListWidget extends Composite {
                         return cd.getServiceFor(currentSession).getSolde();
                     return false;
                 } };
+        payeColumn.setSortable(true);
         payeColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-        results.addColumn(payeColumn, heads[Columns.PAYE]);
+        results.addColumn(payeColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        sb.append(value);
+                        if (currentSortColumn != gradeColumn)
+                            sb.append(ARROWS);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.PAYE];
+                } });
         payeColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
                 @Override public void update(int index, ClientData cd, Boolean value) {
                     StringBuffer edits = new StringBuffer();
@@ -882,6 +915,15 @@ public class ListWidget extends Composite {
                     pushEdit(edits.toString());
                 }
             });
+        resultsListHandler.setComparator(payeColumn, new Comparator<ClientData>() {
+                @Override public int compare(ClientData c1, ClientData c2) {
+                    ServiceData xsd = c1.getServiceFor(currentSession);
+                    int xpaye = xsd != null ? (xsd.getSolde() ? 1 : 0) : 0;
+
+                    ServiceData ysd = c2.getServiceFor(currentSession);
+                    int ypaye = ysd != null ? (ysd.getSolde() ? 1 : 0) : 0;
+                    return ypaye - xpaye;
+                } });
 
         ddnColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) {
