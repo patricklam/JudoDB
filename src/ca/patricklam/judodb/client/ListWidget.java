@@ -1567,7 +1567,7 @@ public class ListWidget extends Composite {
         coursSummaries.clear();
         String url = JudoDB.PULL_CLUB_COURS_URL;
         if (jdb.getSelectedClub() != null) {
-            url += "?numero_club="+jdb.getSelectedClub().getNumeroClub();
+            url += "?club_id="+jdb.getSelectedClub().getId();
         }
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {

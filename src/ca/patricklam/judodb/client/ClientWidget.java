@@ -219,7 +219,7 @@ public class ClientWidget extends Composite {
         hidePaypalIfDisabled(club);
         retrieveSessions(club);
         retrievePrix(club.getId());
-        retrieveCours(club.getNumeroClub());
+        retrieveCours(club.getId());
         retrieveEscomptes(club.getId());
         retrieveProduits(club.getId());
         if (cd != null)
@@ -1459,17 +1459,17 @@ public class ClientWidget extends Composite {
     }
 
     /* depends on jdb.retrieveClubList() and retrieveSessions() having succeeded with an actual club */
-    public void retrieveCours(final String numero_club) {
+    public void retrieveCours(final String club_id) {
         if (currentSession == null) {
             new Timer() {
-                public void run() { retrieveCours(numero_club); }
+                public void run() { retrieveCours(club_id); }
             }.schedule(100);
             return;
         }
 
         backingCours.clear();
         String url = JudoDB.PULL_CLUB_COURS_URL +
-            "?numero_club=" + numero_club +
+            "?club_id=" + club_id +
             "&session_seqno=" + currentSession.getSeqno();
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {

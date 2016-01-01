@@ -135,7 +135,7 @@ public class ConfigWidget extends Composite {
 
         if (club != null) {
             retrieveSessions(club.getId());
-            retrieveCours(club.getNumeroClub());
+            retrieveCours(club.getId());
             retrievePrix(club.getId());
             retrieveEscomptes(club.getId());
             retrieveProduits(club.getId());
@@ -1398,19 +1398,19 @@ public class ConfigWidget extends Composite {
 
     private boolean gotCours = false;
     // requires sessions
-    public void retrieveCours(final String numero_club) {
+    public void retrieveCours(final String club_id) {
         rawCoursData.clear(); coursData.clear();
-        if (numero_club.equals("")) return;
+        if (club_id.equals("")) return;
 
         if (!gotSessions) {
             new Timer() {
-                public void run() { retrieveCours(numero_club); }
+                public void run() { retrieveCours(club_id); }
             }.schedule(100);
             return;
         }
 
         String url = JudoDB.PULL_CLUB_COURS_URL;
-        url += "?numero_club="+numero_club;
+        url += "?club_id="+club_id;
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
@@ -1506,7 +1506,7 @@ public class ConfigWidget extends Composite {
 				refreshCours = false;
 				ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
 				if (cs != null) {
-				    retrieveCours(cs.getNumeroClub());
+				    retrieveCours(cs.getId());
 				}
 			    }
 			    if (refreshPrix) {
