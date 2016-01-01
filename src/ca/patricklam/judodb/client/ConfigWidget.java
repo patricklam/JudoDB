@@ -810,27 +810,64 @@ public class ConfigWidget extends Composite {
         ajustableCours.addValueChangeHandler(newValueChangeHandlerBoolean("ajustable_cours"));
         ajustableDivision.addValueChangeHandler(newValueChangeHandlerBoolean("ajustable_division"));
         prix = new CellTable<>(PRIX_KEY_PROVIDER);
-        prix.setWidth("60em", true);
-
-        initializePrixColumns();
     }
 
-    void initializePrixColumns() {
-        while (prix.getColumnCount() > 0)
-            prix.removeColumn(0);
+    private boolean isUnidivision() {
+        return jdb.getSelectedClub() != null && !ajustableDivision.getValue();
+    }
 
-        Column<CoursPrix, String> coursColumn = new Column<CoursPrix, String>(new TextCell()) {
+    void initializePrixUnidivisionColumn() {
+        Column<CoursPrix, String> col = new Column<CoursPrix, String>(new EditTextCell()) {
             public String getValue(CoursPrix object) {
-                if (object == null) return "";
-                if (jdb.getSelectedClub() != null && !ajustableCours.getValue()) return "TOUS";
-                if (object.c == null || object.c.equals("")) return "Affiliation";
-                return object.c.getShortDesc();
+                for (Prix p : object.prix) {
+                    if (p.getDivisionAbbrev().equals(FraisCoursCalculator.ALL_DIVISIONS))
+                        return p.getFrais();
+                }
+                return "";
             }
         };
-        prix.addColumn(coursColumn, "Cours");
-        prix.setColumnWidth(coursColumn, 10, Unit.EM);
+        col.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+        prix.addColumn(col, "TOUS");
+        prix.setColumnWidth(col, 3, Unit.EM);
+        col.setFieldUpdater(new FieldUpdater<CoursPrix, String>() {
+                @Override public void update(int index, CoursPrix object, String value) {
+                    if (object == null || object.prix.size() < 1) return;
 
-        // if uniforme par age, don't do this
+                    Prix p = null;
+                    for (Prix pp : object.prix) {
+                        if (p.getDivisionAbbrev().equals(FraisCoursCalculator.ALL_DIVISIONS)) {
+                            p = pp; break;
+                        }
+                    }
+                    // should not happen; we should always have a match (even for new Prix)
+                    if (p == null) return;
+                    p.setFrais(value);
+
+                    StringBuilder edits = new StringBuilder();
+                    String coursId;
+                    if (object.c == null) {
+                        coursId = "-1";
+                    } else {
+                        coursId = object.c.getId();
+                    }
+
+                    if (p.getId().equals("0")) {
+                        // new prix, not previously in db
+                        edits.append("-1,P," +
+                                     value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
+                                     FraisCoursCalculator.ALL_DIVISIONS + "," + coursId + ";");
+                    } else {
+                        edits.append("-1,p," + p.getId() + "," +
+                                     value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
+                                     FraisCoursCalculator.ALL_DIVISIONS + "," + coursId + ";");
+                    }
+                    pushEdit(edits.toString());
+                    refreshPrix = true;
+                }
+            });
+    }
+
+    void initializePrixDivisionColumns() {
         for (final Constants.Division d : Constants.DIVISIONS) {
             Column<CoursPrix, String> col = new Column<CoursPrix, String>(new EditTextCell()) {
                 public String getValue(CoursPrix object) {
@@ -845,6 +882,7 @@ public class ConfigWidget extends Composite {
             };
             col.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
             prix.addColumn(col, d.abbrev);
+            prix.setColumnWidth(col, 2, Unit.EM);
             col.setFieldUpdater(new FieldUpdater<CoursPrix, String>() {
                     @Override public void update(int index, CoursPrix object, String value) {
                         Prix p = null;
@@ -867,7 +905,6 @@ public class ConfigWidget extends Composite {
                             coursId = object.c.getId();
                         }
 
-                        // sessionseqno isn't populated right for normal cours in the '12 13' session
                         if (p.getId().equals("0")) {
                             // new prix, not previously in db
                             edits.append("-1,P," +
@@ -885,7 +922,30 @@ public class ConfigWidget extends Composite {
         }
     }
 
+    void initializePrixColumns() {
+        while (prix.getColumnCount() > 0)
+            prix.removeColumn(0);
+
+        Column<CoursPrix, String> coursColumn = new Column<CoursPrix, String>(new TextCell()) {
+            public String getValue(CoursPrix object) {
+                if (object == null) return "";
+                if (jdb.getSelectedClub() != null && !ajustableCours.getValue()) return "TOUS";
+                if (object.c == null || object.c.equals("")) return "Affiliation";
+                return object.c.getShortDesc();
+            }
+        };
+        prix.addColumn(coursColumn, "Cours");
+        prix.setColumnWidth(coursColumn, 10, Unit.EM);
+
+        if (isUnidivision()) {
+            initializePrixUnidivisionColumn();
+        } else {
+            initializePrixDivisionColumns();
+        }
+    }
+
     private void populatePrix(List<Prix> lcp) {
+        initializePrixColumns();
         rawPrixData.clear(); rawPrixData.addAll(lcp);
         populatePrixRows();
     }
@@ -895,7 +955,7 @@ public class ConfigWidget extends Composite {
         List<Prix> ps =
             FraisCoursCalculator.getPrixForClubSessionCours
             (rawPrixData, jdb.getSelectedClubID(),
-             currentPrixSeqnoString, coursId);
+             currentPrixSeqnoString, coursId, isUnidivision());
         CoursPrix cp = new CoursPrix();
         cp.c = cs; cp.prix = ps;
         prixRows.add(cp);
