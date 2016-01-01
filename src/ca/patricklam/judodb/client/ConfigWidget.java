@@ -820,7 +820,7 @@ public class ConfigWidget extends Composite {
         Column<CoursPrix, String> col = new Column<CoursPrix, String>(new EditTextCell()) {
             public String getValue(CoursPrix object) {
                 for (Prix p : object.prix) {
-                    if (p.getDivisionAbbrev().equals(FraisCoursCalculator.ALL_DIVISIONS))
+                    if (p.getDivisionAbbrev().equals(CostCalculator.ALL_DIVISIONS))
                         return p.getFrais();
                 }
                 return "";
@@ -835,7 +835,7 @@ public class ConfigWidget extends Composite {
 
                     Prix p = null;
                     for (Prix pp : object.prix) {
-                        if (pp.getDivisionAbbrev().equals(FraisCoursCalculator.ALL_DIVISIONS)) {
+                        if (pp.getDivisionAbbrev().equals(CostCalculator.ALL_DIVISIONS)) {
                             p = pp; break;
                         }
                     }
@@ -855,11 +855,11 @@ public class ConfigWidget extends Composite {
                         // new prix, not previously in db
                         edits.append("-1,P," +
                                      value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
-                                     FraisCoursCalculator.ALL_DIVISIONS + "," + coursId + ";");
+                                     CostCalculator.ALL_DIVISIONS + "," + coursId + ";");
                     } else {
                         edits.append("-1,p," + p.getId() + "," +
                                      value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
-                                     FraisCoursCalculator.ALL_DIVISIONS + "," + coursId + ";");
+                                     CostCalculator.ALL_DIVISIONS + "," + coursId + ";");
                     }
                     pushEdit(edits.toString());
                     refreshPrix = true;
@@ -951,9 +951,9 @@ public class ConfigWidget extends Composite {
     }
 
     private void addPrixRow(CoursSummary cs) {
-        String coursId = cs == null ? FraisCoursCalculator.ALL_COURS : cs.getId();
+        String coursId = cs == null ? CostCalculator.ALL_COURS : cs.getId();
         List<Prix> ps =
-            FraisCoursCalculator.getPrixForClubSessionCours
+            CostCalculator.getPrixForClubSessionCours
             (rawPrixData, jdb.getSelectedClubID(),
              currentPrixSeqnoString, coursId, isUnidivision());
         CoursPrix cp = new CoursPrix();

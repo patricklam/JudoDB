@@ -2,12 +2,21 @@
 package ca.patricklam.judodb.client;
 
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Date;
+import java.util.Collections;
+import java.util.HashMap;
 
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.datepicker.client.CalendarUtil;
 
 public class CostCalculator {
+    // constants for Prix
+    public final static String JUDO_QC = null;
+    public final static String ALL_DIVISIONS = "*";
+    public final static String ALL_COURS = "-1";
+
     static int remainingWeeks(ServiceData sd, SessionSummary ss, Date dateInscription, List<SessionSummary> sessionSummaries) {
         try {
             if (ss == null) return 0;
@@ -66,10 +75,10 @@ public class CostCalculator {
             }
         }
         if (d == null) return -1.0;
-        return Double.parseDouble(FraisCoursCalculator.getFrais(prixSummaries, cs, 
-                                                                JudoDB.sessionSeqnosFromAbbrevs(sd.getSessions(), sessionSummaries),
-                                                                d.abbrev,
-                                                                sd.getCours()));
+        return Double.parseDouble(getFrais(prixSummaries, cs,
+                                           JudoDB.sessionSeqnosFromAbbrevs(sd.getSessions(), sessionSummaries),
+                                           d.abbrev,
+                                           sd.getCours()));
     }
 
     static double proratedFraisCours(ClientData cd, ServiceData sd, ClubSummary cs, SessionSummary ss, List<SessionSummary> sessionSummaries, List<CoursSummary> coursSummaries, List<Prix> prixSummaries) {
@@ -115,9 +124,9 @@ public class CostCalculator {
                 seqnoPair.append(ss.getSeqno());
             }
         }
-        return Double.parseDouble(FraisCoursCalculator.getFrais(prixSummaries, null,
-                                                                seqnoPair.toString(), c.abbrev,
-                                                                FraisCoursCalculator.ALL_COURS));
+        return Double.parseDouble(getFrais(prixSummaries, null,
+                                           seqnoPair.toString(), c.abbrev,
+                                           ALL_COURS));
     }
 
     static double affiliationFrais(ClientData cd, ServiceData sd, SessionSummary ss, List<SessionSummary> sessionSummaries, List<Prix> prixSummaries) {
@@ -216,6 +225,64 @@ public class CostCalculator {
             return " ("+rw+"/"+tw+")";
         else
             return "";
+    }
+
+
+    public static String getFrais(List<Prix> applicablePrix, ClubSummary cs, String session_seqno, String division_abbrev, String cours_id) {
+        String club_id = (cs == null) ? JUDO_QC : cs.getId();
+
+        if (cs != null && !cs.getAjustableCours())
+            cours_id = ALL_COURS;
+
+        if (cs != null && !cs.getAjustableDivision())
+            division_abbrev = ALL_DIVISIONS;
+
+	for (Prix p : applicablePrix) {
+	    if (p.getClubId().equals(club_id) &&
+		p.getSessionSeqno().equals(session_seqno) &&
+		p.getDivisionAbbrev().equals(division_abbrev) &&
+		p.getCoursId().equals(cours_id))
+		return p.getFrais();
+	}
+	return "0";
+    }
+
+    // extract data from Prix objects and lists thereof...
+    public static List<Prix> getPrixForClubSessionCours(List<Prix> applicablePrix, String club_id, String session_seqno, String cours_id, boolean isUnidivision) {
+        if (isUnidivision) {
+            for (Prix p : applicablePrix) {
+                if (p.getClubId().equals(club_id) &&
+                    p.getSessionSeqno().equals(session_seqno) &&
+                    p.getCoursId().equals(cours_id) &&
+                    p.getDivisionAbbrev().equals(ALL_DIVISIONS))
+                    return Collections.singletonList(p);
+            }
+            Prix np = JsonUtils.<Prix>safeEval
+                ("{\"id\":\"0\", \"club_id\":\""+club_id+"\", \"session_seqno\":\""+session_seqno+"\","+
+                 "\"division_abbrev\":\""+ALL_DIVISIONS+"\",\"cours_id\":\""+cours_id+"\",\"frais\":\"0\"}");
+            return Collections.singletonList(np);
+        }
+
+	HashMap<Constants.Division, Prix> rv = new HashMap<>();
+	for (Prix p : applicablePrix) {
+	    if (p.getClubId().equals(club_id) &&
+		p.getSessionSeqno().equals(session_seqno) &&
+		p.getCoursId().equals(cours_id))
+		rv.put(Constants.getDivisionByAbbrev(p.getDivisionAbbrev()), p);
+	}
+
+	List<Prix> rvSorted = new LinkedList<>();
+	for (Constants.Division d : Constants.DIVISIONS) {
+	    if (rv.containsKey(d))
+		rvSorted.add(rv.get(d));
+	    else {
+		Prix np = JsonUtils.<Prix>safeEval
+		    ("{\"id\":\"0\", \"club_id\":\""+club_id+"\", \"session_seqno\":\""+session_seqno+"\","+
+		     "\"division_abbrev\":\""+d.abbrev+"\",\"cours_id\":\""+cours_id+"\",\"frais\":\"0\"}");
+		rvSorted.add(np);
+	    }
+	}
+	return rvSorted;
     }
 
     /** Model-level method to recompute costs. */
