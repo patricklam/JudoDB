@@ -570,6 +570,7 @@ public class ConfigWidget extends Composite {
                     List<SessionSummary> sessions = parseSessionIds(value);
                     StringBuffer sb = new StringBuffer();
                     refreshCours = true;
+                    refreshPrix = true;
 
                     if (object.get(DESC_COLUMN.key).equals(ADD_COURS_VALUE)) {
                         // ... of a new cours, case (2)
@@ -1089,8 +1090,9 @@ public class ConfigWidget extends Composite {
         else
             primary = JudoDB.getLinkedSession(session, rawSessionData);
 
-        StringBuilder a = new StringBuilder(primary.getAbbrev());
+        StringBuilder a = new StringBuilder(session.getAbbrev());
         if (isPair) {
+            a = new StringBuilder(primary.getAbbrev());
             a.append(" ");
             a.append(JudoDB.getLinkedSession(primary, rawSessionData).getAbbrev());
         }
