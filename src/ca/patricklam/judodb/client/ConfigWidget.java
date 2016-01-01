@@ -1499,7 +1499,7 @@ public class ConfigWidget extends Composite {
                             }
 			    if (refreshSessions) {
 				refreshSessions = false;
-				retrieveSessions(jdb.getSelectedClub().getNumeroClub());
+				retrieveSessions(jdb.getSelectedClubID());
 			    }
 			    if (refreshCours) {
 				refreshCours = false;
