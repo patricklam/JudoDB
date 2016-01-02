@@ -381,7 +381,7 @@ public class ConfigWidget extends Composite {
                         if (object.getId().equals("-1")) {
                             refreshSessions = true;
                             pushEdit("-1,F" + c.key + "," + value + "," +
-                                     jdb.getSelectedClub().getNumeroClub() + "," + object.getSeqno() + ";");
+                                     jdb.getSelectedClubID() + "," + object.getSeqno() + ";");
                         } else {
                             if (c.key.equals(FIRST_SIGNUP_COLUMN.key) ||
                                 c.key.equals(LAST_SIGNUP_COLUMN.key)) {
