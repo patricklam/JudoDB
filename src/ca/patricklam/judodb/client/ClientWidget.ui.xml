@@ -72,7 +72,7 @@
 		    <b:ListBox ui:field="date_inscription" /> <g:Hidden ui:field="date_inscription_encoded" name="date_inscription_encoded" />
 		    </g:HTMLPanel>
 		  </b:Column>
-		  <b:Column size="XS_1"><b:FormLabel for="sessions">Sessions</b:FormLabel><g:HTMLPanel /><b:ListBox ui:field="sessions" addStyleNames="{style.session-padding} tiny-print" /> <g:Hidden ui:field="sessions_encoded" name="sessions_encoded" /></b:Column>
+		  <b:Column size="XS_1"><b:FormLabel for="sessions">Sessions</b:FormLabel><g:HTMLPanel /><b:ListBox ui:field="sessions" addStyleNames="{style.session-padding} tiny-print" /> <g:Hidden ui:field="saisons_encoded" name="saisons_encoded" /></b:Column>
 		  <b:Column size="XS_1"><b:FormLabel for="categorie">Division</b:FormLabel><g:HTMLPanel /><b:TextBox ui:field="categorie" addStyleNames="{style.six-em}"/></b:Column>
 		  <b:Column size="XS_3"><b:FormLabel for="cours">Cours</b:FormLabel><b:ListBox ui:field="cours"/><g:Hidden ui:field="cours_encoded" name="cours_encoded" /></b:Column>
 		  <b:Column size="XS_2">

@@ -126,7 +126,7 @@ public class ClientWidget extends Composite {
     @UiField Hidden grade_dates_encoded;
 
     @UiField Hidden date_inscription_encoded;
-    @UiField Hidden sessions_encoded;
+    @UiField Hidden saisons_encoded;
     @UiField Hidden prorata_encoded;
     @UiField Hidden verification_encoded;
 
@@ -1279,7 +1279,7 @@ public class ClientWidget extends Composite {
         }
 
         date_inscription_encoded.setValue(di.toString());
-        sessions_encoded.setValue(sais.toString());
+        saisons_encoded.setValue(sais.toString());
         verification_encoded.setValue(v.toString());
         categorieFrais_encoded.setValue(cf.toString());
         cours_encoded.setValue(c.toString());
