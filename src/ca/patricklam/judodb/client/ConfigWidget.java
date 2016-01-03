@@ -230,12 +230,18 @@ public class ConfigWidget extends Composite {
     @UiField ToggleSwitch default_prorata;
     @UiField ToggleSwitch afficher_paypal;
 
+    // aliens from impot tab
+    @UiField TextBox tresorier;
+    @UiField TextBox coords;
+
     ValueChangeHandler<String> newValueChangeHandler(final String key) {
 	return new ValueChangeHandler<String>() {
 	    @Override
 	    public void onValueChange(ValueChangeEvent<String> event) {
                 refreshClub = true;
-                pushEdit("-1,c" + key + "," + event.getValue() + "," +
+                String v = event.getValue();
+                if (v != null) v = v.replaceAll(",","_");
+                pushEdit("-1,c" + key + "," + v + "," +
                          jdb.getSelectedClubID() + ";");
 	    }
 	};
@@ -263,6 +269,8 @@ public class ConfigWidget extends Composite {
         indicatif_regional.setText("");
         escompte_resident.setText("");
         supplement_prorata.setText("");
+        tresorier.setText("");
+        coords.setText("");
         default_prorata.setValue(false);
 
         if (!clubHandlersInstalled) {
@@ -275,6 +283,8 @@ public class ConfigWidget extends Composite {
             supplement_prorata.addValueChangeHandler(newValueChangeHandler("supplement_prorata"));
             default_prorata.addValueChangeHandler(newValueChangeHandlerBoolean("pro_rata"));
             afficher_paypal.addValueChangeHandler(newValueChangeHandlerBoolean("afficher_paypal"));
+            tresorier.addValueChangeHandler(newValueChangeHandler("tresorier"));
+            coords.addValueChangeHandler(newValueChangeHandler("coords"));
         }
 
         boolean setEverythingReadOnly = false;
@@ -288,6 +298,8 @@ public class ConfigWidget extends Composite {
         prefix_codepostale.setReadOnly(setEverythingReadOnly);
         indicatif_regional.setReadOnly(setEverythingReadOnly);
         escompte_resident.setReadOnly(setEverythingReadOnly);
+        tresorier.setEnabled(!setEverythingReadOnly);
+        coords.setEnabled(!setEverythingReadOnly);
         supplement_prorata.setEnabled(!setEverythingReadOnly);
         default_prorata.setEnabled(!setEverythingReadOnly);
         afficher_paypal.setEnabled(!setEverythingReadOnly);
@@ -317,6 +329,10 @@ public class ConfigWidget extends Composite {
         ajustable.setVisible(true);
         ajustableCours.setValue(cs.getAjustableCours());
         ajustableDivision.setValue(cs.getAjustableDivision());
+
+        // on impot tab:
+        tresorier.setValue(cs.getTresorier());
+        coords.setValue(cs.getCoords());
     }
     /* --- end club tab --- */
 

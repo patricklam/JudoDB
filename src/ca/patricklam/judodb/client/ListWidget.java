@@ -115,6 +115,7 @@ public class ListWidget extends Composite {
 
     private boolean isFiltering;
     private boolean isFT;
+    private boolean isImpot;
 
     private boolean aeFilter_indifferent, aeFilter_value;
     private boolean pcFilter_indifferent, pcFilter_value;
@@ -132,6 +133,8 @@ public class ListWidget extends Composite {
     @UiField Hidden auxdata;
     @UiField Hidden ft_evt;
     @UiField Hidden ft_date;
+    @UiField Hidden tresorier;
+    @UiField Hidden coords;
 
     @UiField Button sortirButton;
     @UiField DropDownMenu sortir;
@@ -149,8 +152,9 @@ public class ListWidget extends Composite {
     @UiField TextBox evt;
     @UiField TextBox date;
 
-    @UiField HTMLPanel impot_controls;
-    @UiField CheckBox prorata;
+    @UiField Collapse impot_controls;
+
+    // @UiField CheckBox prorata;
 
     @UiField Button filter_button;
     @UiField Collapse filter_controls;
@@ -192,7 +196,7 @@ public class ListWidget extends Composite {
     ListHandler<ClientData> resultsListHandler;
 
     boolean checkColumnVisible = false;
-    VerificationCheckboxHeader checkHeader;
+    SelectionCheckboxHeader checkHeader;
     Column<ClientData, Boolean> checkColumn;
     Column<ClientData, String> ddnColumn;
     Column<ClientData, String> gradeColumn;
@@ -243,10 +247,16 @@ public class ListWidget extends Composite {
 
     private static final String SORTIR_LABEL = "afficher...";
     private static final String SORTIR_FT303_LABEL = "afficher FT-303";
+    private static final String SORTIR_IMPOT_LABEL = "afficher reçus";
     private HandlerRegistration ft303_handler_registration;
     private final ClickHandler ft303_handler = new ClickHandler() {
             public void onClick(ClickEvent e) {
                 if (makeFT()) submit("ft");
+            }};
+    private HandlerRegistration impot_handler_registration;
+    private final ClickHandler impot_handler = new ClickHandler() {
+            public void onClick(ClickEvent e) {
+                collectDV(); computeImpotMailMerge(); submitWithParams("impot", "numero_club="+jdb.getSelectedClub().getNumeroClub());
             }};
 
     private static final String INDIFFERENT_LABEL = "---";
@@ -256,8 +266,8 @@ public class ListWidget extends Composite {
     void selectClub(ClubSummary club) {
         jdb.selectClub(club);
         if (club == null) {
-            if (isFT) {
-                jdb.displayError("Veuillez selectionner un club pour les FT-303.");
+            if (isFT || isImpot) {
+                jdb.displayError("Veuillez selectionner un club pour les FT-303/re&ccedil;us d'imp&ocirc;t.");
                 new Timer() { public void run() {
                     ListWidget.this.jdb.popMode();
                 } }.schedule(2000);
@@ -302,7 +312,7 @@ public class ListWidget extends Composite {
                 results.removeColumn(sessionsColumn);
                 divisionColumnVisible = true;
             }
-            if (!checkColumnVisible && isFT) {
+            if (!checkColumnVisible && (isFT || isImpot)) {
                 results.insertColumn(0, checkColumn, checkHeader);
                 checkColumnVisible = true;
             }
@@ -361,9 +371,10 @@ public class ListWidget extends Composite {
 
         @Override public void onClick(ClickEvent e) {
             String ft = isFT ? JudoDB.Mode.LIST_PARAM_FT303 : "";
+            String impot = isImpot ? JudoDB.Mode.LIST_PARAM_IMPOT : "";
             String clubString = club != null ? (";" + CLUB_LABEL + club.getNumeroClub()) : "";
             jdb.switchMode(new JudoDB.Mode(JudoDB.Mode.ActualMode.LIST,
-                                           ft + clubString));
+                                           ft + impot + clubString));
         }
     }
 
@@ -410,6 +421,7 @@ public class ListWidget extends Composite {
         return "inconnu";
     }
 
+    // not currently used, but I would like to find good UI to re-enable this
     class VerificationCheckboxHeader extends Header<Boolean> {
         public VerificationCheckboxHeader() {
             super(new CheckboxCell());
@@ -449,7 +461,46 @@ public class ListWidget extends Composite {
                 cd.getServiceFor(currentSession).setVerification(value);
             }
             pushEdit(edits.toString());
+        }
+    }
+
+    class SelectionCheckboxHeader extends Header<Boolean> {
+        public SelectionCheckboxHeader() {
+            super(new CheckboxCell());
+        }
+
+        @Override
+        public Boolean getValue() {
+            boolean allItemsSelected = true, allItemsDeselected = true;
+            if (currentSession == null) return false;
+
+            for (ClientData cd : filteredClients) {
+                if (resultsSelectionModel.isSelected(cd))
+                    allItemsDeselected = false;
+                else
+                    allItemsSelected = false;
+                if (!allItemsDeselected && !allItemsSelected)
+                    break;
             }
+
+            if (!allItemsDeselected && !allItemsSelected) {
+                // xxx too bad indeterminate doesn't work
+                return true;
+            }
+            return allItemsSelected;
+        }
+
+        @Override
+        public void onBrowserEvent(Context context, Element elem, NativeEvent event) {
+            InputElement input = elem.getFirstChild().cast();
+            Boolean value = input.isChecked();
+
+            StringBuffer edits = new StringBuffer();
+
+            for (ClientData cd : filteredClients) {
+                resultsSelectionModel.setSelected(cd, value);
+            }
+        }
     }
 
     private void enableFTMode() {
@@ -477,11 +528,11 @@ public class ListWidget extends Composite {
             payeColumnVisible = false;
         }
         divisionSMColumnVisible = true;
-        jdb.populateClubList(!isFT, dropDownUserClubs, new ListClubListHandlerFactory());
+        jdb.populateClubList(false, dropDownUserClubs, new ListClubListHandlerFactory());
     }
 
-    private void disableFTMode() {
-        isFT = false;
+    private void disableFTAndImpotMode() {
+        isFT = false; isImpot = false;
         showList();
         ft303_controls.hide();
         sortirButton.setText(SORTIR_LABEL);
@@ -490,6 +541,8 @@ public class ListWidget extends Composite {
         sortirButton.setActive(false);
         if (ft303_handler_registration != null)
             ft303_handler_registration.removeHandler();
+        if (impot_handler_registration != null)
+            impot_handler_registration.removeHandler();
         results.setSelectionModel(null);
         if (checkColumnVisible) {
             results.removeColumn(checkColumn);
@@ -506,16 +559,47 @@ public class ListWidget extends Composite {
             payeColumnVisible = true;
         }
         divisionSMColumnVisible = false;
-        jdb.populateClubList(!isFT, dropDownUserClubs, new ListClubListHandlerFactory());
+        jdb.populateClubList(true, dropDownUserClubs, new ListClubListHandlerFactory());
+    }
+
+    private void enableImpotMode() {
+        isImpot = true;
+        showList();
+        impot_controls.show();
+
+        sortirButton.setText(SORTIR_IMPOT_LABEL);
+        sortirButton.setToggleCaret(false);
+        sortirButton.setDataToggle(Toggle.BUTTON);
+        impot_handler_registration = sortirButton.addClickHandler(impot_handler);
+        results.setSelectionModel(resultsSelectionModel,
+                                  DefaultSelectionEventManager.<ClientData>
+                                  createCheckboxManager());
+
+        if (!checkColumnVisible) {
+            results.insertColumn(0, checkColumn, checkHeader);
+            checkColumnVisible = true;
+        }
+        if (dateGradeColumnVisible) {
+            results.removeColumn(dateGradeColumn);
+            dateGradeColumnVisible = false;
+        }
+        if (payeColumnVisible) {
+            results.removeColumn(payeColumn);
+            payeColumnVisible = false;
+        }
+        divisionSMColumnVisible = true;
+        jdb.populateClubList(false, dropDownUserClubs, new ListClubListHandlerFactory());
     }
 
     void processArg(String arg) {
         String[] args = arg.split(";");
         String submode = args[0];
 
-        disableFTMode();
+        disableFTAndImpotMode();
         if (JudoDB.Mode.LIST_PARAM_FT303.equals(submode)) {
             enableFTMode();
+        } else if (JudoDB.Mode.LIST_PARAM_IMPOT.equals(submode)) {
+            enableImpotMode();
         }
 
         boolean haveClub = false;
@@ -531,16 +615,13 @@ public class ListWidget extends Composite {
                 }
             }
         }
-        if (!haveClub && !isFT) selectClub(null);
-    }
-
-    private void enableImpotMode() {
-        // XXX TODO
+        if (!haveClub && !isFT && !isImpot) selectClub(null);
     }
 
     public ListWidget(JudoDB jdb, String arg) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
+        sortirButton.setText(SORTIR_LABEL);
 
         aeFilter_indifferent = true;
         pcFilter_indifferent = true;
@@ -548,7 +629,7 @@ public class ListWidget extends Composite {
         processArg(arg);
 
         listForm.addStyleName("hidden-print");
-        jdb.populateClubList(!isFT, dropDownUserClubs, new ListClubListHandlerFactory());
+        jdb.populateClubList(!isFT && !isImpot, dropDownUserClubs, new ListClubListHandlerFactory());
         selectClub(jdb.getSelectedClub());
 
         jdb.pleaseWait();
@@ -566,7 +647,6 @@ public class ListWidget extends Composite {
         grade_lower.insertItem("---", "", 0); grade_lower.setSelectedIndex(0);
         grade_upper.insertItem("---", "", 0); grade_upper.setSelectedIndex(0);
 
-        sortirButton.setText(SORTIR_LABEL);
         sortir_pdf.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("pdf"); } });
         sortir_presences.addClickHandler(new ClickHandler() {
@@ -575,9 +655,6 @@ public class ListWidget extends Composite {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("xls"); } });
         sortir_xls_complet.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("xlsfull"); } });
-
-        sortir_impot.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent e) { collectDV(); computeImpotMailMerge(); submit("impot"); } });
 
         filter_controls.addShowHandler(new ShowHandler() {
                 @Override public void onShow(ShowEvent e) {
@@ -664,7 +741,7 @@ public class ListWidget extends Composite {
                         return cd.getID();
                     }});
 
-        checkHeader = new VerificationCheckboxHeader();
+        checkHeader = new SelectionCheckboxHeader();
         checkColumn =
             new Column<ClientData, Boolean>(new CheckboxCell(true, false)) {
             @Override
@@ -672,15 +749,6 @@ public class ListWidget extends Composite {
                 return resultsSelectionModel.isSelected(cd);
             }
         };
-        checkColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
-                @Override public void update(int index, ClientData cd, Boolean value) {
-                    StringBuffer edits = new StringBuffer();
-                    String valueString = value ? "1" : "0";
-                    edits.append(cd.getID() + ",Sverification," + valueString + ";");
-                    cd.getServiceFor(currentSession).setVerification(value);
-                    pushEdit(edits.toString());
-                }
-            });
 
         final Column<ClientData, SafeHtml> nomColumn =
             new AnchorColumn(new SafeHtmlCell())
@@ -1223,7 +1291,7 @@ public class ListWidget extends Composite {
             if (sd != null) {
                 ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
                 ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
-                CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, prorata.getValue(), prix, escompteSummaries);
+                CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, true /* prorata.getValue()*/, prix, escompteSummaries);
                 dv += sd.getFrais();
             }
         }
@@ -1260,6 +1328,8 @@ public class ListWidget extends Composite {
         }
 
         data_full.setValue(dv);
+        tresorier.setValue(jdb.getSelectedClub().getTresorier());
+        coords.setValue(jdb.getSelectedClub().getCoords());
     }
 
    private String toDVImpot(ClientData cd) {
@@ -1267,15 +1337,18 @@ public class ListWidget extends Composite {
 
        dv += cd.getID() + "|";
        dv += cd.getPrenom() + " " + cd.getNom() + "|";
+       dv += cd.getNomRecuImpot() + "|";
        dv += cd.getDDNString() + "|";
        ServiceData sd = cd.getServiceFor(currentSession);
        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
        ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);
-       CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, prorata.getValue(), prix, escompteSummaries);
+       CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, true /*prorata.getValue()*/, prix, escompteSummaries);
        if (sd != null) {
            dv += Constants.currencyFormat.format(Double.parseDouble(sd.getFrais()));
        }
        dv += "|";
+       dv += (Integer.parseInt(currentSession.getYear())-1)+"/"+
+           Integer.parseInt(currentSession.getYear())+ "|";
        return dv;
    }
 
@@ -1283,6 +1356,12 @@ public class ListWidget extends Composite {
     private void submit(String act) {
         addMetaData();
         listForm.setAction(JudoDB.BASE_URL+"listes"+act+".php");
+        listForm.submit();
+    }
+
+    private void submitWithParams(String act, String params) {
+        addMetaData();
+        listForm.setAction(JudoDB.BASE_URL+"listes"+act+".php?"+params);
         listForm.submit();
     }
 

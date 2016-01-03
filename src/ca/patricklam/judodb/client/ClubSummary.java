@@ -31,6 +31,10 @@ public class ClubSummary extends JavaScriptObject {
     public final native void setAjustableCours(boolean ajustable_cours) /*-{ this.ajustable_cours = ajustable_cours ? '1' : '0'; }-*/;
     public final native boolean getAjustableDivision() /*-{ return this.ajustable_division != '0'; }-*/;
     public final native void setAjustableDivision(boolean ajustable_division) /*-{ this.ajustable_division = ajustable_division ? '1' : '0'; }-*/;
+    public final native String getTresorier() /*-{ return this.tresorier; }-*/;
+    public final native void setTresorier(String tresorier) /*-{ this.tresorier = tresorier; }-*/;
+    public final native String getCoords() /*-{ return (this.coords == null) ? null : this.coords.replace(/_/g,","); }-*/;
+    public final native void setCoords(String coords) /*-{ this.coords = coords; }-*/;
 
     public final String getClubText() {
         return "[" + getNumeroClub() + "] " + getNom();

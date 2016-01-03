@@ -337,6 +337,10 @@ public class JudoDB implements EntryPoint {
             String clubString = selectedClub != null ? (";" + ListWidget.CLUB_LABEL + selectedClub.getNumeroClub()) : "";
             switchMode(new Mode(Mode.ActualMode.LIST, Mode.LIST_PARAM_FT303 + clubString));
         }});
+        mainPanel.impotButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
+            String clubString = selectedClub != null ? (";" + ListWidget.CLUB_LABEL + selectedClub.getNumeroClub()) : "";
+            switchMode(new Mode(Mode.ActualMode.LIST, Mode.LIST_PARAM_IMPOT + clubString));
+        }});
         mainPanel.configButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
         mainPanel.logoutButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent event) { Window.Location.assign("/logout.php"); }});
 
@@ -506,6 +510,7 @@ public class JudoDB implements EntryPoint {
     void selectClub(ClubSummary club) {
         mainPanel.nouveauButton.setEnabled(club != null);
         mainPanel.ftButton.setEnabled(club != null);
+        mainPanel.impotButton.setEnabled(club != null);
         if (club == null)
             mainPanel.dropDownUserClubsButton.setText(TOUS);
         else

@@ -59,6 +59,8 @@
 	    <g:Hidden ui:field="club_id" name="club_id"/>
 	    <g:Hidden ui:field="ft_evt" name="evt"/>
 	    <g:Hidden ui:field="ft_date" name="date"/>
+	    <g:Hidden ui:field="coords" name="coords"/>
+	    <g:Hidden ui:field="tresorier" name="tresorier"/>
 
             <b:Form type="INLINE">
 	      <b:Row>
@@ -122,13 +124,12 @@
 		<b.html:Span>&Eacute;v&eacute;nement:&nbsp;</b.html:Span><b:TextBox ui:field="evt" />
 		<b.html:Span>&nbsp; &nbsp;Date:</b.html:Span><b:TextBox ui:field="date" placeholder="jj/mm/aa"/>
 	      </b:Collapse>
+	      <b:Collapse toggle='false' b:id="impot" ui:field="impot_controls">
+	      <!--  <g:Anchor ui:field="recalc">recalcul des prix</g:Anchor> -->
+	      <!-- <label>Utiliser les prorata: --><!--<g:CheckBox ui:field="prorata" value="true"/>--><!--</label> -->
+	      </b:Collapse>
 
 	    </b:Form>
-	    <g:HTMLPanel ui:field="impot_controls" styleName="{style.impot}">
-	      <!--  <g:Anchor ui:field="recalc">recalcul des prix</g:Anchor> -->
-	      <!-- <label>Utiliser les prorata: --><g:CheckBox ui:field="prorata" value="true"/><!--</label> -->
-	      <!-- <g:Anchor ui:field="mailmerge">Créer reçus</g:Anchor> -->
-	    </g:HTMLPanel>
 	  </g:HTMLPanel>
 	</g:FormPanel>
 
