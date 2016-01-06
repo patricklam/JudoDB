@@ -1534,7 +1534,7 @@ public class ClientWidget extends Composite {
                         String rs = cro.getResult();
                         if (rs.equals("NOT_YET")) {
                             if (pushTries >= 3) {
-                                jdb.displayError("le serveur n'a pas accepté les données");
+                                jdb.displayError("[to] le serveur n'a pas accepté les données");
                                 return;
                             }
 
@@ -1543,6 +1543,10 @@ public class ClientWidget extends Composite {
                             } }.schedule(1000);
                             pushTries++;
                         } else {
+                            if (cro.getExecuted() == 0) {
+                                jdb.displayError("[ze] le server à refusé les données");
+                                return;
+                            }
                             jdb.setStatus("Sauvegardé.");
                             jdb.invalidateListWidget();
                             new Timer() { public void run() {

@@ -8,4 +8,5 @@ class ConfirmResponseObject extends JavaScriptObject {
 
     public final native String getResult() /*-{ return this.result; }-*/;
     public final native int getSid() /*-{ return this.sid; }-*/;
+    public final native int getExecuted() /*-{ return this.executed; }-*/;
 }

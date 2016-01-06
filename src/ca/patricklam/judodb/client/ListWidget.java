@@ -1776,7 +1776,7 @@ public class ListWidget extends Composite {
                         String rs = cro.getResult();
                         if (rs.equals("NOT_YET")) {
                             if (pushTries >= 3) {
-                                jdb.displayError("le serveur n'a pas accepté les données");
+                                jdb.displayError("[to] le serveur n'a pas accepté les données");
                                 return;
                             }
 
@@ -1785,6 +1785,10 @@ public class ListWidget extends Composite {
                             } }.schedule(2000);
                             pushTries++;
                         } else {
+                            if (cro.getExecuted() == 0) {
+                                jdb.displayError("[ze] le server à refusé les données");
+                                return;
+                            }
                             jdb.setStatus("Sauvegardé.");
                             results.redraw();
                         }
