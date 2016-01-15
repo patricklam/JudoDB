@@ -1065,6 +1065,7 @@ public class ListWidget extends Composite {
             { @Override public String getValue(ClientData cd) {
                     int cours = -1;
                     if (cd.getServiceFor(currentSession) != null &&
+                        cd.getServiceFor(currentSession).getCours() != null &&
                         !cd.getServiceFor(currentSession).getCours().equals(""))
                         cours = Integer.parseInt(cd.getServiceFor(currentSession).getCours());
                     return getShortDescForCoursId(cours); } };
