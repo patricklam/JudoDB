@@ -754,6 +754,7 @@ public class ListWidget extends Composite {
             new AnchorColumn(new SafeHtmlCell())
             { @Override String getText(ClientData cd) { return cd.getNom(); } };
         nomColumn.setSortable(true);
+        currentSortColumn = nomColumn;
         resultsListHandler.setComparator(nomColumn, new Comparator<ClientData>() {
                 @Override public int compare(ClientData c1, ClientData c2) {
                     return c1.getNom().compareToIgnoreCase(c2.getNom());
@@ -1128,6 +1129,7 @@ public class ListWidget extends Composite {
                 }
             });
         results.getColumnSortList().push(nomColumn);
+        ColumnSortEvent.fire(results, results.getColumnSortList());
     }
 
     private void pushEdit(String edits) {
