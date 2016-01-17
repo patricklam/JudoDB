@@ -1524,6 +1524,7 @@ public class ListWidget extends Composite {
         list.clear();
         list.addAll(filteredClients);
         results.setVisibleRange(0, count);
+        ColumnSortEvent.fire(results, results.getColumnSortList());
     }
 
     /* --- process data from network --- */
