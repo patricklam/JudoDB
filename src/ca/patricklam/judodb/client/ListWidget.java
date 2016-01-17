@@ -824,7 +824,7 @@ public class ListWidget extends Composite {
         gradeButtonCell = new ButtonGroupCell<Grade>(Arrays.asList(Constants.GRADES));
         gradeButtonCell.setShowButton(true);
         gradeColumn = new Column<ClientData, String>(gradeButtonCell)
-            { @Override public String getValue(ClientData cd) { return cd.getMostRecentGrade().getGrade(); } };
+            { @Override public String getValue(ClientData cd) { return cd.getMostRecentGrade() != null ? cd.getMostRecentGrade().getGrade() : ""; } };
         gradeColumn.setSortable(true);
         gradeColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
         resultsListHandler.setComparator(gradeColumn, new Comparator<ClientData>() {
@@ -877,6 +877,7 @@ public class ListWidget extends Composite {
 
         dateGradeColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) {
+                    if (cd.getMostRecentGrade() == null) return Constants.STD_DUMMY_DATE;
                     String dg = cd.getMostRecentGrade().getDateGrade();
                     return dg == null ? Constants.STD_DUMMY_DATE : Constants.dbToStdDate(dg); } };
         results.addColumn(dateGradeColumn, heads[Columns.DATE_GRADE]);
