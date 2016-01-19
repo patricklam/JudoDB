@@ -1033,12 +1033,25 @@ public class ListWidget extends Composite {
         divisionColumn = new Column<ClientData, String>(new SelectionCell(divSMNames))
             { @Override public String getValue(ClientData cd) { return ""; }
 
+              private boolean isInSelectionMode(ClientData cd) {
+                  return divisionSMColumnVisible && (cd != null && currentSession != null &&
+                                                     cd.getDDN() != null &&
+                                                     (Integer.parseInt(currentSession.getYear()) -
+                                                      (cd.getDDN().getYear() + 1900)) > Constants.VETERAN);
+              }
+
+              @Override
+              public void onBrowserEvent(Cell.Context context, Element parent,
+                                         ClientData cd, NativeEvent event) {
+                  if (isInSelectionMode(cd))
+                      super.onBrowserEvent(context, parent, cd, event);
+                  else
+                      return;
+              }
+
               @Override
               public void render(Cell.Context ctx, ClientData cd, SafeHtmlBuilder s) {
-                  if (divisionSMColumnVisible && (cd != null && currentSession != null &&
-                                                  cd.getDDN() != null &&
-                                                  (Integer.parseInt(currentSession.getYear()) -
-                                                   (cd.getDDN().getYear() + 1900)) > Constants.VETERAN))
+                  if (isInSelectionMode(cd))
                       super.render(ctx, cd, s);
                   else {
                       if (currentSession == null)
