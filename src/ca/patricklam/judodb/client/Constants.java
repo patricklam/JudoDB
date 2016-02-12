@@ -118,7 +118,9 @@ public class Constants {
         new Grade("2D", 20),
         new Grade("3D", 30),
         new Grade("4D", 40),
-        new Grade("5D", 50)
+        new Grade("5D", 50),
+        new Grade("6D", 60),
+        new Grade("7D", 70)
     };
 
     public static final Division[] DIVISIONS = new Division[] {
