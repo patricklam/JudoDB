@@ -213,7 +213,8 @@ public class ConfigWidget extends Composite {
 
         for (SessionSummary s : sessionData) {
             SessionSummary linkedSession = seqnoToSession.get(s.getLinkedSeqno());
-            if (s.isPrimary())
+
+            if (s != null && s.isPrimary())
                 seqAbbrevToSession.put(s.getAbbrev(), s);
         }
     }
