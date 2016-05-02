@@ -7,7 +7,7 @@ public class SessionSummary extends JavaScriptObject implements Comparable<Sessi
     protected SessionSummary() { }
 
     public final native String getSeqno() /*-{ return this.seqno; }-*/;
-    public final native String getLinkedSeqno() /*-{ return this.linked_seqno; }-*/;
+    public final native String getLinkedSeqno() /*-{ return this.linked_seqno != null ? this.linked_seqno : ""; }-*/;
     public final native void setLinkedSeqno(String linked_seqno) /*-{ this.linked_seqno = linked_seqno; }-*/;
     public final native String getName() /*-{ return this.name; }-*/;
     public final native void setName(String name) /*-{ this.name = name; }-*/;
