@@ -1038,11 +1038,12 @@ public class ConfigWidget extends Composite {
             new SessionAnchorListItem(s.getAbbrev(), pos, false);
         sali.addClickHandler(new SessionItemHandler(s, false));
 
-        // only display paired sessions when in affiliation mode
-        if (jdb.getSelectedClub() != null)
+        // display only paired sessions when in affiliation mode (club == TOUS)
+        if (jdb.getSelectedClub() != null) {
             sss.add(sali);
+        }
 
-        if (s.isPrimary()) {
+        if (s.isPrimary() && !s.getLinkedSeqno().equals("")) {
             StringBuilder a = new StringBuilder(s.getAbbrev());
             a.append(" ");
             a.append(JudoDB.getLinkedSession(s, rawSessionData).getAbbrev());
