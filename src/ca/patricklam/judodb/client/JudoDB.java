@@ -162,6 +162,23 @@ public class JudoDB implements EntryPoint {
         }
     }
 
+    static class TourClickHandler implements ClickHandler {
+        public static native void doClick()
+        /*-{
+          $wnd.$('#menbaTour').joyride({
+            autoStart: true,
+            pauseAfter : [1],
+            postStepCallback : function (index, tip) {
+              if ($wnd.$(this).joyride('paused')) {
+                console.log('Hey there, you\'ve paused the tour.');
+                // fire your code here
+              }
+            }
+          });
+        }-*/;
+        public void onClick(ClickEvent e) { e.preventDefault(); doClick(); }
+    }
+
     // modes
     public void switchMode(Mode newMode) {
         Mode previousMode = currentMode;
@@ -226,6 +243,9 @@ public class JudoDB implements EntryPoint {
         mainPanel.mainPanel.setVisible(false);
     }
 
+    private static native void unpause() /*-{
+          $wnd.$('#menbaTour').joyride('resume');
+                                           }-*/;
     private void _switchMode_editClient(String cid) {
         mainPanel.editClient.clear();
         this.clientWidget = new ClientWidget(Integer.parseInt(cid), this);
@@ -246,7 +266,9 @@ public class JudoDB implements EntryPoint {
 
         hideAllSubpanels();
         mainPanel.lists.setVisible(true);
-    }
+        // XXX only when tour is active:
+        unpause();
+   }
 
     public void _switchMode_config() {
         this.cfWidget.selectClub(selectedClub);
@@ -360,6 +382,9 @@ public class JudoDB implements EntryPoint {
         // config widget
         this.cfWidget = new ConfigWidget(this, selectedClub);
         mainPanel.config.add(this.cfWidget);
+
+        // tour
+        mainPanel.tourButton.addClickHandler(new TourClickHandler());
 
         // history handlers
         History.addValueChangeHandler(new ValueChangeHandler<String>() {

@@ -1011,7 +1011,9 @@ public class ListWidget extends Composite {
                     if (value != null) {
                         if (currentSortColumn != ddnColumn)
                             sb.append(ARROWS);
+                        sb.append(SafeHtmlUtils.fromSafeConstant("<span id='ddnColumn'>"));
                         sb.append(value);
+                        sb.append(SafeHtmlUtils.fromSafeConstant("</span>"));
                     }
                 }
             }) {

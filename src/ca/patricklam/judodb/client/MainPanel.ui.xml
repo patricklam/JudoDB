@@ -12,6 +12,11 @@
    bottom: 0.5em; right: 1em;
  }
 
+ .tour {
+   position: fixed;
+   bottom: 2em; right: 1em;
+ }
+
  .status {
    position: fixed;
    top: 0;
@@ -64,7 +69,7 @@
          </b:Row>
          <b:Row>
           <b:Column size="MD_6">
-           <b:Button ui:field="listeButton" text="Gestion par liste" />
+           <b:Button ui:field="listeButton" text="Gestion par liste" b:id="listeButton" />
           </b:Column>
          </b:Row>
 
@@ -108,11 +113,12 @@
        </b:Column></b:Row>
       </b:Container>
 
-      <b:ButtonGroup  ui:field='dropDownUserClubsButtonGroup' addStyleNames="{style.clubBox} hidden-print">
-       <b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton'/>
+      <b:ButtonGroup ui:field='dropDownUserClubsButtonGroup' addStyleNames="{style.clubBox} hidden-print">
+       <b:Button dataToggle='DROPDOWN' text='Club' toggleCaret='true' ui:field='dropDownUserClubsButton' b:id="dropDownUserClubs" />
        <b:DropDownMenu ui:field='dropDownUserClubs' />
       </b:ButtonGroup>
 
+      <b:Button ui:field="tourButton" b:id="tour" text="D&eacute;monstration" addStyleNames='{style.tour}'/>
       <b:Label ui:field="versionLabel" styleName='{style.version}' />
      </g:FlowPanel>
     </c:OnlyYScrollPanel>

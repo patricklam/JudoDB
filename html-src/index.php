@@ -79,6 +79,12 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] != "yes")
 
     <link type="text/css" rel="stylesheet" href="files/screen.css" media="screen">
     <link type="text/css" rel="stylesheet" href="files/print.css" media="print">
+
+    <link rel="stylesheet" type="text/css" href="files/zurb-joyride/joyride-2.1.css">
+
+    <script src="files/zurb-joyride/jquery-1.10.1.js"></script>
+
+    <script src="files/zurb-joyride/jquery.joyride-2.1.js"></script>
   </head>
 
   <body>
@@ -91,6 +97,17 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] != "yes")
         for this application to display correctly.
       </div>
     </noscript>
+
+    <ol id="menbaTour" style="display:none" data-joyride>
+      <li data-id="dropDownUserClubs" data-button="Prochain">Premierement, on choisit un club.</li>
+      <li data-id="listeButton" data-button="Prochain">Ensuite, on verra la g&eacute;stion par liste.</li>
+      <li data-id="ddnColumn" data-button="Prochain">Voici la liste des membres. On peux trier la liste.</li>
+
+<!---
+      /* using 'data-button' lets you have custom button text */
+      <li data-class="parent-element-class" data-options="tipLocation:top;tipAnimation:fade" data-button="Second Button">Content...</li>
+      -->
+    </ol>
 
   </body>
 </html>
