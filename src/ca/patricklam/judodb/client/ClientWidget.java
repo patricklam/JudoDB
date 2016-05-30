@@ -213,6 +213,8 @@ public class ClientWidget extends Composite {
         jdb.selectClub(club);
 
         assert club != null;
+        // assert's not enough, add some defensive programming too.
+        if (club == null) return;
         dropDownUserClubsButton.setText(club.getClubText());
 
         hideEscompteResidentIfUnneeded(club);
