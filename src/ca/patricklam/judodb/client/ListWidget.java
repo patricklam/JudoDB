@@ -256,7 +256,7 @@ public class ListWidget extends Composite {
     private HandlerRegistration impot_handler_registration;
     private final ClickHandler impot_handler = new ClickHandler() {
             public void onClick(ClickEvent e) {
-                collectDV(); computeImpotMailMerge(); submitWithParams("impot", "numero_club="+jdb.getSelectedClub().getNumeroClub());
+                computeImpotMailMerge(); submitWithParams("impot", "numero_club="+jdb.getSelectedClub().getNumeroClub());
             }};
 
     private static final String INDIFFERENT_LABEL = "---";
@@ -1232,6 +1232,7 @@ public class ListWidget extends Composite {
             dv.append(cd.getID()); dv.append("|");
             dv.append(cd.getNom()); dv.append("|");
             dv.append(cd.getPrenom()); dv.append("|");
+            dv.append(cd.getCourriel()); dv.append("|");
             dv.append(cd.getSexe()); dv.append("|");
             dv.append(cd.getMostRecentGrade().getGrade()); dv.append("|");
             dv.append(cd.getMostRecentGrade().getDateGrade()); dv.append("|");
