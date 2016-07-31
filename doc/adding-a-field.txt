@@ -1,0 +1,51 @@
+how to add a field:
+
+backend:
+
+add to db.sql, create a migration line (not in repo)
+add to SERVICE_FIELDS in _constants.php
+
+frontend:
+
+ClientWidget:
+
+to the class, add the following fields:
+
+ @UiField TextBox new_field;
+ @UiField Hidden new_field_encoded;
+
+method disableAllSessionEditingInfo:
+
+new_field.setText("");
+new_field.setEnabled(false);
+
+method loadClientData:
+
+new_field.setValue(sd.getNewField());
+new_field.setEnabled(isToday);
+
+method saveClientData:
+
+sd.setNewField(new_field.getValue());
+
+method encodeServices:
+
+nf = new StringBuffer()
+
+...
+
+nf.append(sd.getNewField+",");
+
+...
+
+nf_encoded.setValue(nf.toString());
+
+ClientWidget.ui.xml:
+
+add the field with hidden and visible elements
+
+ServiceData.java:
+
+getNewField()
+setNewField(String nf);
+
