@@ -107,6 +107,7 @@ public class ClientWidget extends Composite {
     @UiField TextBox cas_special_pct;
     @UiField TextBox escompteFrais;
 
+    @UiField TextBox date_affiliation_envoye;
     @UiField ToggleSwitch sans_affiliation;
     @UiField ToggleSwitch affiliation_initiation;
     @UiField ToggleSwitch affiliation_ecole;
@@ -139,6 +140,7 @@ public class ClientWidget extends Composite {
     @UiField Hidden cas_special_pct_encoded;
     @UiField Hidden escompteFrais_encoded;
 
+    @UiField Hidden date_affiliation_envoye_encoded;
     @UiField Hidden sans_affiliation_encoded;
     @UiField Hidden affiliation_initiation_encoded;
     @UiField Hidden affiliation_ecole_encoded;
@@ -478,6 +480,8 @@ public class ClientWidget extends Composite {
         prorata.setEnabled(false);
         categorieFrais.setText("");
 
+        date_affiliation_envoye.setText("");
+        date_affiliation_envoye.setEnabled(false);
         sans_affiliation.setValue(false);
         sans_affiliation.setEnabled(false);
         affiliation_initiation.setValue(false);
@@ -589,6 +593,8 @@ public class ClientWidget extends Composite {
         prorata.setEnabled(isToday);
         categorieFrais.setText(sd.getCategorieFrais());
 
+        date_affiliation_envoye.setValue(Constants.dbToStdDate(sd.getDateAffiliationEnvoye()));
+        date_affiliation_envoye.setEnabled(isToday);
         sans_affiliation.setValue(sd.getSansAffiliation());
         sans_affiliation.setEnabled(isToday);
         affiliation_initiation.setValue(sd.getAffiliationInitiation());
@@ -658,6 +664,7 @@ public class ClientWidget extends Composite {
             sd.setCours(cours.getValue(cours.getSelectedIndex()));
         sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 
+        sd.setDateAffiliationEnvoye(Constants.stdToDbDate(date_affiliation_envoye.getText()));
         sd.setSansAffiliation(sans_affiliation.getValue());
         sd.setAffiliationInitiation(affiliation_initiation.getValue());
         sd.setAffiliationEcole(affiliation_ecole.getValue());
@@ -1247,7 +1254,8 @@ public class ClientWidget extends Composite {
         StringBuffer di = new StringBuffer(), sais = new StringBuffer(),
             v = new StringBuffer(), cf = new StringBuffer(), c = new StringBuffer(),
             sess = new StringBuffer(), e = new StringBuffer(), csn = new StringBuffer(),
-            csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(), ai = new StringBuffer(), ae = new StringBuffer(),
+            csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(),
+            dae = new StringBuffer(), ai = new StringBuffer(), ae = new StringBuffer(),
             af = new StringBuffer(), j = new StringBuffer(), p = new StringBuffer(),
             n = new StringBuffer(), pp = new StringBuffer(), sf = new StringBuffer(), s = new StringBuffer(),
             f = new StringBuffer(), clubid = new StringBuffer();
@@ -1264,6 +1272,7 @@ public class ClientWidget extends Composite {
             e.append(sd.getEscompteId()+",");
             csn.append(sd.getCasSpecialNote()+",");
             ef.append(sd.getEscompteFrais()+",");
+            dae.append(sd.getDateAffiliationEnvoye()+",");
             sa.append(sd.getSansAffiliation() ? "1," : "0,");
             ai.append(sd.getAffiliationInitiation() ? "1," : "0,");
             ae.append(sd.getAffiliationEcole() ? "1," : "0,");
@@ -1289,6 +1298,7 @@ public class ClientWidget extends Composite {
         cas_special_note_encoded.setValue(csn.toString());
         cas_special_pct_encoded.setValue(csp.toString());
         escompteFrais_encoded.setValue(ef.toString());
+        date_affiliation_envoye_encoded.setValue(dae.toString());
         sans_affiliation_encoded.setValue(sa.toString());
         affiliation_initiation_encoded.setValue(ai.toString());
         affiliation_ecole_encoded.setValue(ae.toString());

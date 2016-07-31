@@ -17,6 +17,8 @@ public class ServiceData extends JavaScriptObject {
     public final native void setSessions(String sessions) /*-{ this.saisons = sessions; }-*/;
     public final native String getClubID() /*-{ return this.club_id; }-*/;
     public final native void setClubID(String club_id) /*-{ this.club_id = club_id; }-*/;
+    public final native String getDateAffiliationEnvoye() /*-{ return this.date_affiliation_envoye == null ? "" : this.date_affiliation_envoye; }-*/;
+    public final native void setDateAffiliationEnvoye(String date_affiliation_envoye) /*-{ this.date_affiliation_envoye = date_affiliation_envoye; }-*/;
     public final native boolean getSansAffiliation() /*-{ return this.sans_affiliation != '0'; }-*/;
     public final native void setSansAffiliation(boolean sans_affiliation) /*-{ this.sans_affiliation = sans_affiliation ? "1" : "0"; }-*/;
     public final native boolean getAffiliationInitiation() /*-{ return this.affiliation_initiation != '0'; }-*/;
