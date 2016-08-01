@@ -135,6 +135,7 @@ public class CostCalculator {
         boolean sans_affiliation = sd.getSansAffiliation();
         boolean affiliation_initiation = sd.getAffiliationInitiation();
         boolean affiliation_ecole = sd.getAffiliationEcole();
+        boolean affiliation_parascolaire = sd.getAffiliationParascolaire();
         Constants.Division c = cd.getDivision(ss.getYear());
 
         double dAffiliationFrais = 0.0;
@@ -143,6 +144,8 @@ public class CostCalculator {
                 dAffiliationFrais = Constants.COUT_JUDOQC_INITIATION;
             else if (affiliation_ecole)
                 dAffiliationFrais = Constants.COUT_JUDOQC_ECOLE;
+            else if (affiliation_parascolaire)
+                dAffiliationFrais = Constants.COUT_JUDOQC_PARASCOLAIRE;
             else
                 dAffiliationFrais = getFraisJudoQC(ss, c, sessionSummaries, prixSummaries);
         }

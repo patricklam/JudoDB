@@ -109,9 +109,7 @@ public class ClientWidget extends Composite {
 
     @UiField TextBox date_affiliation_envoye;
     @UiField ToggleSwitch carte_judoca_recu;
-    @UiField ToggleSwitch sans_affiliation;
-    @UiField ToggleSwitch affiliation_initiation;
-    @UiField ToggleSwitch affiliation_ecole;
+    @UiField ListBox affiliation_speciale;
     @UiField TextBox affiliationFrais;
 
     @UiField ListBox produit;
@@ -146,6 +144,7 @@ public class ClientWidget extends Composite {
     @UiField Hidden sans_affiliation_encoded;
     @UiField Hidden affiliation_initiation_encoded;
     @UiField Hidden affiliation_ecole_encoded;
+    @UiField Hidden affiliation_parascolaire_encoded;
     @UiField Hidden affiliationFrais_encoded;
 
     @UiField Hidden judogi_encoded;
@@ -177,6 +176,12 @@ public class ClientWidget extends Composite {
     @UiField DropDownMenu dropDownUserClubs;
 
     @UiField Form clientform;
+
+    private static final int AF_NONE = 0;
+    private static final int AF_INITIATION = 1;
+    private static final int AF_SCOLAIRE = 2;
+    private static final int AF_PARASCOLAIRE = 3;
+    private static final int AF_DEJA_AFFILIE = 4;
 
     private static final String PULL_ONE_CLIENT_URL = JudoDB.BASE_URL + "pull_one_client.php";
     private static final String PUSH_ONE_CLIENT_URL = JudoDB.BASE_URL + "push_one_client.php";
@@ -318,9 +323,7 @@ public class ClientWidget extends Composite {
         escompte.addChangeHandler(changeEscompteHandler);
         cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
         escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
-        sans_affiliation.addValueChangeHandler(recomputeValueHandler);
-        affiliation_initiation.addValueChangeHandler(recomputeValueHandler);
-        affiliation_ecole.addValueChangeHandler(recomputeValueHandler);
+        affiliation_speciale.addChangeHandler(recomputeHandler);
         produit.addChangeHandler(recomputeHandler);
         resident.addValueChangeHandler(recomputeValueHandler);
         paypal.addValueChangeHandler(recomputeValueHandler);
@@ -486,12 +489,8 @@ public class ClientWidget extends Composite {
         date_affiliation_envoye.setEnabled(false);
         carte_judoca_recu.setValue(false);
         carte_judoca_recu.setEnabled(false);
-        sans_affiliation.setValue(false);
-        sans_affiliation.setEnabled(false);
-        affiliation_initiation.setValue(false);
-        affiliation_initiation.setEnabled(false);
-        affiliation_ecole.setValue(false);
-        affiliation_ecole.setEnabled(false);
+        affiliation_speciale.setSelectedIndex(0);
+        affiliation_speciale.setEnabled(false);
         affiliationFrais.setText("");
 
         escompte.setEnabled(false);
@@ -601,12 +600,19 @@ public class ClientWidget extends Composite {
         date_affiliation_envoye.setEnabled(isToday);
         carte_judoca_recu.setValue(sd.getCarteJudocaRecu());
         carte_judoca_recu.setEnabled(isToday);
-        sans_affiliation.setValue(sd.getSansAffiliation());
-        sans_affiliation.setEnabled(isToday);
-        affiliation_initiation.setValue(sd.getAffiliationInitiation());
-        affiliation_initiation.setEnabled(isToday);
-        affiliation_ecole.setValue(sd.getAffiliationEcole());
-        affiliation_ecole.setEnabled(isToday);
+
+        if (sd.getSansAffiliation())
+            affiliation_speciale.setSelectedIndex(AF_DEJA_AFFILIE);
+        else if (sd.getAffiliationInitiation())
+            affiliation_speciale.setSelectedIndex(AF_INITIATION);
+        else if (sd.getAffiliationEcole())
+            affiliation_speciale.setSelectedIndex(AF_SCOLAIRE);
+        else if (sd.getAffiliationParascolaire())
+            affiliation_speciale.setSelectedIndex(AF_PARASCOLAIRE);
+        else
+            affiliation_speciale.setSelectedIndex(AF_NONE);
+        affiliation_speciale.setEnabled(isToday);
+
         affiliationFrais.setText(sd.getAffiliationFrais());
 
         escompte.setEnabled(isToday);
@@ -672,9 +678,25 @@ public class ClientWidget extends Composite {
 
         sd.setDateAffiliationEnvoye(Constants.stdToDbDate(date_affiliation_envoye.getText()));
         sd.setCarteJudocaRecu(carte_judoca_recu.getValue());
-        sd.setSansAffiliation(sans_affiliation.getValue());
-        sd.setAffiliationInitiation(affiliation_initiation.getValue());
-        sd.setAffiliationEcole(affiliation_ecole.getValue());
+
+        sd.setSansAffiliation(false);
+        sd.setAffiliationInitiation(false);
+        sd.setAffiliationEcole(false);
+        sd.setAffiliationParascolaire(false);
+
+        switch (affiliation_speciale.getSelectedIndex()) {
+        case AF_DEJA_AFFILIE:
+            sd.setSansAffiliation(true); break;
+        case AF_INITIATION:
+            sd.setAffiliationInitiation(true); break;
+        case AF_SCOLAIRE:
+            sd.setAffiliationEcole(true); break;
+        case AF_PARASCOLAIRE:
+            sd.setAffiliationParascolaire(true); break;
+        case AF_NONE:
+            break;
+        }
+
         sd.setAffiliationFrais(stripDollars(affiliationFrais.getText()));
 
         if (escompte.getSelectedIndex() != -1) {
@@ -1263,7 +1285,7 @@ public class ClientWidget extends Composite {
             sess = new StringBuffer(), e = new StringBuffer(), csn = new StringBuffer(),
             csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(),
             dae = new StringBuffer(), cjr = new StringBuffer(), ai = new StringBuffer(),
-            ae = new StringBuffer(),
+            ae = new StringBuffer(), aps = new StringBuffer(),
             af = new StringBuffer(), j = new StringBuffer(), p = new StringBuffer(),
             n = new StringBuffer(), pp = new StringBuffer(), sf = new StringBuffer(), s = new StringBuffer(),
             f = new StringBuffer(), clubid = new StringBuffer();
@@ -1285,6 +1307,7 @@ public class ClientWidget extends Composite {
             sa.append(sd.getSansAffiliation() ? "1," : "0,");
             ai.append(sd.getAffiliationInitiation() ? "1," : "0,");
             ae.append(sd.getAffiliationEcole() ? "1," : "0,");
+            aps.append(sd.getAffiliationParascolaire() ? "1," : "0,");
             af.append(sd.getAffiliationFrais()+",");
             j.append(sd.getJudogi()+",");
             // disabled passeport
@@ -1312,6 +1335,7 @@ public class ClientWidget extends Composite {
         sans_affiliation_encoded.setValue(sa.toString());
         affiliation_initiation_encoded.setValue(ai.toString());
         affiliation_ecole_encoded.setValue(ae.toString());
+        affiliation_parascolaire_encoded.setValue(aps.toString());
         affiliationFrais_encoded.setValue(af.toString());
         judogi_encoded.setValue(j.toString());
         resident_encoded.setValue(n.toString());
