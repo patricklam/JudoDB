@@ -118,7 +118,6 @@
        <b:DropDownMenu ui:field='dropDownUserClubs' />
       </b:ButtonGroup>
 
-      <b:Button ui:field="tourButton" b:id="tour" text="D&eacute;monstration" addStyleNames='{style.tour}'/>
       <b:Label ui:field="versionLabel" styleName='{style.version}' />
      </g:FlowPanel>
     </c:OnlyYScrollPanel>
