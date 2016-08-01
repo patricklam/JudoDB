@@ -49,3 +49,5 @@ ServiceData.java:
 getNewField()
 setNewField(String nf);
 
+newServiceData:
+new_field: "",
