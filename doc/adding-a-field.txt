@@ -2,7 +2,7 @@ how to add a field:
 
 backend:
 
-add to db.sql, create a migration line (not in repo)
+add to db.sql, create a migration line (not in repo) which also includes initial value
 add to SERVICE_FIELDS in _constants.php
 
 frontend:
