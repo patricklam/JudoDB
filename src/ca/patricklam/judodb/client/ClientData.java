@@ -133,10 +133,15 @@ public class ClientData extends JavaScriptObject {
         int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(d));
 
         for (int i = 0; i < Constants.DIVISIONS.length; i++) {
-            if (isNoire() == Constants.DIVISIONS[i].noire &&
-                    ((Constants.DIVISIONS[i].years_ago == 0) ||
-                     (current_year - Constants.DIVISIONS[i].years_ago < year)))
-                return Constants.DIVISIONS[i];
+            if (isNoire() == Constants.DIVISIONS[i].noire) {
+                if (Constants.DIVISIONS[i].years_ago == 0)
+                    return Constants.DIVISIONS[i];
+                if (Constants.DIVISIONS[i].years_ago < 0 &&
+                    current_year - (-Constants.DIVISIONS[i].years_ago) >= year)
+                    return Constants.DIVISIONS[i];
+                if (current_year - Constants.DIVISIONS[i].years_ago < year)
+                    return Constants.DIVISIONS[i];
+            }
         }
         return Constants.EMPTY_DIVISION;
     }

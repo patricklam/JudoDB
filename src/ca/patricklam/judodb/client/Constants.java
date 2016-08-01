@@ -125,6 +125,8 @@ public class Constants {
     };
 
     public static final Division[] DIVISIONS = new Division[] {
+        new Division("O65", "O65", -65, false, null),
+        new Division("O65N", "O65N", -65, true, "O65"),
         new Division("U6", "U6", 6, false, null),
         new Division("Mini-Poussin", "U8", 8, false, null),
         new Division("Poussin", "U10", 10, false, null),
