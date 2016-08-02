@@ -494,8 +494,10 @@ public class JudoDB implements EntryPoint {
           dropDownUserClubs.add(tous);
       }
 
+      int clubCount = 0;
       for(ClubSummary cs : allClubs) {
           AnchorListItem it = new AnchorListItem(cs.getClubText());
+          it.setId("club-" + clubCount); clubCount++;
           it.addClickHandler(clhf.instantiate(cs));
           dropDownUserClubs.add(it);
       }
