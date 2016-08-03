@@ -45,6 +45,8 @@ public class ClientData extends JavaScriptObject {
     public final native void setCarteResident(String carte_resident) /*-{ this.carte_resident = carte_resident; }-*/;
     public final native String getNomRecuImpot() /*-{ return this.nom_recu_impot; }-*/;
     public final native void setNomRecuImpot(String nom_recu_impot) /*-{ this.nom_recu_impot = nom_recu_impot; }-*/;
+    public final native String getNotes() /*-{ return this.notes; }-*/;
+    public final native void setNotes(String notes) /*-{ this.notes = notes; }-*/;
 
     public final native String getNomContactUrgence() /*-{ return this.nom_contact_urgence; }-*/;
     public final native void setNomContactUrgence(String nom_contact_urgence) /*-{ this.nom_contact_urgence = nom_contact_urgence; }-*/;
@@ -161,7 +163,6 @@ public class ClientData extends JavaScriptObject {
             getVille().equals(cs.getVille()) &&
             getCodePostal().equals(cs.getPrefixCodepostale()) &&
             getTel().equals(cs.getIndicatifRegional()) &&
-            getTelContactUrgence().equals(cs.getIndicatifRegional()) &&
-            getCourriel().equals("");
+            getTelContactUrgence().equals(cs.getIndicatifRegional());
     }
 }

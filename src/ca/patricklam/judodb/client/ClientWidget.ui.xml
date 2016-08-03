@@ -63,6 +63,9 @@
 		 <b:FormGroup>
 		   <b:Column size="XS_10"><b:FormLabel for="nom_recu_impot">Nom re&ccedil;u imp&ocirc;t</b:FormLabel><b:TextBox ui:field="nom_recu_impot" name="nom_recu_impot" /></b:Column>
 		 </b:FormGroup>
+		 <b:FormGroup>
+		   <b:Column size="XS_10"><b:FormLabel for="notes">Notes</b:FormLabel><b:TextBox ui:field="notes" name="notes" /></b:Column>
+		 </b:FormGroup>
 		</b:FieldSet>
 
 		<b:FieldSet> <b:Legend>Inscription</b:Legend>

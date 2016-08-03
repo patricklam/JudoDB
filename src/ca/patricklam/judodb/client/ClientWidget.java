@@ -76,6 +76,7 @@ public class ClientWidget extends Composite {
     @UiField TextBox ville;
     @UiField TextBox codePostal;
     @UiField TextBox tel;
+    @UiField TextBox tel_contact_urgence;
     @UiField TextBox courriel;
 
     @UiField TextBox affiliation;
@@ -84,8 +85,7 @@ public class ClientWidget extends Composite {
     @UiField TextBox date_grade;
     @UiField TextBox carte_resident;
     @UiField TextBox nom_recu_impot;
-
-    @UiField TextBox tel_contact_urgence;
+    @UiField TextBox notes;
 
     @UiField ListBox date_inscription;
     @UiField InlineLabel semaines;
@@ -541,6 +541,7 @@ public class ClientWidget extends Composite {
         affiliation.setText(cd.getJudoQC());
         carte_resident.setText(cd.getCarteResident());
         nom_recu_impot.setText(cd.getNomRecuImpot());
+        notes.setText(cd.getNotes());
 
         tel_contact_urgence.setText(cd.getTelContactUrgence());
 
@@ -658,6 +659,7 @@ public class ClientWidget extends Composite {
         cd.setJudoQC(affiliation.getText());
         cd.setCarteResident(carte_resident.getText());
         cd.setNomRecuImpot(nom_recu_impot.getText());
+        cd.setNotes(notes.getText());
 
         cd.setTelContactUrgence(tel_contact_urgence.getText());
 
