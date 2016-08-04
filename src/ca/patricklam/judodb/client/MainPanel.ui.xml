@@ -54,7 +54,7 @@
          <b:Row> <b:Heading size="H2" text="Membres" /> </b:Row>
          <b:Row>
           <b:Column size="MD_6">
-           <b:Button ui:field="nouveauButton" text="Nouveau membre" />
+           <b:Button b:id="nouveauButton" ui:field="nouveauButton" text="Nouveau membre" />
           </b:Column>
          </b:Row>
          <b:Row>
