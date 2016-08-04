@@ -3,6 +3,7 @@ package ca.patricklam.judodb.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -55,6 +56,8 @@ import org.gwtbootstrap3.client.ui.ListBox;
 import org.gwtbootstrap3.client.ui.DropDownMenu;
 
 import org.gwtbootstrap3.extras.toggleswitch.client.ui.ToggleSwitch;
+import org.gwtbootstrap3.extras.select.client.ui.MultipleSelect;
+import org.gwtbootstrap3.extras.select.client.ui.Option;
 
 public class ClientWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ClientWidget> {}
@@ -112,7 +115,7 @@ public class ClientWidget extends Composite {
     @UiField ListBox affiliation_speciale;
     @UiField TextBox affiliationFrais;
 
-    @UiField ListBox produit;
+    @UiField MultipleSelect produit;
     @UiField Column rabais_resident_label;
     @UiField ToggleSwitch resident;
     @UiField Column frais_paypal_label;
@@ -324,7 +327,7 @@ public class ClientWidget extends Composite {
         cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
         escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
         affiliation_speciale.addChangeHandler(recomputeHandler);
-        produit.addChangeHandler(recomputeHandler);
+        produit.addValueChangeHandler(recomputeValueHandlerLS);
         resident.addValueChangeHandler(recomputeValueHandler);
         paypal.addValueChangeHandler(recomputeValueHandler);
 
@@ -423,11 +426,7 @@ public class ClientWidget extends Composite {
     }
 
     private void loadProduits(JsArray<ProduitSummary> produitArray) {
-        HashMap<String, Integer> produitIdxToSeqno = new HashMap<String, Integer>();
         produit.clear(); produitSummaries.clear();
-        produit.addItem(Constants.EMPTY_PRODUIT.getNom(), Constants.EMPTY_PRODUIT.getId());
-        produitSummaries.add(Constants.EMPTY_PRODUIT);
-        int idx = 1;
 	if (produitArray == null) {
             jdb.displayError("aucun produit recu");
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
@@ -437,18 +436,11 @@ public class ClientWidget extends Composite {
             ProduitSummary e = produitArray.get(i);
             if (e.getClubId().equals("0") || e.getClubId().equals(jdb.getSelectedClubID())) {
                 produitSummaries.add(e);
-                produit.addItem(e.getNom(), e.getId());
-                produitIdxToSeqno.put(e.getClubId(), idx);
-                idx++;
+                Option p = new Option();
+                p.setText(e.getNom()); p.setId(e.getId());
+                produit.add(p);
             }
         }
-        if (cd == null || cd.getServices() == null || cd.getServices().length() == 0) return;
-        ServiceData sd = cd.getServices().get(cd.getMostRecentServiceNumber());
-        String produitIndex = sd.getJudogi();
-        if (produitIdxToSeqno.get(produitIndex) != null)
-            produit.setSelectedIndex(produitIdxToSeqno.get(produitIndex));
-        else
-            produit.setSelectedIndex(0);
     }
 
     @SuppressWarnings("deprecation")
@@ -624,11 +616,11 @@ public class ClientWidget extends Composite {
         cas_special_pct.setReadOnly(!isToday);
         escompteFrais.setText(sd.getEscompteFrais());
 
-        int idx = 0;
-        for (ProduitSummary p : produitSummaries) {
-	    if (sd.getJudogi().equals(p.getId()))
-                produit.setSelectedIndex(idx);
-	    idx++;
+        List<String> produits = Arrays.asList(sd.getJudogi().split(";"));
+        produit.deselectAll();
+        for (Option o : produit.getItems()) {
+            if (produits.contains(o.getId()))
+                o.setSelected(true);
         }
         produit.setEnabled(isToday);
         resident.setValue(sd.getResident());
@@ -707,9 +699,15 @@ public class ClientWidget extends Composite {
         sd.setCasSpecialNote(removeCommas(cas_special_note.getText()));
         sd.setEscompteFrais(stripDollars(escompteFrais.getText()));
 
-        if (produit.getSelectedIndex() != -1) {
-            sd.setJudogi(produit.getValue(produit.getSelectedIndex()));
+        StringBuffer produitStr = new StringBuffer();
+        if (!produit.getSelectedItems().isEmpty()) {
+            for (Option p : produit.getSelectedItems()) {
+                if (produitStr.length() > 0)
+                    produitStr.append(";");
+                produitStr.append(p.getId());
+            }
         }
+        sd.setJudogi(produitStr.toString());
         sd.setResident(resident.getValue());
         sd.setPaypal(paypal.getValue());
         sd.setSuppFrais(stripDollars(suppFrais.getText()));
@@ -928,7 +926,10 @@ public class ClientWidget extends Composite {
         public void onChange(ChangeEvent e) { updateCopySib(); }
     };
     private final ValueChangeHandler<Boolean> recomputeValueHandler = new ValueChangeHandler<Boolean>() {
-        public void onValueChange(ValueChangeEvent<Boolean> e) { updateDynamicFields(); }
+        @Override public void onValueChange(ValueChangeEvent<Boolean> e) { updateDynamicFields(); }
+    };
+    private final ValueChangeHandler<List<String>> recomputeValueHandlerLS = new ValueChangeHandler<List<String>>() {
+        @Override public void onValueChange(ValueChangeEvent<List<String>> e) { updateDynamicFields(); }
     };
 
     private final ChangeHandler clearEscomptePctAndRecomputeHandler = new ChangeHandler() {
@@ -1250,7 +1251,7 @@ public class ClientWidget extends Composite {
         hidePaypalIfDisabled(cs);
         disableProrataPerConfig(cs);
 
-        ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
+        Collection<ProduitSummary> ps = CostCalculator.getApplicableProduits(sd, produitSummaries);;
 
         CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, backingCours, ps, prorata.getValue(), prix, escompteSummaries);
 

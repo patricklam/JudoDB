@@ -3,6 +3,7 @@ package ca.patricklam.judodb.client;
 
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -1165,20 +1166,6 @@ public class ListWidget extends Composite {
         } }.schedule(500);
     }
 
-    // currently unused, as well as doing nothing
-    private void recalc() {
-        for (int i = 0; i < results.getRowCount(); i++) {
-            // ClientData cd = cidToCD.get(results.getText(i, Columns.CID));
-            // ServiceData sd = cd.getServiceFor(currentSession);
-            // if (sd == null) continue;
-            // ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-            // ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
-
-            // // XXX getPrix on ListWidget as well
-            // CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, true, null, escompteSummaries);
-        }
-    }
-
     private void addMetaData() {
         title.setValue("");
         ft_evt.setValue(evt.getValue());
@@ -1310,7 +1297,7 @@ public class ListWidget extends Composite {
             dv += "|";
             if (sd != null) {
                 ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-                ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);;
+                Collection<ProduitSummary> ps = CostCalculator.getApplicableProduits(sd, produitSummaries);;
                 CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, true /* prorata.getValue()*/, prix, escompteSummaries);
                 dv += sd.getFrais();
             }
@@ -1361,7 +1348,7 @@ public class ListWidget extends Composite {
        dv += cd.getDDNString() + "|";
        ServiceData sd = cd.getServiceFor(currentSession);
        ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-       ProduitSummary ps = CostCalculator.getApplicableProduit(sd, produitSummaries);
+       Collection<ProduitSummary> ps = CostCalculator.getApplicableProduits(sd, produitSummaries);
        CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, true /*prorata.getValue()*/, prix, escompteSummaries);
        if (sd != null) {
            dv += Constants.currencyFormat.format(Double.parseDouble(sd.getFrais()));

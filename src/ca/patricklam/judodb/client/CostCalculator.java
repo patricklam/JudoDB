@@ -1,6 +1,7 @@
 // -*-  indent-tabs-mode:nil; c-basic-offset:4; -*-
 package ca.patricklam.judodb.client;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Date;
@@ -152,11 +153,13 @@ public class CostCalculator {
         return dAffiliationFrais;
     }
 
-    static double suppFrais(ServiceData sd, ClubSummary cs, ProduitSummary ps, double fraisSoFar) {
+    static double suppFrais(ServiceData sd, ClubSummary cs, Collection<ProduitSummary> ps, double fraisSoFar) {
         if (sd == null) return 0.0;
 
         double judogiFrais = 0.0;
-        try { judogiFrais = Double.parseDouble(ps.getMontant()); } catch (Exception e) {}
+        for (ProduitSummary p : ps) {
+            try { judogiFrais += Double.parseDouble(p.getMontant()); } catch (Exception e) {}
+        }
         boolean passeport = sd.getPasseport();
         boolean resident = sd.getResident();
         boolean paypal = sd.getPaypal();
@@ -187,13 +190,15 @@ public class CostCalculator {
         return es;
     }
 
-    static ProduitSummary getApplicableProduit(ServiceData sd,
+    static Collection<ProduitSummary> getApplicableProduits(ServiceData sd,
 						List<ProduitSummary> produitSummaries) {
-        ProduitSummary ps = null;
+        Collection<ProduitSummary> ps = new java.util.ArrayList<ProduitSummary>();
+        if (sd.getJudogi() == null) return ps;
+
+        List<String> produits = java.util.Arrays.asList(sd.getJudogi().split(";"));
         for (ProduitSummary p : produitSummaries) {
-            if (p.getId().equals(sd.getJudogi())) {
-                ps = p; break;
-            }
+            if (produits.contains(p.getId()))
+                ps.add(p);
         }
         return ps;
     }
@@ -289,7 +294,7 @@ public class CostCalculator {
     }
 
     /** Model-level method to recompute costs. */
-    public static void recompute(SessionSummary ss, ClientData cd, ServiceData sd, ClubSummary cs, List<SessionSummary> sessionSummaries, List<CoursSummary> coursSummaries, ProduitSummary ps, boolean prorataOverride, List<Prix> prixSummaries, List<EscompteSummary> escompteSummaries) {
+    public static void recompute(SessionSummary ss, ClientData cd, ServiceData sd, ClubSummary cs, List<SessionSummary> sessionSummaries, List<CoursSummary> coursSummaries, Collection<ProduitSummary> ps, boolean prorataOverride, List<Prix> prixSummaries, List<EscompteSummary> escompteSummaries) {
       if (prixSummaries == null) return;
       if (ss == null) return;
 
