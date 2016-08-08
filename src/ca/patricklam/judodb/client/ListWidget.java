@@ -115,6 +115,7 @@ public class ListWidget extends Composite {
     private CoursSummary currentCours;
 
     private boolean isFiltering;
+    private boolean isAffil;
     private boolean isFT;
     private boolean isImpot;
 
@@ -203,6 +204,8 @@ public class ListWidget extends Composite {
     Column<ClientData, String> gradeColumn;
     boolean dateGradeColumnVisible = true;
     Column<ClientData, String> dateGradeColumn;
+    Column<ClientData, String> telColumn;
+    Column<ClientData, String> judoQCColumn;
     Column<ClientData, Boolean> affEnvoyeColumn;
     Column<ClientData, String> dateAffEnvoyeColumn;
     Column<ClientData, Boolean> carteJudocaRecuColumn;
@@ -508,6 +511,56 @@ public class ListWidget extends Composite {
         }
     }
 
+    private void enableAffilMode() {
+        if (isAffil) return;
+        isAffil = true;
+
+        int telIndex = results.getColumnIndex(telColumn);
+        results.insertColumn(telIndex + 1, judoQCColumn, heads[Columns.JUDOQC]);
+        results.insertColumn(telIndex + 2, affEnvoyeColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        sb.append(value);
+                        if (currentSortColumn != gradeColumn)
+                            sb.append(ARROWS);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.AFF_ENVOYE];
+                } });
+        results.insertColumn(telIndex + 3, dateAffEnvoyeColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        sb.append(value);
+                        if (currentSortColumn != gradeColumn)
+                            sb.append(ARROWS);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.DATE_AFF_ENVOYE];
+                } });
+        results.getHeader(telIndex + 3).setHeaderStyleNames("right-align");
+        results.insertColumn(telIndex + 4, carteJudocaRecuColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        sb.append(value);
+                        if (currentSortColumn != gradeColumn)
+                            sb.append(ARROWS);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.CARTE_JUDOCA_RECU];
+                } });
+
+        if (dateGradeColumnVisible) {
+            results.removeColumn(dateGradeColumn);
+            dateGradeColumnVisible = false;
+        }
+    }
+
     private void enableFTMode() {
         isFT = true;
         showList();
@@ -536,7 +589,7 @@ public class ListWidget extends Composite {
         jdb.populateClubList(false, dropDownUserClubs, new ListClubListHandlerFactory());
     }
 
-    private void disableFTAndImpotMode() {
+    private void disableFT_Impot_AffilMode() {
         isFT = false; isImpot = false;
         showList();
         ft303_controls.hide();
@@ -564,6 +617,15 @@ public class ListWidget extends Composite {
             payeColumnVisible = true;
         }
         divisionSMColumnVisible = false;
+
+        if (isAffil) {
+            results.removeColumn(judoQCColumn);
+            results.removeColumn(affEnvoyeColumn);
+            results.removeColumn(dateAffEnvoyeColumn);
+            results.removeColumn(carteJudocaRecuColumn);
+        }
+        isAffil = false;
+
         jdb.populateClubList(true, dropDownUserClubs, new ListClubListHandlerFactory());
     }
 
@@ -600,11 +662,13 @@ public class ListWidget extends Composite {
         String[] args = arg.split(";");
         String submode = args[0];
 
-        disableFTAndImpotMode();
+        disableFT_Impot_AffilMode();
         if (JudoDB.Mode.LIST_PARAM_FT303.equals(submode)) {
             enableFTMode();
         } else if (JudoDB.Mode.LIST_PARAM_IMPOT.equals(submode)) {
             enableImpotMode();
+        } else if (JudoDB.Mode.LIST_PARAM_AFFIL.equals(submode)) {
+            enableAffilMode();
         }
 
         boolean haveClub = false;
@@ -898,7 +962,7 @@ public class ListWidget extends Composite {
                 }
             });
 
-        final Column<ClientData, String> telColumn = new Column<ClientData, String>(new EditTextCell())
+        telColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) { return cd.getTel(); } };
         telColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
         results.addColumn(telColumn, heads[Columns.TEL]);
@@ -911,10 +975,9 @@ public class ListWidget extends Composite {
                 }
             });
 
-        final Column<ClientData, String> judoQCColumn = new Column<ClientData, String>(new EditTextCell())
+        judoQCColumn = new Column<ClientData, String>(new EditTextCell())
             { @Override public String getValue(ClientData cd) { return cd.getJudoQC(); } };
         judoQCColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-        results.addColumn(judoQCColumn, heads[Columns.JUDOQC]);
         results.getHeader(results.getColumnCount()-1).setHeaderStyleNames("right-align");
         judoQCColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
                 @Override public void update(int index, ClientData cd, String value) {
@@ -932,18 +995,6 @@ public class ListWidget extends Composite {
                 } };
         affEnvoyeColumn.setSortable(true);
         affEnvoyeColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-        results.addColumn(affEnvoyeColumn, new Header<String>(new TextCell() {
-                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
-                    if (value != null) {
-                        sb.append(value);
-                        if (currentSortColumn != gradeColumn)
-                            sb.append(ARROWS);
-                    }
-                }
-            }) {
-                @Override public String getValue() {
-                    return heads[Columns.AFF_ENVOYE];
-                } });
         affEnvoyeColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
                 @Override public void update(int index, ClientData cd, Boolean value) {
                     StringBuffer edits = new StringBuffer();
@@ -955,11 +1006,11 @@ public class ListWidget extends Composite {
         resultsListHandler.setComparator(affEnvoyeColumn, new Comparator<ClientData>() {
                 @Override public int compare(ClientData c1, ClientData c2) {
                     ServiceData xsd = c1.getServiceFor(currentSession);
-                    int xverif = xsd != null ? (xsd.getAffiliationEnvoye() ? 1 : 0) : 0;
+                    int xAffEnvoye = xsd != null ? (xsd.getAffiliationEnvoye() ? 1 : 0) : 0;
 
                     ServiceData ysd = c2.getServiceFor(currentSession);
-                    int yverif = ysd != null ? (ysd.getAffiliationEnvoye() ? 1 : 0) : 0;
-                    return yverif - xverif;
+                    int yAffEnvoye = ysd != null ? (ysd.getAffiliationEnvoye() ? 1 : 0) : 0;
+                    return yAffEnvoye - xAffEnvoye;
                 } });
 
         dateAffEnvoyeColumn = new Column<ClientData, String>(new EditTextCell())
@@ -978,18 +1029,6 @@ public class ListWidget extends Composite {
                     return c1.getServiceFor(currentSession).getDateAffiliationEnvoye().compareTo(c2.getServiceFor(currentSession).getDateAffiliationEnvoye());
                 } });
         dateAffEnvoyeColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-        results.addColumn(dateAffEnvoyeColumn, new Header<String>(new TextCell() {
-                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
-                    if (value != null) {
-                        sb.append(value);
-                        if (currentSortColumn != gradeColumn)
-                            sb.append(ARROWS);
-                    }
-                }
-            }) {
-                @Override public String getValue() {
-                    return heads[Columns.DATE_AFF_ENVOYE];
-                } });
         dateAffEnvoyeColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
                 @Override public void update(int index, ClientData cd, String value) {
                     StringBuffer edits = new StringBuffer();
@@ -1000,7 +1039,6 @@ public class ListWidget extends Composite {
                     pushEdit(edits.toString());
                 }
             });
-        results.getHeader(results.getColumnCount()-1).setHeaderStyleNames("right-align");
 
         carteJudocaRecuColumn = new Column<ClientData, Boolean>(new CheckboxCell())
             { @Override public Boolean getValue(ClientData cd) {
@@ -1010,18 +1048,6 @@ public class ListWidget extends Composite {
                 } };
         carteJudocaRecuColumn.setSortable(true);
         carteJudocaRecuColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-        results.addColumn(carteJudocaRecuColumn, new Header<String>(new TextCell() {
-                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
-                    if (value != null) {
-                        sb.append(value);
-                        if (currentSortColumn != gradeColumn)
-                            sb.append(ARROWS);
-                    }
-                }
-            }) {
-                @Override public String getValue() {
-                    return heads[Columns.CARTE_JUDOCA_RECU];
-                } });
         carteJudocaRecuColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
                 @Override public void update(int index, ClientData cd, Boolean value) {
                     StringBuffer edits = new StringBuffer();

@@ -61,6 +61,7 @@ public class JudoDB implements EntryPoint {
     static class Mode {
         public static final String LIST_PARAM_FT303 = "ft303";
         public static final String LIST_PARAM_IMPOT = "impot";
+        public static final String LIST_PARAM_AFFIL = "affil";
         enum ActualMode {
             MAIN("main"), LIST("list"), EDIT_CLIENT("edit"), CONFIG("config");
             final String label;
@@ -333,13 +334,13 @@ public class JudoDB implements EntryPoint {
         mainPanel.listeButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             String clubString = selectedClub != null ? (";" + ListWidget.CLUB_LABEL + selectedClub.getNumeroClub()) : "";
             switchMode(new Mode(Mode.ActualMode.LIST, clubString)); }});
+        mainPanel.affilButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
+            String clubString = selectedClub != null ? (";" + ListWidget.CLUB_LABEL + selectedClub.getNumeroClub()) : "";
+            switchMode(new Mode(Mode.ActualMode.LIST, Mode.LIST_PARAM_AFFIL + clubString));
+        }});
         mainPanel.ftButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
             String clubString = selectedClub != null ? (";" + ListWidget.CLUB_LABEL + selectedClub.getNumeroClub()) : "";
             switchMode(new Mode(Mode.ActualMode.LIST, Mode.LIST_PARAM_FT303 + clubString));
-        }});
-        mainPanel.impotButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) {
-            String clubString = selectedClub != null ? (";" + ListWidget.CLUB_LABEL + selectedClub.getNumeroClub()) : "";
-            switchMode(new Mode(Mode.ActualMode.LIST, Mode.LIST_PARAM_IMPOT + clubString));
         }});
         mainPanel.configButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
         mainPanel.logoutButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent event) { Window.Location.assign("/logout.php"); }});
@@ -512,7 +513,6 @@ public class JudoDB implements EntryPoint {
     void selectClub(ClubSummary club) {
         mainPanel.nouveauButton.setEnabled(club != null);
         mainPanel.ftButton.setEnabled(club != null);
-        mainPanel.impotButton.setEnabled(club != null);
         if (club == null)
             mainPanel.dropDownUserClubsButton.setText(TOUS);
         else
