@@ -204,6 +204,8 @@ public class ListWidget extends Composite {
     boolean dateGradeColumnVisible = true;
     Column<ClientData, String> dateGradeColumn;
     Column<ClientData, Boolean> affEnvoyeColumn;
+    Column<ClientData, String> dateAffEnvoyeColumn;
+    Column<ClientData, Boolean> carteJudocaRecuColumn;
     boolean payeColumnVisible = true;
     Column<ClientData, Boolean> payeColumn;
     boolean divisionColumnVisible = false;
@@ -232,17 +234,19 @@ public class ListWidget extends Composite {
         final static int TEL = 6;
         final static int JUDOQC = 7;
         final static int AFF_ENVOYE = 8;
-        final static int PAYE = 9;
-        final static int DDN = 10;
-        final static int DIVISION = 11;
-        final static int COURS_DESC = 12;
-        final static int SESSION = 13;
-        final static int DIVISION_SM = 14;
+        final static int DATE_AFF_ENVOYE = 9;
+        final static int CARTE_JUDOCA_RECU = 10;
+        final static int PAYE = 11;
+        final static int DDN = 12;
+        final static int DIVISION = 13;
+        final static int COURS_DESC = 14;
+        final static int SESSION = 15;
+        final static int DIVISION_SM = 16;
     }
 
     private static final SafeHtml ARROWS = SafeHtmlUtils.fromSafeConstant("<i class=\"fa fa-fw fa-sort\"></i> ");
     private String[] heads = new String[] {
-        "V", "Nom", "Prénom", "Sexe", "Grade", "DateGrade", "Tel", "JudoCA", "Affilié", "Payé", "DDN", "Div", "Cours", "Saisons", "Div (FT303)"
+        "V", "Nom", "Prénom", "Sexe", "Grade", "DateGrade", "Tel", "JudoCA", "AffilEnv", "DateAffilEnv", "Carte JC reçu", "Payé", "DDN", "Div", "Cours", "Saisons", "Div (FT303)"
     };
     Column currentSortColumn;
 
@@ -458,7 +462,7 @@ public class ListWidget extends Composite {
             StringBuffer edits = new StringBuffer();
 
             for (ClientData cd : filteredClients) {
-                edits.append(cd.getID() + ",Sverification," + valueString + ";");
+                edits.append(cd.getID() + ",Saffiliation_envoye," + valueString + ";");
                 cd.getServiceFor(currentSession).setAffiliationEnvoye(value);
             }
             pushEdit(edits.toString());
@@ -943,7 +947,7 @@ public class ListWidget extends Composite {
         affEnvoyeColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
                 @Override public void update(int index, ClientData cd, Boolean value) {
                     StringBuffer edits = new StringBuffer();
-                    edits.append(cd.getID()+",Sverification," + (value ? "1" : "0") + ";");
+                    edits.append(cd.getID()+",Saffiliation_envoye," + (value ? "1" : "0") + ";");
                     cd.getServiceFor(currentSession).setAffiliationEnvoye(value.equals("1"));
                     pushEdit(edits.toString());
                 }
@@ -955,6 +959,84 @@ public class ListWidget extends Composite {
 
                     ServiceData ysd = c2.getServiceFor(currentSession);
                     int yverif = ysd != null ? (ysd.getAffiliationEnvoye() ? 1 : 0) : 0;
+                    return yverif - xverif;
+                } });
+
+        dateAffEnvoyeColumn = new Column<ClientData, String>(new EditTextCell())
+            { @Override public String getValue(ClientData cd) {
+                    String rv = Constants.STD_DUMMY_DATE;
+                    if (cd.getServiceFor(currentSession) != null && cd.getServiceFor(currentSession).getDateAffiliationEnvoye() != null)
+                        rv = Constants.STD_DATE_FORMAT.format(cd.getServiceFor(currentSession).getDateAffiliationEnvoye());
+
+                    return rv;
+                } };
+        dateAffEnvoyeColumn.setSortable(true);
+        resultsListHandler.setComparator(dateAffEnvoyeColumn, new Comparator<ClientData>() {
+                @Override public int compare(ClientData c1, ClientData c2) {
+                    if (c1.getServiceFor(currentSession) == null || c1.getServiceFor(currentSession).getDateAffiliationEnvoye() == null) return -1;
+                    if (c2.getServiceFor(currentSession) == null || c2.getServiceFor(currentSession).getDateAffiliationEnvoye() == null) return 1;
+                    return c1.getServiceFor(currentSession).getDateAffiliationEnvoye().compareTo(c2.getServiceFor(currentSession).getDateAffiliationEnvoye());
+                } });
+        dateAffEnvoyeColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+        results.addColumn(dateAffEnvoyeColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        sb.append(value);
+                        if (currentSortColumn != gradeColumn)
+                            sb.append(ARROWS);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.DATE_AFF_ENVOYE];
+                } });
+        dateAffEnvoyeColumn.setFieldUpdater(new FieldUpdater<ClientData, String>() {
+                @Override public void update(int index, ClientData cd, String value) {
+                    StringBuffer edits = new StringBuffer();
+                    String converted_dae = Constants.stdToDbDate(value);
+                    if (cd.getServiceFor(currentSession) != null)
+                        cd.getServiceFor(currentSession).setDAEString(converted_dae);
+                    edits.append(cd.getID()+",Sdate_affiliation_envoye," + converted_dae + ";");
+                    pushEdit(edits.toString());
+                }
+            });
+        results.getHeader(results.getColumnCount()-1).setHeaderStyleNames("right-align");
+
+        carteJudocaRecuColumn = new Column<ClientData, Boolean>(new CheckboxCell())
+            { @Override public Boolean getValue(ClientData cd) {
+                    if (cd.getServiceFor(currentSession) != null)
+                        return cd.getServiceFor(currentSession).getCarteJudocaRecu();
+                    return false;
+                } };
+        carteJudocaRecuColumn.setSortable(true);
+        carteJudocaRecuColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+        results.addColumn(carteJudocaRecuColumn, new Header<String>(new TextCell() {
+                @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                    if (value != null) {
+                        sb.append(value);
+                        if (currentSortColumn != gradeColumn)
+                            sb.append(ARROWS);
+                    }
+                }
+            }) {
+                @Override public String getValue() {
+                    return heads[Columns.CARTE_JUDOCA_RECU];
+                } });
+        carteJudocaRecuColumn.setFieldUpdater(new FieldUpdater<ClientData, Boolean>() {
+                @Override public void update(int index, ClientData cd, Boolean value) {
+                    StringBuffer edits = new StringBuffer();
+                    edits.append(cd.getID()+",Scarte_judoca_recu," + (value ? "1" : "0") + ";");
+                    cd.getServiceFor(currentSession).setCarteJudocaRecu(value.equals("1"));
+                    pushEdit(edits.toString());
+                }
+            });
+        resultsListHandler.setComparator(carteJudocaRecuColumn, new Comparator<ClientData>() {
+                @Override public int compare(ClientData c1, ClientData c2) {
+                    ServiceData xsd = c1.getServiceFor(currentSession);
+                    int xverif = xsd != null ? (xsd.getCarteJudocaRecu() ? 1 : 0) : 0;
+
+                    ServiceData ysd = c2.getServiceFor(currentSession);
+                    int yverif = ysd != null ? (ysd.getCarteJudocaRecu() ? 1 : 0) : 0;
                     return yverif - xverif;
                 } });
 

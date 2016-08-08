@@ -590,7 +590,7 @@ public class ClientWidget extends Composite {
         prorata.setEnabled(isToday);
         categorieFrais.setText(sd.getCategorieFrais());
 
-        date_affiliation_envoye.setValue(Constants.dbToStdDate(sd.getDateAffiliationEnvoye()));
+        date_affiliation_envoye.setValue(Constants.dbToStdDate(sd.getDAEString()));
         date_affiliation_envoye.setEnabled(isToday && sd.getAffiliationEnvoye());
         carte_judoca_recu.setValue(sd.getCarteJudocaRecu());
         carte_judoca_recu.setEnabled(isToday);
@@ -671,7 +671,7 @@ public class ClientWidget extends Composite {
             sd.setCours(cours.getValue(cours.getSelectedIndex()));
         sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 
-        sd.setDateAffiliationEnvoye(Constants.stdToDbDate(date_affiliation_envoye.getText()));
+        sd.setDAEString(Constants.stdToDbDate(date_affiliation_envoye.getText()));
         sd.setCarteJudocaRecu(carte_judoca_recu.getValue());
 
         sd.setSansAffiliation(false);

@@ -17,8 +17,14 @@ public class ServiceData extends JavaScriptObject {
     public final native void setSessions(String sessions) /*-{ this.saisons = sessions; }-*/;
     public final native String getClubID() /*-{ return this.club_id; }-*/;
     public final native void setClubID(String club_id) /*-{ this.club_id = club_id; }-*/;
-    public final native String getDateAffiliationEnvoye() /*-{ return this.date_affiliation_envoye == null ? "" : this.date_affiliation_envoye; }-*/;
-    public final native void setDateAffiliationEnvoye(String date_affiliation_envoye) /*-{ this.date_affiliation_envoye = date_affiliation_envoye; }-*/;
+    public final native String getDAEString() /*-{ return this.date_affiliation_envoye == null ? "" : this.date_affiliation_envoye; }-*/;
+    public final Date getDateAffiliationEnvoye() {
+        if (getDAEString() == null) return null;
+        try {
+            return Constants.DB_DATE_FORMAT.parse(getDAEString());
+        } catch (IllegalArgumentException e) { return null; }
+    }
+    public final native void setDAEString(String date_affiliation_envoye) /*-{ this.date_affiliation_envoye = date_affiliation_envoye; }-*/;
     public final native boolean getCarteJudocaRecu() /*-{ return this.carte_judoca_recu != '0'; }-*/;
     public final native void setCarteJudocaRecu(boolean carte_judoca_recu) /*-{ this.carte_judoca_recu = carte_judoca_recu ? "1" : "0"; }-*/;
     public final native boolean getSansAffiliation() /*-{ return this.sans_affiliation != '0'; }-*/;
