@@ -95,7 +95,6 @@ public class Constants {
     }
 
     /* constant data which should be refactored */
-    public static final double PASSEPORT_JUDO_QC = 5.0;
     public static final int VETERAN = 35;
     public static final int COUT_JUDOQC_INITIATION = 10;
     public static final int COUT_JUDOQC_ECOLE = 5;

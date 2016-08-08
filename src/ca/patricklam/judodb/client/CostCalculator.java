@@ -160,13 +160,10 @@ public class CostCalculator {
         for (ProduitSummary p : ps) {
             try { judogiFrais += Double.parseDouble(p.getMontant()); } catch (Exception e) {}
         }
-        boolean passeport = sd.getPasseport();
         boolean resident = sd.getResident();
         boolean paypal = sd.getPaypal();
 
         double dSuppFrais = judogiFrais;
-        if (passeport)
-            dSuppFrais += Constants.PASSEPORT_JUDO_QC;
         if (resident)
             dSuppFrais -= Double.parseDouble(cs.getEscompteResident());
 
