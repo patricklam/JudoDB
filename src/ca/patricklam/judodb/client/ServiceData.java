@@ -52,8 +52,8 @@ public class ServiceData extends JavaScriptObject {
     public final native void setSuppFrais(String supp_frais) /*-{ this.supp_frais = supp_frais; }-*/;
     public final native String getFrais() /*-{ return this.frais == null ? "0" : this.frais; }-*/;
     public final native void setFrais(String frais) /*-{ this.frais = frais; }-*/;
-    public final native boolean getVerification() /*-{ return this.verification != '0'; }-*/;
-    public final native void setVerification(boolean verification) /*-{ this.verification = verification ? "1" : "0"; }-*/;
+    public final native boolean getAffiliationEnvoye() /*-{ return this.affiliation_envoye != '0'; }-*/;
+    public final native void setAffiliationEnvoye(boolean affiliation_envoye) /*-{ this.affiliation_envoye = affiliation_envoye ? "1" : "0"; }-*/;
     public final native boolean getSolde() /*-{ return this.solde!= '0'; }-*/;
     public final native void setSolde(boolean solde) /*-{ this.solde = solde ? "1" : "0"; }-*/;
 

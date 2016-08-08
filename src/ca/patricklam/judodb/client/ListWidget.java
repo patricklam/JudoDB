@@ -434,7 +434,7 @@ public class ListWidget extends Composite {
             if (currentSession == null) return false;
 
             for (ClientData cd : filteredClients) {
-                if (cd.getServiceFor(currentSession).getVerification())
+                if (cd.getServiceFor(currentSession).getAffiliationEnvoye())
                     allItemsDeselected = false;
                 else
                     allItemsSelected = false;
@@ -459,7 +459,7 @@ public class ListWidget extends Composite {
 
             for (ClientData cd : filteredClients) {
                 edits.append(cd.getID() + ",Sverification," + valueString + ";");
-                cd.getServiceFor(currentSession).setVerification(value);
+                cd.getServiceFor(currentSession).setAffiliationEnvoye(value);
             }
             pushEdit(edits.toString());
         }
@@ -923,7 +923,7 @@ public class ListWidget extends Composite {
         affEnvoyeColumn = new Column<ClientData, Boolean>(new CheckboxCell())
             { @Override public Boolean getValue(ClientData cd) {
                     if (cd.getServiceFor(currentSession) != null)
-                        return cd.getServiceFor(currentSession).getVerification();
+                        return cd.getServiceFor(currentSession).getAffiliationEnvoye();
                     return false;
                 } };
         affEnvoyeColumn.setSortable(true);
@@ -944,17 +944,17 @@ public class ListWidget extends Composite {
                 @Override public void update(int index, ClientData cd, Boolean value) {
                     StringBuffer edits = new StringBuffer();
                     edits.append(cd.getID()+",Sverification," + (value ? "1" : "0") + ";");
-                    cd.getServiceFor(currentSession).setVerification(value.equals("1"));
+                    cd.getServiceFor(currentSession).setAffiliationEnvoye(value.equals("1"));
                     pushEdit(edits.toString());
                 }
             });
         resultsListHandler.setComparator(affEnvoyeColumn, new Comparator<ClientData>() {
                 @Override public int compare(ClientData c1, ClientData c2) {
                     ServiceData xsd = c1.getServiceFor(currentSession);
-                    int xverif = xsd != null ? (xsd.getVerification() ? 1 : 0) : 0;
+                    int xverif = xsd != null ? (xsd.getAffiliationEnvoye() ? 1 : 0) : 0;
 
                     ServiceData ysd = c2.getServiceFor(currentSession);
-                    int yverif = ysd != null ? (ysd.getVerification() ? 1 : 0) : 0;
+                    int yverif = ysd != null ? (ysd.getAffiliationEnvoye() ? 1 : 0) : 0;
                     return yverif - xverif;
                 } });
 
@@ -1493,7 +1493,7 @@ public class ListWidget extends Composite {
     private boolean aeFilter(ClientData cd) {
         if (aeFilter_indifferent) return true;
         ServiceData sd = cd.getServiceFor(currentSession);
-        return sd.getVerification() == aeFilter_value;
+        return sd.getAffiliationEnvoye() == aeFilter_value;
     }
 
     private boolean pcFilter(ClientData cd) {

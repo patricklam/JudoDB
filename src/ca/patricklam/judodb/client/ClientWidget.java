@@ -98,7 +98,7 @@ public class ClientWidget extends Composite {
     @UiField ListBox sessions;
     @UiField HTMLPanel prorata_group;
     @UiField ToggleSwitch prorata;
-    @UiField ToggleSwitch verification;
+    @UiField ToggleSwitch affiliation_envoye;
 
     @UiField TextBox categorie;
     @UiField TextBox categorieFrais;
@@ -131,7 +131,7 @@ public class ClientWidget extends Composite {
     @UiField Hidden date_inscription_encoded;
     @UiField Hidden saisons_encoded;
     @UiField Hidden prorata_encoded;
-    @UiField Hidden verification_encoded;
+    @UiField Hidden affiliation_envoye_encoded;
 
     @UiField Hidden categorieFrais_encoded;
 
@@ -324,6 +324,7 @@ public class ClientWidget extends Composite {
         sessions.addChangeHandler(recomputeHandler);
         cours.addChangeHandler(recomputeHandler);
         escompte.addChangeHandler(changeEscompteHandler);
+        affiliation_envoye.addValueChangeHandler(recomputeValueHandler);
         cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
         escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
         affiliation_speciale.addChangeHandler(recomputeHandler);
@@ -472,7 +473,7 @@ public class ClientWidget extends Composite {
         sessions.clear();
         sessions.addItem("");
 
-        verification.setValue(false);
+        affiliation_envoye.setValue(false);
         prorata.setValue(false);
         prorata.setEnabled(false);
         categorieFrais.setText("");
@@ -577,7 +578,7 @@ public class ClientWidget extends Composite {
 
         updateSessionLB();
         sessions.setEnabled(isToday);
-        verification.setValue(sd.getVerification());
+        affiliation_envoye.setValue(sd.getAffiliationEnvoye());
         int matching_index = 0;
         for (CoursSummary cs : backingCours) {
             if (cs.getId().equals(sd.getCours())) {
@@ -590,7 +591,7 @@ public class ClientWidget extends Composite {
         categorieFrais.setText(sd.getCategorieFrais());
 
         date_affiliation_envoye.setValue(Constants.dbToStdDate(sd.getDateAffiliationEnvoye()));
-        date_affiliation_envoye.setEnabled(isToday);
+        date_affiliation_envoye.setEnabled(isToday && sd.getAffiliationEnvoye());
         carte_judoca_recu.setValue(sd.getCarteJudocaRecu());
         carte_judoca_recu.setEnabled(isToday);
 
@@ -665,7 +666,7 @@ public class ClientWidget extends Composite {
             sd.setDateInscription(removeCommas(Constants.stdToDbDate(date_inscription.getItemText(currentServiceNumber))));
         sd.setSessions(sessions.getSelectedItemText());
         sd.setClubID(jdb.getSelectedClubID());
-        sd.setVerification(verification.getValue());
+        sd.setAffiliationEnvoye(affiliation_envoye.getValue());
         if (cours.getSelectedIndex() != -1)
             sd.setCours(cours.getValue(cours.getSelectedIndex()));
         sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
@@ -1263,6 +1264,11 @@ public class ClientWidget extends Composite {
         ((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(d);
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(d);
         regularizeEscompte();
+        if (sd != null) {
+            String todayString = Constants.DB_DATE_FORMAT.format(new Date());
+            boolean isToday = todayString.equals(sd.getDateInscription());
+            date_affiliation_envoye.setEnabled(isToday && sd.getAffiliationEnvoye());
+        }
 
         if (sd != null && !sd.getSessions().equals("")) {
             String a = sd.getSessions().split(" ")[0];
@@ -1298,7 +1304,7 @@ public class ClientWidget extends Composite {
             ServiceData sd = services.get(i);
             di.append(sd.getDateInscription()+",");
             sais.append(sd.getSessions()+",");
-            v.append(sd.getVerification() ? "1," : "0,");
+            v.append(sd.getAffiliationEnvoye() ? "1," : "0,");
             cf.append(sd.getCategorieFrais()+",");
             c.append(sd.getCours()+",");
             sess.append("0,"); /* deprecated session count */
@@ -1326,7 +1332,7 @@ public class ClientWidget extends Composite {
 
         date_inscription_encoded.setValue(di.toString());
         saisons_encoded.setValue(sais.toString());
-        verification_encoded.setValue(v.toString());
+        affiliation_envoye_encoded.setValue(v.toString());
         categorieFrais_encoded.setValue(cf.toString());
         cours_encoded.setValue(c.toString());
         escompte_encoded.setValue(e.toString());
