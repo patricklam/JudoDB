@@ -33,4 +33,3 @@ public class EscompteSummary extends JavaScriptObject {
 	else throw new RuntimeException("set: bad key " + key);
     }
 }
-
