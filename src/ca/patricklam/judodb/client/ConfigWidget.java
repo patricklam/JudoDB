@@ -352,8 +352,6 @@ public class ConfigWidget extends Composite {
 	public Unit widthUnits;
     }
 
-    private static final String DELETE_SESSION_KEY = "DELETE";
-
     private final ColumnFields NAME_COLUMN = new ColumnFields("name", "Nom", 10, Unit.EM),
 	ABBREV_COLUMN = new ColumnFields("abbrev", "Abbr", 4, Unit.EM),
 	YEAR_COLUMN = new ColumnFields("year", "Année", 5, Unit.EM),
@@ -363,7 +361,7 @@ public class ConfigWidget extends Composite {
 	FIRST_SIGNUP_COLUMN = new ColumnFields("first_signup_date", "début inscription", 10, Unit.EM),
 	LAST_CLASS_COLUMN = new ColumnFields("last_class_date", "fin cours", 10, Unit.EM),
 	LAST_SIGNUP_COLUMN = new ColumnFields("last_signup_date", "fin inscription", 10, Unit.EM),
-	DELETE_SESSION_COLUMN = new ColumnFields(DELETE_SESSION_KEY, "", 1, Unit.EM);
+	DELETE_SESSION_COLUMN = new ColumnFields("DELETE", "", 1, Unit.EM);
 
     private List<ColumnFields> perClubColumns = Collections.unmodifiableList(Arrays.asList(FIRST_CLASS_COLUMN, FIRST_SIGNUP_COLUMN, LAST_CLASS_COLUMN, LAST_SIGNUP_COLUMN, DELETE_SESSION_COLUMN));
 
@@ -425,36 +423,6 @@ public class ConfigWidget extends Composite {
 	return newColumn;
     }
 
-    private <TSummary extends Summary> Column<TSummary, String> addDeleteColumn(final CellTable<TSummary> t, final ColumnFields c) {
-	final ClickableTextCell cell = new ClickableTextCell() {
-            @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
-                if (value != null) {
-                    sb.append(SafeHtmlUtils.fromSafeConstant("<span style='cursor:pointer'>"));
-                    sb.append(value);
-                    sb.append(SafeHtmlUtils.fromSafeConstant("</span>"));
-                }
-            }
-            };
-	Column<TSummary, String> newColumn = new Column<TSummary, String>(cell) {
-            @Override public String getValue(TSummary object) {
-                return object.getId().equals("-1") ? BALLOT_X : "";
-	    }
-	};
-	t.addColumn(newColumn, c.name);
-	newColumn.setFieldUpdater(new FieldUpdater<TSummary, String>() {
-		@Override
-		public void update(int index, TSummary object, String value) {
-                    if (c.key == null) return;
-                    refreshSessions = true;
-                    pushEdit("-1,D," + object.getEffectiveId() + ";");
-                    updateSessionToNameMapping();
-                    t.redraw();
-		}
-	    });
-	t.setColumnWidth(newColumn, c.width, c.widthUnits);
-	return newColumn;
-    }
-
     void initializeSessionTable() {
 	sessions = new CellTable<>(SESSION_KEY_PROVIDER);
 	sessions.setWidth("60em", true);
@@ -472,11 +440,42 @@ public class ConfigWidget extends Composite {
 
 	SessionSummary addNewSession =
 	    JsonUtils.<SessionSummary>safeEval
-	    ("{\"seqno\":\""+(maxSeqno+1)+"\",\"name\":\""+ADD_SESSION_VALUE+"\"}");
+	    ("{\"is_add\":\"1\",\"seqno\":\""+(maxSeqno+1)+"\",\"name\":\""+ADD_SESSION_VALUE+"\"}");
 	addNewSession.setAbbrev("");
 	addNewSession.setYear("");
 	addNewSession.setLinkedSeqno("");
 	sessionData.add(addNewSession);
+    }
+
+    // cannot parametrize this method due to JSO restrictions
+    private Column<SessionSummary, String> addDeleteSessionColumn(final CellTable<SessionSummary> t, final ColumnFields c) {
+	final ClickableTextCell cell = new ClickableTextCell() {
+            @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                if (value != null) {
+                    sb.append(SafeHtmlUtils.fromSafeConstant("<span style='cursor:pointer'>"));
+                    sb.append(value);
+                    sb.append(SafeHtmlUtils.fromSafeConstant("</span>"));
+                }
+            }
+            };
+	Column<SessionSummary, String> newColumn = new Column<SessionSummary, String>(cell) {
+            @Override public String getValue(SessionSummary object) {
+                return object.getIsAdd().equals("1") ? "" : BALLOT_X;
+	    }
+	};
+	t.addColumn(newColumn, c.name);
+	newColumn.setFieldUpdater(new FieldUpdater<SessionSummary, String>() {
+		@Override
+		public void update(int index, SessionSummary object, String value) {
+                    if (c.key == null) return;
+                    refreshSessions = true;
+                    pushEdit("-1,D," + object.getSeqno() + ";");
+                    updateSessionToNameMapping();
+                    t.redraw();
+		}
+	    });
+	t.setColumnWidth(newColumn, c.width, c.widthUnits);
+	return newColumn;
     }
 
     void initializeSessionColumns() {
@@ -516,7 +515,7 @@ public class ConfigWidget extends Composite {
                 addSessionColumn(sessions, LINKED_SEQNO_COLUMN, !jdb.isClubSelected());
             }
         }
-	addDeleteColumn(sessions, DELETE_SESSION_COLUMN);
+	addDeleteSessionColumn(sessions, DELETE_SESSION_COLUMN);
     }
 
     private void populateSessions(JsArray<SessionSummary> sessionArray) {
@@ -1161,7 +1160,8 @@ public class ConfigWidget extends Composite {
 
     private final ColumnFields NOM_COLUMN = new ColumnFields("nom", "Nom", 2, Unit.EM),
         AMOUNT_PERCENT_COLUMN = new ColumnFields("amount_percent", "%", 1, Unit.EM),
-        AMOUNT_ABSOLUTE_COLUMN = new ColumnFields("amount_absolute", "$", 1, Unit.EM);
+        AMOUNT_ABSOLUTE_COLUMN = new ColumnFields("amount_absolute", "$", 1, Unit.EM),
+        DELETE_ESCOMPTE_COLUMN = new ColumnFields("DELETE", "", 1, Unit.EM);
 
     private List<ColumnFields> perEscompteColumns = Collections.unmodifiableList(Arrays.asList(NOM_COLUMN, AMOUNT_PERCENT_COLUMN, AMOUNT_ABSOLUTE_COLUMN));
 
@@ -1238,6 +1238,7 @@ public class ConfigWidget extends Composite {
         addEscompteColumn(escomptes, NOM_COLUMN, true);
         addEscompteColumn(escomptes, AMOUNT_PERCENT_COLUMN, true);
         addEscompteColumn(escomptes, AMOUNT_ABSOLUTE_COLUMN, true);
+        addDeleteEscompteColumn(escomptes, DELETE_ESCOMPTE_COLUMN);
     }
 
     final private static String ADD_ESCOMPTE_VALUE = "[ajouter escompte]";
@@ -1250,12 +1251,42 @@ public class ConfigWidget extends Composite {
 
         EscompteSummary addNewEscompte =
             JsonUtils.<EscompteSummary>safeEval
-            ("{\"id\":\""+(maxId+1)+"\"}");
+            ("{\"is_add\":\"1\",\"id\":\""+(maxId+1)+"\"}");
         addNewEscompte.setClubId(jdb.getSelectedClubID());
         addNewEscompte.setNom(ADD_ESCOMPTE_VALUE);
         addNewEscompte.setAmountPercent("");
         addNewEscompte.setAmountAbsolute("");
         escompteData.add(addNewEscompte);
+    }
+
+    // cannot parametrize this method due to JSO restrictions
+    private Column<EscompteSummary, String> addDeleteEscompteColumn(final CellTable<EscompteSummary> t, final ColumnFields c) {
+	final ClickableTextCell cell = new ClickableTextCell() {
+            @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                if (value != null) {
+                    sb.append(SafeHtmlUtils.fromSafeConstant("<span style='cursor:pointer'>"));
+                    sb.append(value);
+                    sb.append(SafeHtmlUtils.fromSafeConstant("</span>"));
+                }
+            }
+            };
+	Column<EscompteSummary, String> newColumn = new Column<EscompteSummary, String>(cell) {
+            @Override public String getValue(EscompteSummary object) {
+                return object.getIsAdd().equals("1") ? "" : BALLOT_X;
+	    }
+	};
+	t.addColumn(newColumn, c.name);
+	newColumn.setFieldUpdater(new FieldUpdater<EscompteSummary, String>() {
+		@Override
+		public void update(int index, EscompteSummary object, String value) {
+                    if (c.key == null) return;
+                    refreshEscomptes = true;
+                    pushEdit("-1,Y," + object.getId() + "," + object.getClubId() + ";");
+                    t.redraw();
+		}
+	    });
+	t.setColumnWidth(newColumn, c.width, c.widthUnits);
+	return newColumn;
     }
 
     private void populateEscomptes(List<EscompteSummary> escompteArray) {

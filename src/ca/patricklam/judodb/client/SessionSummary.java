@@ -3,7 +3,7 @@ package ca.patricklam.judodb.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
-public class SessionSummary extends JavaScriptObject implements Comparable<SessionSummary>, Summary {
+public class SessionSummary extends JavaScriptObject implements Comparable<SessionSummary> {
     protected SessionSummary() { }
 
     public final native String getSeqno() /*-{ return this.seqno; }-*/;
@@ -26,6 +26,7 @@ public class SessionSummary extends JavaScriptObject implements Comparable<Sessi
     public final native void setLastClassDate(String lastClassDate) /*-{ this.lastClassDate = lastClassDate; }-*/;
     public final native String getLastSignupDate() /*-{ return this.last_signup_date != null ? this.last_signup_date : ""; }-*/;
     public final native void setLastSignupDate(String lastSignupDate) /*-{ this.lastSignupDate = lastSignupDate; }-*/;
+    public final native String getIsAdd() /*-{ return this.is_add; }-*/;
 
     public final boolean isPrimary() { return getLinkedSeqno() == null || getLinkedSeqno().equals("") || Integer.parseInt(getSeqno()) < Integer.parseInt(getLinkedSeqno()); }
 
@@ -64,6 +65,4 @@ public class SessionSummary extends JavaScriptObject implements Comparable<Sessi
 	int s = Integer.parseInt(getSeqno()), os = Integer.parseInt(o.getSeqno());
 	return s - os;
     }
-
-    public final String getEffectiveId() { return getSeqno(); }
 }
