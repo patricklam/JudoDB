@@ -142,6 +142,7 @@ public class ConfigWidget extends Composite {
         } else {
             retrieveSessions("0");
             retrievePrix("0");
+            retrieveProduits("0");
             clearCours();
             clearPrix();
             clearEscomptes();
@@ -1294,6 +1295,11 @@ public class ConfigWidget extends Composite {
                                  jdb.getSelectedClubID() + ";");
                         addAddProduitProduit();
                     } else {
+                        if (object.getClubId().equals("0") && !jdb.isAdmin) {
+                            ((EditTextCell)cell).clearViewData(PRODUIT_KEY_PROVIDER.getKey(object));
+                            produits.redraw();
+                            return;
+                        }
                         StringBuffer edits = new StringBuffer();
                         if (c.key.equals(MONTANT_COLUMN.key)) {
                             String k = MONTANT_COLUMN.key;
