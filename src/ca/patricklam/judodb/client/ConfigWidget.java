@@ -425,7 +425,7 @@ public class ConfigWidget extends Composite {
 	return newColumn;
     }
 
-    private Column<SessionSummary, String> addDeleteSessionColumn(final CellTable<SessionSummary> t, final ColumnFields c) {
+    private <TSummary extends Summary> Column<TSummary, String> addDeleteColumn(final CellTable<TSummary> t, final ColumnFields c) {
 	final ClickableTextCell cell = new ClickableTextCell() {
             @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
                 if (value != null) {
@@ -435,23 +435,23 @@ public class ConfigWidget extends Composite {
                 }
             }
             };
-	Column<SessionSummary, String> newColumn = new Column<SessionSummary, String>(cell) {
-            @Override public String getValue(SessionSummary object) {
+	Column<TSummary, String> newColumn = new Column<TSummary, String>(cell) {
+            @Override public String getValue(TSummary object) {
                 return object.getId().equals("-1") ? BALLOT_X : "";
 	    }
 	};
-	sessions.addColumn(newColumn, c.name);
-	newColumn.setFieldUpdater(new FieldUpdater<SessionSummary, String>() {
+	t.addColumn(newColumn, c.name);
+	newColumn.setFieldUpdater(new FieldUpdater<TSummary, String>() {
 		@Override
-		public void update(int index, SessionSummary object, String value) {
+		public void update(int index, TSummary object, String value) {
                     if (c.key == null) return;
                     refreshSessions = true;
-                    pushEdit("-1,D," + object.getSeqno() + ";");
+                    pushEdit("-1,D," + object.getEffectiveId() + ";");
                     updateSessionToNameMapping();
                     t.redraw();
 		}
 	    });
-	sessions.setColumnWidth(newColumn, c.width, c.widthUnits);
+	t.setColumnWidth(newColumn, c.width, c.widthUnits);
 	return newColumn;
     }
 
@@ -496,6 +496,7 @@ public class ConfigWidget extends Composite {
 			pushEdit("-1,e" + NAME_COLUMN.key + "," + value + "," + object.getSeqno() + ";");
 		    }
 		    object.set(NAME_COLUMN.key, value);
+                    refreshSessions = true;
 
 		    sessions.setRowData(sessionData);
 		    sessions.redraw();
@@ -515,7 +516,7 @@ public class ConfigWidget extends Composite {
                 addSessionColumn(sessions, LINKED_SEQNO_COLUMN, !jdb.isClubSelected());
             }
         }
-	addDeleteSessionColumn(sessions, DELETE_SESSION_COLUMN);
+	addDeleteColumn(sessions, DELETE_SESSION_COLUMN);
     }
 
     private void populateSessions(JsArray<SessionSummary> sessionArray) {
