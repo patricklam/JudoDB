@@ -28,7 +28,6 @@
          <b:TabListItem dataTarget="#cours">Cours</b:TabListItem>
          <b:TabListItem dataTarget="#prix">Prix</b:TabListItem>
          <b:TabListItem dataTarget="#escompte">Escompte</b:TabListItem>
-         <b:TabListItem dataTarget="#impot">Re&ccedil;us d'imp&ocirc;t</b:TabListItem>
          <b:TabListItem dataTarget="#produit">Ventes d&eacute;tail</b:TabListItem>
          <b:NavbarForm pull="RIGHT">
           <b:Button ui:field="retour" text="Retour page principale" />
@@ -74,12 +73,6 @@
            </g:FlowPanel>
 	  </b:TabPane>
           <b:TabPane b:id="escompte"><g:FlowPanel ui:field="escompteTab"/></b:TabPane>
-          <b:TabPane b:id="impot">
-             <b:Form type="HORIZONTAL">
-              <b:FormGroup><b:FormLabel for="tresorier_tb" addStyleNames="col-md-2">Nom tr&eacute;sorier:</b:FormLabel><g:FlowPanel addStyleNames="col-md-4"><b:TextBox ui:field="tresorier" name="tresorier_tb"/></g:FlowPanel></b:FormGroup>
-              <b:FormGroup><b:FormLabel for="coords_tb" addStyleNames="col-md-2">Coordonn&eacute;es des donn&eacute;es:</b:FormLabel><g:FlowPanel addStyleNames="col-md-4"><b:TextBox ui:field="coords" name="coords_tb"/></g:FlowPanel></b:FormGroup>
-	     </b:Form>
-          </b:TabPane>
           <b:TabPane b:id="produit"><g:FlowPanel ui:field="produitTab"/></b:TabPane>
          </b:TabContent>
        </b:Container>
