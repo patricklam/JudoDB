@@ -27,12 +27,17 @@ import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.AbstractEditableCell;
+import com.google.gwt.cell.client.ClickableTextCell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 
 import org.gwtbootstrap3.client.ui.TabListItem;
 import org.gwtbootstrap3.client.ui.AnchorListItem;
@@ -362,15 +367,12 @@ public class ConfigWidget extends Composite {
 
     private List<ColumnFields> perClubColumns = Collections.unmodifiableList(Arrays.asList(FIRST_CLASS_COLUMN, FIRST_SIGNUP_COLUMN, LAST_CLASS_COLUMN, LAST_SIGNUP_COLUMN, DELETE_SESSION_COLUMN));
 
-    private static final String BALLOT_X = "x";
+    private static final String BALLOT_X = "✗";
 
     private Column<SessionSummary, String> addSessionColumn(final CellTable<SessionSummary> t, final ColumnFields c, final boolean editable) {
 	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
 	Column<SessionSummary, String> newColumn = new Column<SessionSummary, String>(cell) {
 	    public String getValue(SessionSummary object) {
-		if (c.key.equals(DELETE_SESSION_KEY)) {
-		    return BALLOT_X;
-		}
 		return object.get(c.key);
 	    }
 	};
@@ -415,6 +417,36 @@ public class ConfigWidget extends Composite {
                     } else {
                         pushEdit("-1,e" + c.key + "," + value + "," + object.getSeqno() + ";");
                     }
+                    updateSessionToNameMapping();
+                    t.redraw();
+		}
+	    });
+	sessions.setColumnWidth(newColumn, c.width, c.widthUnits);
+	return newColumn;
+    }
+
+    private Column<SessionSummary, String> addDeleteSessionColumn(final CellTable<SessionSummary> t, final ColumnFields c) {
+	final ClickableTextCell cell = new ClickableTextCell() {
+            @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                if (value != null) {
+                    sb.append(SafeHtmlUtils.fromSafeConstant("<span style='cursor:pointer'>"));
+                    sb.append(value);
+                    sb.append(SafeHtmlUtils.fromSafeConstant("</span>"));
+                }
+            }
+            };
+	Column<SessionSummary, String> newColumn = new Column<SessionSummary, String>(cell) {
+            @Override public String getValue(SessionSummary object) {
+                return object.getId().equals("-1") ? BALLOT_X : "";
+	    }
+	};
+	sessions.addColumn(newColumn, c.name);
+	newColumn.setFieldUpdater(new FieldUpdater<SessionSummary, String>() {
+		@Override
+		public void update(int index, SessionSummary object, String value) {
+                    if (c.key == null) return;
+                    refreshSessions = true;
+                    pushEdit("-1,D," + object.getSeqno() + ";");
                     updateSessionToNameMapping();
                     t.redraw();
 		}
@@ -483,7 +515,7 @@ public class ConfigWidget extends Composite {
                 addSessionColumn(sessions, LINKED_SEQNO_COLUMN, !jdb.isClubSelected());
             }
         }
-	addSessionColumn(sessions, DELETE_SESSION_COLUMN, false);
+	addDeleteSessionColumn(sessions, DELETE_SESSION_COLUMN);
     }
 
     private void populateSessions(JsArray<SessionSummary> sessionArray) {
@@ -1514,8 +1546,9 @@ public class ConfigWidget extends Composite {
                                 jdb.retrieveClubList(true);
                             }
 			    if (refreshSessions) {
-				refreshSessions = false;
-				retrieveSessions(jdb.getSelectedClubID());
+                                refreshSessions = false;
+                                String clubID = jdb.getSelectedClubID();
+                                retrieveSessions(clubID == null ? "0" : clubID);
 			    }
 			    if (refreshCours) {
 				refreshCours = false;
