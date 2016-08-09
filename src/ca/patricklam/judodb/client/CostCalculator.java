@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.Date;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Objects;
 
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -270,9 +271,9 @@ public class CostCalculator {
 
 	HashMap<Constants.Division, Prix> rv = new HashMap<>();
 	for (Prix p : applicablePrix) {
-	    if (p.getClubId().equals(club_id) &&
-		p.getSessionSeqno().equals(session_seqno) &&
-		p.getCoursId().equals(cours_id))
+	    if (Objects.equals(p.getClubId(), club_id) &&
+                Objects.equals(p.getSessionSeqno(), session_seqno) &&
+                Objects.equals(p.getCoursId(), cours_id))
 		rv.put(Constants.getDivisionByAbbrev(p.getDivisionAbbrev()), p);
 	}
 
