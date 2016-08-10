@@ -1457,7 +1457,14 @@ public class ConfigWidget extends Composite {
             };
 	Column<ProduitSummary, String> newColumn = new Column<ProduitSummary, String>(cell) {
             @Override public String getValue(ProduitSummary object) {
-                return object.getIsAdd().equals("1") ? "" : BALLOT_X;
+                if (object.getIsAdd().equals("1"))
+                    return "";
+
+                // also handle non-club items
+                if (object.getClubId().equals(jdb.getSelectedClubID()) ||
+                    (object.getClubId().equals("0") && jdb.getSelectedClubID() == null))
+                    return BALLOT_X;
+                return "";
 	    }
 	};
 	t.addColumn(newColumn, c.name);
