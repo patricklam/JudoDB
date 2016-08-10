@@ -488,7 +488,7 @@ public class ConfigWidget extends Composite {
 	nameColumn.setFieldUpdater(new FieldUpdater<SessionSummary, String>() {
 		@Override
 		public void update(int index, SessionSummary object, String value) {
-		    if (object.get(NAME_COLUMN.key).equals(ADD_SESSION_VALUE)) {
+		    if (object.getIsAdd().equals("1")) {
 			pushEdit("-1,E" + NAME_COLUMN.key + "," + value + "," + object.getSeqno() + ";");
 			addAddSessionSession();
 		    } else {
@@ -608,7 +608,7 @@ public class ConfigWidget extends Composite {
                     refreshCours = true;
                     refreshPrix = true;
 
-                    if (object.get(DESC_COLUMN.key).equals(ADD_COURS_VALUE)) {
+                    if (object.getIsAdd().equals("1")) {
                         // ... of a new cours, case (2)
                         assert (object.get(COURS_SESSION_COLUMN.key).equals(""));
                         String currentSessions = JudoDB.getSessionIds(new Date(), 2, sessionData);
@@ -670,7 +670,7 @@ public class ConfigWidget extends Composite {
                         if (!newSessions.contains(s)) removedSessions.add(s);
 
                     StringBuffer sb = new StringBuffer();
-                    if (object.get(DESC_COLUMN.key).equals(ADD_COURS_VALUE)) {
+                    if (object.getIsAdd().equals("1")) {
                         object.set(DESC_COLUMN.key, "");
                         // if there is already a blank desc_column it automatically gets merged
                         assert (removedSessions.isEmpty());
@@ -728,7 +728,7 @@ public class ConfigWidget extends Composite {
 
         CoursSummary addNewCours =
             JsonUtils.<CoursSummary>safeEval
-            ("{\"id\":\""+(maxId+1)+"\"}");
+            ("{\"is_add\":\"1\",\"id\":\""+(maxId+1)+"\"}");
         addNewCours.setSession("");
         addNewCours.setClubId(jdb.getSelectedClubID());
         addNewCours.setShortDesc(ADD_COURS_VALUE);
@@ -1184,7 +1184,7 @@ public class ConfigWidget extends Composite {
                 @Override
                 public void update(int index, EscompteSummary object, String value) {
                     refreshEscomptes = true;
-                    if (object.get(NOM_COLUMN.key).equals(ADD_ESCOMPTE_VALUE)) {
+                    if (object.getIsAdd().equals("1")) {
                         // NB: do the set before the update because we read from object
                         String nom;
                         if (c.key.equals(AMOUNT_PERCENT_COLUMN.key) ||
@@ -1344,7 +1344,7 @@ public class ConfigWidget extends Composite {
                 @Override
                 public void update(int index, ProduitSummary object, String value) {
                     refreshProduits = true;
-                    if (object.get(NOM_PRODUIT_COLUMN.key).equals(ADD_PRODUIT_VALUE)) {
+                    if (object.getIsAdd().equals("1")) {
                         // NB: do the set before the update because we read from object
                         String nom;
                         if (c.key.equals(MONTANT_COLUMN.key)) {
