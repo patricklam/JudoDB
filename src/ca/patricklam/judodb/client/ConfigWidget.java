@@ -580,7 +580,8 @@ public class ConfigWidget extends Composite {
     };
 
     private final ColumnFields COURS_SESSION_COLUMN = new ColumnFields("session", "Session", 2, Unit.EM),
-        DESC_COLUMN = new ColumnFields("short_desc", "Description", 4, Unit.EM);
+        DESC_COLUMN = new ColumnFields("short_desc", "Description", 4, Unit.EM),
+        DELETE_COURS_COLUMN = new ColumnFields("DELETE", "", 1, Unit.EM);
 
     private List<ColumnFields> perCoursColumns = Collections.unmodifiableList(Arrays.asList(COURS_SESSION_COLUMN, DESC_COLUMN));
 
@@ -708,6 +709,7 @@ public class ConfigWidget extends Composite {
                 }
             });
         addCoursColumn(cours, DESC_COLUMN, true);
+        addDeleteCoursColumn(cours, DELETE_COURS_COLUMN);
     }
 
     private void removeDuplicateCours(StringBuffer edits) {
@@ -733,6 +735,40 @@ public class ConfigWidget extends Composite {
         addNewCours.setClubId(jdb.getSelectedClubID());
         addNewCours.setShortDesc(ADD_COURS_VALUE);
         coursData.add(addNewCours);
+    }
+
+    // cannot parametrize this method due to JSO restrictions
+    private Column<CoursSummary, String> addDeleteCoursColumn(final CellTable<CoursSummary> t, final ColumnFields c) {
+	final ClickableTextCell cell = new ClickableTextCell() {
+            @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                if (value != null) {
+                    sb.append(SafeHtmlUtils.fromSafeConstant("<span style='cursor:pointer'>"));
+                    sb.append(value);
+                    sb.append(SafeHtmlUtils.fromSafeConstant("</span>"));
+                }
+            }
+            };
+	Column<CoursSummary, String> newColumn = new Column<CoursSummary, String>(cell) {
+            @Override public String getValue(CoursSummary object) {
+                return object.getIsAdd().equals("1") ? "" : BALLOT_X;
+	    }
+	};
+	t.addColumn(newColumn, c.name);
+	newColumn.setFieldUpdater(new FieldUpdater<CoursSummary, String>() {
+		@Override
+		public void update(int index, CoursSummary object, String value) {
+                    if (c.key == null) return;
+                    refreshCours = true;
+                    StringBuffer edits = new StringBuffer();
+                    for (String coursId : coursShortDescToDbIds.get(object.getShortDesc())) {
+                        edits.append("-1,O," + coursId + "," + jdb.getSelectedClubID() + ";");
+                    }
+                    pushEdit(edits.toString());
+                    t.redraw();
+		}
+	    });
+	t.setColumnWidth(newColumn, c.width, c.widthUnits);
+	return newColumn;
     }
 
     // requires sessions to be populated first
