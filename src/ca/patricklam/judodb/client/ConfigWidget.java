@@ -374,7 +374,7 @@ public class ConfigWidget extends Composite {
 		return object.get(c.key);
 	    }
 	};
-	sessions.addColumn(newColumn, c.name);
+	t.addColumn(newColumn, c.name);
 	newColumn.setFieldUpdater(new FieldUpdater<SessionSummary, String>() {
 		@Override
 		public void update(int index, SessionSummary object, String value) {
@@ -419,7 +419,7 @@ public class ConfigWidget extends Composite {
                     t.redraw();
 		}
 	    });
-	sessions.setColumnWidth(newColumn, c.width, c.widthUnits);
+	t.setColumnWidth(newColumn, c.width, c.widthUnits);
 	return newColumn;
     }
 
@@ -591,14 +591,14 @@ public class ConfigWidget extends Composite {
 	initializeCoursColumns();
     }
 
-    private Column<CoursSummary, String> addCoursColumn(final CellTable t, final ColumnFields c, final boolean editable) {
+    private Column<CoursSummary, String> addCoursColumn(final CellTable<CoursSummary> t, final ColumnFields c, final boolean editable) {
         final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
         Column<CoursSummary, String> newColumn = new Column<CoursSummary, String>(cell) {
             public String getValue(CoursSummary object) {
                 return object.get(c.key);
             }
         };
-        cours.addColumn(newColumn, c.name);
+        t.addColumn(newColumn, c.name);
         // this handles updating the short_desc column
         newColumn.setFieldUpdater(new FieldUpdater<CoursSummary, String>() {
                 @Override
@@ -638,11 +638,11 @@ public class ConfigWidget extends Composite {
                         pushEdit(edits.toString());
                     }
                     object.set(c.key, value);
-                    cours.setRowData(coursData);
+                    t.setRowData(coursData);
                     t.redraw();
                 }
             });
-        cours.setColumnWidth(newColumn, c.width, c.widthUnits);
+        t.setColumnWidth(newColumn, c.width, c.widthUnits);
         return newColumn;
     }
 
@@ -650,11 +650,11 @@ public class ConfigWidget extends Composite {
         while (cours.getColumnCount() > 0)
             cours.removeColumn(0);
 
-        final Column<CoursSummary, String> sessionColumn =
-            addCoursColumn(sessions, COURS_SESSION_COLUMN, true);
+        final Column<CoursSummary, String> coursColumn =
+            addCoursColumn(cours, COURS_SESSION_COLUMN, true);
         // implement changes to the session column
         // todo: have a button for deleting all sessions?
-        sessionColumn.setFieldUpdater(new FieldUpdater<CoursSummary, String>() {
+        coursColumn.setFieldUpdater(new FieldUpdater<CoursSummary, String>() {
                 @Override
                 public void update(int index, CoursSummary object, String value) {
                     List<SessionSummary> newSessions = parseSessionIds(value);
@@ -707,7 +707,7 @@ public class ConfigWidget extends Composite {
                     }
                 }
             });
-        addCoursColumn(sessions, DESC_COLUMN, true);
+        addCoursColumn(cours, DESC_COLUMN, true);
     }
 
     private void removeDuplicateCours(StringBuffer edits) {
@@ -1172,14 +1172,14 @@ public class ConfigWidget extends Composite {
         initializeEscompteColumns();
     }
 
-    private Column<EscompteSummary, String> addEscompteColumn(final CellTable t, final ColumnFields c, final boolean editable) {
+    private Column<EscompteSummary, String> addEscompteColumn(final CellTable<EscompteSummary> t, final ColumnFields c, final boolean editable) {
         final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
         Column<EscompteSummary, String> newColumn = new Column<EscompteSummary, String>(cell) {
             public String getValue(EscompteSummary object) {
                 return object.get(c.key);
             }
         };
-        escomptes.addColumn(newColumn, c.name);
+        t.addColumn(newColumn, c.name);
         newColumn.setFieldUpdater(new FieldUpdater<EscompteSummary, String>() {
                 @Override
                 public void update(int index, EscompteSummary object, String value) {
@@ -1227,7 +1227,7 @@ public class ConfigWidget extends Composite {
                     t.redraw();
                 }
             });
-        escomptes.setColumnWidth(newColumn, c.width, c.widthUnits);
+        t.setColumnWidth(newColumn, c.width, c.widthUnits);
         return newColumn;
     }
 
@@ -1332,14 +1332,14 @@ public class ConfigWidget extends Composite {
         initializeProduitColumns();
     }
 
-    private Column<ProduitSummary, String> addProduitColumn(final CellTable t, final ColumnFields c, final boolean editable) {
+    private Column<ProduitSummary, String> addProduitColumn(final CellTable<ProduitSummary> t, final ColumnFields c, final boolean editable) {
         final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
         Column<ProduitSummary, String> newColumn = new Column<ProduitSummary, String>(cell) {
             public String getValue(ProduitSummary object) {
                 return object.get(c.key);
             }
         };
-        produits.addColumn(newColumn, c.name);
+        t.addColumn(newColumn, c.name);
         newColumn.setFieldUpdater(new FieldUpdater<ProduitSummary, String>() {
                 @Override
                 public void update(int index, ProduitSummary object, String value) {
@@ -1378,7 +1378,7 @@ public class ConfigWidget extends Composite {
                     t.redraw();
                 }
             });
-        produits.setColumnWidth(newColumn, c.width, c.widthUnits);
+        t.setColumnWidth(newColumn, c.width, c.widthUnits);
         return newColumn;
     }
 
