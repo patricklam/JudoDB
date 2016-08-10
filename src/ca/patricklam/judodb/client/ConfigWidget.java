@@ -1320,7 +1320,8 @@ public class ConfigWidget extends Composite {
     };
 
     private final ColumnFields NOM_PRODUIT_COLUMN = new ColumnFields("nom", "Nom", 2, Unit.EM),
-        MONTANT_COLUMN = new ColumnFields("montant", "Montant", 1, Unit.EM);
+        MONTANT_COLUMN = new ColumnFields("montant", "Montant", 1, Unit.EM),
+        DELETE_PRODUIT_COLUMN = new ColumnFields("DELETE", "", 1, Unit.EM);
 
 	private List<ColumnFields> perProduitColumns = Collections.unmodifiableList(Arrays.asList(NOM_PRODUIT_COLUMN, MONTANT_COLUMN));
 
@@ -1387,6 +1388,7 @@ public class ConfigWidget extends Composite {
 
         addProduitColumn(produits, NOM_PRODUIT_COLUMN, true);
         addProduitColumn(produits, MONTANT_COLUMN, true);
+        addDeleteProduitColumn(produits, DELETE_PRODUIT_COLUMN);
     }
 
     final private static String ADD_PRODUIT_VALUE = "[ajouter produit]";
@@ -1399,11 +1401,41 @@ public class ConfigWidget extends Composite {
 
         ProduitSummary addNewProduit =
             JsonUtils.<ProduitSummary>safeEval
-            ("{\"id\":\""+(maxId+1)+"\"}");
+            ("{\"is_add\":\"1\",\"id\":\""+(maxId+1)+"\"}");
         addNewProduit.setClubId(jdb.getSelectedClubID());
         addNewProduit.setNom(ADD_PRODUIT_VALUE);
         addNewProduit.setMontant("");
         produitData.add(addNewProduit);
+    }
+
+    // cannot parametrize this method due to JSO restrictions
+    private Column<ProduitSummary, String> addDeleteProduitColumn(final CellTable<ProduitSummary> t, final ColumnFields c) {
+	final ClickableTextCell cell = new ClickableTextCell() {
+            @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                if (value != null) {
+                    sb.append(SafeHtmlUtils.fromSafeConstant("<span style='cursor:pointer'>"));
+                    sb.append(value);
+                    sb.append(SafeHtmlUtils.fromSafeConstant("</span>"));
+                }
+            }
+            };
+	Column<ProduitSummary, String> newColumn = new Column<ProduitSummary, String>(cell) {
+            @Override public String getValue(ProduitSummary object) {
+                return object.getIsAdd().equals("1") ? "" : BALLOT_X;
+	    }
+	};
+	t.addColumn(newColumn, c.name);
+	newColumn.setFieldUpdater(new FieldUpdater<ProduitSummary, String>() {
+		@Override
+		public void update(int index, ProduitSummary object, String value) {
+                    if (c.key == null) return;
+                    refreshProduits = true;
+                    pushEdit("-1,K," + object.getId() + "," + object.getClubId() + ";");
+                    t.redraw();
+		}
+	    });
+	t.setColumnWidth(newColumn, c.width, c.widthUnits);
+	return newColumn;
     }
 
     private void populateProduits(List<ProduitSummary> produitArray) {
