@@ -105,6 +105,7 @@ public class JudoDB implements EntryPoint {
     public static final String BACKEND_SUFFIX = "backend/";
     public static final String BASE_URL = GWT.getHostPageBaseURL() + BACKEND_SUFFIX;
 
+    private static final String DO_BACKUP_URL = BASE_URL + "db_backup.php";
     private static final String PULL_CLIENT_LIST_URL = BASE_URL + "pull_client_list.php";
     public static final String PULL_CLUB_LIST_URL = BASE_URL + "pull_club_list.php";
     public static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
@@ -281,6 +282,20 @@ public class JudoDB implements EntryPoint {
         }
     }
 
+    public void doBackup() {
+        String url = DO_BACKUP_URL;
+        RequestCallback rc =
+            createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        setStatus("[backup] " + s);
+                        new com.google.gwt.user.client.Timer() { public void run() {
+                            clearStatus();
+                        } }.schedule(5000);
+                    }
+                });
+        retrieve(url, rc);
+    }
+
     /**
      * This is the entry point method.
      */
@@ -343,7 +358,8 @@ public class JudoDB implements EntryPoint {
             switchMode(new Mode(Mode.ActualMode.LIST, Mode.LIST_PARAM_FT303 + clubString));
         }});
         mainPanel.configButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { switchMode(new Mode(Mode.ActualMode.CONFIG)); }});
-        mainPanel.logoutButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent event) { Window.Location.assign("/logout.php"); }});
+        mainPanel.logoutButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { Window.Location.assign("/logout.php"); }});
+        mainPanel.backupButton.addClickHandler(new ClickHandler() { public void onClick(ClickEvent e) { doBackup(); }});
 
         // Focus the cursor on the name field when the app loads
         mainPanel.searchTextBox.setFocus(true);
@@ -621,6 +637,7 @@ public class JudoDB implements EntryPoint {
 
     void refreshClubListResults() {
         firstSearchResultToDisplay = 0;
+        if (isAdmin) mainPanel.backupButton.setVisible(true);
         populateClubList(true, mainPanel.dropDownUserClubs, new MainClubListHandlerFactory());
         if (cfWidget != null)
             populateClubList(true, cfWidget.dropDownUserClubs,

@@ -35,9 +35,10 @@ public class MainPanel extends Composite {
     @UiField Button nouveauButton;
     @UiField Button searchButton;
     @UiField Button listeButton;
-    @UiField Button configButton;
     @UiField Button affilButton;
     @UiField Button ftButton;
+    @UiField Button configButton;
+    @UiField Button backupButton;
     @UiField Button logoutButton; // logout.php
 
     // results column

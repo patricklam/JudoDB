@@ -91,6 +91,11 @@
            <b:Button ui:field="configButton" text="Configuration club (cours, inscription)"></b:Button>
           </b:Column>
          </b:Row>
+         <b:Row>
+          <b:Column size="MD_6">
+           <b:Button ui:field="backupButton" text="D&eacute;marrer un backup" visible="false"></b:Button>
+          </b:Column>
+         </b:Row>
 
          <b:Row> <b:Heading size="H2" text="Autre" /> </b:Row>
          <b:Row>
