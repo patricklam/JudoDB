@@ -1113,12 +1113,14 @@ public class ClientWidget extends Composite {
 
         sessions.clear();
         SessionSummary ts = JudoDB.getSessionForDate(inscrDate, sessionSummaries);
-        if (ts.isPrimary()) {
-            sessions.addItem(JudoDB.getSessionIds(inscrDate, 2, sessionSummaries));
-            sessions.addItem(JudoDB.getSessionIds(inscrDate, 1, sessionSummaries));
-        } else {
-            sessions.addItem(JudoDB.getSessionIds(inscrDate, 1, sessionSummaries));
-            sessions.addItem(JudoDB.getSessionIds(inscrDate, 2, sessionSummaries));
+        if (ts != null) {
+            if (ts.isPrimary()) {
+                sessions.addItem(JudoDB.getSessionIds(inscrDate, 2, sessionSummaries));
+                sessions.addItem(JudoDB.getSessionIds(inscrDate, 1, sessionSummaries));
+            } else {
+                sessions.addItem(JudoDB.getSessionIds(inscrDate, 1, sessionSummaries));
+                sessions.addItem(JudoDB.getSessionIds(inscrDate, 2, sessionSummaries));
+            }
         }
 
         boolean found = false;
