@@ -167,8 +167,21 @@ public class JudoDB implements EntryPoint {
     // modes
     public void switchMode(Mode newMode) {
         Mode previousMode = currentMode;
-        if (currentMode != null)
+        if (currentMode != null) {
             modeStack.push(currentMode);
+        }
+        currentMode = newMode;
+        _switchMode(newMode, previousMode);
+    }
+
+    public void historySwitchMode(Mode newMode) {
+        // remove the entire stack and start over
+        modeStack.clear();
+
+        Mode previousMode = currentMode;
+        if (currentMode != null) {
+            modeStack.push(currentMode);
+        }
         currentMode = newMode;
         _switchMode(newMode, previousMode);
     }
@@ -176,17 +189,12 @@ public class JudoDB implements EntryPoint {
     public void popMode() {
         if (!modeStack.isEmpty()) {
             Mode previousMode = currentMode;
-            modeStack.pop();
             if (!modeStack.isEmpty()) {
-                currentMode = modeStack.peek();
+                currentMode = modeStack.pop();
             } else {
                 currentMode = new Mode(Mode.ActualMode.MAIN);
             }
             _switchMode(currentMode, previousMode);
-
-            if (!modeStack.isEmpty()) {
-                modeStack.pop();
-            }
         } else {
             _switchMode(new Mode(Mode.ActualMode.MAIN), null);
         }
@@ -196,11 +204,6 @@ public class JudoDB implements EntryPoint {
         if (newMode != null && previousMode != null &&
             newMode.am.equals(previousMode.am)) {
             History.replaceItem(newMode.toString(), false);
-
-            // ... fix up the stack also
-            if (!modeStack.isEmpty())
-                modeStack.pop();
-            modeStack.push(newMode);
         } else {
             History.newItem(newMode.toString(), false);
         }
@@ -383,7 +386,7 @@ public class JudoDB implements EntryPoint {
             public void onValueChange(ValueChangeEvent<String> event) {
                 String historyToken = event.getValue();
                 Mode m = Mode.parse(historyToken);
-                switchMode(m);
+                historySwitchMode(m);
             }
         });
 

@@ -19,7 +19,6 @@ import ca.patricklam.judodb.client.Constants.Division;
 import ca.patricklam.judodb.client.Constants.Grade;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.History;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsonUtils;
@@ -763,7 +762,8 @@ public class ListWidget extends Composite {
 
         return_to_main.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) {
-                History.back();
+                // no, we really mean 'main', not 'pop', here.
+                ListWidget.this.jdb.historySwitchMode(new JudoDB.Mode(JudoDB.Mode.ActualMode.MAIN));
             }
         });
 
