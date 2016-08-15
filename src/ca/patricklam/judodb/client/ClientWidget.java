@@ -1133,7 +1133,7 @@ public class ClientWidget extends Composite {
         }
 
         if (!sdSessions.equals("") && !found) {
-            jdb.displayError("aucun session en cours pour date d'inscription " + sd.getDateInscription());
+            jdb.displayError("aucune session en cours pour date d'inscription " + sd.getDateInscription());
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         }
     }
