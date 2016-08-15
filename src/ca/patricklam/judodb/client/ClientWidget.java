@@ -1432,7 +1432,7 @@ public class ClientWidget extends Composite {
         currentSession = JudoDB.getSessionForDate(new Date(), sessionSummaries);
         if (currentSession == null) {
             if (jdb.getSelectedClub() != null) {
-                jdb.displayError("aucun session en cours pour " + jdb.getSelectedClub().getNom());
+                jdb.displayError("aucune session en cours pour " + jdb.getSelectedClub().getNom());
             }
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         } else {
