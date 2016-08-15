@@ -100,7 +100,7 @@
 		  <b:Column size="XS_2" addStyleNames="pull-right"><b:FormLabel for="affiliationFrais">Affiliation JQ+JC</b:FormLabel><b:TextBox ui:field="affiliationFrais"/> <g:Hidden ui:field="affiliationFrais_encoded" name="affiliation_frais_encoded" /></b:Column>
 		</b:FormGroup>
 		<b:FormGroup>
-		  <b:Column size="XS_3"><b:FormLabel for="judogi">Passeports / Ventes d&eacute;tail</b:FormLabel><bs:MultipleSelect noneSelectedText="Aucun" ui:field="produit"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></b:Column>
+		  <b:Column size="XS_3"><b:FormLabel for="judogi">Passeports / Achats</b:FormLabel><bs:MultipleSelect noneSelectedText="Aucun" ui:field="produit"/> <g:Hidden ui:field="judogi_encoded" name="judogi_encoded" /></b:Column>
 		  <b:Column size="XS_2" ui:field="rabais_resident_label"><b:FormLabel for="resident">Rabais r&eacute;sident</b:FormLabel><b3:ToggleSwitch ui:field="resident" onIcon="CHECK" offIcon="TIMES"/><g:Hidden ui:field="resident_encoded" name="resident_encoded" /></b:Column>
 		  <b:Column size="XS_2" ui:field="frais_paypal_label"><b:FormLabel for="paypal">Frais PayPal</b:FormLabel><g:HTMLPanel /><b3:ToggleSwitch ui:field="paypal" onIcon="CHECK" offIcon="TIMES"/><g:Hidden ui:field="paypal_encoded" name="paypal_encoded" /></b:Column>
 		  <b:Column size="XS_2" addStyleNames="pull-right"><b:FormLabel for="suppFrais">Autres frais</b:FormLabel><b:TextBox ui:field="suppFrais"  /><g:Hidden ui:field="suppFrais_encoded" name="supp_frais_encoded" /></b:Column>
