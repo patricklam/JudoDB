@@ -618,10 +618,11 @@ public class ClientWidget extends Composite {
         escompteFrais.setText(sd.getEscompteFrais());
 
         List<String> produits = Arrays.asList(sd.getJudogi().split(";"));
-        produit.deselectAll();
         for (Option o : produit.getItems()) {
             if (produits.contains(o.getId()))
                 o.setSelected(true);
+            else
+                o.setSelected(false);
         }
         produit.setEnabled(isToday);
         resident.setValue(sd.getResident());
