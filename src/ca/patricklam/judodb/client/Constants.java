@@ -96,7 +96,7 @@ public class Constants {
 
     /* constant data which should be refactored */
     public static final int VETERAN = 35;
-    public static final int COUT_JUDOQC_INITIATION = 10;
+    public static final int COUT_JUDOQC_INITIATION = 15;
     public static final int COUT_JUDOQC_ECOLE = 5;
     public static final int COUT_JUDOQC_PARASCOLAIRE = 8;
     public static final int PAYPAL_PCT = 3;
