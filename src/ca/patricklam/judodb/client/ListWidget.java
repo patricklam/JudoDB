@@ -1090,7 +1090,7 @@ public class ListWidget extends Composite {
                 @Override public void update(int index, ClientData cd, Boolean value) {
                     StringBuffer edits = new StringBuffer();
                     edits.append(cd.getID()+",Ssolde," + (value ? "1" : "0") + ";");
-                    cd.getServiceFor(currentSession).setSolde(value.equals("1"));
+                    cd.getServiceFor(currentSession).setSolde(value);
                     pushEdit(edits.toString());
                 }
             });
