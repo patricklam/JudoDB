@@ -1171,6 +1171,7 @@ public class ClientWidget extends Composite {
         // Note that the following check relies on the data being saved
         // to the ClientData, which is true after you enter the birthday.
         ServiceData sd = cd.getServices().get(currentServiceNumber);
+        if (sd == null) return;
         ClubSummary clb = jdb.getClubSummaryByID(sd.getClubID());
         if (!cd.isDefault(clb)) return;
 
@@ -1179,6 +1180,7 @@ public class ClientWidget extends Composite {
 
         for (ClientSummary cs : jdb.allClients) {
 	    // XXX don't copy data across clubs
+            if (cs == null || cs.getNom() == null) continue;
             if (cs.getId().equals(cd.getID()))
                 continue;
 
