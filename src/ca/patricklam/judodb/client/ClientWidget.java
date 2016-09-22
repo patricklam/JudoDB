@@ -1327,10 +1327,10 @@ public class ClientWidget extends Composite {
             // disabled passeport
             //p.append(sd.getPasseport()+",");
             p.append("0,");
-            n.append(sd.getResident()+",");
-            pp.append(sd.getPaypal()+",");
+            n.append(sd.getResident() ? "1," : "0,");
+            pp.append(sd.getPaypal() ? "1," : "0,");
             sf.append(sd.getSuppFrais()+",");
-            s.append(sd.getSolde() ? "1,":"0,");
+            s.append(sd.getSolde() ? "1," : "0,");
             f.append(sd.getFrais()+",");
             clubid.append(sd.getClubID()+",");
         }
