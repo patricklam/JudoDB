@@ -289,8 +289,10 @@ public class ListWidget extends Composite {
         coursButtonCell.setShowButton(club != null && currentSession != null);
 
         retrieveSessions(jdb.getSelectedClub());
-        if (club != null)
+        if (club != null) {
             retrievePrix(club.getId());
+            retrieveEscomptes(club.getId());
+        }
         actuallyHandleClubChange();
     }
 
