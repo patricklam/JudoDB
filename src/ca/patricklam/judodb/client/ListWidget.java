@@ -144,6 +144,7 @@ public class ListWidget extends Composite {
     @UiField AnchorListItem sortir_xls;
     @UiField AnchorListItem sortir_xls_complet;
     @UiField AnchorListItem sortir_impot;
+    @UiField AnchorListItem sortir_affil_xls;
 
     @UiField Button return_to_main;
 
@@ -288,8 +289,10 @@ public class ListWidget extends Composite {
         coursButtonCell.setShowButton(club != null && currentSession != null);
 
         retrieveSessions(jdb.getSelectedClub());
-        if (club != null)
+        if (club != null) {
             retrievePrix(club.getId());
+            retrieveEscomptes(club.getId());
+        }
         actuallyHandleClubChange();
     }
 
@@ -319,7 +322,7 @@ public class ListWidget extends Composite {
                 results.removeColumn(sessionsColumn);
                 divisionColumnVisible = true;
             }
-            if (!checkColumnVisible && (isFT || isImpot)) {
+            if (!checkColumnVisible && (isFT || isAffil || isImpot)) {
                 results.insertColumn(0, checkColumn, checkHeader);
                 checkColumnVisible = true;
             }
@@ -514,6 +517,10 @@ public class ListWidget extends Composite {
         if (isAffil) return;
         isAffil = true;
 
+        if (!checkColumnVisible) {
+            results.insertColumn(0, checkColumn, checkHeader);
+            checkColumnVisible = true;
+        }
         int telIndex = results.getColumnIndex(telColumn);
         results.insertColumn(telIndex + 1, judoQCColumn, heads[Columns.JUDOQC]);
         results.insertColumn(telIndex + 2, affEnvoyeColumn, new Header<String>(new TextCell() {
@@ -723,6 +730,8 @@ public class ListWidget extends Composite {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("xls"); } });
         sortir_xls_complet.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("xlsfull"); } });
+        sortir_affil_xls.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("xls_affil"); } });
 
         filter_controls.addShowHandler(new ShowHandler() {
                 @Override public void onShow(ShowEvent e) {
@@ -1369,6 +1378,8 @@ public class ListWidget extends Composite {
             dv += toDVFullString(cd) + "*";
         }
         data_full.setValue(dv);
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub());
     }
 
     private String toDVFullString(ClientData cd) {
