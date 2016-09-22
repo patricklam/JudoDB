@@ -291,7 +291,7 @@ public class ListWidget extends Composite {
         retrieveSessions(jdb.getSelectedClub());
         if (club != null) {
             retrievePrix(club.getId());
-            retrieveEscomptes(club.getId());
+            retrieveEscomptes();
         }
         actuallyHandleClubChange();
     }
