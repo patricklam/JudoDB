@@ -55,6 +55,7 @@
 	    <g:Hidden ui:field="short_title" name="short_title"/>
 	    <g:Hidden ui:field="data" name="data"/>
 	    <g:Hidden ui:field="data_full" name="data_full"/>
+	    <g:Hidden ui:field="format" name="format"/>
 	    <g:Hidden ui:field="auxdata" name="auxdata"/>
 	    <g:Hidden ui:field="club_id" name="club_id"/>
 	    <g:Hidden ui:field="ft_evt" name="evt"/>
