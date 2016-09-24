@@ -1388,7 +1388,11 @@ public class ListWidget extends Composite {
         if (cs == null)
             auxdata.setValue("");
         else
-            auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub());
+            auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub() + "|" +
+                             cs.getPersonneContact() + "|" +
+                             cs.getPersonneContactCourriel() + "|" +
+                             cs.getPersonneContactTel() + "|" +
+                             cs.getPersonneContactAdresse());
     }
 
     class ValueFormatPair {
@@ -1558,7 +1562,11 @@ public class ListWidget extends Composite {
             return false;
         }
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-        auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub());
+        auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub() + "|" +
+                         cs.getPersonneContact() + "|" +
+                         cs.getPersonneContactCourriel() + "|" +
+                         cs.getPersonneContactTel() + "|" +
+                         cs.getPersonneContactAdresse());
         return !dv.equals("");
     }
 
