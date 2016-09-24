@@ -1448,15 +1448,17 @@ public class ListWidget extends Composite {
             dv += "|";
             if (sd != null) {
                 ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-                Collection<ProduitSummary> ps = CostCalculator.getApplicableProduits(sd, produitSummaries);;
+                Collection<ProduitSummary> ps = CostCalculator.getApplicableProduits(sd, produitSummaries);
                 CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, true /* prorata.getValue()*/, prix, escompteSummaries);
+                df += "'produits',";
+                dv += sd.getJudogi() + "|";
                 df += "'frais',";
-                dv += sd.getFrais();
+                dv += sd.getFrais() + "|";
             }
         }
         else {
-            df += "'cours','frais',";
-            dv += "|";
+            df += "'cours','produits','frais',";
+            dv += "|||";
         }
         dv += "|";
         return new ValueFormatPair(dv,df);
