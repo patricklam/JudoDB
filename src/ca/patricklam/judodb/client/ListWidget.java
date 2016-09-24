@@ -383,9 +383,10 @@ public class ListWidget extends Composite {
         @Override public void onClick(ClickEvent e) {
             String ft = isFT ? JudoDB.Mode.LIST_PARAM_FT303 : "";
             String impot = isImpot ? JudoDB.Mode.LIST_PARAM_IMPOT : "";
+            String affil = isAffil ? JudoDB.Mode.LIST_PARAM_AFFIL : "";
             String clubString = club != null ? (";" + CLUB_LABEL + club.getNumeroClub()) : "";
             jdb.switchMode(new JudoDB.Mode(JudoDB.Mode.ActualMode.LIST,
-                                           ft + impot + clubString));
+                                           ft + impot + affil + clubString));
         }
     }
 
