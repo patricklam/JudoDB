@@ -1384,7 +1384,10 @@ public class ListWidget extends Composite {
         data_full.setValue(dv);
         format.setValue(df);
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-        auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub());
+        if (cs == null)
+            auxdata.setValue("");
+        else
+            auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub());
     }
 
     class ValueFormatPair {
