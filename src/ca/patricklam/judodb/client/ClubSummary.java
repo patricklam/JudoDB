@@ -15,6 +15,14 @@ public class ClubSummary extends JavaScriptObject {
     public final native void setNumeroClub(String numero_club) /*-{ this.numero_club = numero_club; }-*/;
     public final native String getVille() /*-{ return this.ville; }-*/;
     public final native void setVille(String ville) /*-{ this.ville = ville; }-*/;
+    public final native String getPersonneContact() /*-{ return this.personne_contact; }-*/;
+    public final native void setPersonneContact(String personne_contact) /*-{ this.personne_contact = personne_contact; }-*/;
+    public final native String getPersonneContactCourriel() /*-{ return this.personne_contact_courriel; }-*/;
+    public final native void setPersonneContactCourriel(String personne_contact_courriel) /*-{ this.personne_contact_courriel = personne_contact_courriel; }-*/;
+    public final native String getPersonneContactAdresse() /*-{ return this.personne_contact_adresse; }-*/;
+    public final native void setPersonneContactAdresse(String personne_contact_adresse) /*-{ this.personne_contact_adresse = personne_contact_adresse; }-*/;
+    public final native String getPersonneContactTel() /*-{ return this.personne_contact_tel; }-*/;
+    public final native void setPersonneContactTel(String personne_contact_tel) /*-{ this.personne_contact_tel = personne_contact_tel; }-*/;
     public final native String getPrefixCodepostale() /*-{ return this.prefix_codepostale; }-*/;
     public final native void setPrefixCodepostale(String prefix_codepostale) /*-{ this.prefix_codepostale = prefix_codepostale; }-*/;
     public final native String getEscompteResident() /*-{ return this.escompte_resident == null ? '0' : this.escompte_resident; }-*/;

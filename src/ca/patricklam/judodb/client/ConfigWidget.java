@@ -229,6 +229,10 @@ public class ConfigWidget extends Composite {
     @UiField TextBox nom_club;
     @UiField TextBox nom_short;
     @UiField TextBox numero_club;
+    @UiField TextBox personne_contact;
+    @UiField TextBox personne_contact_courriel;
+    @UiField TextBox personne_contact_adresse;
+    @UiField TextBox personne_contact_tel;
     @UiField TextBox ville;
     @UiField TextBox prefix_codepostale;
     @UiField TextBox indicatif_regional;
@@ -268,6 +272,10 @@ public class ConfigWidget extends Composite {
         numero_club.setText(""); numero_club.setReadOnly(true);
         nom_short.setText(""); 
         ville.setText("");
+        personne_contact.setText("");
+        personne_contact_courriel.setText("");
+        personne_contact_adresse.setText("");
+        personne_contact_tel.setText("");
         prefix_codepostale.setText("");
         indicatif_regional.setText("");
         escompte_resident.setText("");
@@ -278,6 +286,10 @@ public class ConfigWidget extends Composite {
             clubHandlersInstalled = true;
             nom_short.addValueChangeHandler(newValueChangeHandler("nom_short"));
             ville.addValueChangeHandler(newValueChangeHandler("ville"));
+            personne_contact.addValueChangeHandler(newValueChangeHandler("personne_contact"));
+            personne_contact_courriel.addValueChangeHandler(newValueChangeHandler("personne_contact_courriel"));
+            personne_contact_adresse.addValueChangeHandler(newValueChangeHandler("personne_contact_adresse"));
+            personne_contact_tel.addValueChangeHandler(newValueChangeHandler("personne_contact_tel"));
             prefix_codepostale.addValueChangeHandler(newValueChangeHandler("prefix_codepostale"));
             indicatif_regional.addValueChangeHandler(newValueChangeHandler("indicatif_regional"));
             escompte_resident.addValueChangeHandler(newValueChangeHandler("escompte_resident"));
@@ -293,6 +305,10 @@ public class ConfigWidget extends Composite {
         }
 
         nom_short.setReadOnly(setEverythingReadOnly);
+        personne_contact.setReadOnly(setEverythingReadOnly);
+        personne_contact_courriel.setReadOnly(setEverythingReadOnly);
+        personne_contact_adresse.setReadOnly(setEverythingReadOnly);
+        personne_contact_tel.setReadOnly(setEverythingReadOnly);
         ville.setReadOnly(setEverythingReadOnly);
         prefix_codepostale.setReadOnly(setEverythingReadOnly);
         indicatif_regional.setReadOnly(setEverythingReadOnly);
@@ -314,6 +330,10 @@ public class ConfigWidget extends Composite {
         nom_club.setText(cs.getNom());
         nom_short.setText(cs.getNomShort());
         numero_club.setText(cs.getNumeroClub());
+        personne_contact.setText(cs.getPersonneContact());
+        personne_contact_courriel.setText(cs.getPersonneContactCourriel());
+        personne_contact_adresse.setText(cs.getPersonneContactAdresse());
+        personne_contact_tel.setText(cs.getPersonneContactTel());
         ville.setText(cs.getVille());
         prefix_codepostale.setText(cs.getPrefixCodepostale());
         indicatif_regional.setText(cs.getIndicatifRegional());

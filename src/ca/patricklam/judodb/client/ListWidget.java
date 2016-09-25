@@ -131,6 +131,7 @@ public class ListWidget extends Composite {
     @UiField Hidden short_title;
     @UiField Hidden data;
     @UiField Hidden data_full;
+    @UiField Hidden format;
     @UiField Hidden auxdata;
     @UiField Hidden ft_evt;
     @UiField Hidden ft_date;
@@ -382,9 +383,10 @@ public class ListWidget extends Composite {
         @Override public void onClick(ClickEvent e) {
             String ft = isFT ? JudoDB.Mode.LIST_PARAM_FT303 : "";
             String impot = isImpot ? JudoDB.Mode.LIST_PARAM_IMPOT : "";
+            String affil = isAffil ? JudoDB.Mode.LIST_PARAM_AFFIL : "";
             String clubString = club != null ? (";" + CLUB_LABEL + club.getNumeroClub()) : "";
             jdb.switchMode(new JudoDB.Mode(JudoDB.Mode.ActualMode.LIST,
-                                           ft + impot + clubString));
+                                           ft + impot + affil + clubString));
         }
     }
 
@@ -1370,41 +1372,76 @@ public class ListWidget extends Composite {
     }
 
     private void computeFull() {
-        String dv = "";
+        String dv = "", df = "";
         for (int i = 0; i < allClients.length(); i++) {
             ClientData cd = allClients.get(i);
             if (!clubFilter(cd) || !sessionFilter(cd)) continue;
 
-            dv += toDVFullString(cd) + "*";
+            ValueFormatPair vf = toDVFullString(cd);
+            dv += vf.value + "*";
+            // vf.format should be stable between calls
+            df = vf.format;
         }
         data_full.setValue(dv);
+        format.setValue(df);
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-        auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub());
+        if (cs == null)
+            auxdata.setValue("");
+        else
+            auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub() + "|" +
+                             cs.getPersonneContact() + "|" +
+                             cs.getPersonneContactCourriel() + "|" +
+                             cs.getPersonneContactTel() + "|" +
+                             cs.getPersonneContactAdresse());
     }
 
-    private String toDVFullString(ClientData cd) {
-        String dv = "";
+    class ValueFormatPair {
+        String value, format;
+        public ValueFormatPair(String value, String format) {
+            this.value = value; this.format = format;
+        }
+    }
 
+    private ValueFormatPair toDVFullString(ClientData cd) {
+        String dv = "", df = "";
+
+        df += "'id',";
         dv += cd.getID() + "|";
+        df += "'nom',";
         dv += cd.getNom() + "|";
+        df += "'prenom',";
         dv += cd.getPrenom() + "|";
+        df += "'sexe',";
         dv += cd.getSexe() + "|";
+        df += "'JC',";
         dv += cd.getJudoQC() + "|";
+        df += "'ddn',";
         dv += cd.getDDNString() + "|";
+        df += "'session',";
         if (currentSession != null)
             dv += cd.getDivision(currentSession.getYear()).abbrev + "|";
         else
             dv += "|";
+        df += "'courriel',";
         dv += cd.getCourriel() + "|";
+        df += "'adresse',";
         dv += cd.getAdresse() + "|";
+        df += "'ville',";
         dv += cd.getVille() + "|";
+        df += "'codepostale',";
         dv += cd.getCodePostal() + "|";
+        df += "'tel',";
         dv += cd.getTel() + "|";
+        df += "'carteresident',";
         dv += cd.getCarteResident() + "|";
+        df += "'telurgence',";
         dv += cd.getTelContactUrgence() + "|";
+        df += "'grade',";
         dv += cd.getMostRecentGrade().getGrade() + "|";
+        df += "'date_grade',";
         dv += cd.getMostRecentGrade().getDateGrade() + "|";
         if (currentSession != null) {
+            df += "'cours',";
             ServiceData sd = cd.getServiceFor(currentSession);
             if (sd != null && !sd.getCours().equals("")) {
                 // this is potentially slow; use a hash map instead.
@@ -1416,16 +1453,20 @@ public class ListWidget extends Composite {
             dv += "|";
             if (sd != null) {
                 ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
-                Collection<ProduitSummary> ps = CostCalculator.getApplicableProduits(sd, produitSummaries);;
+                Collection<ProduitSummary> ps = CostCalculator.getApplicableProduits(sd, produitSummaries);
                 CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, true /* prorata.getValue()*/, prix, escompteSummaries);
-                dv += sd.getFrais();
+                df += "'produits',";
+                dv += sd.getJudogi() + "|";
+                df += "'frais',";
+                dv += sd.getFrais() + "|";
             }
         }
         else {
-            dv += "|";
+            df += "'cours','produits','frais',";
+            dv += "|||";
         }
         dv += "|";
-        return dv;
+        return new ValueFormatPair(dv,df);
     }
 
    private void computeImpotMailMerge() {
@@ -1493,6 +1534,7 @@ public class ListWidget extends Composite {
 
     private boolean makeFT() {
         StringBuilder dv = new StringBuilder("");
+        String format_string = "";
         for (ClientData cd : filteredClients) {
             if (resultsSelectionModel.isSelected(cd)) {
                 StringBuilder post = new StringBuilder();
@@ -1501,11 +1543,14 @@ public class ListWidget extends Composite {
                     post.append(cdToSM.get(cd));
                 }
                 post.append("|");
-                dv.append(toDVFullString(cd) + post + "*");
+                ValueFormatPair vf = toDVFullString(cd);
+                dv.append(vf.value + post + "*");
+                format_string = vf.format;
             }
         }
         data.setValue("");
         data_full.setValue(dv.toString());
+        format.setValue(format_string);
         if (jdb.getSelectedClubID() == null) {
             jdb.displayError("Veuillez selectionner un club.");
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
@@ -1517,7 +1562,11 @@ public class ListWidget extends Composite {
             return false;
         }
         ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-        auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub());
+        auxdata.setValue(cs.getNomShort() + "|" + cs.getNumeroClub() + "|" +
+                         cs.getPersonneContact() + "|" +
+                         cs.getPersonneContactCourriel() + "|" +
+                         cs.getPersonneContactTel() + "|" +
+                         cs.getPersonneContactAdresse());
         return !dv.equals("");
     }
 
