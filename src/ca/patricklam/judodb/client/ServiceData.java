@@ -40,7 +40,7 @@ public class ServiceData extends JavaScriptObject {
     public final native int getSessionCount() /*-{ return this.saisons == null ? 0 : this.saisons.split(" ").length; }-*/;
     public final native boolean getResident() /*-{ return this.resident != '0'; }-*/;
     public final native void setResident(boolean resident) /*-{ this.resident = resident ? "1" : "0"; }-*/;
-    public final native boolean getPaypal() /*-{ return this.paypal != '0'; }-*/;
+    public final native boolean getPaypal() /*-{ return this.paypal != '' && this.paypal != '0'; }-*/;
     public final native void setPaypal(boolean paypal) /*-{ this.paypal = paypal ? "1" : "0"; }-*/;
     public final native String getEscompteId() /*-{ return this.escompte == null ? "0" : this.escompte; }-*/;
     public final native void setEscompteId(String id) /*-{ this.escompte = id; }-*/;
@@ -90,6 +90,7 @@ public class ServiceData extends JavaScriptObject {
             no_sessions: "2",
             passeport: "0",
             resident: "0",
+            paypal: "0",
             judogi: "0.0",
             escompte: "0",
             categorie_frais: "0.0",
