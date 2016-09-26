@@ -218,9 +218,6 @@ public class ClientWidget extends Composite {
     private int currentServiceNumber;
     public int getCurrentServiceNumber() { return currentServiceNumber; }
 
-    private String sibid;
-    private List<ChangeHandler> onPopulated = new ArrayList<ChangeHandler>();
-
     void selectClub(ClubSummary club) {
         jdb.selectClub(club);
 
@@ -1165,6 +1162,9 @@ public class ClientWidget extends Composite {
         } catch (NumberFormatException e) {}
     }
 
+    private ClientData sibData = null;
+    private String sibid;
+
     private void updateCopySib() {
         copysib.setVisible(false);
         // check 1) address fields are empty and 2) there exists a sibling
@@ -1174,12 +1174,9 @@ public class ClientWidget extends Composite {
         if (sd == null) return;
         ClubSummary clb = jdb.getClubSummaryByID(sd.getClubID());
         if (!cd.isDefault(clb)) return;
-
-        // XXX should do an allClients fetch upon load...
         if (jdb.allClients == null) return;
 
         for (ClientSummary cs : jdb.allClients) {
-	    // XXX don't copy data across clubs
             if (cs == null || cs.getNom() == null) continue;
             if (cs.getId().equals(cd.getID()))
                 continue;
@@ -1188,28 +1185,33 @@ public class ClientWidget extends Composite {
             String n = nom.getText().toLowerCase();
             if (n.equals(csn)) {
                 sibid = cs.getId();
+                sibData = null;
                 copysib.setVisible(true);
             }
         }
     }
 
     private void copysib() {
-        final ClientWidget cp = new ClientWidget(Integer.parseInt(sibid), jdb);
-        cp.onPopulated.add (new ChangeHandler () {
-            public void onChange(ChangeEvent e) {
-                cp.actuallyCopy(ClientWidget.this);
-            }
-        });
-    }
+        String url = PULL_ONE_CLIENT_URL + "?id=" + sibid;
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        if (s.equals("")) {
+                            copysib.setVisible(false);
+                            return;
+                        }
 
-    private void actuallyCopy(ClientWidget d) {
-        d.adresse.setText(adresse.getText());
-        d.ville.setText(ville.getText());
-        d.codePostal.setText(codePostal.getText());
-        d.tel.setText(tel.getText());
-        d.tel_contact_urgence.setText(tel_contact_urgence.getText());
-        d.courriel.setText(courriel.getText());
-        d.updateCopySib();
+                        ClientWidget.this.sibData = JsonUtils.<ClientData>safeEval(s);
+                        adresse.setText(sibData.getAdresse());
+                        ville.setText(sibData.getVille());
+                        codePostal.setText(sibData.getCodePostal());
+                        tel.setText(sibData.getTel());
+                        tel_contact_urgence.setText(sibData.getTelContactUrgence());
+                        courriel.setText(sibData.getCourriel());
+                        saveClientData();
+                        updateCopySib();
+                    } });
+        jdb.retrieve(url, rc);
     }
 
     private void hideEscompteResidentIfUnneeded(ClubSummary cs) {
@@ -1470,10 +1472,6 @@ public class ClientWidget extends Composite {
                         currentServiceNumber = cd.getMostRecentServiceNumber();
                         selectClub(jdb.getClubSummaryByID(cd.getServices().get(currentServiceNumber).getClubID()));
                         loadClientData();
-
-                        for (ChangeHandler ch : onPopulated) {
-                            ch.onChange(null);
-                        }
                     }
                 });
         jdb.retrieve(url, rc);
