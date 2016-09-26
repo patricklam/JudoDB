@@ -147,6 +147,12 @@ public class ListWidget extends Composite {
     @UiField AnchorListItem sortir_impot;
     @UiField AnchorListItem sortir_affil_xls;
 
+    @UiField Button fonctionsButton;
+    @UiField DropDownMenu fonctions;
+    @UiField AnchorListItem select_unaffil;
+    @UiField AnchorListItem mark_affil;
+    @UiField AnchorListItem mark_carte_recu;
+
     @UiField Button return_to_main;
 
     @UiField Hidden club_id;
@@ -311,6 +317,7 @@ public class ListWidget extends Composite {
             }
             if (checkColumnVisible) {
                 results.removeColumn(checkColumn);
+                fonctionsButton.setVisible(false);
                 checkColumnVisible = false;
             }
         } else {
@@ -325,6 +332,7 @@ public class ListWidget extends Composite {
             }
             if (!checkColumnVisible && (isFT || isAffil || isImpot)) {
                 results.insertColumn(0, checkColumn, checkHeader);
+                fonctionsButton.setVisible(true);
                 checkColumnVisible = true;
             }
         }
@@ -519,6 +527,7 @@ public class ListWidget extends Composite {
         if (isAffil) return;
         isAffil = true;
 
+        fonctionsButton.setVisible(true);
         results.setSelectionModel(resultsSelectionModel,
                                   DefaultSelectionEventManager.<ClientData>
                                   createCheckboxManager());
@@ -605,6 +614,8 @@ public class ListWidget extends Composite {
         isFT = false; isImpot = false;
         showList();
         ft303_controls.hide();
+        fonctionsButton.setVisible(false);
+
         sortirButton.setText(SORTIR_LABEL);
         sortirButton.setToggleCaret(true);
         sortirButton.setDataToggle(Toggle.DROPDOWN);
@@ -727,6 +738,13 @@ public class ListWidget extends Composite {
         }
         grade_lower.insertItem("---", "", 0); grade_lower.setSelectedIndex(0);
         grade_upper.insertItem("---", "", 0); grade_upper.setSelectedIndex(0);
+
+        select_unaffil.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent e) { selectUnaffil(); } });
+        mark_affil.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent e) { markAffil(); } });
+        mark_carte_recu.addClickHandler(new ClickHandler() {
+            public void onClick(ClickEvent e) { markCarteRecu(); } });
 
         sortir_pdf.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("pdf"); } });
@@ -1270,6 +1288,47 @@ public class ListWidget extends Composite {
             });
         results.getColumnSortList().push(nomColumn);
         ColumnSortEvent.fire(results, results.getColumnSortList());
+    }
+
+    private void selectUnaffil() {
+        for (ClientData cd : filteredClients) {
+            ServiceData sd = cd.getServiceFor(currentSession);
+            if (!sd.getAffiliationEnvoye())
+                resultsSelectionModel.setSelected(cd, true);
+        }
+    }
+
+    private void markAffil() {
+        StringBuffer edits = new StringBuffer();
+        for (ClientData cd : filteredClients) {
+            if (resultsSelectionModel.isSelected(cd)) {
+                String converted_dae = Constants.DB_DATE_FORMAT.format(new Date());
+                if (cd.getServiceFor(currentSession) != null) {
+                    ServiceData sd = cd.getServiceFor(currentSession);
+                    sd.setAffiliationEnvoye(true);
+                    sd.setDAEString(converted_dae);
+                }
+                edits.append(cd.getID()+",Saffiliation_envoye,1;");
+                edits.append(cd.getID()+",Sdate_affiliation_envoye," + converted_dae + ";");
+            }
+        }
+        if (edits.length() > 0)
+            pushEdit(edits.toString());
+    }
+
+    private void markCarteRecu() {
+        StringBuffer edits = new StringBuffer();
+        for (ClientData cd : filteredClients) {
+            if (resultsSelectionModel.isSelected(cd)) {
+                if (cd.getServiceFor(currentSession) != null) {
+                    ServiceData sd = cd.getServiceFor(currentSession);
+                    sd.setCarteJudocaRecu(true);
+                }
+                edits.append(cd.getID()+",Scarte_judoca_recu,1;");
+            }
+        }
+        if (edits.length() > 0)
+            pushEdit(edits.toString());
     }
 
     private void pushEdit(String edits) {
