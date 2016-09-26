@@ -519,6 +519,10 @@ public class ListWidget extends Composite {
         if (isAffil) return;
         isAffil = true;
 
+        results.setSelectionModel(resultsSelectionModel,
+                                  DefaultSelectionEventManager.<ClientData>
+                                  createCheckboxManager());
+
         if (!checkColumnVisible) {
             results.insertColumn(0, checkColumn, checkHeader);
             checkColumnVisible = true;
@@ -1376,6 +1380,7 @@ public class ListWidget extends Composite {
         for (int i = 0; i < allClients.length(); i++) {
             ClientData cd = allClients.get(i);
             if (!clubFilter(cd) || !sessionFilter(cd)) continue;
+            if (isAffil && !resultsSelectionModel.isSelected(cd)) continue;
 
             ValueFormatPair vf = toDVFullString(cd);
             dv += vf.value + "*";
