@@ -243,14 +243,18 @@ public class CostCalculator {
         if (cs != null && !cs.getAjustableDivision())
             division_abbrev = ALL_DIVISIONS;
 
-	for (Prix p : applicablePrix) {
-	    if (p.getClubId().equals(club_id) &&
-		p.getSessionSeqno().equals(session_seqno) &&
-		p.getDivisionAbbrev().equals(division_abbrev) &&
-		p.getCoursId().equals(cours_id))
-		return p.getFrais();
-	}
-	return "0";
+        for (Prix p : applicablePrix) {
+            if (p.getClubId().equals(club_id) &&
+                p.getSessionSeqno().equals(session_seqno) &&
+                p.getDivisionAbbrev().equals(division_abbrev) &&
+                p.getCoursId().equals(cours_id)) {
+                if (p.getFrais().equals("")) {
+                    return "0";
+                }
+                return p.getFrais();
+            }
+        }
+        return "0";
     }
 
     // extract data from Prix objects and lists thereof...
