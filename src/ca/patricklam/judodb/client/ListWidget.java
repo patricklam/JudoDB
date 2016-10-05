@@ -753,7 +753,7 @@ public class ListWidget extends Composite {
         sortir_xls.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); clearFull(); submit("xls"); } });
         sortir_xls_complet.addClickHandler(new ClickHandler() {
-            public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("xlsfull"); } });
+            public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("xls_full"); } });
         sortir_affil_xls.addClickHandler(new ClickHandler() {
             public void onClick(ClickEvent e) { collectDV(); computeFull(); submit("xls_affil"); } });
 
