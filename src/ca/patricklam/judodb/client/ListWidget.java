@@ -1481,7 +1481,7 @@ public class ListWidget extends Composite {
         dv += cd.getJudoQC() + "|";
         df += "'ddn',";
         dv += cd.getDDNString() + "|";
-        df += "'session',";
+        df += "'div',";
         if (currentSession != null)
             dv += cd.getDivision(currentSession.getYear()).abbrev + "|";
         else
@@ -1531,7 +1531,6 @@ public class ListWidget extends Composite {
             df += "'cours','produits','frais',";
             dv += "|||";
         }
-        dv += "|";
         return new ValueFormatPair(dv,df);
     }
 
@@ -1616,7 +1615,7 @@ public class ListWidget extends Composite {
         }
         data.setValue("");
         data_full.setValue(dv.toString());
-        format.setValue(format_string);
+        format.setValue(format_string + "'sm',");
         if (jdb.getSelectedClubID() == null) {
             jdb.displayError("Veuillez selectionner un club.");
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
