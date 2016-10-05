@@ -1521,6 +1521,8 @@ public class ListWidget extends Composite {
                 CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, true /* prorata.getValue()*/, prix, escompteSummaries);
                 df += "'produits',";
                 dv += sd.getJudogi() + "|";
+                df += "'frais_supp',";
+                dv += sd.getSuppFrais() + "|";
                 df += "'frais',";
                 dv += sd.getFrais() + "|";
             }
