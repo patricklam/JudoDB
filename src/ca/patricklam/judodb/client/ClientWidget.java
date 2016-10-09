@@ -588,9 +588,9 @@ public class ClientWidget extends Composite {
         categorieFrais.setText(sd.getCategorieFrais());
 
         date_affiliation_envoye.setValue(Constants.dbToStdDate(sd.getDAEString()));
-        date_affiliation_envoye.setEnabled(isToday && sd.getAffiliationEnvoye());
+        date_affiliation_envoye.setEnabled(sd.getAffiliationEnvoye());
         carte_judoca_recu.setValue(sd.getCarteJudocaRecu());
-        carte_judoca_recu.setEnabled(isToday);
+        carte_judoca_recu.setEnabled(sd.getAffiliationEnvoye());
 
         if (sd.getSansAffiliation())
             affiliation_speciale.setSelectedIndex(AF_DEJA_AFFILIE);
@@ -1318,7 +1318,7 @@ public class ClientWidget extends Composite {
             e.append(sd.getEscompteId()+",");
             csn.append(sd.getCasSpecialNote()+",");
             ef.append(sd.getEscompteFrais()+",");
-            dae.append(sd.getDateAffiliationEnvoye()+",");
+            dae.append(Constants.DB_DATE_FORMAT.format(sd.getDateAffiliationEnvoye())+",");
             cjr.append(sd.getCarteJudocaRecu() ? "1," : "0,");
             sa.append(sd.getSansAffiliation() ? "1," : "0,");
             ai.append(sd.getAffiliationInitiation() ? "1," : "0,");
