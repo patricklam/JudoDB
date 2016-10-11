@@ -19,10 +19,10 @@ public class ServiceData extends JavaScriptObject {
     public final native void setClubID(String club_id) /*-{ this.club_id = club_id; }-*/;
     public final native String getDAEString() /*-{ return this.date_affiliation_envoye == null ? "" : this.date_affiliation_envoye; }-*/;
     public final Date getDateAffiliationEnvoye() {
-        if (getDAEString() == null) return null;
+        if (getDAEString() == null) return Constants.DB_DATE_FORMAT.parse(Constants.DB_DUMMY_DATE);
         try {
             return Constants.DB_DATE_FORMAT.parse(getDAEString());
-        } catch (IllegalArgumentException e) { return null; }
+        } catch (IllegalArgumentException e) { return Constants.DB_DATE_FORMAT.parse(Constants.DB_DUMMY_DATE); }
     }
     public final native void setDAEString(String date_affiliation_envoye) /*-{ this.date_affiliation_envoye = date_affiliation_envoye; }-*/;
     public final native boolean getCarteJudocaRecu() /*-{ return this.carte_judoca_recu != '0'; }-*/;
@@ -100,6 +100,7 @@ public class ServiceData extends JavaScriptObject {
             cas_special_note: "",
             escompte_special: "",
             verification: "0",
+            affiliation_envoye: "0",
             solde: "0"
         };
     }-*/;

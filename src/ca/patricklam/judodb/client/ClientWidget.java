@@ -321,7 +321,7 @@ public class ClientWidget extends Composite {
         sessions.addChangeHandler(recomputeHandler);
         cours.addChangeHandler(recomputeHandler);
         escompte.addChangeHandler(changeEscompteHandler);
-        affiliation_envoye.addValueChangeHandler(recomputeValueHandler);
+        affiliation_envoye.addValueChangeHandler(setDAEAndRecomputeValueHandler);
         cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
         escompteFrais.addChangeHandler(clearEscomptePctAndRecomputeHandler);
         affiliation_speciale.addChangeHandler(recomputeHandler);
@@ -947,6 +947,19 @@ public class ClientWidget extends Composite {
         }
     };
 
+    private final ValueChangeHandler<Boolean> setDAEAndRecomputeValueHandler = new ValueChangeHandler<Boolean>() {
+            @Override public void onValueChange(ValueChangeEvent<Boolean> e) {
+                saveClientData();
+                if (e.getValue()) {
+                    ServiceData sd = cd.getServiceFor(currentSession);
+                    sd.setDAEString(Constants.DB_DATE_FORMAT.format(new Date()));
+                    loadClientData();
+                }
+
+                updateDynamicFields();
+            }
+        };
+
     /** Create a new inscription for the current session. */
     private final ClickHandler inscrireClickHandler = new ClickHandler() {
         public void onClick(ClickEvent e) {
@@ -1318,7 +1331,7 @@ public class ClientWidget extends Composite {
             e.append(sd.getEscompteId()+",");
             csn.append(sd.getCasSpecialNote()+",");
             ef.append(sd.getEscompteFrais()+",");
-            dae.append(Constants.DB_DATE_FORMAT.format(sd.getDateAffiliationEnvoye())+",");
+            dae.append(Constants.stdToDbDate(sd.getDAEString())+",");
             cjr.append(sd.getCarteJudocaRecu() ? "1," : "0,");
             sa.append(sd.getSansAffiliation() ? "1," : "0,");
             ai.append(sd.getAffiliationInitiation() ? "1," : "0,");
