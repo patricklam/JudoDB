@@ -12,6 +12,7 @@ import com.google.gwt.user.client.TakesValue;
 public class Constants {
     public static final String STD_DUMMY_DATE = "01/01/0000";
     public static final String DB_DUMMY_DATE = "0000-00-00";
+    public static final String DB_DUMMY_DATE_ACTUAL = "0000-01-01";
     public static final String STD_DATE_FORMAT_STRING = "dd/MM/yyyy";
     public static final DateTimeFormat STD_DATE_FORMAT = DateTimeFormat.getFormat(Constants.STD_DATE_FORMAT_STRING);
     public static final String DB_DATE_FORMAT_STRING = "yyyy-MM-dd";

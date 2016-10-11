@@ -19,10 +19,10 @@ public class ServiceData extends JavaScriptObject {
     public final native void setClubID(String club_id) /*-{ this.club_id = club_id; }-*/;
     public final native String getDAEString() /*-{ return this.date_affiliation_envoye == null ? "" : this.date_affiliation_envoye; }-*/;
     public final Date getDateAffiliationEnvoye() {
-        if (getDAEString() == null) return Constants.DB_DATE_FORMAT.parse(Constants.DB_DUMMY_DATE);
+        if (getDAEString() == null) return Constants.DB_DATE_FORMAT.parse(Constants.DB_DUMMY_DATE_ACTUAL);
         try {
             return Constants.DB_DATE_FORMAT.parse(getDAEString());
-        } catch (IllegalArgumentException e) { return Constants.DB_DATE_FORMAT.parse(Constants.DB_DUMMY_DATE); }
+        } catch (IllegalArgumentException e) { return Constants.DB_DATE_FORMAT.parse(Constants.DB_DUMMY_DATE_ACTUAL); }
     }
     public final native void setDAEString(String date_affiliation_envoye) /*-{ this.date_affiliation_envoye = date_affiliation_envoye; }-*/;
     public final native boolean getCarteJudocaRecu() /*-{ return this.carte_judoca_recu != '0'; }-*/;
