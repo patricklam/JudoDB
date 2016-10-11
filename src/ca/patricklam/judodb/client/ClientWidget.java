@@ -1287,7 +1287,7 @@ public class ClientWidget extends Composite {
         if (sd != null) {
             String todayString = Constants.DB_DATE_FORMAT.format(new Date());
             boolean isToday = todayString.equals(sd.getDateInscription());
-            date_affiliation_envoye.setEnabled(isToday && sd.getAffiliationEnvoye());
+            date_affiliation_envoye.setEnabled(sd.getAffiliationEnvoye());
         }
 
         if (sd != null && !sd.getSessions().equals("")) {
