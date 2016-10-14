@@ -557,7 +557,7 @@ public class ClientWidget extends Composite {
         date_inscription.setSelectedIndex(currentServiceNumber);
         inscrire.setVisible(!hasToday && !hasThisSession);
         modifier.setVisible(!hasToday && hasThisSession);
-        desinscrire.setVisible(cd.getServices().length() > 1 && hasThisSession);
+        desinscrire.setVisible(hasThisSession);
 
         ServiceData sd = cd.getServices().get(currentServiceNumber);
         if (sd == null) {
