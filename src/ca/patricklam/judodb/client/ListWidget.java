@@ -845,7 +845,7 @@ public class ListWidget extends Composite {
 
         checkHeader = new SelectionCheckboxHeader();
         checkColumn =
-            new Column<ClientData, Boolean>(new CheckboxCell(true, false)) {
+            new Column<ClientData, Boolean>(new CheckboxCell(true, true)) {
             @Override
             public Boolean getValue(ClientData cd) {
                 return resultsSelectionModel.isSelected(cd);
@@ -1020,7 +1020,7 @@ public class ListWidget extends Composite {
                 }
             });
 
-        affEnvoyeColumn = new Column<ClientData, Boolean>(new CheckboxCell(false,true))
+        affEnvoyeColumn = new Column<ClientData, Boolean>(new CheckboxCell())
             { @Override public Boolean getValue(ClientData cd) {
                     if (cd.getServiceFor(currentSession) != null)
                         return cd.getServiceFor(currentSession).getAffiliationEnvoye();
@@ -1079,7 +1079,7 @@ public class ListWidget extends Composite {
                 }
             });
 
-        carteJudocaRecuColumn = new Column<ClientData, Boolean>(new CheckboxCell(false, true))
+        carteJudocaRecuColumn = new Column<ClientData, Boolean>(new CheckboxCell())
             { @Override public Boolean getValue(ClientData cd) {
                     if (cd.getServiceFor(currentSession) != null)
                         return cd.getServiceFor(currentSession).getCarteJudocaRecu();
@@ -1105,7 +1105,7 @@ public class ListWidget extends Composite {
                     return yverif - xverif;
                 } });
 
-        payeColumn = new Column<ClientData, Boolean>(new CheckboxCell(false, true))
+        payeColumn = new Column<ClientData, Boolean>(new CheckboxCell())
             { @Override public Boolean getValue(ClientData cd) {
                     if (cd.getServiceFor(currentSession) != null)
                         return cd.getServiceFor(currentSession).getSolde();
