@@ -528,15 +528,15 @@ public class ListWidget extends Composite {
         isAffil = true;
 
         fonctionsButton.setVisible(true);
-        resultsSelectionModel.clear();
-        results.setSelectionModel(resultsSelectionModel,
-                                  DefaultSelectionEventManager.<ClientData>
-                                  createCheckboxManager());
 
         if (!checkColumnVisible) {
             results.insertColumn(0, checkColumn, checkHeader);
             checkColumnVisible = true;
         }
+        resultsSelectionModel.clear();
+        results.setSelectionModel(resultsSelectionModel,
+                                  DefaultSelectionEventManager.<ClientData>
+                                  createCheckboxManager(0));
         int telIndex = results.getColumnIndex(telColumn);
         results.insertColumn(telIndex + 1, judoQCColumn, heads[Columns.JUDOQC]);
         results.insertColumn(telIndex + 2, affEnvoyeColumn, new Header<String>(new TextCell() {
@@ -591,15 +591,15 @@ public class ListWidget extends Composite {
         sortirButton.setToggleCaret(false);
         sortirButton.setDataToggle(Toggle.BUTTON);
         ft303_handler_registration = sortirButton.addClickHandler(ft303_handler);
-        resultsSelectionModel.clear();
-        results.setSelectionModel(resultsSelectionModel,
-                                  DefaultSelectionEventManager.<ClientData>
-                                  createCheckboxManager());
 
         if (!checkColumnVisible) {
             results.insertColumn(0, checkColumn, checkHeader);
             checkColumnVisible = true;
         }
+        resultsSelectionModel.clear();
+        results.setSelectionModel(resultsSelectionModel,
+                                  DefaultSelectionEventManager.<ClientData>
+                                  createCheckboxManager(0));
         if (dateGradeColumnVisible) {
             results.removeColumn(dateGradeColumn);
             dateGradeColumnVisible = false;
@@ -663,15 +663,15 @@ public class ListWidget extends Composite {
         sortirButton.setToggleCaret(false);
         sortirButton.setDataToggle(Toggle.BUTTON);
         impot_handler_registration = sortirButton.addClickHandler(impot_handler);
-        resultsSelectionModel.clear();
-        results.setSelectionModel(resultsSelectionModel,
-                                  DefaultSelectionEventManager.<ClientData>
-                                  createCheckboxManager());
 
         if (!checkColumnVisible) {
             results.insertColumn(0, checkColumn, checkHeader);
             checkColumnVisible = true;
         }
+        resultsSelectionModel.clear();
+        results.setSelectionModel(resultsSelectionModel,
+                                  DefaultSelectionEventManager.<ClientData>
+                                  createCheckboxManager(0));
         if (dateGradeColumnVisible) {
             results.removeColumn(dateGradeColumn);
             dateGradeColumnVisible = false;
