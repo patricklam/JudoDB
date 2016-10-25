@@ -201,7 +201,7 @@ public class ListWidget extends Composite {
     @UiField DropDownMenu dropDownCours;
 
     ListDataProvider<ClientData> resultsDataProvider;
-    SelectionModel<ClientData> resultsSelectionModel;
+    MultiSelectionModel<ClientData> resultsSelectionModel;
     ListHandler<ClientData> resultsListHandler;
 
     boolean checkColumnVisible = false;
@@ -528,6 +528,7 @@ public class ListWidget extends Composite {
         isAffil = true;
 
         fonctionsButton.setVisible(true);
+        resultsSelectionModel.clear();
         results.setSelectionModel(resultsSelectionModel,
                                   DefaultSelectionEventManager.<ClientData>
                                   createCheckboxManager());
@@ -590,6 +591,7 @@ public class ListWidget extends Composite {
         sortirButton.setToggleCaret(false);
         sortirButton.setDataToggle(Toggle.BUTTON);
         ft303_handler_registration = sortirButton.addClickHandler(ft303_handler);
+        resultsSelectionModel.clear();
         results.setSelectionModel(resultsSelectionModel,
                                   DefaultSelectionEventManager.<ClientData>
                                   createCheckboxManager());
@@ -661,6 +663,7 @@ public class ListWidget extends Composite {
         sortirButton.setToggleCaret(false);
         sortirButton.setDataToggle(Toggle.BUTTON);
         impot_handler_registration = sortirButton.addClickHandler(impot_handler);
+        resultsSelectionModel.clear();
         results.setSelectionModel(resultsSelectionModel,
                                   DefaultSelectionEventManager.<ClientData>
                                   createCheckboxManager());
@@ -845,7 +848,7 @@ public class ListWidget extends Composite {
 
         checkHeader = new SelectionCheckboxHeader();
         checkColumn =
-            new Column<ClientData, Boolean>(new CheckboxCell(true, true)) {
+            new Column<ClientData, Boolean>(new CheckboxCell(true, false)) {
             @Override
             public Boolean getValue(ClientData cd) {
                 return resultsSelectionModel.isSelected(cd);
