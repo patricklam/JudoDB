@@ -696,6 +696,10 @@ public class ConfigWidget extends Composite {
 
                     StringBuffer sb = new StringBuffer();
                     if (object.getIsAdd().equals("1")) {
+                        if (newSessions.size() == 0) {
+                            jdb.displayError("colonne session: noms de session requis (par exemple A17 H18)");
+                            return;
+                        }
                         object.set(DESC_COLUMN.key, "");
                         // if there is already a blank desc_column it automatically gets merged
                         assert (removedSessions.isEmpty());
