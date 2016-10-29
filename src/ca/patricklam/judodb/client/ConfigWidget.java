@@ -635,6 +635,10 @@ public class ConfigWidget extends Composite {
                         String currentSessions = JudoDB.getSessionIds(new Date(), 2, sessionData);
                         object.set(COURS_SESSION_COLUMN.key, currentSessions);
                         sessions = parseSessionIds(currentSessions);
+                        if (sessions.size() == 0) {
+                            jdb.displayError("colonne session: noms de session requis (par exemple A17 H18)");
+                            return;
+                        }
                         List<String> cs = new ArrayList<>();
                         StringBuffer edits = new StringBuffer();
                         for (SessionSummary ss : sessions) {
