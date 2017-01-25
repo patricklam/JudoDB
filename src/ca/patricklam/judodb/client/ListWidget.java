@@ -1507,6 +1507,8 @@ public class ListWidget extends Composite {
         dv += cd.getTel() + "|";
         df += "'carteresident',";
         dv += cd.getCarteResident() + "|";
+        df += "'parent',";
+        dv += cd.getNomRecuImpot() + "|";
         df += "'telurgence',";
         dv += cd.getTelContactUrgence() + "|";
         df += "'grade',";
