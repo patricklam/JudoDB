@@ -31,6 +31,8 @@ public class ClubSummary extends JavaScriptObject {
     public final native void setIndicatifRegional(String indicatif_regional) /*-{ this.indicatif_regional = indicatif_regional; }-*/;
     public final native String getSupplementProrata() /*-{ return this.supplement_prorata; }-*/;
     public final native void setSupplementProrata(String supplement_paypal) /*-{ this.supplement_prorata = supplement_prorata; }-*/;
+    public final native boolean getFraisCoursTarif() /*-{ return this.frais_cours_tarif != '0'; }-*/;
+    public final native void setFraisCoursTarif(boolean frais_cours_tarif) /*-{ this.frais_cours_tarif = frais_cours_tarif ? '1' : '0'; }-*/;
     public final native boolean getEnableProrata() /*-{ return this.pro_rata != '0'; }-*/;
     public final native void setEnableProrata(boolean pro_rata) /*-{ this.pro_rata = pro_rata ? '1' : '0'; }-*/;
     public final native boolean getAfficherPaypal() /*-{ return this.afficher_paypal != '0'; }-*/;

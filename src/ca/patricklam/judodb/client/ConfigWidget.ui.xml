@@ -57,15 +57,18 @@
           <b:TabPane b:id="prix">
            <g:FlowPanel ui:field="prixTab">
              <b:Form type="HORIZONTAL">
-               <b:FormGroup ui:field="ajustable">
-                <b:FormLabel for="ajustableCours">
-                  &nbsp;Prix ajustable par cours&nbsp;
+              <b:FormGroup ui:field="ajustable">
+               <b:FormGroup> <b:FormLabel for="frais_cours_tarif" addStyleNames="col-md-2">Frais de cours d&eacute;termin&eacute; par cours ou par tarif:</b:FormLabel><g:FlowPanel addStyleNames="col-md-4"><b:InlineRadio ui:field="frais_cours_tarif_cours" name="frais_cours_tarif" formValue="cours" text="Cours"/><b:InlineRadio ui:field="frais_cours_tarif_tarif" name="frais_cours_tarif" formValue="tarif" text="Tarif"/></g:FlowPanel> </b:FormGroup>
+               <b:FormGroup>
+                <b:FormLabel for="ajustableCours" ui:field="ajustableCours_label">
+                    &nbsp;Prix ajustable par cours&nbsp;
                 </b:FormLabel>
                 <b3:ToggleSwitch ui:field="ajustableCours" onIcon="CHECK" offIcon="TIMES"/>
                 <b:FormLabel for="ajustableDivision">
                   &nbsp;&nbsp;Prix ajustable par division&nbsp;
                 </b:FormLabel>
                 <b3:ToggleSwitch ui:field="ajustableDivision" onIcon="CHECK" offIcon="TIMES"/>
+                </b:FormGroup>
                </b:FormGroup>
                <b:FormLabel for="prixSessions">Sessions:&nbsp;</b:FormLabel>
                <b:ButtonGroup ui:field='prixSessionButtonGroup' addStyleNames="hidden-print">

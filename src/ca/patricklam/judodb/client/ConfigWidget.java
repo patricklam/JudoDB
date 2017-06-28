@@ -44,7 +44,9 @@ import org.gwtbootstrap3.client.ui.AnchorListItem;
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
 import org.gwtbootstrap3.client.ui.FormGroup;
+import org.gwtbootstrap3.client.ui.FormLabel;
 import org.gwtbootstrap3.client.ui.Container;
+import org.gwtbootstrap3.client.ui.InlineRadio;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
 import org.gwtbootstrap3.client.ui.DropDownMenu;
@@ -246,6 +248,7 @@ public class ConfigWidget extends Composite {
 	    @Override
 	    public void onValueChange(ValueChangeEvent<String> event) {
                 refreshClub = true;
+                refreshPrix = true;
                 String v = event.getValue();
                 if (v != null) v = v.replaceAll(",","_");
                 pushEdit("-1,c" + key + "," + v + "," +
@@ -280,6 +283,8 @@ public class ConfigWidget extends Composite {
         indicatif_regional.setText("");
         escompte_resident.setText("");
         supplement_prorata.setText("");
+        frais_cours_tarif_cours.setValue(true);
+        frais_cours_tarif_tarif.setValue(false);
         default_prorata.setValue(false);
 
         if (!clubHandlersInstalled) {
@@ -316,6 +321,9 @@ public class ConfigWidget extends Composite {
         supplement_prorata.setEnabled(!setEverythingReadOnly);
         default_prorata.setEnabled(!setEverythingReadOnly);
         afficher_paypal.setEnabled(!setEverythingReadOnly);
+
+        frais_cours_tarif_cours.setEnabled(!setEverythingReadOnly);
+        frais_cours_tarif_tarif.setEnabled(!setEverythingReadOnly);
     }
 
     void populateCurrentClub() {
@@ -346,6 +354,16 @@ public class ConfigWidget extends Composite {
         ajustable.setVisible(true);
         ajustableCours.setValue(cs.getAjustableCours());
         ajustableDivision.setValue(cs.getAjustableDivision());
+        frais_cours_tarif_cours.setValue(cs.getFraisCoursTarif());
+        frais_cours_tarif_tarif.setValue(!cs.getFraisCoursTarif());
+
+        if (!cs.getFraisCoursTarif()) {
+            ajustableCours_label.setVisible(false);
+            ajustableCours.setVisible(false);
+        } else {
+            ajustableCours_label.setVisible(true);
+            ajustableCours.setVisible(true);
+        }
     }
     /* --- end club tab --- */
 
@@ -865,6 +883,9 @@ public class ConfigWidget extends Composite {
     @UiField ButtonGroup prixSessionButtonGroup;
     @UiField Button prixSessionsButton;
     @UiField DropDownMenu prixSessions;
+    @UiField InlineRadio frais_cours_tarif_cours;
+    @UiField InlineRadio frais_cours_tarif_tarif;
+    @UiField FormLabel ajustableCours_label;
     @UiField ToggleSwitch ajustableCours;
     @UiField ToggleSwitch ajustableDivision;
     @UiField CellTable<CoursPrix> prix;
@@ -906,9 +927,38 @@ public class ConfigWidget extends Composite {
         }
     };
 
+    ValueChangeHandler<Boolean> newValueChangeHandlerBooleanFrais(final String key, final boolean inversed) {
+	return new ValueChangeHandler<Boolean>() {
+	    @Override
+	    public void onValueChange(ValueChangeEvent<Boolean> event) {
+                refreshClub = true;
+                refreshPrix = true;
+
+                boolean newValue = event.getValue();
+                if (inversed) {
+                    newValue = !newValue;
+                }
+
+                if (newValue) {
+                    ajustableCours_label.setVisible(false);
+                    ajustableCours.setVisible(false);
+                } else {
+                    ajustableCours_label.setVisible(true);
+                    ajustableCours.setVisible(true);
+                }
+
+                pushEdit("-1,c" + key + "," + (!event.getValue() ? "1" : "0") + "," +
+                         jdb.getSelectedClubID() + ";");
+	    }
+	};
+    }
+
     void initializePrixTable() {
         ajustableCours.addValueChangeHandler(newValueChangeHandlerBoolean("ajustable_cours"));
         ajustableDivision.addValueChangeHandler(newValueChangeHandlerBoolean("ajustable_division"));
+        frais_cours_tarif_cours.addValueChangeHandler(newValueChangeHandlerBooleanFrais("frais_cours_tarif", true));
+        frais_cours_tarif_tarif.addValueChangeHandler(newValueChangeHandlerBooleanFrais("frais_cours_tarif", false));
+
         prix = new CellTable<>(PRIX_KEY_PROVIDER);
     }
 
