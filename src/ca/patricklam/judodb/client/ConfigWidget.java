@@ -933,13 +933,14 @@ public class ConfigWidget extends Composite {
 	    public void onValueChange(ValueChangeEvent<Boolean> event) {
                 refreshClub = true;
                 refreshPrix = true;
+                jdb.gotClubList = false;
 
                 boolean newValue = event.getValue();
                 if (inversed) {
                     newValue = !newValue;
                 }
 
-                if (newValue) {
+                if (!newValue) {
                     ajustableCours_label.setVisible(false);
                     ajustableCours.setVisible(false);
                 } else {
@@ -947,7 +948,7 @@ public class ConfigWidget extends Composite {
                     ajustableCours.setVisible(true);
                 }
 
-                pushEdit("-1,c" + key + "," + (!event.getValue() ? "1" : "0") + "," +
+                pushEdit("-1,c" + key + "," + (newValue ? "1" : "0") + "," +
                          jdb.getSelectedClubID() + ";");
 	    }
 	};
@@ -956,8 +957,8 @@ public class ConfigWidget extends Composite {
     void initializePrixTable() {
         ajustableCours.addValueChangeHandler(newValueChangeHandlerBoolean("ajustable_cours"));
         ajustableDivision.addValueChangeHandler(newValueChangeHandlerBoolean("ajustable_division"));
-        frais_cours_tarif_cours.addValueChangeHandler(newValueChangeHandlerBooleanFrais("frais_cours_tarif", true));
-        frais_cours_tarif_tarif.addValueChangeHandler(newValueChangeHandlerBooleanFrais("frais_cours_tarif", false));
+        frais_cours_tarif_cours.addValueChangeHandler(newValueChangeHandlerBooleanFrais("frais_cours_tarif", false));
+        frais_cours_tarif_tarif.addValueChangeHandler(newValueChangeHandlerBooleanFrais("frais_cours_tarif", true));
 
         prix = new CellTable<>(PRIX_KEY_PROVIDER);
     }
@@ -1084,7 +1085,15 @@ public class ConfigWidget extends Composite {
                 return object.c.getShortDesc();
             }
         };
-        prix.addColumn(coursColumn, "Cours");
+        String cours_tarif_label = "";
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        if (cs != null) {
+            if (cs.getFraisCoursTarif())
+                cours_tarif_label = "Cours";
+            else
+                cours_tarif_label = "Tarif";
+        }
+        prix.addColumn(coursColumn, cours_tarif_label);
         prix.setColumnWidth(coursColumn, 10, Unit.EM);
 
         if (isUnidivision()) {
@@ -1597,7 +1606,7 @@ public class ConfigWidget extends Composite {
     }
 
     public void retrievePrix(final String club_id) {
-        if (!gotSessions) {
+        if (!gotSessions || !jdb.gotClubList) {
             new Timer() {
                 public void run() { retrievePrix(club_id); }
             }.schedule(100);

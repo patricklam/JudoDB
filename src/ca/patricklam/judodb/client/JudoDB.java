@@ -607,12 +607,14 @@ public class JudoDB implements EntryPoint {
         retrieve(url, rc);
     }
 
+    boolean gotClubList = false;
     public void retrieveClubList(final boolean tousOK) {
         String url = PULL_CLUB_LIST_URL;
         pendingRetrieveClubList = true;
         RequestCallback rc =
             createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
+                        gotClubList = true;
                         JsArray<ClubSummary> clubsArray = JsonUtils.<JsArray<ClubSummary>>safeEval(s);
                         List<ClubSummary> clubs = new ArrayList<ClubSummary>();
                         for (int i = 0; i < clubsArray.length(); i++)
