@@ -1036,14 +1036,33 @@ public class ConfigWidget extends Composite {
             prix.setColumnWidth(col, 2, Unit.EM);
             col.setFieldUpdater(new FieldUpdater<CoursPrix, String>() {
                     @Override public void update(int index, CoursPrix object, String value) {
+                        ClubSummary cs = jdb.getSelectedClub();
                         Prix p = null;
                         for (Prix pp : object.prix) {
                             if (pp.getDivisionAbbrev().equals(d.abbrev)) {
                                 p = pp; break;
                             }
                         }
-                        // should not happen; we should always have a match (even for new Prix)
-                        if (p == null) return;
+                        if (p == null) {
+                            if (cs.getFraisCoursTarif() == true /* cours */)
+                                return;
+
+                            // create new prix, copying template data from "*"
+                            for (Prix pp : object.prix) {
+                                if (pp.getDivisionAbbrev().equals(CostCalculator.ALL_DIVISIONS)) {
+                                    p = JsonUtils.<Prix>safeEval("{}");
+                                    p.setDivisionAbbrev(d.abbrev);
+                                    p.setId("0");
+                                    p.setClubId(pp.getClubId());
+                                    p.setSessionSeqno(pp.getSessionSeqno());
+                                    p.setCoursId(pp.getCoursId());
+                                    p.setNom(pp.getNom());
+                                    break;
+                                }
+                            }
+                            if (p == null)
+                                return;
+                        }
                         p.setFrais(value);
 
                         StringBuilder edits = new StringBuilder();
@@ -1060,7 +1079,7 @@ public class ConfigWidget extends Composite {
                             // new prix, not previously in db
                             edits.append("-1,P," +
                                          value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
-                                         p.getDivisionAbbrev() + "," + coursId + ";");
+                                         p.getDivisionAbbrev() + "," + coursId + "," + p.getNom() + ";");
                         } else {
                             edits.append("-1,p," + p.getId() + "," +
                                          value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
@@ -1077,21 +1096,46 @@ public class ConfigWidget extends Composite {
         while (prix.getColumnCount() > 0)
             prix.removeColumn(0);
 
-        Column<CoursPrix, String> coursColumn = new Column<CoursPrix, String>(new TextCell()) {
+        ClubSummary cs = jdb.getSelectedClub();
+        String cours_tarif_label = "";
+        Cell<String> tc = new TextCell();
+        if (cs != null) {
+            if (cs.getFraisCoursTarif())
+                cours_tarif_label = "Cours";
+            else {
+                cours_tarif_label = "Tarif";
+                tc = new EditTextCell();
+            }
+        }
+        Column<CoursPrix, String> coursColumn = new Column<CoursPrix, String>(tc) {
             public String getValue(CoursPrix object) {
                 if (object == null) return "";
-                if (jdb.getSelectedClub() != null && !ajustableCours.getValue()) return "TOUS";
+                ClubSummary cs = jdb.getSelectedClub();
+                if (cs != null) {
+                    if (cs.getFraisCoursTarif() == false /* tarif */) return object.prix.get(0).getNom();
+                    if (!ajustableCours.getValue()) return "TOUS";
+                }
                 if (object.c == null || object.c.equals("")) return "Affiliation";
                 return object.c.getShortDesc();
             }
         };
-        String cours_tarif_label = "";
-        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
-        if (cs != null) {
-            if (cs.getFraisCoursTarif())
-                cours_tarif_label = "Cours";
-            else
-                cours_tarif_label = "Tarif";
+        if (cs != null && cs.getFraisCoursTarif() == false /* tarif */) {
+            coursColumn.setFieldUpdater(new FieldUpdater<CoursPrix, String>() {
+                    @Override public void update(int index, CoursPrix object, String value) {
+                        refreshPrix = true;
+                        StringBuffer edits = new StringBuffer();
+                        for (Prix p : object.prix) {
+                             if (p.getIsAdd().equals("1")) {
+                                edits.append("-1,I," + value + "," + p.getClubId() + "," + currentPrixSeqnoString + "," + 
+                                             p.getDivisionAbbrev() + "," + "-1" + ";");
+                            } else {
+                                edits.append("-1,i," + p.getId() + "," + value + "," + jdb.getSelectedClubID() + ";");
+                            }
+                        }
+                        pushEdit(edits.toString());
+                        prix.redraw();
+                    }
+                });
         }
         prix.addColumn(coursColumn, cours_tarif_label);
         prix.setColumnWidth(coursColumn, 10, Unit.EM);
@@ -1120,19 +1164,69 @@ public class ConfigWidget extends Composite {
         prixRows.add(cp);
     }
 
+    final private static String ADD_PRIX_VALUE = "[ajouter tarif]";
+    int getFreshPrixId() {
+        int maxId = 0;
+        for (Prix p : rawPrixData) {
+            if (Integer.parseInt(p.getId()) > maxId)
+                maxId = Integer.parseInt(p.getId());
+        }
+        return maxId + 1;
+    }
+
+    void addAddTarifPrix() {
+        int freshPrixId = getFreshPrixId();
+        Prix addNewPrix =
+            JsonUtils.<Prix>safeEval
+            ("{\"is_add\":\"1\",\"id\":\""+freshPrixId+"\"}");
+        addNewPrix.setDivisionAbbrev(CostCalculator.ALL_DIVISIONS);
+        addNewPrix.setClubId(jdb.getSelectedClubID());
+        addNewPrix.setNom(ADD_PRIX_VALUE);
+        addNewPrix.setFrais("");
+        CoursPrix cp = new CoursPrix();
+        cp.c = null; cp.prix = Collections.singletonList(addNewPrix);
+        prixRows.add(cp);
+    }
+
     private void populatePrixRows() {
         if (currentPrixSession == null) return;
+        ClubSummary cs = jdb.getSelectedClub();
 
         prixRows.clear();
-        if (jdb.getSelectedClub() == null || !ajustableCours.getValue()) {
+        if (cs == null) {
+            addPrixRow(null);
+        } else if (cs != null && cs.getFraisCoursTarif() == false /* tarif */) {
+            HashMap<String, List<Prix>> nomToPrix = new HashMap<String, List<Prix>>();
+            for (Prix p : rawPrixData) {
+                if (!p.getClubId().equals(cs.getId()) ||
+                    !p.getSessionSeqno().equals(currentPrixSeqnoString))
+                    continue;
+                if (!nomToPrix.containsKey(p.getNom())) {
+                    List<Prix> pl = new ArrayList<Prix>();
+                    pl.add(p);
+                    nomToPrix.put(p.getNom(), pl);
+                } else {
+                    List<Prix> pl = nomToPrix.get(p.getNom());
+                    pl.add(p);
+                }
+            }
+            for (String n : nomToPrix.keySet()) {
+                CoursPrix cp = new CoursPrix();
+                List<Prix> np = nomToPrix.get(n);
+                cp.c = null; cp.prix = np;
+                prixRows.add(cp);
+            }
+            addAddTarifPrix();
+        } else if (!ajustableCours.getValue()) {
             addPrixRow(null);
         } else {
-            for (CoursSummary cs : rawCoursData) {
-                if (!coursApplicableToCurrentSession(cs))
+            for (CoursSummary cours : rawCoursData) {
+                if (!coursApplicableToCurrentSession(cours))
                     continue;
-                addPrixRow(cs);
+                addPrixRow(cours);
             }
         }
+
         refreshPrix();
     }
 
