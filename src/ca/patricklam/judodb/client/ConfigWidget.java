@@ -917,6 +917,7 @@ public class ConfigWidget extends Composite {
     }
 
     private static final Object AFFILIATION_PRIX_KEY = new Object();
+    private final ColumnFields DELETE_PRIX_COLUMN = new ColumnFields("DELETE", "", 1, Unit.EM);
 
     private static final ProvidesKey<CoursPrix> PRIX_KEY_PROVIDER =
         new ProvidesKey<CoursPrix>() {
@@ -1145,6 +1146,49 @@ public class ConfigWidget extends Composite {
         } else {
             initializePrixDivisionColumns();
         }
+
+        if (cs != null && cs.getFraisCoursTarif() == false /* tarif */) {
+            addDeletePrixColumn(prix, DELETE_PRIX_COLUMN);
+        }
+    }
+
+    // cannot parametrize this method due to JSO restrictions
+    private Column<CoursPrix, String> addDeletePrixColumn(final CellTable<CoursPrix> t, final ColumnFields c) {
+	final ClickableTextCell cell = new ClickableTextCell() {
+            @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                if (value != null) {
+                    sb.append(SafeHtmlUtils.fromSafeConstant("<span style='cursor:pointer'>"));
+                    sb.append(value);
+                    sb.append(SafeHtmlUtils.fromSafeConstant("</span>"));
+                }
+            }
+            };
+	Column<CoursPrix, String> newColumn = new Column<CoursPrix, String>(cell) {
+            @Override public String getValue(CoursPrix object) {
+                boolean hasAdd = false;
+                for (Prix p : object.prix)
+                    if (p.getIsAdd().equals("1"))
+                        hasAdd = true;
+                if (hasAdd) return "";
+
+                return BALLOT_X;
+	    }
+	};
+	t.addColumn(newColumn, c.name);
+	newColumn.setFieldUpdater(new FieldUpdater<CoursPrix, String>() {
+		@Override
+		public void update(int index, CoursPrix object, String value) {
+                    if (c.key == null) return;
+                    refreshPrix = true;
+                    StringBuffer edits = new StringBuffer();
+                    for (Prix p : object.prix)
+                        edits.append("-1,Q," + p.getId() + "," + p.getClubId() + ";");
+                    pushEdit(edits.toString());
+                    t.redraw();
+		}
+	    });
+	t.setColumnWidth(newColumn, c.width, c.widthUnits);
+	return newColumn;
     }
 
     private void populatePrix(List<Prix> lcp) {
