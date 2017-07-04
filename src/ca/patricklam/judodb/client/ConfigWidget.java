@@ -1057,7 +1057,7 @@ public class ConfigWidget extends Composite {
                                     p.setClubId(pp.getClubId());
                                     p.setSessionSeqno(pp.getSessionSeqno());
                                     p.setCoursId(pp.getCoursId());
-                                    p.setNom(pp.getNom());
+                                    p.setNomTarif(pp.getNomTarif());
                                     break;
                                 }
                             }
@@ -1080,7 +1080,7 @@ public class ConfigWidget extends Composite {
                             // new prix, not previously in db
                             edits.append("-1,P," +
                                          value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
-                                         p.getDivisionAbbrev() + "," + coursId + "," + p.getNom() + ";");
+                                         p.getDivisionAbbrev() + "," + coursId + "," + p.getNomTarif() + ";");
                         } else {
                             edits.append("-1,p," + p.getId() + "," +
                                          value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
@@ -1113,7 +1113,7 @@ public class ConfigWidget extends Composite {
                 if (object == null) return "";
                 ClubSummary cs = jdb.getSelectedClub();
                 if (cs != null) {
-                    if (cs.getFraisCoursTarif() == false /* tarif */) return object.prix.get(0).getNom();
+                    if (cs.getFraisCoursTarif() == false /* tarif */) return object.prix.get(0).getNomTarif();
                     if (!ajustableCours.getValue()) return "TOUS";
                 }
                 if (object.c == null || object.c.equals("")) return "Affiliation";
@@ -1225,7 +1225,7 @@ public class ConfigWidget extends Composite {
             ("{\"is_add\":\"1\",\"id\":\""+freshPrixId+"\"}");
         addNewPrix.setDivisionAbbrev(CostCalculator.ALL_DIVISIONS);
         addNewPrix.setClubId(jdb.getSelectedClubID());
-        addNewPrix.setNom(ADD_PRIX_VALUE);
+        addNewPrix.setNomTarif(ADD_PRIX_VALUE);
         addNewPrix.setFrais("");
         CoursPrix cp = new CoursPrix();
         cp.c = null; cp.prix = Collections.singletonList(addNewPrix);
@@ -1245,12 +1245,12 @@ public class ConfigWidget extends Composite {
                 if (!p.getClubId().equals(cs.getId()) ||
                     !p.getSessionSeqno().equals(currentPrixSeqnoString))
                     continue;
-                if (!nomToPrix.containsKey(p.getNom())) {
+                if (!nomToPrix.containsKey(p.getNomTarif())) {
                     List<Prix> pl = new ArrayList<Prix>();
                     pl.add(p);
-                    nomToPrix.put(p.getNom(), pl);
+                    nomToPrix.put(p.getNomTarif(), pl);
                 } else {
-                    List<Prix> pl = nomToPrix.get(p.getNom());
+                    List<Prix> pl = nomToPrix.get(p.getNomTarif());
                     pl.add(p);
                 }
             }

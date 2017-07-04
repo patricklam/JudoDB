@@ -80,7 +80,8 @@ public class CostCalculator {
         return Double.parseDouble(getFrais(prixSummaries, cs,
                                            JudoDB.sessionSeqnosFromAbbrevs(sd.getSessions(), sessionSummaries),
                                            d.abbrev,
-                                           sd.getCours()));
+                                           sd.getCours(),
+                                           sd.getNomTarif()));
     }
 
     static double proratedFraisCours(ClientData cd, ServiceData sd, ClubSummary cs, SessionSummary ss, List<SessionSummary> sessionSummaries, List<CoursSummary> coursSummaries, List<Prix> prixSummaries) {
@@ -128,7 +129,7 @@ public class CostCalculator {
         }
         return Double.parseDouble(getFrais(prixSummaries, null,
                                            seqnoPair.toString(), c.abbrev,
-                                           ALL_COURS));
+                                           ALL_COURS, ""));
     }
 
     static double affiliationFrais(ClientData cd, ServiceData sd, SessionSummary ss, List<SessionSummary> sessionSummaries, List<Prix> prixSummaries) {
@@ -234,20 +235,29 @@ public class CostCalculator {
     }
 
 
-    public static String getFrais(List<Prix> applicablePrix, ClubSummary cs, String session_seqno, String division_abbrev, String cours_id) {
+    public static String getFrais(List<Prix> applicablePrix, ClubSummary cs, String session_seqno, String division_abbrev, String cours_id, String nom_tarif) {
         String club_id = (cs == null) ? JUDO_QC : cs.getId();
+        boolean tarif = false;
 
-        if (cs != null && !cs.getAjustableCours())
-            cours_id = ALL_COURS;
+        if (cs != null) {
+            if (!cs.getAjustableCours())
+                cours_id = ALL_COURS;
 
-        if (cs != null && !cs.getAjustableDivision())
-            division_abbrev = ALL_DIVISIONS;
+            if (!cs.getAjustableDivision())
+                division_abbrev = ALL_DIVISIONS;
+
+            if (cs.getFraisCoursTarif() == false /* tarif */) {
+                cours_id = ALL_COURS;
+                tarif = true;
+            }
+        }
 
         for (Prix p : applicablePrix) {
             if (p.getClubId().equals(club_id) &&
                 p.getSessionSeqno().equals(session_seqno) &&
                 p.getDivisionAbbrev().equals(division_abbrev) &&
-                p.getCoursId().equals(cours_id)) {
+                p.getCoursId().equals(cours_id) &&
+                (!tarif || p.getNomTarif().equals(nom_tarif))) {
                 if (p.getFrais().equals("")) {
                     return "0";
                 }

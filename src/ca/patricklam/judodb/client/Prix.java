@@ -29,8 +29,8 @@ public class Prix extends JavaScriptObject {
     public final native String getFrais() /*-{ return this.frais; }-*/;
     public final native void setFrais(String frais) /*-{ this.frais = frais; }-*/;
 
-    public final native String getNom() /*-{ return this.nom == null ? "" : this.nom; }-*/;
-    public final native void setNom(String nom) /*-{ this.nom = nom; }-*/;
+    public final native String getNomTarif() /*-{ return this.nom_tarif == null ? "" : this.nom_tarif; }-*/;
+    public final native void setNomTarif(String nom_tarif) /*-{ this.nom_tarif = nom_tarif; }-*/;
 
     public final native String getIsAdd() /*-{ return this.is_add; }-*/;
 
@@ -41,7 +41,7 @@ public class Prix extends JavaScriptObject {
 	if (key.equals("division_abbrev")) return getDivisionAbbrev();
 	if (key.equals("cours_id")) return getCoursId();
 	if (key.equals("frais")) return getFrais();
-	if (key.equals("nom")) return getFrais();
+	if (key.equals("nom_tarif")) return getNomTarif();
 	if (key.equals("is_add")) return getIsAdd();
 	throw new RuntimeException("get: bad key " + key);
     }
@@ -53,7 +53,7 @@ public class Prix extends JavaScriptObject {
 	else if (key.equals("division_abbrev")) setDivisionAbbrev(value);
 	else if (key.equals("cours_id")) setCoursId(value);
 	else if (key.equals("frais")) setFrais(value);
-	else if (key.equals("nom")) setFrais(value);
+	else if (key.equals("nom_tarif")) setNomTarif(value);
 	else throw new RuntimeException("set: bad key " + key);
     }
 }
