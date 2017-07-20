@@ -3,11 +3,16 @@
   <!-- Inherit the core Web Toolkit stuff.                        -->
   <inherits name='com.google.gwt.user.User'/>
   <inherits name='com.google.gwt.i18n.I18N'/>
+  <inherits name="com.google.gwt.logging.Logging"/>
   <inherits name='org.gwtbootstrap3.GwtBootstrap3' />
   <inherits name="org.gwtbootstrap3.extras.toggleswitch.ToggleSwitch"/>
   <inherits name="org.gwtbootstrap3.extras.select.Select"/>
   <extend-property name="locale" values="fr"/>
   <extend-property name="locale" values="fr_CA"/>
+
+  <set-property name="gwt.logging.logLevel" value="INFO"/>
+  <set-property name="gwt.logging.enabled" value="TRUE"/>
+  <set-property name="gwt.logging.consoleHandler" value="ENABLED"/>
   
   <!-- Inherit the default GWT style sheet.  You can change       -->
   <!-- the theme of your GWT application by uncommenting          -->
