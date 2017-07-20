@@ -248,7 +248,8 @@ public class CostCalculator {
 
             if (cs.getFraisCoursTarif() == false /* tarif */) {
                 cours_id = ALL_COURS;
-                tarif = true;
+            } else {
+                nom_tarif_id = "0";
             }
         }
 
@@ -257,7 +258,7 @@ public class CostCalculator {
                 p.getSessionSeqno().equals(session_seqno) &&
                 p.getDivisionAbbrev().equals(division_abbrev) &&
                 p.getCoursId().equals(cours_id) &&
-                (!tarif || p.getNomTarifId().equals(nom_tarif_id))) {
+                p.getNomTarifId().equals(nom_tarif_id)) {
                 if (p.getFrais().equals("")) {
                     return "0";
                 }
@@ -279,7 +280,8 @@ public class CostCalculator {
             }
             Prix np = JsonUtils.<Prix>safeEval
                 ("{\"id\":\"0\", \"club_id\":\""+club_id+"\", \"session_seqno\":\""+session_seqno+"\","+
-                 "\"division_abbrev\":\""+ALL_DIVISIONS+"\",\"cours_id\":\""+cours_id+"\",\"frais\":\"0\"}");
+                 "\"division_abbrev\":\""+ALL_DIVISIONS+"\",\"cours_id\":\""+cours_id+
+                 "\",\"nom_tarif_id\":\"0\",\"frais\":\"0\"}");
             return Collections.singletonList(np);
         }
 
@@ -287,7 +289,8 @@ public class CostCalculator {
 	for (Prix p : applicablePrix) {
 	    if (Objects.equals(p.getClubId(), club_id) &&
                 Objects.equals(p.getSessionSeqno(), session_seqno) &&
-                Objects.equals(p.getCoursId(), cours_id))
+                Objects.equals(p.getCoursId(), cours_id) &&
+                Objects.equals(p.getNomTarifId(), "0"))
 		rv.put(Constants.getDivisionByAbbrev(p.getDivisionAbbrev()), p);
 	}
 
@@ -298,7 +301,8 @@ public class CostCalculator {
 	    else {
 		Prix np = JsonUtils.<Prix>safeEval
 		    ("{\"id\":\"0\", \"club_id\":\""+club_id+"\", \"session_seqno\":\""+session_seqno+"\","+
-		     "\"division_abbrev\":\""+d.abbrev+"\",\"cours_id\":\""+cours_id+"\",\"frais\":\"0\"}");
+		     "\"division_abbrev\":\""+d.abbrev+"\",\"cours_id\":\""+cours_id+"\","+
+                     "\"nom_tarif_id\":\"0\",\"frais\":\"0\"}");
 		rvSorted.add(np);
 	    }
 	}
