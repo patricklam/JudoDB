@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.EntryPoint;
@@ -527,8 +528,15 @@ public class JudoDB implements EntryPoint {
       }
 
       // don't select TOUS by default if there is only 1 club
-      if (allClubs.size() == 1)
+      if (allClubs.size() == 1) {
           selectedClub = allClubs.get(0);
+      } else if (selectedClub != null) {
+          // refresh selectedClub by id from allClubs (aliasing strikes again)
+          for (ClubSummary cs : allClubs) {
+              if (selectedClub.getId().equals(cs.getId()))
+                  selectedClub = cs;
+          }
+      }
       selectClub(selectedClub);
     }
 
