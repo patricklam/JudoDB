@@ -922,7 +922,7 @@ public class ConfigWidget extends Composite {
         List<Prix> prix;
     }
 
-    Map<String, NomTarif> idToNomTarif = new HashMap<String, NomTarif>();
+    Map<String, NomTarif> idToNomTarif = new HashMap<>();
 
     private static final Object AFFILIATION_PRIX_KEY = new Object();
     private final ColumnFields DELETE_PRIX_COLUMN = new ColumnFields("DELETE", "", 1, Unit.EM);
@@ -1291,8 +1291,8 @@ public class ConfigWidget extends Composite {
         if (cs == null) {
             addPrixRow(null);
         } else if (cs != null && cs.getFraisCoursTarif() == false /* tarif */) {
-            HashMap<String, List<Prix>> nomToPrix = new HashMap<String, List<Prix>>();
-            HashSet<NomTarif> unseenTarifs = new HashSet<NomTarif>();
+            HashMap<String, List<Prix>> nomToPrix = new HashMap<>();
+            HashSet<NomTarif> unseenTarifs = new HashSet<>();
             unseenTarifs.addAll(rawTarifData);
             // create rows for populated prix entries
             for (Prix p : rawPrixData) {
@@ -1303,7 +1303,7 @@ public class ConfigWidget extends Composite {
                     !p.getSessionSeqno().equals(currentPrixSeqnoString))
                     continue;
                 if (!nomToPrix.containsKey(p.getNomTarif())) {
-                    List<Prix> pl = new ArrayList<Prix>();
+                    List<Prix> pl = new ArrayList<>();
 
                     int freshPrixId = getFreshPrixId();
                     Prix templatePrix =
@@ -1333,7 +1333,7 @@ public class ConfigWidget extends Composite {
             }
             // create rows for tarifs with no prix in the current session but which have matching seqno
             for (NomTarif n : unseenTarifs) {
-                List<Prix> pl = new ArrayList<Prix>();
+                List<Prix> pl = new ArrayList<>();
 
                 int freshPrixId = getFreshPrixId();
                 Prix templatePrix =
@@ -1856,7 +1856,7 @@ public class ConfigWidget extends Composite {
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
-                        List<Prix> lp = new ArrayList<Prix>();
+                        List<Prix> lp = new ArrayList<>();
                         JsArray<Prix> cp = JsonUtils.<JsArray<Prix>>safeEval(s);
                         for (int i = 0; i < cp.length(); i++)
                             lp.add(cp.get(i));
