@@ -58,10 +58,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
 
 public class ConfigWidget extends Composite {
     interface MyUiBinder extends UiBinder<Widget, ConfigWidget> {}
@@ -99,6 +102,7 @@ public class ConfigWidget extends Composite {
 
     private final List<Prix> rawPrixData = new ArrayList<>();
     private final List<CoursPrix> prixRows = new ArrayList<>();
+    private final List<NomTarif> rawTarifData = new ArrayList<>();
     private SessionSummary currentPrixSession;
     private String currentPrixSeqnoString;
     private boolean isPairPrixSession;
@@ -143,11 +147,13 @@ public class ConfigWidget extends Composite {
         if (club != null) {
             retrieveSessions(club.getId());
             retrieveCours(club.getId());
+            retrieveTarifs(club.getId());
             retrievePrix(club.getId());
             retrieveEscomptes(club.getId());
             retrieveProduits(club.getId());
         } else {
             retrieveSessions("0");
+            retrieveTarifs("0");
             retrievePrix("0");
             retrieveProduits("0");
             clearCours();
@@ -916,6 +922,8 @@ public class ConfigWidget extends Composite {
         List<Prix> prix;
     }
 
+    Map<String, NomTarif> idToNomTarif = new HashMap<String, NomTarif>();
+
     private static final Object AFFILIATION_PRIX_KEY = new Object();
     private final ColumnFields DELETE_PRIX_COLUMN = new ColumnFields("DELETE", "", 1, Unit.EM);
 
@@ -1058,6 +1066,7 @@ public class ConfigWidget extends Composite {
                                     p.setSessionSeqno(pp.getSessionSeqno());
                                     p.setCoursId(pp.getCoursId());
                                     p.setNomTarif(pp.getNomTarif());
+                                    p.setNomTarifId(pp.getNomTarifId());
                                     break;
                                 }
                             }
@@ -1080,7 +1089,7 @@ public class ConfigWidget extends Composite {
                             // new prix, not previously in db
                             edits.append("-1,P," +
                                          value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
-                                         p.getDivisionAbbrev() + "," + coursId + "," + p.getNomTarif() + ";");
+                                         p.getDivisionAbbrev() + "," + coursId + "," + p.getNomTarifId() + ";");
                         } else {
                             edits.append("-1,p," + p.getId() + "," +
                                          value + "," + p.getClubId() + "," + p.getSessionSeqno() + "," +
@@ -1091,6 +1100,13 @@ public class ConfigWidget extends Composite {
                     }
                 });
         }
+    }
+
+    String getNomTarifFromId(String tarifId) {
+        if (tarifId.equals(ADD_PRIX_ID))
+            return ADD_PRIX_VALUE;
+        if (!idToNomTarif.containsKey(tarifId)) return "null";
+        return idToNomTarif.get(tarifId).getNomTarif();
     }
 
     void initializePrixColumns() {
@@ -1113,7 +1129,7 @@ public class ConfigWidget extends Composite {
                 if (object == null) return "";
                 ClubSummary cs = jdb.getSelectedClub();
                 if (cs != null) {
-                    if (cs.getFraisCoursTarif() == false /* tarif */) return object.prix.get(0).getNomTarif();
+                    if (cs.getFraisCoursTarif() == false /* tarif */) return getNomTarifFromId(object.prix.get(0).getNomTarifId());
                     if (!ajustableCours.getValue()) return "TOUS";
                 }
                 if (object.c == null || object.c.equals("")) return "Affiliation";
@@ -1125,14 +1141,35 @@ public class ConfigWidget extends Composite {
                     @Override public void update(int index, CoursPrix object, String value) {
                         refreshPrix = true;
                         StringBuffer edits = new StringBuffer();
-                        for (Prix p : object.prix) {
-                             if (p.getIsAdd().equals("1")) {
-                                edits.append("-1,I," + value + "," + p.getClubId() + "," + currentPrixSeqnoString + "," + 
-                                             p.getDivisionAbbrev() + "," + "-1" + ";");
-                            } else {
-                                edits.append("-1,i," + p.getId() + "," + value + "," + jdb.getSelectedClubID() + ";");
+
+                        if (object.prix.size() < 1) return;
+
+                        Prix p = object.prix.get(0);
+
+                        if (value != null) value = value.replaceAll(",","_");
+                        if (p.getIsAdd().equals("1")) {
+                            edits.append("-1,T," + value + "," + jdb.getSelectedClubID() + ";");
+                        } else {
+                            // already have a nom tarif; force all tarifs to equal that of [0]
+                            for (Prix pp : object.prix) {
+                                if (!p.getNomTarifId().equals(pp.getNomTarifId())) {
+                                    edits.append("-1,Q,"+pp.getId()+","+jdb.getSelectedClubID());
+                                    edits.append("-1,P," +
+                                                 pp.getFrais() + "," + pp.getClubId() + "," + p.getSessionSeqno() + "," +
+                                                 pp.getDivisionAbbrev() + "," + pp.getCoursId() + "," + p.getNomTarifId() + ";");
+                                }
                             }
+
+                            NomTarif nm = null;
+                            for (NomTarif nnn : rawTarifData) {
+                                if (nnn.getId().equals(p.getNomTarifId())) {
+                                    nm = nnn;
+                                    break;
+                                }
+                            }
+                            edits.append("-1,t," + nm.getId() + "," + value + "," + jdb.getSelectedClubID() + ";");
                         }
+
                         pushEdit(edits.toString());
                         prix.redraw();
                     }
@@ -1191,6 +1228,17 @@ public class ConfigWidget extends Composite {
 	return newColumn;
     }
 
+    private void populateTarifs(JsArray<NomTarif> tarifArray) {
+        rawTarifData.clear();
+        idToNomTarif.clear();
+        for (int i = 0; i < tarifArray.length(); i++) {
+            NomTarif t = tarifArray.get(i);
+            rawTarifData.add(t);
+            idToNomTarif.put(t.getId(), t);
+        }
+        // currently nop
+    }
+
     private void populatePrix(List<Prix> lcp) {
         initializePrixColumns();
         rawPrixData.clear(); rawPrixData.addAll(lcp);
@@ -1209,6 +1257,7 @@ public class ConfigWidget extends Composite {
     }
 
     final private static String ADD_PRIX_VALUE = "[ajouter tarif]";
+    final private static String ADD_PRIX_ID = "-1";
     int getFreshPrixId() {
         int maxId = 0;
         for (Prix p : rawPrixData) {
@@ -1224,8 +1273,10 @@ public class ConfigWidget extends Composite {
             JsonUtils.<Prix>safeEval
             ("{\"is_add\":\"1\",\"id\":\""+freshPrixId+"\"}");
         addNewPrix.setDivisionAbbrev(CostCalculator.ALL_DIVISIONS);
+        addNewPrix.setSessionSeqno(currentPrixSeqnoString);
         addNewPrix.setClubId(jdb.getSelectedClubID());
         addNewPrix.setNomTarif(ADD_PRIX_VALUE);
+        addNewPrix.setNomTarifId(ADD_PRIX_ID);
         addNewPrix.setFrais("");
         CoursPrix cp = new CoursPrix();
         cp.c = null; cp.prix = Collections.singletonList(addNewPrix);
@@ -1241,19 +1292,63 @@ public class ConfigWidget extends Composite {
             addPrixRow(null);
         } else if (cs != null && cs.getFraisCoursTarif() == false /* tarif */) {
             HashMap<String, List<Prix>> nomToPrix = new HashMap<String, List<Prix>>();
+            HashSet<NomTarif> unseenTarifs = new HashSet<NomTarif>();
+            unseenTarifs.addAll(rawTarifData);
+            // create rows for populated prix entries
             for (Prix p : rawPrixData) {
+                if (p.getNomTarif().equals("")) {
+                    p.setNomTarif(getNomTarifFromId(p.getNomTarifId()));
+                }
                 if (!p.getClubId().equals(cs.getId()) ||
                     !p.getSessionSeqno().equals(currentPrixSeqnoString))
                     continue;
                 if (!nomToPrix.containsKey(p.getNomTarif())) {
                     List<Prix> pl = new ArrayList<Prix>();
+
+                    int freshPrixId = getFreshPrixId();
+                    Prix templatePrix =
+                        JsonUtils.<Prix>safeEval
+                        ("{\"id\":\""+freshPrixId+"\"}");
+                    templatePrix.setDivisionAbbrev(CostCalculator.ALL_DIVISIONS);
+                    templatePrix.setSessionSeqno(p.getSessionSeqno());
+                    templatePrix.setClubId(jdb.getSelectedClubID());
+                    templatePrix.setNomTarif(p.getNomTarif());
+                    templatePrix.setNomTarifId(p.getNomTarifId());
+                    templatePrix.setFrais("");
+                    pl.add(templatePrix);
+
                     pl.add(p);
                     nomToPrix.put(p.getNomTarif(), pl);
+
+                    Iterator<NomTarif> ti = unseenTarifs.iterator();
+                    while (ti.hasNext()) {
+                        NomTarif n = ti.next();
+                        if (p.getNomTarifId().equals(n.getId()))
+                            ti.remove();
+                    }
                 } else {
                     List<Prix> pl = nomToPrix.get(p.getNomTarif());
                     pl.add(p);
                 }
             }
+            // create rows for tarifs with no prix in the current session but which have matching seqno
+            for (NomTarif n : unseenTarifs) {
+                List<Prix> pl = new ArrayList<Prix>();
+
+                int freshPrixId = getFreshPrixId();
+                Prix templatePrix =
+                    JsonUtils.<Prix>safeEval
+                    ("{\"id\":\""+freshPrixId+"\"}");
+                templatePrix.setDivisionAbbrev(CostCalculator.ALL_DIVISIONS);
+                templatePrix.setSessionSeqno(currentPrixSeqnoString);
+                templatePrix.setClubId(jdb.getSelectedClubID());
+                templatePrix.setNomTarif(n.getNomTarif());
+                templatePrix.setNomTarifId(n.getId());
+                templatePrix.setFrais("");
+                pl.add(templatePrix);
+                nomToPrix.put(n.getNomTarif(), pl);
+            }
+
             for (String n : nomToPrix.keySet()) {
                 CoursPrix cp = new CoursPrix();
                 List<Prix> np = nomToPrix.get(n);
@@ -1744,7 +1839,7 @@ public class ConfigWidget extends Composite {
     }
 
     public void retrievePrix(final String club_id) {
-        if (!gotSessions || !jdb.gotClubList) {
+        if (!gotSessions || !jdb.gotClubList || !gotTarifs) {
             new Timer() {
                 public void run() { retrievePrix(club_id); }
             }.schedule(100);
@@ -1766,6 +1861,32 @@ public class ConfigWidget extends Composite {
                         for (int i = 0; i < cp.length(); i++)
                             lp.add(cp.get(i));
                         populatePrix(lp);
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    private boolean gotTarifs = false;
+    public void retrieveTarifs(final String club_id) {
+        if (!gotSessions || !jdb.gotClubList) {
+            new Timer() {
+                public void run() { retrieveTarifs(club_id); }
+            }.schedule(100);
+            return;
+        }
+
+        rawTarifData.clear();
+
+        ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
+        String url = JudoDB.PULL_TARIF_URL +
+            "?club_id=" + club_id;
+
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+                        gotTarifs = true;
+                        JsArray<NomTarif> cp = JsonUtils.<JsArray<NomTarif>>safeEval(s);
+                        populateTarifs(cp);
                     }
                 });
         jdb.retrieve(url, rc);
@@ -1847,6 +1968,7 @@ public class ConfigWidget extends Composite {
     private boolean refreshSessions = false;
     private boolean refreshCours = false;
     private boolean refreshPrix = false;
+    private boolean refreshTarifNom = false;
     private boolean refreshEscomptes = false;
     private boolean refreshProduits = false;
     public void pushChanges(final String guid) {
@@ -1893,8 +2015,10 @@ public class ConfigWidget extends Composite {
                                 refreshPrix = false;
                                 ClubSummary cs = jdb.getClubSummaryByID(jdb.getSelectedClubID());
                                 if (cs != null) {
+                                    retrieveTarifs(cs.getId());
                                     retrievePrix(cs.getId());
                                 } else {
+                                    retrieveTarifs("0");
                                     retrievePrix("0");
                                 }
 			    }

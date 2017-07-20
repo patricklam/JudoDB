@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.logging.Logger;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.EntryPoint;
@@ -58,6 +59,8 @@ import com.google.gwt.uibinder.client.UiField;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class JudoDB implements EntryPoint {
+    static final Logger logger = Logger.getLogger("");
+
     static class Mode {
         public static final String LIST_PARAM_FT303 = "ft303";
         public static final String LIST_PARAM_IMPOT = "impot";
@@ -111,6 +114,7 @@ public class JudoDB implements EntryPoint {
     public static final String PULL_CLUB_COURS_URL = JudoDB.BASE_URL + "pull_club_cours.php";
     public static final String PULL_SESSIONS_URL = JudoDB.BASE_URL + "pull_sessions.php";
     public static final String PULL_CLUB_PRIX_URL = JudoDB.BASE_URL + "pull_club_prix.php";
+    public static final String PULL_TARIF_URL = JudoDB.BASE_URL + "pull_tarif.php";
     public static final String PULL_ESCOMPTE_URL = JudoDB.BASE_URL + "pull_escompte.php";
     public static final String PULL_PRODUIT_URL = JudoDB.BASE_URL + "pull_produit.php";
     public static final String PUSH_MULTI_CLIENTS_URL = JudoDB.BASE_URL + "push_multi_clients.php";
