@@ -85,7 +85,7 @@
 		  <b:Column size="XS_2" addStyleNames="pull-right"><b:FormLabel for="categorieFrais">Frais cours</b:FormLabel><b:TextBox ui:field="categorieFrais" /> <g:Hidden ui:field="categorieFrais_encoded" name="categorie_frais_encoded"/></b:Column>
 
 		</b:FormGroup>
-		<b:FormGroup>
+		<b:FormGroup ui:field="tarif_group">
 		  <b:Column size="XS_4"><b:FormLabel for="tarif">Tarif</b:FormLabel><b:ListBox ui:field="tarif"/><g:Hidden ui:field="nom_tarif_id_encoded" name="nom_tarif_id_encoded"/></b:Column>
 		</b:FormGroup>
 		<b:FormGroup>

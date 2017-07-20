@@ -51,6 +51,7 @@ import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
 import org.gwtbootstrap3.client.ui.Column;
 import org.gwtbootstrap3.client.ui.Form;
+import org.gwtbootstrap3.client.ui.FormGroup;
 import org.gwtbootstrap3.client.ui.Label;
 import org.gwtbootstrap3.client.ui.TextBox;
 import org.gwtbootstrap3.client.ui.ListBox;
@@ -107,6 +108,7 @@ public class ClientWidget extends Composite {
     @UiField ListBox cours;
 
     @UiField ListBox tarif;
+    @UiField FormGroup tarif_group;
 
     @UiField ListBox escompte;
     @UiField TextBox cas_special_note;
@@ -300,6 +302,12 @@ public class ClientWidget extends Composite {
                 ClientWidget.this.jdb.popMode();
             } }.schedule(1000);
             return;
+        }
+
+        if (jdb.getSelectedClub().getFraisCoursTarif() == true /* cours */) {
+            tarif_group.setVisible(false);
+        } else {
+            tarif_group.setVisible(true);
         }
 
         inscrire.addClickHandler(inscrireClickHandler);
