@@ -37,8 +37,8 @@ public class ServiceData extends JavaScriptObject {
     public final native void setAffiliationParascolaire(boolean affiliation_parascolaire) /*-{ this.affiliation_parascolaire = affiliation_parascolaire ? "1" : "0"; }-*/;
     public final native String getCours() /*-{ return this.cours; }-*/;
     public final native void setCours(String cours) /*-{ this.cours = cours; }-*/;
-    public final native String getNomTarif() /*-{ return this.nom_tarif; }-*/;
-    public final native void setNomTarif(String cours) /*-{ this.nom_tarif = nom_tarif; }-*/;
+    public final native String getNomTarifId() /*-{ return this.nom_tarif_id; }-*/;
+    public final native void setNomTarifId(String cours) /*-{ this.nom_tarif_id = nom_tarif_id; }-*/;
     public final native int getSessionCount() /*-{ return this.saisons == null ? 0 : this.saisons.split(" ").length; }-*/;
     public final native boolean getResident() /*-{ return this.resident != '0'; }-*/;
     public final native void setResident(boolean resident) /*-{ this.resident = resident ? "1" : "0"; }-*/;
@@ -80,7 +80,7 @@ public class ServiceData extends JavaScriptObject {
         return {
             id: null,
             club_id: "",
-            nom_tarif: "",
+            nom_tarif_id: "",
             date_inscription: "",
             saisons: "",
             date_affiliation_envoye: "",
