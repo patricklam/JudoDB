@@ -86,6 +86,9 @@
 
 		</b:FormGroup>
 		<b:FormGroup>
+		  <b:Column size="XS_4"><b:FormLabel for="tarif">Tarif</b:FormLabel><b:ListBox ui:field="tarif"/><g:Hidden ui:field="nom_tarif_id_encoded" name="nom_tarif_id_encoded"/></b:Column>
+		</b:FormGroup>
+		<b:FormGroup>
 		  <b:Column size="XS_2"><b:FormLabel for="escompte">Escompte</b:FormLabel><b:ListBox ui:field="escompte"/><g:Hidden ui:field="escompte_encoded" name="escompte_encoded"/></b:Column>
 		  <b:Column size="XS_3"><b:FormLabel for="cas_special_note">Raison cas sp&eacute;cial</b:FormLabel><b:TextBox ui:field="cas_special_note"/><g:Hidden ui:field="cas_special_note_encoded" name="cas_special_note_encoded"/></b:Column>
 		  <b:Column size="XS_2"><b:FormLabel for="cas_special_pct">% escompte</b:FormLabel><b:TextBox ui:field="cas_special_pct" addStyleNames="{style.six-em}"  /><g:Hidden ui:field="cas_special_pct_encoded" name="cas_special_pct_encoded"/></b:Column>

@@ -257,7 +257,7 @@ public class CostCalculator {
                 p.getSessionSeqno().equals(session_seqno) &&
                 p.getDivisionAbbrev().equals(division_abbrev) &&
                 p.getCoursId().equals(cours_id) &&
-                (!tarif || p.getNomTarif().equals(nom_tarif_id))) {
+                (!tarif || p.getNomTarifId().equals(nom_tarif_id))) {
                 if (p.getFrais().equals("")) {
                     return "0";
                 }

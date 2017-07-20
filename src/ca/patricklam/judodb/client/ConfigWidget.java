@@ -1236,7 +1236,6 @@ public class ConfigWidget extends Composite {
             rawTarifData.add(t);
             idToNomTarif.put(t.getId(), t);
         }
-        // currently nop
     }
 
     private void populatePrix(List<Prix> lcp) {

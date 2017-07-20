@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.logging.Level;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -105,6 +106,8 @@ public class ClientWidget extends Composite {
 
     @UiField ListBox cours;
 
+    @UiField ListBox tarif;
+
     @UiField ListBox escompte;
     @UiField TextBox cas_special_note;
     @UiField TextBox cas_special_pct;
@@ -136,6 +139,7 @@ public class ClientWidget extends Composite {
     @UiField Hidden categorieFrais_encoded;
 
     @UiField Hidden cours_encoded;
+    @UiField Hidden nom_tarif_id_encoded;
 
     @UiField Hidden escompte_encoded;
     @UiField Hidden cas_special_note_encoded;
@@ -213,6 +217,7 @@ public class ClientWidget extends Composite {
     private List<CoursSummary> backingCours = new ArrayList<>();
     private List<EscompteSummary> escompteSummaries = new ArrayList<>();
     private List<ProduitSummary> produitSummaries = new ArrayList<>();
+    private List<NomTarif> rawTarifData = new ArrayList<>();
     private ClientData cd;
     private String guid;
     private int currentServiceNumber;
@@ -233,6 +238,7 @@ public class ClientWidget extends Composite {
         retrieveCours(club.getId());
         retrieveEscomptes(club.getId());
         retrieveProduits(club.getId());
+        retrieveTarifs(club.getId());
         if (cd != null)
             updateFrais();
     }
@@ -320,6 +326,7 @@ public class ClientWidget extends Composite {
         prorata.addValueChangeHandler(recomputeValueHandler);
         sessions.addChangeHandler(recomputeHandler);
         cours.addChangeHandler(recomputeHandler);
+        tarif.addChangeHandler(recomputeHandler);
         escompte.addChangeHandler(changeEscompteHandler);
         affiliation_envoye.addValueChangeHandler(setDAEAndRecomputeValueHandler);
         cas_special_pct.addChangeHandler(clearEscompteAmtAndRecomputeHandler);
@@ -441,6 +448,20 @@ public class ClientWidget extends Composite {
         }
     }
 
+    private void loadTarifs(JsArray<NomTarif> tarifArray) {
+        rawTarifData.clear();
+	if (tarifArray == null) {
+            jdb.displayError("aucun tarif recu");
+            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
+        }
+
+        for (int i = 0; i < tarifArray.length(); i++) {
+            NomTarif t = tarifArray.get(i);
+            rawTarifData.add(t);
+            tarif.addItem(t.getNomTarif(), t.getId());
+        }
+    }
+
     @SuppressWarnings("deprecation")
     private void updateBlurb() {
         if (cd.getDDNString() == null) return;
@@ -474,6 +495,7 @@ public class ClientWidget extends Composite {
         prorata.setValue(false);
         prorata.setEnabled(false);
         categorieFrais.setText("");
+        tarif.setEnabled(false);
 
         date_affiliation_envoye.setText("");
         date_affiliation_envoye.setEnabled(false);
@@ -576,16 +598,32 @@ public class ClientWidget extends Composite {
         updateSessionLB();
         sessions.setEnabled(isToday);
         affiliation_envoye.setValue(sd.getAffiliationEnvoye());
-        int matching_index = 0;
-        for (CoursSummary cs : backingCours) {
-            if (cs.getId().equals(sd.getCours())) {
-                cours.setSelectedIndex(matching_index);
-                break;
+
+        {
+            int matching_index = 0;
+            for (CoursSummary cs : backingCours) {
+                if (cs.getId().equals(sd.getCours())) {
+                    cours.setSelectedIndex(matching_index);
+                    break;
+                }
+                matching_index++;
             }
-            matching_index++;
         }
+
+        {
+            int matching_index = 0;
+            for (NomTarif nm : rawTarifData) {
+                if (nm.getId().equals(sd.getNomTarifId())) {
+                    tarif.setSelectedIndex(matching_index);
+                    break;
+                }
+                matching_index++;
+            }
+        }
+
         prorata.setEnabled(isToday);
         categorieFrais.setText(sd.getCategorieFrais());
+        tarif.setEnabled(isToday);
 
         date_affiliation_envoye.setValue(Constants.dbToStdDate(sd.getDAEString()));
         date_affiliation_envoye.setEnabled(sd.getAffiliationEnvoye());
@@ -667,6 +705,9 @@ public class ClientWidget extends Composite {
         sd.setAffiliationEnvoye(affiliation_envoye.getValue());
         if (cours.getSelectedIndex() != -1)
             sd.setCours(cours.getValue(cours.getSelectedIndex()));
+
+        if (tarif.getSelectedIndex() != -1)
+            sd.setNomTarifId(tarif.getValue(tarif.getSelectedIndex()));
         sd.setCategorieFrais(stripDollars(categorieFrais.getText()));
 
         sd.setDAEString(Constants.stdToDbDate(date_affiliation_envoye.getText()));
@@ -1310,7 +1351,7 @@ public class ClientWidget extends Composite {
 
     private void encodeServices() {
         StringBuffer di = new StringBuffer(), sais = new StringBuffer(),
-            v = new StringBuffer(), cf = new StringBuffer(), c = new StringBuffer(),
+            v = new StringBuffer(), cf = new StringBuffer(), c = new StringBuffer(), tf = new StringBuffer(),
             sess = new StringBuffer(), e = new StringBuffer(), csn = new StringBuffer(),
             csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(),
             dae = new StringBuffer(), cjr = new StringBuffer(), ai = new StringBuffer(),
@@ -1348,6 +1389,7 @@ public class ClientWidget extends Composite {
             s.append(sd.getSolde() ? "1," : "0,");
             f.append(sd.getFrais()+",");
             clubid.append(sd.getClubID()+",");
+            tf.append(sd.getNomTarifId()+",");
         }
 
         date_inscription_encoded.setValue(di.toString());
@@ -1373,6 +1415,7 @@ public class ClientWidget extends Composite {
         solde_encoded.setValue(s.toString());
         frais_encoded.setValue(f.toString());
         club_id_encoded.setValue(clubid.toString());
+        nom_tarif_id_encoded.setValue(tf.toString());
     }
 
     private void pushClientDataToServer(final boolean leaveAfterPush) {
@@ -1497,6 +1540,7 @@ public class ClientWidget extends Composite {
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
+                        gotSessions = true;
                         populateSessions(JsonUtils.<JsArray<SessionSummary>>safeEval(s));
                     }
                 });
@@ -1590,6 +1634,29 @@ public class ClientWidget extends Composite {
 			gotProduits = true;
                         loadProduits
                             (JsonUtils.<JsArray<ProduitSummary>>safeEval(s));
+                    }
+                });
+        jdb.retrieve(url, rc);
+    }
+
+    private boolean gotTarifs = false;
+    public void retrieveTarifs(final String club_id) {
+        if (!gotSessions) {
+            new Timer() {
+                public void run() { retrieveTarifs(club_id); }
+            }.schedule(100);
+            return;
+        }
+
+        rawTarifData.clear();
+        String url = JudoDB.PULL_TARIF_URL +
+            "?club_id=" + club_id;
+        RequestCallback rc =
+            jdb.createRequestCallback(new JudoDB.Function() {
+                    public void eval(String s) {
+			gotTarifs = true;
+                        loadTarifs
+                            (JsonUtils.<JsArray<NomTarif>>safeEval(s));
                     }
                 });
         jdb.retrieve(url, rc);
