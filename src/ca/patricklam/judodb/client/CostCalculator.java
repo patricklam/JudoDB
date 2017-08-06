@@ -169,8 +169,13 @@ public class CostCalculator {
         if (resident)
             dSuppFrais -= Double.parseDouble(cs.getEscompteResident());
 
-        if (paypal)
-            dSuppFrais += Constants.PAYPAL_PCT / 100.0 * (dSuppFrais + fraisSoFar);
+        if (paypal) {
+            if (Integer.parseInt(cs.getAfficherPaypal()) == ConfigWidget.AP_FIXE) {
+                dSuppFrais += Double.parseDouble(cs.getMontantPaypal());
+            } else {
+                dSuppFrais += Double.parseDouble(cs.getMontantPaypal()) / 100.0 * (dSuppFrais + fraisSoFar);
+            }
+        }
         return dSuppFrais;
     }
 

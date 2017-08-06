@@ -247,7 +247,13 @@ public class ConfigWidget extends Composite {
     @UiField TextBox escompte_resident;
     @UiField TextBox supplement_prorata;
     @UiField ToggleSwitch default_prorata;
-    @UiField ToggleSwitch afficher_paypal;
+    @UiField ListBox afficher_paypal;
+    @UiField FormGroup montant_paypal_group;
+    @UiField TextBox montant_paypal;
+
+    static final int AP_NONE = 0;
+    static final int AP_PCT = 1;
+    static final int AP_FIXE = 2;
 
     ValueChangeHandler<String> newValueChangeHandler(final String key) {
 	return new ValueChangeHandler<String>() {
@@ -274,6 +280,20 @@ public class ConfigWidget extends Composite {
 	    }
 	};
     }
+
+    private final ChangeHandler paypalHandler = new ChangeHandler() {
+        @Override
+        public void onChange(ChangeEvent e) {
+            refreshClub = true;
+            pushEdit("-1,c" + "afficher_paypal" + "," + (afficher_paypal.getSelectedIndex()) + "," +
+                     jdb.getSelectedClubID() + ";");
+            if (afficher_paypal.getSelectedIndex() == AP_NONE) {
+                montant_paypal_group.setVisible(false);
+            } else {
+                montant_paypal_group.setVisible(true);
+            }
+        }
+    };
 
     private boolean clubHandlersInstalled = false;
     void initializeClubFields() {
@@ -306,7 +326,8 @@ public class ConfigWidget extends Composite {
             escompte_resident.addValueChangeHandler(newValueChangeHandler("escompte_resident"));
             supplement_prorata.addValueChangeHandler(newValueChangeHandler("supplement_prorata"));
             default_prorata.addValueChangeHandler(newValueChangeHandlerBoolean("pro_rata"));
-            afficher_paypal.addValueChangeHandler(newValueChangeHandlerBoolean("afficher_paypal"));
+            afficher_paypal.addChangeHandler(paypalHandler);
+            montant_paypal.addValueChangeHandler(newValueChangeHandler("montant_paypal"));
         }
 
         boolean setEverythingReadOnly = false;
@@ -327,6 +348,7 @@ public class ConfigWidget extends Composite {
         supplement_prorata.setEnabled(!setEverythingReadOnly);
         default_prorata.setEnabled(!setEverythingReadOnly);
         afficher_paypal.setEnabled(!setEverythingReadOnly);
+        montant_paypal.setEnabled(!setEverythingReadOnly);
 
         frais_cours_tarif_cours.setEnabled(!setEverythingReadOnly);
         frais_cours_tarif_tarif.setEnabled(!setEverythingReadOnly);
@@ -354,7 +376,10 @@ public class ConfigWidget extends Composite {
         escompte_resident.setText(cs.getEscompteResident());
         supplement_prorata.setText(cs.getSupplementProrata());
         default_prorata.setValue(cs.getEnableProrata());
-        afficher_paypal.setValue(cs.getAfficherPaypal());
+        String pp = cs.getAfficherPaypal();
+        if (pp == null) pp = "0";
+        afficher_paypal.setSelectedIndex(Integer.parseInt(pp));
+        montant_paypal.setValue(cs.getMontantPaypal());
 
         // on prix tab, but set by club:
         ajustable.setVisible(true);
@@ -369,6 +394,12 @@ public class ConfigWidget extends Composite {
         } else {
             ajustableCours_label.setVisible(true);
             ajustableCours.setVisible(true);
+        }
+
+        if (afficher_paypal.getSelectedIndex() == AP_NONE) {
+            montant_paypal_group.setVisible(false);
+        } else {
+            montant_paypal_group.setVisible(true);
         }
     }
     /* --- end club tab --- */

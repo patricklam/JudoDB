@@ -36,8 +36,10 @@ public class ClubSummary extends JavaScriptObject {
     public final native void setFraisCoursTarif(boolean frais_cours_tarif) /*-{ this.frais_cours_tarif = frais_cours_tarif ? '1' : '0'; }-*/;
     public final native boolean getEnableProrata() /*-{ return this.pro_rata != '0'; }-*/;
     public final native void setEnableProrata(boolean pro_rata) /*-{ this.pro_rata = pro_rata ? '1' : '0'; }-*/;
-    public final native boolean getAfficherPaypal() /*-{ return this.afficher_paypal != '0'; }-*/;
-    public final native void setAfficherPaypal(boolean afficher_paypal) /*-{ this.afficher_paypal = afficher_paypal ? '1' : '0'; }-*/;
+    public final native String getAfficherPaypal() /*-{ return this.afficher_paypal; }-*/;
+    public final native void setAfficherPaypal(String afficher_paypal) /*-{ this.afficher_paypal = afficher_paypal; }-*/;
+    public final native String getMontantPaypal() /*-{ return this.montant_paypal; }-*/;
+    public final native void setMontantPaypal(String afficher_paypal) /*-{ this.montant_paypal = montant_paypal; }-*/;
     public final native boolean getAjustableCours() /*-{ return this.ajustable_cours != '0'; }-*/;
     public final native void setAjustableCours(boolean ajustable_cours) /*-{ this.ajustable_cours = ajustable_cours ? '1' : '0'; }-*/;
     public final native boolean getAjustableDivision() /*-{ return this.ajustable_division != '0'; }-*/;

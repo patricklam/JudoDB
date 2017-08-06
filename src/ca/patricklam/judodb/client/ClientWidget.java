@@ -1290,8 +1290,8 @@ public class ClientWidget extends Composite {
 
     private void hidePaypalIfDisabled(ClubSummary cs) {
         if (cs == null) return;
-        boolean showPaypal = cs.getAfficherPaypal();
-        if (!showPaypal) {
+        String showPaypal = cs.getAfficherPaypal();
+        if (showPaypal == null || Integer.parseInt(showPaypal) == ConfigWidget.AP_NONE) {
             frais_paypal_label.setVisible(false);
             paypal.setVisible(false);
         } else {
