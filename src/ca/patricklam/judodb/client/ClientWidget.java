@@ -304,7 +304,7 @@ public class ClientWidget extends Composite {
             return;
         }
 
-        if (jdb.getSelectedClub().getFraisCoursTarif() == true /* cours */) {
+        if (jdb.getSelectedClub() != null && jdb.getSelectedClub().getFraisCoursTarif() == true /* cours */) {
             tarif_group.setVisible(false);
         } else {
             tarif_group.setVisible(true);
