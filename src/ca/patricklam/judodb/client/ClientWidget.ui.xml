@@ -110,6 +110,7 @@
 		</b:FormGroup>
 		<b:FormGroup>
 		  <b:Column size="XS_2"><b:FormLabel for="solde">Paiement compl&eacute;t&eacute;</b:FormLabel><b3:ToggleSwitch ui:field="solde" onIcon="CHECK" offIcon="TIMES"/><g:Hidden ui:field="solde_encoded" name="solde_encoded" /></b:Column>
+		  <b:Column size="XS_2"><b:FormLabel for="restant">Solde &agrave; payer</b:FormLabel><b:TextBox ui:field="restant" /></b:Column>
 		  <b:Column size="XS_2" addStyleNames="pull-right"><b:FormLabel for="frais">Frais total</b:FormLabel><b:TextBox ui:field="frais"  /><g:Hidden ui:field="frais_encoded" name="frais_encoded" /></b:Column>
 		</b:FormGroup>
        </b:FieldSet>

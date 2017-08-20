@@ -140,6 +140,7 @@ public class ClientWidget extends Composite {
     @UiField TextBox suppFrais;
 
     @UiField ToggleSwitch solde;
+    @UiField TextBox restant;
     @UiField TextBox frais;
 
     CellTable<PaymentData> paiementTable;
@@ -309,6 +310,7 @@ public class ClientWidget extends Composite {
         escompteFrais.setReadOnly(true); escompteFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
         affiliationFrais.setReadOnly(true); affiliationFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
         suppFrais.setReadOnly(true); suppFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
+        restant.setReadOnly(true);
         frais.setReadOnly(true); frais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
         ((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
@@ -503,6 +505,7 @@ public class ClientWidget extends Composite {
                     if (c.key == null) return;
                     String oldValue = object.get(c.key);
                     object.set(c.key, value);
+                    updateFrais();
 		}
 	    });
 	t.setColumnWidth(newColumn, c.width, c.widthUnits);
@@ -1368,13 +1371,18 @@ public class ClientWidget extends Composite {
         escompteFrais.setReadOnly
 	    (!CostCalculator.isCasSpecial(sd,
 					  CostCalculator.getApplicableEscompte(sd, escompteSummaries)));
-
+        double montantPaye = CostCalculator.getMontantPaye(paiementData);
         try {
             categorieFrais.setText(cf.format(Double.parseDouble(sd.getCategorieFrais())));
             affiliationFrais.setText(cf.format(Double.parseDouble(sd.getAffiliationFrais())));
             escompteFrais.setValue(cf.format(Double.parseDouble(sd.getEscompteFrais())));
             suppFrais.setText(cf.format(Double.parseDouble(sd.getSuppFrais())));
-            frais.setText(cf.format(Double.parseDouble(sd.getFrais())));
+            double dFrais = Double.parseDouble(sd.getFrais());
+            double dRestant = dFrais - montantPaye;
+            if (dRestant < 0.01)
+                solde.setValue(true);
+            restant.setText(cf.format(dRestant));
+            frais.setText(cf.format(dFrais));
         } catch (NumberFormatException e) {}
     }
 

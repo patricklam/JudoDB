@@ -239,6 +239,15 @@ public class CostCalculator {
             return "";
     }
 
+    public static double getMontantPaye(List<PaymentData> paiements) {
+        double total = 0.0;
+        for (PaymentData pd : paiements) {
+            try {
+                total += Double.parseDouble(pd.getMontant());
+            } catch (IllegalArgumentException e) {}
+        }
+        return total;
+    }
 
     public static String getFrais(List<Prix> applicablePrix, ClubSummary cs, String session_seqno, String division_abbrev, String cours_id, String nom_tarif_id) {
         String club_id = (cs == null) ? JUDO_QC : cs.getId();
