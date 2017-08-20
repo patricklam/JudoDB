@@ -36,20 +36,32 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Grid;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.cell.client.Cell;
+import com.google.gwt.cell.client.EditTextCell;
+import com.google.gwt.cell.client.ClickableTextCell;
+import com.google.gwt.user.cellview.client.CellTable;
+import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.cell.client.FieldUpdater;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 
 import org.gwtbootstrap3.client.ui.Button;
 import org.gwtbootstrap3.client.ui.ButtonGroup;
 import org.gwtbootstrap3.client.ui.Column;
+import org.gwtbootstrap3.client.ui.FieldSet;
 import org.gwtbootstrap3.client.ui.Form;
 import org.gwtbootstrap3.client.ui.FormGroup;
 import org.gwtbootstrap3.client.ui.Label;
@@ -129,6 +141,11 @@ public class ClientWidget extends Composite {
 
     @UiField ToggleSwitch solde;
     @UiField TextBox frais;
+
+    CellTable<PaymentData> paiementTable;
+    @UiField FieldSet paiements;
+    private final List<PaymentData> paiementData = new ArrayList<>();
+    @UiField Hidden paiements_encoded;
 
     @UiField Hidden grades_encoded;
     @UiField Hidden grade_dates_encoded;
@@ -372,6 +389,9 @@ public class ClientWidget extends Composite {
             }
         });
 
+        initializePaiementTable();
+        paiements.add(paiementTable);
+
         if (cid != -1) {
             retrieveClient(cid);
         } else {
@@ -392,6 +412,130 @@ public class ClientWidget extends Composite {
             this.cd.setGrades(ga);
             loadClientData();
         }
+    }
+
+    private static final ProvidesKey<PaymentData> PAIEMENT_KEY_PROVIDER =
+	new ProvidesKey<PaymentData>() {
+        @Override
+        public Object getKey(PaymentData item) {
+	    return item.getId();
+        }
+    };
+
+    private class ColumnFields {
+	public ColumnFields(String key, String name, int width, Unit widthUnits) {
+	    this.key = key;
+	    this.name = name;
+	    this.width = width;
+	    this.widthUnits = widthUnits;
+	}
+
+	public String key;
+	public String name;
+	public int width;
+	public Unit widthUnits;
+    }
+
+    private final ColumnFields NUMBER_COLUMN = new ColumnFields("number", "#", 2, Unit.EM),
+        MODE_COLUMN = new ColumnFields("mode", "mode", 3, Unit.EM),
+        CHQNO_COLUMN = new ColumnFields("chqno", "# chq", 1, Unit.EM),
+        DATE_COLUMN = new ColumnFields("date", "Date", 3, Unit.EM),
+        MONTANT_COLUMN = new ColumnFields("montant", "Montant", 2, Unit.EM),
+	DELETE_PAIEMENT_COLUMN = new ColumnFields("DELETE", "", 1, Unit.EM);
+
+    void initializePaiementTable() {
+	paiementTable = new CellTable<>(PAIEMENT_KEY_PROVIDER);
+	paiementTable.setWidth("60em", true);
+
+	while (paiementTable.getColumnCount() > 0)
+	    paiementTable.removeColumn(0);
+
+	// name is special: handle inserting a new paiement
+	final com.google.gwt.user.cellview.client.Column<PaymentData, String> nameColumn =
+	    addPaiementColumn(paiementTable, NUMBER_COLUMN);
+	nameColumn.setFieldUpdater(new FieldUpdater<PaymentData, String>() {
+		@Override
+		public void update(int index, PaymentData object, String value) {
+                    object.set(NUMBER_COLUMN.key, value);
+		    paiementTable.setRowData(paiementData);
+		    paiementTable.redraw();
+		}
+	    });
+
+	addPaiementColumn(paiementTable, MODE_COLUMN);
+	addPaiementColumn(paiementTable, CHQNO_COLUMN);
+	addPaiementColumn(paiementTable, DATE_COLUMN);
+	com.google.gwt.user.cellview.client.Column col = addPaiementColumn(paiementTable, MONTANT_COLUMN);
+        col.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+	addDeletePaiementColumn(paiementTable, DELETE_PAIEMENT_COLUMN);
+    }
+
+    final private static String ADD_PAIEMENT_VALUE = "[ajouter paiement]";
+    void addAddPaiementPaiement() {
+	int maxId = -1;
+	for (PaymentData s : paiementData) {
+	    if (Integer.parseInt(s.getId()) > maxId)
+		maxId = Integer.parseInt(s.getId());
+	}
+
+	PaymentData addNewPaiement =
+	    JsonUtils.<PaymentData>safeEval
+	    ("{\"is_add\":\"1\",\"id\":\""+(maxId+1)+"\",\"number\":\""+ADD_PAIEMENT_VALUE+"\"}");
+	addNewPaiement.setServiceId("");
+	addNewPaiement.setMode("");
+	addNewPaiement.setChqno("");
+	addNewPaiement.setDateString("");
+	addNewPaiement.setMontant("");
+	paiementData.add(addNewPaiement);
+    }
+
+    private com.google.gwt.user.cellview.client.Column<PaymentData, String> addPaiementColumn(final CellTable<PaymentData> t, final ColumnFields c) {
+	final Cell<String> cell = new EditTextCell();
+	com.google.gwt.user.cellview.client.Column<PaymentData, String> newColumn = new com.google.gwt.user.cellview.client.Column<PaymentData, String>(cell) {
+	    public String getValue(PaymentData object) {
+		return object.get(c.key);
+	    }
+	};
+	t.addColumn(newColumn, c.name);
+	newColumn.setFieldUpdater(new FieldUpdater<PaymentData, String>() {
+		@Override
+		public void update(int index, PaymentData object, String value) {
+                    if (c.key == null) return;
+                    String oldValue = object.get(c.key);
+                    object.set(c.key, value);
+		}
+	    });
+	t.setColumnWidth(newColumn, c.width, c.widthUnits);
+	return newColumn;
+    }
+
+    private static final String BALLOT_X = "✗";
+
+    private com.google.gwt.user.cellview.client.Column<PaymentData, String> addDeletePaiementColumn(final CellTable<PaymentData> t, final ColumnFields c) {
+	final ClickableTextCell cell = new ClickableTextCell() {
+            @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
+                if (value != null) {
+                    sb.append(SafeHtmlUtils.fromSafeConstant("<span style='cursor:pointer'>"));
+                    sb.append(value);
+                    sb.append(SafeHtmlUtils.fromSafeConstant("</span>"));
+                }
+            }
+            };
+	com.google.gwt.user.cellview.client.Column<PaymentData, String> newColumn = new com.google.gwt.user.cellview.client.Column<PaymentData, String>(cell) {
+            @Override public String getValue(PaymentData object) {
+                return object.getIsAdd().equals("1") ? "" : BALLOT_X;
+	    }
+	};
+	t.addColumn(newColumn, c.name);
+	newColumn.setFieldUpdater(new FieldUpdater<PaymentData, String>() {
+		@Override
+		public void update(int index, PaymentData object, String value) {
+                    if (c.key == null) return;
+                    // XXX delete this row from table, since we don't redraw
+		}
+	    });
+	t.setColumnWidth(newColumn, c.width, c.widthUnits);
+	return newColumn;
     }
 
     @Override
@@ -676,6 +820,16 @@ public class ClientWidget extends Composite {
 
         frais.setText(sd.getFrais());
         solde.setValue(sd.getSolde());
+
+        paiementData.clear();
+        if (sd.getPaiements() != null) {
+            for (int i = 0; i < sd.getPaiements().length(); i++) {
+                paiementData.add(sd.getPaiements().get(i));
+            }
+        }
+        addAddPaiementPaiement();
+        paiementTable.setRowData(paiementData);
+        paiementTable.redraw();
 
         updateDynamicFields();
     }

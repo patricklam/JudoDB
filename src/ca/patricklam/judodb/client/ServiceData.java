@@ -1,6 +1,7 @@
 // -*-  indent-tabs-mode:nil; c-basic-offset:4; -*-
 package ca.patricklam.judodb.client;
 
+import com.google.gwt.core.client.JsArray;
 import java.util.Date;
 import java.util.List;
 
@@ -65,6 +66,9 @@ public class ServiceData extends JavaScriptObject {
     public final native boolean getSolde() /*-{ return this.solde!= '0'; }-*/;
     public final native void setSolde(boolean solde) /*-{ this.solde = solde ? "1" : "0"; }-*/;
 
+    public final native JsArray<PaymentData> getPaiements() /*-{ return this.paiements; }-*/;
+    public final native void setServices(JsArray<PaymentData> paiements) /*-{ this.paiements = paiements; }-*/;
+
     public final void inscrireAujourdhui(List<SessionSummary> sessionSummaries) {
         Date today = new Date();
         setDateInscription(Constants.DB_DATE_FORMAT.format(today));
@@ -104,7 +108,8 @@ public class ServiceData extends JavaScriptObject {
             escompte_special: "",
             verification: "0",
             affiliation_envoye: "0",
-            solde: "0"
+            solde: "0",
+            paiements: null
         };
     }-*/;
 }
