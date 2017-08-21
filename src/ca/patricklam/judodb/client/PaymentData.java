@@ -29,6 +29,7 @@ public class PaymentData extends JavaScriptObject {
     public final native String getMontant() /*-{ return this.montant != null ? this.montant : ""; }-*/;
     public final native void setMontant(String montant) /*-{ this.montant = montant; }-*/;
     public final native String getIsAdd() /*-{ return this.is_add; }-*/;
+    public final native void setIsAdd(String is_add) /*-{ this.is_add = is_add; }-*/;
 
     public final String get(String key) {
 	if (key.equals("id")) return getId();

@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
@@ -459,8 +460,16 @@ public class ClientWidget extends Composite {
 		@Override
 		public void update(int index, PaymentData object, String value) {
                     object.set(NUMBER_COLUMN.key, value);
-		    paiementTable.setRowData(paiementData);
-		    paiementTable.redraw();
+                    if (object.getIsAdd().equals("1")) {
+                        Date today = new Date();
+                        object.setIsAdd("0");
+                        // XXX set initial value based on number (value) & config
+                        object.setDateString(Constants.STD_DATE_FORMAT.format(today));
+                        addAddPaiementPaiement();
+                    }
+                    paiementTable.setRowData(paiementData);
+                    paiementTable.setRowCount(paiementData.size());
+                    paiementTable.redraw();
 		}
 	    });
 
@@ -534,7 +543,11 @@ public class ClientWidget extends Composite {
 		@Override
 		public void update(int index, PaymentData object, String value) {
                     if (c.key == null) return;
-                    // XXX delete this row from table, since we don't redraw
+                    paiementData.remove(object);
+                    paiementTable.setRowData(paiementData);
+                    paiementTable.setRowCount(paiementData.size());
+                    paiementTable.redraw();
+                    updateFrais();
 		}
 	    });
 	t.setColumnWidth(newColumn, c.width, c.widthUnits);
@@ -827,7 +840,8 @@ public class ClientWidget extends Composite {
         paiementData.clear();
         if (sd.getPaiements() != null) {
             for (int i = 0; i < sd.getPaiements().length(); i++) {
-                paiementData.add(sd.getPaiements().get(i));
+                if (!sd.getPaiements().get(i).getIsAdd().equals("1"))
+                    paiementData.add(sd.getPaiements().get(i));
             }
         }
         addAddPaiementPaiement();
@@ -919,6 +933,13 @@ public class ClientWidget extends Composite {
 
         sd.setFrais(stripDollars(frais.getText()));
         sd.setSolde(solde.getValue());
+
+        JsArray<PaymentData> pd = JavaScriptObject.createArray().cast();
+        for (int i = 0, j = 0; i < paiementData.size(); i++) {
+            if (paiementData.get(i).getIsAdd().equals("0"))
+                pd.set(j++, paiementData.get(i));
+        }
+        sd.setPaiements(pd);
     }
 
     /** Load grades data from ClientData into the gradeTable & grade/date_grade. */
@@ -1381,6 +1402,8 @@ public class ClientWidget extends Composite {
             double dRestant = dFrais - montantPaye;
             if (dRestant < 0.01)
                 solde.setValue(true);
+            else
+                solde.setValue(false);
             restant.setText(cf.format(dRestant));
             frais.setText(cf.format(dFrais));
         } catch (NumberFormatException e) {}

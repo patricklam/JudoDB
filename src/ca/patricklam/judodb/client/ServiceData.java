@@ -67,7 +67,7 @@ public class ServiceData extends JavaScriptObject {
     public final native void setSolde(boolean solde) /*-{ this.solde = solde ? "1" : "0"; }-*/;
 
     public final native JsArray<PaymentData> getPaiements() /*-{ return this.paiements; }-*/;
-    public final native void setServices(JsArray<PaymentData> paiements) /*-{ this.paiements = paiements; }-*/;
+    public final native void setPaiements(JsArray<PaymentData> paiements) /*-{ this.paiements = paiements; }-*/;
 
     public final void inscrireAujourdhui(List<SessionSummary> sessionSummaries) {
         Date today = new Date();
