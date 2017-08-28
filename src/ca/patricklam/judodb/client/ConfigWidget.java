@@ -446,14 +446,14 @@ public class ConfigWidget extends Composite {
 	final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
 	Column<SessionSummary, String> newColumn = new Column<SessionSummary, String>(cell) {
 	    public String getValue(SessionSummary object) {
-		return object.get(c.key);
+                return object == null ? "" : object.get(c.key);
 	    }
 	};
 	t.addColumn(newColumn, c.name);
 	newColumn.setFieldUpdater(new FieldUpdater<SessionSummary, String>() {
 		@Override
 		public void update(int index, SessionSummary object, String value) {
-                    if (c.key == null) return;
+                    if (c.key == null || object == null) return;
                     String oldValue = object.get(c.key);
                     object.set(c.key, value);
                     if (perClubColumns.contains(c)) {
@@ -535,7 +535,7 @@ public class ConfigWidget extends Composite {
             };
 	Column<SessionSummary, String> newColumn = new Column<SessionSummary, String>(cell) {
             @Override public String getValue(SessionSummary object) {
-                return object.getIsAdd().equals("1") ? "" : BALLOT_X;
+                return "1".equals(object.getIsAdd()) ? "" : BALLOT_X;
 	    }
 	};
 	t.addColumn(newColumn, c.name);
@@ -563,7 +563,7 @@ public class ConfigWidget extends Composite {
 	nameColumn.setFieldUpdater(new FieldUpdater<SessionSummary, String>() {
 		@Override
 		public void update(int index, SessionSummary object, String value) {
-		    if (object.getIsAdd().equals("1")) {
+		    if ("1".equals(object.getIsAdd())) {
 			pushEdit("-1,E" + NAME_COLUMN.key + "," + value + "," + object.getSeqno() + ";");
 			addAddSessionSession();
 		    } else {
@@ -671,7 +671,7 @@ public class ConfigWidget extends Composite {
         final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
         Column<CoursSummary, String> newColumn = new Column<CoursSummary, String>(cell) {
             public String getValue(CoursSummary object) {
-                return object.get(c.key);
+                return object == null ? "" : object.get(c.key);
             }
         };
         t.addColumn(newColumn, c.name);
@@ -684,7 +684,7 @@ public class ConfigWidget extends Composite {
                     refreshCours = true;
                     refreshPrix = true;
 
-                    if (object.getIsAdd().equals("1")) {
+                    if ("1".equals(object.getIsAdd())) {
                         // ... of a new cours, case (2)
                         assert (object.get(COURS_SESSION_COLUMN.key).equals(""));
                         String currentSessions = JudoDB.getSessionIds(new Date(), 2, sessionData);
@@ -750,7 +750,7 @@ public class ConfigWidget extends Composite {
                         if (!newSessions.contains(s)) removedSessions.add(s);
 
                     StringBuffer sb = new StringBuffer();
-                    if (object.getIsAdd().equals("1")) {
+                    if ("1".equals(object.getIsAdd())) {
                         if (newSessions.size() == 0) {
                             jdb.displayError("colonne session: noms de session requis (par exemple A17 H18)");
                             return;
@@ -833,7 +833,7 @@ public class ConfigWidget extends Composite {
             };
 	Column<CoursSummary, String> newColumn = new Column<CoursSummary, String>(cell) {
             @Override public String getValue(CoursSummary object) {
-                return object.getIsAdd().equals("1") ? "" : BALLOT_X;
+                return "1".equals(object.getIsAdd()) ? "" : BALLOT_X;
 	    }
 	};
 	t.addColumn(newColumn, c.name);
@@ -1179,7 +1179,7 @@ public class ConfigWidget extends Composite {
                         Prix p = object.prix.get(0);
 
                         if (value != null) value = value.replaceAll(",","_");
-                        if (p.getIsAdd().equals("1")) {
+                        if ("1".equals(p.getIsAdd())) {
                             edits.append("-1,T," + value + "," + jdb.getSelectedClubID() + ";");
                         } else {
                             // already have a nom tarif; force all tarifs to equal that of [0]
@@ -1235,8 +1235,10 @@ public class ConfigWidget extends Composite {
 	Column<CoursPrix, String> newColumn = new Column<CoursPrix, String>(cell) {
             @Override public String getValue(CoursPrix object) {
                 boolean hasAdd = false;
+                if (object == null) return "";
+
                 for (Prix p : object.prix)
-                    if (p.getIsAdd().equals("1"))
+                    if ("1".equals(p.getIsAdd()))
                         hasAdd = true;
                 if (hasAdd) return "";
 
@@ -1342,17 +1344,22 @@ public class ConfigWidget extends Composite {
         unseenTarifs.addAll(rawTarifData);
         // create rows for populated prix entries
         for (Prix p : rawPrixData) {
+            if ("0".equals(p.getNomTarifId()))
+                continue;
+
             if (p.getNomTarif().equals("")) {
                 p.setNomTarif(getNomTarifFromId(p.getNomTarifId()));
             }
-            if (!p.getClubId().equals(cs.getId()) ||
-                !p.getSessionSeqno().equals(currentPrixSeqnoString))
+            if (!cs.getId().equals(p.getClubId()) ||
+                !currentPrixSeqnoString.equals(p.getSessionSeqno()))
                 continue;
             if (!nomToPrix.containsKey(p.getNomTarif())) {
                 List<Prix> pl = new ArrayList<>();
 
                 Prix templatePrix = null;
                 for (Prix tp : rawPrixData) {
+                    if (tp.getClubId() == null) continue;
+
                     if (tp.getDivisionAbbrev().equals(CostCalculator.ALL_DIVISIONS) &&
                         tp.getSessionSeqno().equals(p.getSessionSeqno()) &&
                         tp.getClubId().equals(p.getClubId()) &&
@@ -1578,15 +1585,17 @@ public class ConfigWidget extends Composite {
         final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
         Column<EscompteSummary, String> newColumn = new Column<EscompteSummary, String>(cell) {
             public String getValue(EscompteSummary object) {
-                return object.get(c.key);
+                return object == null ? "" : object.get(c.key);
             }
         };
         t.addColumn(newColumn, c.name);
         newColumn.setFieldUpdater(new FieldUpdater<EscompteSummary, String>() {
                 @Override
                 public void update(int index, EscompteSummary object, String value) {
+                    if (object == null) return;
+
                     refreshEscomptes = true;
-                    if (object.getIsAdd().equals("1")) {
+                    if ("1".equals(object.getIsAdd())) {
                         // NB: do the set before the update because we read from object
                         String nom;
                         if (c.key.equals(AMOUNT_PERCENT_COLUMN.key) ||
@@ -1674,7 +1683,7 @@ public class ConfigWidget extends Composite {
             };
 	Column<EscompteSummary, String> newColumn = new Column<EscompteSummary, String>(cell) {
             @Override public String getValue(EscompteSummary object) {
-                return object.getIsAdd().equals("1") ? "" : BALLOT_X;
+                return "1".equals(object.getIsAdd()) ? "" : BALLOT_X;
 	    }
 	};
 	t.addColumn(newColumn, c.name);
@@ -1738,15 +1747,17 @@ public class ConfigWidget extends Composite {
         final Cell<String> cell = editable ? new EditTextCell() : new TextCell();
         Column<ProduitSummary, String> newColumn = new Column<ProduitSummary, String>(cell) {
             public String getValue(ProduitSummary object) {
-                return object.get(c.key);
+                return object == null ? "" : object.get(c.key);
             }
         };
         t.addColumn(newColumn, c.name);
         newColumn.setFieldUpdater(new FieldUpdater<ProduitSummary, String>() {
                 @Override
                 public void update(int index, ProduitSummary object, String value) {
+                    if (object == null) return;
+
                     refreshProduits = true;
-                    if (object.getIsAdd().equals("1")) {
+                    if ("1".equals(object.getIsAdd())) {
                         // NB: do the set before the update because we read from object
                         String nom;
                         if (c.key.equals(MONTANT_COLUMN.key)) {
@@ -1823,12 +1834,12 @@ public class ConfigWidget extends Composite {
             };
 	Column<ProduitSummary, String> newColumn = new Column<ProduitSummary, String>(cell) {
             @Override public String getValue(ProduitSummary object) {
-                if (object.getIsAdd().equals("1"))
+                if (object == null || object.getClubId() == null || "1".equals(object.getIsAdd()))
                     return "";
 
                 // also handle non-club items
                 if (object.getClubId().equals(jdb.getSelectedClubID()) ||
-                    (object.getClubId().equals("0") && jdb.getSelectedClubID() == null))
+                    (jdb.getSelectedClubID() == null && "0".equals(object.getClubId())))
                     return BALLOT_X;
                 return "";
 	    }
