@@ -26,7 +26,7 @@ public class Constants {
         }
     }
     public static final String stdToDbDate(String d) {
-        if (d.equals(STD_DUMMY_DATE) || d.equals("")) return DB_DUMMY_DATE;
+        if (d.equals(STD_DUMMY_DATE) || d.equals("")) return DB_DUMMY_DATE_ACTUAL;
         try {
             return DB_DATE_FORMAT.format(STD_DATE_FORMAT.parse(d));
         } catch (IllegalArgumentException e) {

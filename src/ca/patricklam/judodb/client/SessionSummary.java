@@ -26,7 +26,7 @@ public class SessionSummary extends JavaScriptObject implements Comparable<Sessi
     public final native void setLastClassDate(String lastClassDate) /*-{ this.lastClassDate = lastClassDate; }-*/;
     public final native String getLastSignupDate() /*-{ return this.last_signup_date != null ? this.last_signup_date : ""; }-*/;
     public final native void setLastSignupDate(String lastSignupDate) /*-{ this.lastSignupDate = lastSignupDate; }-*/;
-    public final native String getIsAdd() /*-{ return this.is_add; }-*/;
+    public final native String getIsAdd() /*-{ return this == null ? "0" : this.is_add; }-*/;
 
     public final boolean isPrimary() { return getLinkedSeqno() == null || getLinkedSeqno().equals("") || Integer.parseInt(getSeqno()) < Integer.parseInt(getLinkedSeqno()); }
 

@@ -15,7 +15,7 @@ public class EscompteSummary extends JavaScriptObject {
     public final native void setAmountPercent(String amount_percent) /*-{ this.amount_percent = amount_percent; }-*/;
     public final native String getAmountAbsolute() /*-{ return this.amount_absolute; }-*/;
     public final native void setAmountAbsolute(String amount_absolute) /*-{ this.amount_absolute = amount_absolute; }-*/;
-    public final native String getIsAdd() /*-{ return this.is_add; }-*/;
+    public final native String getIsAdd() /*-{ return this == null ? "0" : this.is_add; }-*/;
 
     public final String get(String key) {
 	if (key.equals("id")) return getId();

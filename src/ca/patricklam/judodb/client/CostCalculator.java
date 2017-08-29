@@ -239,17 +239,8 @@ public class CostCalculator {
             return "";
     }
 
-    public static double getMontantPaye(List<PaymentData> paiements) {
-        double total = 0.0;
-        for (PaymentData pd : paiements) {
-            try {
-                total += Double.parseDouble(pd.getMontant());
-            } catch (IllegalArgumentException e) {}
-        }
-        return total;
-    }
-
     public static String getFrais(List<Prix> applicablePrix, ClubSummary cs, String session_seqno, String division_abbrev, String cours_id, String nom_tarif_id) {
+        // note: club_id might be null, since JUDO_QC is defined to be null
         String club_id = (cs == null) ? JUDO_QC : cs.getId();
         boolean tarif = false;
 
@@ -268,12 +259,12 @@ public class CostCalculator {
         }
 
         for (Prix p : applicablePrix) {
-            if (p.getClubId().equals(club_id) &&
-                p.getSessionSeqno().equals(session_seqno) &&
-                p.getDivisionAbbrev().equals(division_abbrev) &&
-                p.getCoursId().equals(cours_id) &&
-                (cours_id.equals(ALL_COURS) || p.getNomTarifId().equals(nom_tarif_id))) {
-                if (p.getFrais().equals("")) {
+            if ((club_id == p.getClubId() || club_id != null && club_id.equals(p.getClubId())) &&
+                session_seqno.equals(p.getSessionSeqno()) &&
+                division_abbrev.equals(p.getDivisionAbbrev()) &&
+                cours_id.equals(p.getCoursId()) &&
+                (cours_id.equals(ALL_COURS) || nom_tarif_id.equals(p.getNomTarifId()))) {
+                if ("".equals(p.getFrais())) {
                     return "0";
                 }
                 return p.getFrais();

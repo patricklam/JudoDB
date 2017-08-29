@@ -13,7 +13,7 @@ public class ProduitSummary extends JavaScriptObject {
     public final native void setNom(String nom) /*-{ this.nom = nom; }-*/;
     public final native String getMontant() /*-{ return this.montant; }-*/;
     public final native void setMontant(String montant) /*-{ this.montant = montant; }-*/;
-    public final native String getIsAdd() /*-{ return this.is_add; }-*/;
+    public final native String getIsAdd() /*-{ return this == null ? "0" : this.is_add; }-*/;
 
     public final String get(String key) {
 	if (key.equals("id")) return getId();

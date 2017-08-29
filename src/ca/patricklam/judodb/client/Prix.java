@@ -35,7 +35,7 @@ public class Prix extends JavaScriptObject {
     public final native String getNomTarif() /*-{ return this.nom_tarif == null ? "" : this.nom_tarif; }-*/;
     public final native void setNomTarif(String nom_tarif) /*-{ this.nom_tarif = nom_tarif; }-*/;
 
-    public final native String getIsAdd() /*-{ return this.is_add; }-*/;
+    public final native String getIsAdd() /*-{ return this == null ? "0" : this.is_add; }-*/;
 
     public final String get(String key) {
 	if (key.equals("id")) return getId();

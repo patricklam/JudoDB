@@ -16,7 +16,7 @@ public class CoursSummary extends JavaScriptObject implements TakesValue<String>
     public final native void setSession(String session_seqno) /*-{ this.session_seqno = session_seqno; }-*/;
     public final native String getShortDesc() /*-{ return this.short_desc; }-*/;
     public final native void setShortDesc(String short_desc) /*-{ this.short_desc = short_desc; }-*/;
-    public final native String getIsAdd() /*-{ return this.is_add; }-*/;
+    public final native String getIsAdd() /*-{ return this == null ? "0" : this.is_add; }-*/;
 
     public final String getValue() { return getShortDesc(); }
     public final void setValue(String short_desc) { setShortDesc(short_desc); }

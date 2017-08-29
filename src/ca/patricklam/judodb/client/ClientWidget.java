@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.logging.Level;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsonUtils;
@@ -44,6 +46,7 @@ import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.cell.client.Cell;
+import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.ClickableTextCell;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -82,6 +85,7 @@ public class ClientWidget extends Composite {
 
     @UiField DivElement cid;
     @UiField HTMLPanel clientMain;
+    @UiField Hidden encoded_client;
 
     @UiField TextBox nom;
     @UiField TextBox prenom;
@@ -144,45 +148,10 @@ public class ClientWidget extends Composite {
     @UiField TextBox restant;
     @UiField TextBox frais;
 
-    CellTable<PaymentData> paiementTable;
+    CellTable<PaymentModel> paiementTable;
+    ListDataProvider<PaymentModel> paiementDataProvider;
     @UiField FieldSet paiements;
-    private final List<PaymentData> paiementData = new ArrayList<>();
-    @UiField Hidden paiements_encoded;
-
-    @UiField Hidden grades_encoded;
-    @UiField Hidden grade_dates_encoded;
-
-    @UiField Hidden date_inscription_encoded;
-    @UiField Hidden saisons_encoded;
-    @UiField Hidden prorata_encoded;
-    @UiField Hidden affiliation_envoye_encoded;
-
-    @UiField Hidden categorieFrais_encoded;
-
-    @UiField Hidden cours_encoded;
-    @UiField Hidden nom_tarif_id_encoded;
-
-    @UiField Hidden escompte_encoded;
-    @UiField Hidden cas_special_note_encoded;
-    @UiField Hidden cas_special_pct_encoded;
-    @UiField Hidden escompteFrais_encoded;
-
-    @UiField Hidden date_affiliation_envoye_encoded;
-    @UiField Hidden carte_judoca_recu_encoded;
-    @UiField Hidden sans_affiliation_encoded;
-    @UiField Hidden affiliation_initiation_encoded;
-    @UiField Hidden affiliation_ecole_encoded;
-    @UiField Hidden affiliation_parascolaire_encoded;
-    @UiField Hidden affiliationFrais_encoded;
-
-    @UiField Hidden judogi_encoded;
-    @UiField Hidden resident_encoded;
-    @UiField Hidden paypal_encoded;
-    @UiField Hidden suppFrais_encoded;
-
-    @UiField Hidden solde_encoded;
-    @UiField Hidden frais_encoded;
-    @UiField Hidden club_id_encoded;
+    private final List<PaymentModel> paiementData = new ArrayList<>();
 
     @UiField Hidden guid_on_form;
     @UiField Hidden sid;
@@ -291,7 +260,7 @@ public class ClientWidget extends Composite {
     public ClientWidget(int cid, final JudoDB jdb) {
         this.jdb = jdb;
         initWidget(uiBinder.createAndBindUi(this));
-        com.google.gwt.core.client.Scheduler.get().scheduleDeferred
+        Scheduler.get().scheduleDeferred
             (new com.google.gwt.user.client.Command() {
                     public void execute() {
                         jdb.mainPanel.editClient.ensureVisible(nom);
@@ -417,10 +386,10 @@ public class ClientWidget extends Composite {
         }
     }
 
-    private static final ProvidesKey<PaymentData> PAIEMENT_KEY_PROVIDER =
-	new ProvidesKey<PaymentData>() {
+    private static final ProvidesKey<PaymentModel> PAIEMENT_KEY_PROVIDER =
+	new ProvidesKey<PaymentModel>() {
         @Override
-        public Object getKey(PaymentData item) {
+        public Object getKey(PaymentModel item) {
 	    return item.getId();
         }
     };
@@ -442,34 +411,32 @@ public class ClientWidget extends Composite {
     private final ColumnFields NUMBER_COLUMN = new ColumnFields("number", "#", 2, Unit.EM),
         MODE_COLUMN = new ColumnFields("mode", "mode", 3, Unit.EM),
         CHQNO_COLUMN = new ColumnFields("chqno", "# chq", 1, Unit.EM),
-        DATE_COLUMN = new ColumnFields("date", "Date", 3, Unit.EM),
+        DATE_COLUMN = new ColumnFields("paiement_date", "Date", 3, Unit.EM),
         MONTANT_COLUMN = new ColumnFields("montant", "Montant", 2, Unit.EM),
 	DELETE_PAIEMENT_COLUMN = new ColumnFields("DELETE", "", 1, Unit.EM);
 
     void initializePaiementTable() {
 	paiementTable = new CellTable<>(PAIEMENT_KEY_PROVIDER);
+
 	paiementTable.setWidth("60em", true);
 
 	while (paiementTable.getColumnCount() > 0)
 	    paiementTable.removeColumn(0);
 
-	// name is special: handle inserting a new paiement
-	final com.google.gwt.user.cellview.client.Column<PaymentData, String> nameColumn =
+	// number is special: handle inserting a new paiement
+	final com.google.gwt.user.cellview.client.Column<PaymentModel, String> numberColumn =
 	    addPaiementColumn(paiementTable, NUMBER_COLUMN);
-	nameColumn.setFieldUpdater(new FieldUpdater<PaymentData, String>() {
+	numberColumn.setFieldUpdater(new FieldUpdater<PaymentModel, String>() {
 		@Override
-		public void update(int index, PaymentData object, String value) {
+		public void update(int index, PaymentModel object, String value) {
                     object.set(NUMBER_COLUMN.key, value);
-                    if (object.getIsAdd().equals("1")) {
+                    if (object.getIsAdd()) {
                         Date today = new Date();
-                        object.setIsAdd("0");
+                        object.setIsAdd(false);
                         // XXX set initial value based on number (value) & config
-                        object.setDateString(Constants.STD_DATE_FORMAT.format(today));
+                        object.setPaiementDate(Constants.STD_DATE_FORMAT.format(today));
                         addAddPaiementPaiement();
                     }
-                    paiementTable.setRowData(paiementData);
-                    paiementTable.setRowCount(paiementData.size());
-                    paiementTable.redraw();
 		}
 	    });
 
@@ -483,37 +450,80 @@ public class ClientWidget extends Composite {
 
     final private static String ADD_PAIEMENT_VALUE = "[ajouter paiement]";
     void addAddPaiementPaiement() {
-	int maxId = -1;
-	for (PaymentData s : paiementData) {
-	    if (Integer.parseInt(s.getId()) > maxId)
-		maxId = Integer.parseInt(s.getId());
-	}
+        int maxId = -1;
+        for (PaymentModel s : paiementData) {
+            if (Integer.parseInt(s.getId()) > maxId)
+                maxId = Integer.parseInt(s.getId());
+        }
 
-	PaymentData addNewPaiement =
-	    JsonUtils.<PaymentData>safeEval
-	    ("{\"is_add\":\"1\",\"id\":\""+(maxId+1)+"\",\"number\":\""+ADD_PAIEMENT_VALUE+"\"}");
-	addNewPaiement.setServiceId("");
-	addNewPaiement.setMode("");
-	addNewPaiement.setChqno("");
-	addNewPaiement.setDateString("");
-	addNewPaiement.setMontant("");
-	paiementData.add(addNewPaiement);
+        String id = new Integer(maxId+1).toString();
+        PaymentModel addNewPaiement = new PaymentModel(id);
+        addNewPaiement.setNumber(ADD_PAIEMENT_VALUE);
+        addNewPaiement.setClientId(cd.getID());
+        addNewPaiement.setServiceId("");
+        addNewPaiement.setMode("");
+        addNewPaiement.setChqno("");
+        addNewPaiement.setPaiementDate("");
+        addNewPaiement.setMontant("");
+        addNewPaiement.setIsAdd(true);
+        paiementData.add(addNewPaiement);
     }
 
-    private com.google.gwt.user.cellview.client.Column<PaymentData, String> addPaiementColumn(final CellTable<PaymentData> t, final ColumnFields c) {
-	final Cell<String> cell = new EditTextCell();
-	com.google.gwt.user.cellview.client.Column<PaymentData, String> newColumn = new com.google.gwt.user.cellview.client.Column<PaymentData, String>(cell) {
-	    public String getValue(PaymentData object) {
+    private com.google.gwt.user.cellview.client.Column<PaymentModel, String> addPaiementColumn(final CellTable<PaymentModel> t, final ColumnFields c) {
+	final Cell<String> cell;
+        if (c.key.equals(MONTANT_COLUMN.key)) {
+            cell = new EditTextCell() {
+                    public String reformat(String v) {
+                        String value = "";
+                        if (v != null) {
+                            NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
+                            try {
+                                Double pm = Double.parseDouble(stripDollars(v));
+                                value = cf.format(pm);
+                            } catch (NumberFormatException e) { return ""; }
+                        }
+                        return value;
+                    }
+
+                    @Override
+                    public void render(Context context, String value, SafeHtmlBuilder sb) {
+                        super.render(context, reformat(value), sb);
+                        return;
+                    }
+                };
+        } else {
+            cell = new EditTextCell();
+        }
+
+	com.google.gwt.user.cellview.client.Column<PaymentModel, String> newColumn = new com.google.gwt.user.cellview.client.Column<PaymentModel, String>(cell) {
+	    public String getValue(PaymentModel object) {
 		return object.get(c.key);
 	    }
 	};
 	t.addColumn(newColumn, c.name);
-	newColumn.setFieldUpdater(new FieldUpdater<PaymentData, String>() {
+	newColumn.setFieldUpdater(new FieldUpdater<PaymentModel, String>() {
 		@Override
-		public void update(int index, PaymentData object, String value) {
+		public void update(int index, PaymentModel object, String value) {
                     if (c.key == null) return;
-                    String oldValue = object.get(c.key);
+
                     object.set(c.key, value);
+                    saveClientData();
+                    paiements.remove(paiementTable);
+                    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                            @Override
+                            public void execute() {
+                                initializePaiementTable();
+                                paiementTable.setRowData(paiementData);
+                                paiements.add(paiementTable);
+                                Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                                        @Override
+                                        public void execute() {
+                                            saveAndReturnClientButton.getElement().scrollIntoView();
+                                        }
+                                    });
+                            }
+                        });
+
                     updateFrais();
 		}
 	    });
@@ -523,7 +533,7 @@ public class ClientWidget extends Composite {
 
     private static final String BALLOT_X = "✗";
 
-    private com.google.gwt.user.cellview.client.Column<PaymentData, String> addDeletePaiementColumn(final CellTable<PaymentData> t, final ColumnFields c) {
+    private com.google.gwt.user.cellview.client.Column<PaymentModel, String> addDeletePaiementColumn(final CellTable<PaymentModel> t, final ColumnFields c) {
 	final ClickableTextCell cell = new ClickableTextCell() {
             @Override public void render(Cell.Context ctx, SafeHtml value, SafeHtmlBuilder sb) {
                 if (value != null) {
@@ -533,20 +543,18 @@ public class ClientWidget extends Composite {
                 }
             }
             };
-	com.google.gwt.user.cellview.client.Column<PaymentData, String> newColumn = new com.google.gwt.user.cellview.client.Column<PaymentData, String>(cell) {
-            @Override public String getValue(PaymentData object) {
-                return object.getIsAdd().equals("1") ? "" : BALLOT_X;
+	com.google.gwt.user.cellview.client.Column<PaymentModel, String> newColumn = new com.google.gwt.user.cellview.client.Column<PaymentModel, String>(cell) {
+            @Override public String getValue(PaymentModel object) {
+                return object.getIsAdd() ? "" : BALLOT_X;
 	    }
 	};
 	t.addColumn(newColumn, c.name);
-	newColumn.setFieldUpdater(new FieldUpdater<PaymentData, String>() {
+	newColumn.setFieldUpdater(new FieldUpdater<PaymentModel, String>() {
 		@Override
-		public void update(int index, PaymentData object, String value) {
+		public void update(int index, PaymentModel object, String value) {
                     if (c.key == null) return;
                     paiementData.remove(object);
-                    paiementTable.setRowData(paiementData);
-                    paiementTable.setRowCount(paiementData.size());
-                    paiementTable.redraw();
+                    saveClientData();
                     updateFrais();
 		}
 	    });
@@ -840,12 +848,28 @@ public class ClientWidget extends Composite {
         paiementData.clear();
         if (sd.getPaiements() != null) {
             for (int i = 0; i < sd.getPaiements().length(); i++) {
-                if (!sd.getPaiements().get(i).getIsAdd().equals("1"))
-                    paiementData.add(sd.getPaiements().get(i));
+                if (sd.getPaiements().get(i) != null &&
+                    !"1".equals(sd.getPaiements().get(i).getIsAdd())) {
+                    PaymentModel pd = new PaymentModel(sd.getPaiements().get(i));
+
+                    NumberFormat cf = NumberFormat.getCurrencyFormat("CAD");
+
+                    if (pd.getPaiementDate() != null) {
+                        pd.setPaiementDate(Constants.dbToStdDate(pd.getPaiementDate()));
+                    }
+                    try {
+                        Double pm = Double.parseDouble(pd.getMontant());
+                        pd.setMontant(cf.format(pm));
+                    } catch (NumberFormatException e) {}
+
+                    paiementData.add(pd);
+                }
             }
         }
         addAddPaiementPaiement();
+
         paiementTable.setRowData(paiementData);
+        paiementTable.setRowCount(paiementData.size());
         paiementTable.redraw();
 
         updateDynamicFields();
@@ -936,8 +960,12 @@ public class ClientWidget extends Composite {
 
         JsArray<PaymentData> pd = JavaScriptObject.createArray().cast();
         for (int i = 0, j = 0; i < paiementData.size(); i++) {
-            if (paiementData.get(i).getIsAdd().equals("0"))
-                pd.set(j++, paiementData.get(i));
+            if (!paiementData.get(i).getIsAdd()) {
+                PaymentData pp = paiementData.get(i).toPaymentData();
+                pp.setPaiementDate(Constants.stdToDbDate(pp.getPaiementDate()));
+                pp.setMontant(stripDollars(pp.getMontant()));
+                pd.set(j++, pp);
+            }
         }
         sd.setPaiements(pd);
     }
@@ -1049,30 +1077,6 @@ public class ClientWidget extends Composite {
             newGradesJS.set(gi++, gd);
         }
         cd.setGrades(newGradesJS);
-    }
-
-    private String encodeGrades() {
-        StringBuffer sb = new StringBuffer();
-
-        JsArray<GradeData> grades = cd.getGrades();
-        for (int i = 0; i < grades.length(); i++) {
-            GradeData gd = grades.get(i);
-            if (i > 0) sb.append(",");
-            sb.append(gd.getGrade());
-        }
-        return sb.toString();
-    }
-
-    private String encodeGradeDates() {
-        StringBuffer sb = new StringBuffer();
-
-        JsArray<GradeData> grades = cd.getGrades();
-        for (int i = 0; i < grades.length(); i++) {
-            GradeData gd = grades.get(i);
-            if (i > 0) sb.append(",");
-            sb.append(gd.getDateGrade());
-        }
-        return sb.toString();
     }
 
     private final ChangeHandler directGradeChangeHandler = new ChangeHandler() {
@@ -1370,10 +1374,21 @@ public class ClientWidget extends Composite {
             }
         }
 
-        if (!sdSessions.equals("") && !found) {
+        if (!sdSessions.isEmpty() && !found) {
             jdb.displayError("aucune session en cours pour date d'inscription " + sd.getDateInscription());
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         }
+    }
+
+    private double getMontantPaye(JsArray<PaymentData> paiements) {
+        double total = 0.0;
+        for (int i = 0; i < paiements.length(); i++) {
+            PaymentData pd = paiements.get(i);
+            try {
+                total += Double.parseDouble(pd.getMontant());
+            } catch (IllegalArgumentException e) {}
+        }
+        return total;
     }
 
     /** View-level method to pull information from ServiceData and put it onto the form in currency format. */
@@ -1392,7 +1407,7 @@ public class ClientWidget extends Composite {
         escompteFrais.setReadOnly
 	    (!CostCalculator.isCasSpecial(sd,
 					  CostCalculator.getApplicableEscompte(sd, escompteSummaries)));
-        double montantPaye = CostCalculator.getMontantPaye(paiementData);
+        double montantPaye = getMontantPaye(sd.getPaiements());
         try {
             categorieFrais.setText(cf.format(Double.parseDouble(sd.getCategorieFrais())));
             affiliationFrais.setText(cf.format(Double.parseDouble(sd.getAffiliationFrais())));
@@ -1406,6 +1421,14 @@ public class ClientWidget extends Composite {
                 solde.setValue(false);
             restant.setText(cf.format(dRestant));
             frais.setText(cf.format(dFrais));
+            if (!paiementData.isEmpty()) {
+                for (int i = 0; i < sd.getPaiements().length(); i++) {
+                    if (!sd.getPaiements().get(i).getIsAdd().equals("1")) {
+                        Double m = Double.parseDouble(sd.getPaiements().get(i).getMontant());
+                        sd.getPaiements().get(i).setMontant(cf.format(m));
+                    }
+                }
+            }
         } catch (NumberFormatException e) {}
     }
 
@@ -1542,75 +1565,6 @@ public class ClientWidget extends Composite {
         updateCopySib();
     }
 
-    private void encodeServices() {
-        StringBuffer di = new StringBuffer(), sais = new StringBuffer(),
-            v = new StringBuffer(), cf = new StringBuffer(), c = new StringBuffer(), tf = new StringBuffer(),
-            sess = new StringBuffer(), e = new StringBuffer(), csn = new StringBuffer(),
-            csp = new StringBuffer(), ef = new StringBuffer(), sa = new StringBuffer(),
-            dae = new StringBuffer(), cjr = new StringBuffer(), ai = new StringBuffer(),
-            ae = new StringBuffer(), aps = new StringBuffer(),
-            af = new StringBuffer(), j = new StringBuffer(), p = new StringBuffer(),
-            n = new StringBuffer(), pp = new StringBuffer(), sf = new StringBuffer(), s = new StringBuffer(),
-            f = new StringBuffer(), clubid = new StringBuffer();
-
-        JsArray<ServiceData> services = cd.getServices();
-        for (int i = 0; i < services.length(); i++) {
-            ServiceData sd = services.get(i);
-            di.append(sd.getDateInscription()+",");
-            sais.append(sd.getSessions()+",");
-            v.append(sd.getAffiliationEnvoye() ? "1," : "0,");
-            cf.append(sd.getCategorieFrais()+",");
-            c.append(sd.getCours()+",");
-            sess.append("0,"); /* deprecated session count */
-            e.append(sd.getEscompteId()+",");
-            csn.append(sd.getCasSpecialNote()+",");
-            ef.append(sd.getEscompteFrais()+",");
-            dae.append(Constants.stdToDbDate(sd.getDAEString())+",");
-            cjr.append(sd.getCarteJudocaRecu() ? "1," : "0,");
-            sa.append(sd.getSansAffiliation() ? "1," : "0,");
-            ai.append(sd.getAffiliationInitiation() ? "1," : "0,");
-            ae.append(sd.getAffiliationEcole() ? "1," : "0,");
-            aps.append(sd.getAffiliationParascolaire() ? "1," : "0,");
-            af.append(sd.getAffiliationFrais()+",");
-            j.append(sd.getJudogi()+",");
-            // disabled passeport
-            //p.append(sd.getPasseport()+",");
-            p.append("0,");
-            n.append(sd.getResident() ? "1," : "0,");
-            pp.append(sd.getPaypal() ? "1," : "0,");
-            sf.append(sd.getSuppFrais()+",");
-            s.append(sd.getSolde() ? "1," : "0,");
-            f.append(sd.getFrais()+",");
-            clubid.append(sd.getClubID()+",");
-            tf.append(sd.getNomTarifId()+",");
-        }
-
-        date_inscription_encoded.setValue(di.toString());
-        saisons_encoded.setValue(sais.toString());
-        affiliation_envoye_encoded.setValue(v.toString());
-        categorieFrais_encoded.setValue(cf.toString());
-        cours_encoded.setValue(c.toString());
-        escompte_encoded.setValue(e.toString());
-        cas_special_note_encoded.setValue(csn.toString());
-        cas_special_pct_encoded.setValue(csp.toString());
-        escompteFrais_encoded.setValue(ef.toString());
-        date_affiliation_envoye_encoded.setValue(dae.toString());
-        carte_judoca_recu_encoded.setValue(cjr.toString());
-        sans_affiliation_encoded.setValue(sa.toString());
-        affiliation_initiation_encoded.setValue(ai.toString());
-        affiliation_ecole_encoded.setValue(ae.toString());
-        affiliation_parascolaire_encoded.setValue(aps.toString());
-        affiliationFrais_encoded.setValue(af.toString());
-        judogi_encoded.setValue(j.toString());
-        resident_encoded.setValue(n.toString());
-        paypal_encoded.setValue(pp.toString());
-        suppFrais_encoded.setValue(sf.toString());
-        solde_encoded.setValue(s.toString());
-        frais_encoded.setValue(f.toString());
-        club_id_encoded.setValue(clubid.toString());
-        nom_tarif_id_encoded.setValue(tf.toString());
-    }
-
     private void pushClientDataToServer(final boolean leaveAfterPush) {
         saveClientData();
 
@@ -1622,11 +1576,7 @@ public class ClientWidget extends Composite {
         guid = UUID.uuid();
         sid.setValue(cd.getID());
         guid_on_form.setValue(guid);
-
-        grades_encoded.setValue(encodeGrades());
-        grade_dates_encoded.setValue(encodeGradeDates());
-        loadClientData();
-        encodeServices();
+        encoded_client.setValue(new com.google.gwt.json.client.JSONObject(cd).toString());
 
         // http://stackoverflow.com/questions/2699277/post-data-to-jsonp
         clientform.submit();

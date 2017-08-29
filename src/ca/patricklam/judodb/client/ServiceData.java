@@ -38,6 +38,8 @@ public class ServiceData extends JavaScriptObject {
     public final native void setAffiliationParascolaire(boolean affiliation_parascolaire) /*-{ this.affiliation_parascolaire = affiliation_parascolaire ? "1" : "0"; }-*/;
     public final native String getCours() /*-{ return this.cours; }-*/;
     public final native void setCours(String cours) /*-{ this.cours = cours; }-*/;
+    public final native String getNoSessions() /*-{ return this.no_sessions == null ? "" : this.no_sessions; }-*/;
+    public final native void setNoSessions(String no_sessions) /*-{ this.no_sessions = no_sessions; }-*/;
     public final native String getNomTarifId() /*-{ return this.nom_tarif_id; }-*/;
     public final native void setNomTarifId(String nom_tarif_id) /*-{ this.nom_tarif_id = nom_tarif_id; }-*/;
     public final native int getSessionCount() /*-{ return this.saisons == null ? 0 : this.saisons.split(" ").length; }-*/;
