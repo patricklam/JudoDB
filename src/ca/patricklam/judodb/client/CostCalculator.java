@@ -277,10 +277,10 @@ public class CostCalculator {
     public static List<Prix> getPrixForClubSessionCours(List<Prix> applicablePrix, String club_id, String session_seqno, String cours_id, boolean isUnidivision) {
         if (isUnidivision) {
             for (Prix p : applicablePrix) {
-                if (p.getClubId().equals(club_id) &&
-                    p.getSessionSeqno().equals(session_seqno) &&
-                    p.getCoursId().equals(cours_id) &&
-                    p.getDivisionAbbrev().equals(ALL_DIVISIONS))
+                if (Objects.equals(p.getClubId(), club_id) &&
+                    Objects.equals(p.getSessionSeqno(), session_seqno) &&
+                    Objects.equals(p.getCoursId(), cours_id) &&
+                    Objects.equals(p.getDivisionAbbrev(), ALL_DIVISIONS))
                     return Collections.singletonList(p);
             }
             Prix np = JsonUtils.<Prix>safeEval

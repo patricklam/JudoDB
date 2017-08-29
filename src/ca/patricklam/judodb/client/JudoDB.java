@@ -411,11 +411,18 @@ public class JudoDB implements EntryPoint {
 	}
 	Collections.sort(this.allClients, new Comparator<ClientSummary>() {
 		public final int compare(ClientSummary t, ClientSummary o) {
-		    if (!t.getNom().equals(o.getNom()))
-			return t.getNom().compareTo(o.getNom());
-		    if (!t.getPrenom().equals(o.getNom()))
-			return t.getPrenom().compareTo(o.getPrenom());
-		    return t.getId().compareTo(o.getId());
+                    // somehow we got a NPE...
+                    if ((t == null || t.getId() == null) &&
+                        (o == null || o.getId() == null)) return 0;
+                    if (t == null || t.getId() == null) return -1;
+                    if (o == null || o.getId() == null) return 1;
+
+                    if (!Constants.stringEquals(t.getNom(), o.getNom()))
+                        return t.getNom().compareTo(o.getNom());
+                    if (!Constants.stringEquals(t.getPrenom(), o.getPrenom()))
+                        return t.getPrenom().compareTo(o.getPrenom());
+
+                    return t.getId().compareTo(o.getId());
 		} });
         if (display)
             displaySearchResults();
@@ -463,7 +470,10 @@ public class JudoDB implements EntryPoint {
 
             if (resultCount >= firstSearchResultToDisplay) {
                 Anchor h = new Anchor(s);
-                h.addClickHandler(new EditClientHandler(club, Integer.parseInt(cs.getId())));
+                try {
+                    h.addClickHandler(new EditClientHandler(club, Integer.parseInt(cs.getId())));
+                } catch (NumberFormatException e) {
+                }
                 mainPanel.searchResults.setWidget(displayedCount++, 0, h);
             }
 

@@ -164,4 +164,8 @@ public class Constants {
 	JsonUtils.<ProduitSummary>safeEval
 	("{\"id\":\"0\", \"club_id\":\"0\", \"nom\":\"Aucun\","+
 	 "\"montant\":\"0\"}");
+
+    public static boolean stringEquals(String str1, String str2) {
+        return str1 == null ? str2 == null : str1.equals(str2);
+    }
 }

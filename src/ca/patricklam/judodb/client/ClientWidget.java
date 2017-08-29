@@ -1382,6 +1382,7 @@ public class ClientWidget extends Composite {
 
     private double getMontantPaye(JsArray<PaymentData> paiements) {
         double total = 0.0;
+        if (paiements == null) return total;
         for (int i = 0; i < paiements.length(); i++) {
             PaymentData pd = paiements.get(i);
             try {
