@@ -262,12 +262,11 @@ public class CostCalculator {
             if (Objects.equals(club_id, p.getClubId()) &&
                 session_seqno.equals(p.getSessionSeqno()) &&
                 division_abbrev.equals(p.getDivisionAbbrev()) &&
-                cours_id.equals(p.getCoursId()) &&
-                (cours_id.equals(ALL_COURS) || nom_tarif_id.equals(p.getNomTarifId()))) {
-                if ("".equals(p.getFrais())) {
+                cours_id.equals(p.getCoursId())) {
+                if ((cours_id.equals(ALL_COURS) && !nom_tarif_id.equals(p.getNomTarifId())) ||
+                    "".equals(p.getFrais())) {
                     continue;
                 }
-
                 return p.getFrais();
             }
         }
