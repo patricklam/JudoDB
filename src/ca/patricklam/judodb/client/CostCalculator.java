@@ -259,14 +259,15 @@ public class CostCalculator {
         }
 
         for (Prix p : applicablePrix) {
-            if ((club_id == p.getClubId() || club_id != null && club_id.equals(p.getClubId())) &&
+            if (Objects.equals(club_id, p.getClubId()) &&
                 session_seqno.equals(p.getSessionSeqno()) &&
                 division_abbrev.equals(p.getDivisionAbbrev()) &&
                 cours_id.equals(p.getCoursId()) &&
                 (cours_id.equals(ALL_COURS) || nom_tarif_id.equals(p.getNomTarifId()))) {
                 if ("".equals(p.getFrais())) {
-                    return "0";
+                    continue;
                 }
+
                 return p.getFrais();
             }
         }
