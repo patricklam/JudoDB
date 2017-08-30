@@ -407,16 +407,13 @@ public class JudoDB implements EntryPoint {
         firstSearchResultToDisplay = 0;
         this.allClients = new ArrayList<ClientSummary>();
 	for (int i = 0; i < allClients.length(); i++) {
+            if (allClients.get(i) == null ||
+                allClients.get(i).getId() == null) continue;
+                                 
 	    this.allClients.add(allClients.get(i));
 	}
 	Collections.sort(this.allClients, new Comparator<ClientSummary>() {
 		public final int compare(ClientSummary t, ClientSummary o) {
-                    // somehow we got a NPE...
-                    if ((t == null || t.getId() == null) &&
-                        (o == null || o.getId() == null)) return 0;
-                    if (t == null || t.getId() == null) return -1;
-                    if (o == null || o.getId() == null) return 1;
-
                     if (!Constants.stringEquals(t.getNom(), o.getNom()))
                         return t.getNom().compareTo(o.getNom());
                     if (!Constants.stringEquals(t.getPrenom(), o.getPrenom()))
