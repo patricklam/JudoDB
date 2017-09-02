@@ -1,5 +1,6 @@
 // -*-  indent-tabs-mode:nil; c-basic-offset:4; -*-
 package ca.patricklam.judodb.client;
+import java.util.logging.Level;
 
 import java.util.Collection;
 import java.util.List;
@@ -263,7 +264,7 @@ public class CostCalculator {
                 session_seqno.equals(p.getSessionSeqno()) &&
                 division_abbrev.equals(p.getDivisionAbbrev()) &&
                 cours_id.equals(p.getCoursId())) {
-                if ((cours_id.equals(ALL_COURS) && !nom_tarif_id.equals(p.getNomTarifId())) ||
+                if ((cours_id.equals(ALL_COURS) && !Objects.equals(nom_tarif_id, p.getNomTarifId())) ||
                     "".equals(p.getFrais())) {
                     continue;
                 }
