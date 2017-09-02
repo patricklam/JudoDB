@@ -264,8 +264,12 @@ public class CostCalculator {
                 session_seqno.equals(p.getSessionSeqno()) &&
                 division_abbrev.equals(p.getDivisionAbbrev()) &&
                 cours_id.equals(p.getCoursId())) {
-                if ((cours_id.equals(ALL_COURS) && !Objects.equals(nom_tarif_id, p.getNomTarifId())) ||
-                    "".equals(p.getFrais())) {
+                if (cours_id.equals(ALL_COURS) &&
+                    !Objects.equals(club_id, JUDO_QC) &&
+                    !Objects.equals(nom_tarif_id, p.getNomTarifId())) {
+                    continue;
+                }
+                if ("".equals(p.getFrais())) {
                     continue;
                 }
                 return p.getFrais();
