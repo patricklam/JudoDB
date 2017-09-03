@@ -1529,9 +1529,17 @@ public class ListWidget extends Composite {
             if (sd != null) {
                 ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
                 Collection<ProduitSummary> ps = CostCalculator.getApplicableProduits(sd, produitSummaries);
-                CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, true /* prorata.getValue()*/, prix, escompteSummaries);
+                CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, false /* prorata.getValue()*/, prix, escompteSummaries);
                 df += "'produits',";
                 dv += sd.getJudogi() + "|";
+                df += "'frais_cours',";
+                try {
+                    dv += (Double.parseDouble(sd.getCategorieFrais()) + Double.parseDouble(sd.getEscompteFrais())) + "|";
+                } catch (NumberFormatException e) {
+                    dv += "0|";
+                }
+                df += "'frais_judoqcca',";
+                dv += sd.getAffiliationFrais() + "|";
                 df += "'frais_supp',";
                 dv += sd.getSuppFrais() + "|";
                 df += "'frais',";
