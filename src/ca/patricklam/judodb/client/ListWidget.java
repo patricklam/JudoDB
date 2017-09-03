@@ -1536,6 +1536,12 @@ public class ListWidget extends Composite {
                 dv += sd.getSuppFrais() + "|";
                 df += "'frais',";
                 dv += sd.getFrais() + "|";
+                df += "'a_payer'";
+                try {
+                    dv += Double.parseDouble(sd.getFrais()) - ClientWidget.getMontantPaye(sd.getPaiements());
+                } catch (NumberFormatException e) {
+                    dv += "err" + "|";
+                }
             }
         }
         else {
