@@ -2,8 +2,9 @@
 package ca.patricklam.judodb.client;
 
 import com.google.gwt.core.client.JsonUtils;
+import java.util.Date;
 
-public class PaymentModel {
+public class PaymentModel implements Comparable<PaymentModel> {
     public final String getId() { return this.id; }
     public final String getClientId() { return this.client_id != null ? this.client_id : ""; }
     public final void setClientId(String client_id) { this.client_id = client_id; }
@@ -50,8 +51,18 @@ public class PaymentModel {
     }
 
     public final int compareTo(PaymentModel o) {
-	int s = Integer.parseInt(getNumber()), os = Integer.parseInt(o.getNumber());
-	return s - os;
+        if (getIsAdd() || o == null) return -1;
+        if (o.getIsAdd()) return 1;
+
+        Date thisDate = null, otherDate = null;
+        try {
+            thisDate = Constants.STD_DATE_FORMAT.parse(getPaiementDate());
+            otherDate = Constants.STD_DATE_FORMAT.parse(o.getPaiementDate());
+        } catch (IllegalArgumentException e) {}
+        if (thisDate == null) return -1;
+        if (otherDate == null) return 1;
+
+        return thisDate.compareTo(otherDate);
     }
 
     public PaymentData toPaymentData() {

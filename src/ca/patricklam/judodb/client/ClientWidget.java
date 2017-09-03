@@ -47,6 +47,7 @@ import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.view.client.ListDataProvider;
+import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.ClickableTextCell;
 import com.google.gwt.user.cellview.client.CellTable;
@@ -280,7 +281,7 @@ public class ClientWidget extends Composite {
         escompteFrais.setReadOnly(true); escompteFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
         affiliationFrais.setReadOnly(true); affiliationFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
         suppFrais.setReadOnly(true); suppFrais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
-        restant.setReadOnly(true);
+        restant.setReadOnly(true); restant.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
         frais.setReadOnly(true); frais.setAlignment(ValueBoxBase.TextAlignment.RIGHT);
         ((Element)cas_special_note.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
         ((Element)cas_special_pct.getElement().getParentNode()).getStyle().setDisplay(Display.NONE);
@@ -408,7 +409,7 @@ public class ClientWidget extends Composite {
 	public Unit widthUnits;
     }
 
-    private final ColumnFields NUMBER_COLUMN = new ColumnFields("number", "#", 2, Unit.EM),
+    private final ColumnFields NUMBER_COLUMN = new ColumnFields("number", "#", 1, Unit.EM),
         MODE_COLUMN = new ColumnFields("mode", "mode", 3, Unit.EM),
         CHQNO_COLUMN = new ColumnFields("chqno", "# chq", 1, Unit.EM),
         DATE_COLUMN = new ColumnFields("paiement_date", "Date", 3, Unit.EM),
@@ -416,36 +417,67 @@ public class ClientWidget extends Composite {
 	DELETE_PAIEMENT_COLUMN = new ColumnFields("DELETE", "", 1, Unit.EM);
 
     void initializePaiementTable() {
-	paiementTable = new CellTable<>(PAIEMENT_KEY_PROVIDER);
+        paiementTable = new CellTable<>(PAIEMENT_KEY_PROVIDER);
 
-	paiementTable.setWidth("60em", true);
+        paiementTable.setWidth("60em", true);
 
-	while (paiementTable.getColumnCount() > 0)
-	    paiementTable.removeColumn(0);
+        while (paiementTable.getColumnCount() > 0)
+            paiementTable.removeColumn(0);
 
-	// number is special: handle inserting a new paiement
-	final com.google.gwt.user.cellview.client.Column<PaymentModel, String> numberColumn =
-	    addPaiementColumn(paiementTable, NUMBER_COLUMN);
-	numberColumn.setFieldUpdater(new FieldUpdater<PaymentModel, String>() {
-		@Override
-		public void update(int index, PaymentModel object, String value) {
-                    object.set(NUMBER_COLUMN.key, value);
+        addPaiementColumn(paiementTable, NUMBER_COLUMN);
+        // mode is special: handle inserting a new paiement
+        final com.google.gwt.user.cellview.client.Column<PaymentModel, String> modeColumn =
+            addPaiementColumn(paiementTable, MODE_COLUMN);
+        modeColumn.setFieldUpdater(new FieldUpdater<PaymentModel, String>() {
+                @Override
+                public void update(int index, PaymentModel object, String value) {
+                    object.set(MODE_COLUMN.key, value);
                     if (object.getIsAdd()) {
                         Date today = new Date();
                         object.setIsAdd(false);
-                        // XXX set initial value based on number (value) & config
-                        object.setPaiementDate(Constants.STD_DATE_FORMAT.format(today));
-                        addAddPaiementPaiement();
-                    }
-		}
-	    });
 
-	addPaiementColumn(paiementTable, MODE_COLUMN);
-	addPaiementColumn(paiementTable, CHQNO_COLUMN);
-	addPaiementColumn(paiementTable, DATE_COLUMN);
-	com.google.gwt.user.cellview.client.Column col = addPaiementColumn(paiementTable, MONTANT_COLUMN);
-        col.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
-	addDeletePaiementColumn(paiementTable, DELETE_PAIEMENT_COLUMN);
+                        // XXX set initial value for paiement date based on config
+                        object.setPaiementDate(Constants.STD_DATE_FORMAT.format(today));
+
+                        // now sort the data
+                        Collections.sort(paiementData);
+                        for (int n = 0; n < paiementData.size(); n++) {
+                            if (!paiementData.get(n).getIsAdd()) {
+                                paiementData.get(n).setNumber(Integer.toString(n+1));
+                            }
+                        }
+
+                        addAddPaiementPaiement();
+                        reallyRedrawPaiementTable();
+                    }
+                }
+            });
+
+        addPaiementColumn(paiementTable, CHQNO_COLUMN);
+        final com.google.gwt.user.cellview.client.Column<PaymentModel, String> dateColumn =
+            addPaiementColumn(paiementTable, DATE_COLUMN);
+        dateColumn.setFieldUpdater(new FieldUpdater<PaymentModel, String>() {
+                @Override
+                public void update(int index, PaymentModel object, String value) {
+                    object.set(DATE_COLUMN.key, value);
+                    // now sort the data
+                    Collections.sort(paiementData);
+                    for (int n = 0; n < paiementData.size(); n++) {
+                        paiementData.get(n).setNumber(Integer.toString(n+1));
+                    }
+                    paiementTable.redraw();
+                }
+            });
+        final com.google.gwt.user.cellview.client.Column montantColumn = addPaiementColumn(paiementTable, MONTANT_COLUMN);
+        montantColumn.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+        dateColumn.setFieldUpdater(new FieldUpdater<PaymentModel, String>() {
+                @Override
+                public void update(int index, PaymentModel object, String value) {
+                    object.set(MONTANT_COLUMN.key, value);
+                    updateFrais();
+                }
+            });
+        addDeletePaiementColumn(paiementTable, DELETE_PAIEMENT_COLUMN);
     }
 
     final private static String ADD_PAIEMENT_VALUE = "[ajouter paiement]";
@@ -458,10 +490,9 @@ public class ClientWidget extends Composite {
 
         String id = new Integer(maxId+1).toString();
         PaymentModel addNewPaiement = new PaymentModel(id);
-        addNewPaiement.setNumber(ADD_PAIEMENT_VALUE);
+        addNewPaiement.setMode(ADD_PAIEMENT_VALUE);
         addNewPaiement.setClientId(cd.getID());
         addNewPaiement.setServiceId("");
-        addNewPaiement.setMode("");
         addNewPaiement.setChqno("");
         addNewPaiement.setPaiementDate("");
         addNewPaiement.setMontant("");
@@ -491,6 +522,8 @@ public class ClientWidget extends Composite {
                         return;
                     }
                 };
+        } else if (c.key.equals(NUMBER_COLUMN.key)) {
+            cell = new TextCell();
         } else {
             cell = new EditTextCell();
         }
@@ -508,27 +541,31 @@ public class ClientWidget extends Composite {
 
                     object.set(c.key, value);
                     saveClientData();
-                    paiements.remove(paiementTable);
-                    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                            @Override
-                            public void execute() {
-                                initializePaiementTable();
-                                paiementTable.setRowData(paiementData);
-                                paiements.add(paiementTable);
-                                Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-                                        @Override
-                                        public void execute() {
-                                            saveAndReturnClientButton.getElement().scrollIntoView();
-                                        }
-                                    });
-                            }
-                        });
+                    reallyRedrawPaiementTable();
 
                     updateFrais();
 		}
 	    });
 	t.setColumnWidth(newColumn, c.width, c.widthUnits);
 	return newColumn;
+    }
+
+    private void reallyRedrawPaiementTable() {
+        paiements.remove(paiementTable);
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                    initializePaiementTable();
+                    paiementTable.setRowData(paiementData);
+                    paiements.add(paiementTable);
+                    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+                            @Override
+                            public void execute() {
+                                saveAndReturnClientButton.getElement().scrollIntoView();
+                            }
+                        });
+                }
+            });
     }
 
     private static final String BALLOT_X = "✗";
