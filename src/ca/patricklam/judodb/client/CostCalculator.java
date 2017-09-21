@@ -171,11 +171,13 @@ public class CostCalculator {
             dSuppFrais -= Double.parseDouble(cs.getEscompteResident());
 
         if (paypal) {
-            if (Integer.parseInt(cs.getAfficherPaypal()) == ConfigWidget.AP_FIXE) {
-                dSuppFrais += Double.parseDouble(cs.getMontantPaypal());
-            } else {
-                dSuppFrais += Double.parseDouble(cs.getMontantPaypal()) / 100.0 * (dSuppFrais + fraisSoFar);
-            }
+            try {
+                if (Integer.parseInt(cs.getAfficherPaypal()) == ConfigWidget.AP_FIXE) {
+                    dSuppFrais += Double.parseDouble(cs.getMontantPaypal());
+                } else {
+                    dSuppFrais += Double.parseDouble(cs.getMontantPaypal()) / 100.0 * (dSuppFrais + fraisSoFar);
+                }
+            } catch (NumberFormatException e) {}
         }
         return dSuppFrais;
     }
