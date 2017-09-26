@@ -1532,6 +1532,12 @@ public class ListWidget extends Composite {
                 CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, false /* prorata.getValue()*/, prix, escompteSummaries);
                 df += "'produits',";
                 dv += sd.getJudogi() + "|";
+                df += "'scolaire',";
+                dv += sd.getAffiliationEcole() + "|";
+                df += "'initiation',";
+                dv += sd.getAffiliationInitiation() + "|";
+                df += "'parascolaire',";
+                dv += sd.getAffiliationParascolaire() + "|";
                 df += "'frais_cours',";
                 try {
                     dv += (Double.parseDouble(sd.getCategorieFrais()) + Double.parseDouble(sd.getEscompteFrais())) + "|";
