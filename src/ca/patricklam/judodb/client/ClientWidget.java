@@ -1302,7 +1302,7 @@ public class ClientWidget extends Composite {
         public void onClick(ClickEvent e) {
             if (emptyGradeDates() > 1) {
                 jdb.setStatus("Seulement une grade sans date est permise.");
-                new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
+                new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
                 return;
             }
             saveGradesData();
@@ -1413,7 +1413,6 @@ public class ClientWidget extends Composite {
 
         if (!sdSessions.isEmpty() && !found) {
             jdb.displayError("aucune session en cours pour date d'inscription " + sd.getDateInscription());
-            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         }
     }
 
@@ -1654,7 +1653,6 @@ public class ClientWidget extends Composite {
 
         if (backingCours.size() == 0) {
             jdb.displayError("aucun cours defini pour " + jdb.getSelectedClub().getNom() + " pour la session "+currentSession.getName());
-            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         }
     }
 
@@ -1676,7 +1674,6 @@ public class ClientWidget extends Composite {
             if (jdb.getSelectedClub() != null) {
                 jdb.displayError("aucune session en cours pour " + jdb.getSelectedClub().getNom());
             }
-            new Timer() { public void run() { jdb.clearStatus(); } }.schedule(5000);
         } else {
             if (mustInscrire) {
                 ServiceData sd = cd.getServices().get(currentServiceNumber);
