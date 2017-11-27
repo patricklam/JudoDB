@@ -1552,7 +1552,7 @@ public class ListWidget extends Composite {
                 dv += sd.getFrais() + "|";
                 df += "'a_payer'";
                 try {
-                    dv += Double.parseDouble(sd.getFrais()) - ClientWidget.getMontantPaye(sd.getPaiements());
+                    dv += Double.parseDouble(sd.getFrais()) - ClientWidget.getMontantPaye(sd.getPaiements()) + "|";
                 } catch (NumberFormatException e) {
                     dv += "err" + "|";
                 }
@@ -1646,7 +1646,7 @@ public class ListWidget extends Composite {
         }
         data.setValue("");
         data_full.setValue(dv.toString());
-        format.setValue(format_string + "'sm',");
+        format.setValue(format_string + ",'sm'");
         if (jdb.getSelectedClubID() == null) {
             jdb.displayError("Veuillez selectionner un club.");
             new Timer() { public void run() { jdb.clearStatus(); } }.schedule(2000);
