@@ -1527,6 +1527,9 @@ public class ListWidget extends Composite {
             }
             dv += "|";
             if (sd != null) {
+                df += "'date_inscr',";
+                dv += sd.getDateInscription() + "|";
+
                 ClubSummary cs = jdb.getClubSummaryByID(sd.getClubID());
                 Collection<ProduitSummary> ps = CostCalculator.getApplicableProduits(sd, produitSummaries);
                 CostCalculator.recompute(currentSession, cd, sd, cs, sessionSummaries, coursSummaries, ps, false /* prorata.getValue()*/, prix, escompteSummaries);
