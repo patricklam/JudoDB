@@ -1412,8 +1412,14 @@ public class ListWidget extends Composite {
             dv.append(cd.getPrenom()); dv.append("|");
             dv.append(cd.getCourriel()); dv.append("|");
             dv.append(cd.getSexe()); dv.append("|");
-            dv.append(cd.getMostRecentGrade().getGrade()); dv.append("|");
-            dv.append(cd.getMostRecentGrade().getDateGrade()); dv.append("|");
+            GradeData rg = cd.getMostRecentGrade();
+            if (rg != null) {
+                dv.append(rg.getGrade()); dv.append("|");
+                dv.append(rg.getDateGrade()); dv.append("|");
+            } else {
+                dv.append("|");
+                dv.append("|");
+            }
             dv.append(cd.getTel()); dv.append("|");
             dv.append(cd.getJudoQC()); dv.append("|");
             dv.append(cd.getDDNString()); dv.append("|");
