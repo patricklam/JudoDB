@@ -116,22 +116,6 @@ public class ConfigWidget extends Composite {
     // useful URLs: http://www.filsa.net/2010/01/23/more-on-tablayoutpanel/
     // http://www.filsa.net/2010/01/21/gwt-notes-tablayoutpanel/
 
-    // not done yet: for each club,
-    // montants--namely, (should theoretically be stored with the session)
-    // frais passeport judo QC [5]
-    // penalty for prorata (constant factor, in addition to percent of cost) [5]
-
-    // misc:
-    // age veteran [35]
-
-    // not needed for now:
-    // for each division:
-    // name [Junior]
-    // abbrev [U20N]
-    // years_ago [20]
-    // noire [true]
-    // aka [U20]
-
     @UiField ButtonGroup dropDownUserClubsButtonGroup;
     @UiField Button dropDownUserClubsButton;
     @UiField DropDownMenu dropDownUserClubs;
@@ -222,12 +206,8 @@ public class ConfigWidget extends Composite {
     private void updateSessionToNameMapping() {
         seqnoToSession.clear();
         seqAbbrevToSession.clear();
-        for (SessionSummary s : sessionData)
-            seqnoToSession.put(s.getSeqno(), s);
-
         for (SessionSummary s : sessionData) {
-            SessionSummary linkedSession = seqnoToSession.get(s.getLinkedSeqno());
-
+            seqnoToSession.put(s.getSeqno(), s);
             if (s != null && s.isPrimary())
                 seqAbbrevToSession.put(s.getAbbrev(), s);
         }
