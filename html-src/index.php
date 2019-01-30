@@ -43,12 +43,12 @@ if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] != "yes")
         $client->setAccessTokenType(OAuth2\Client::ACCESS_TOKEN_OAUTH);
 
         $at = $accessTokenResult["access_token"];
-        $response = $client->fetch("https://www.googleapis.com/plus/v1/people/me/openIdConnect")['result'];
+	// hard coded from https://accounts.google.com/.well-known/openid-configuration
+        $response = $client->fetch("https://openidconnect.googleapis.com/v1/userinfo")['result'];
 
         if (isset($response['email_verified']) && $response['email_verified'] == 'true') {
             $_SESSION['authenticated'] = "yes";
             $_SESSION['email'] = $response['email'];
-            $_SESSION['plus_identity'] = $response['sub'];
             header("Location: index.php");
             die("Redirect");
         } else {
