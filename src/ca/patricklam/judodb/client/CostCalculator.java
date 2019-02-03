@@ -29,7 +29,8 @@ public class CostCalculator {
 
             if (sd.getSessionCount() == 2) {
                 for (SessionSummary ssp : sessionSummaries) {
-                    if (ssp.getSeqno().equals(ss.getLinkedSeqno())) {
+                    if (ssp.getSeqno().equals(ss.getLinkedSeqno()) &&
+                        Integer.parseInt(ssp.getSeqno()) > Integer.parseInt(ss.getSeqno())) {
                         remainingWeeks += totalWeeks(ssp);
                     }
                 }
