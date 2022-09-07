@@ -2027,7 +2027,8 @@ public class ListWidget extends Composite {
     }
 
     public void retrieveAllClients() {
-        String url = PULL_ALL_CLIENTS_URL;
+        String url = PULL_ALL_CLIENTS_URL +
+            "?club_id=" + jdb.getSelectedClubID();
         RequestCallback rc =
             jdb.createRequestCallback(new JudoDB.Function() {
                     public void eval(String s) {
